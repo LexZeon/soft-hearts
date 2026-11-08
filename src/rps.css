@@ -1,0 +1,14 @@
+/* G1 猜拳: the small buttons beside her (src/ui/RpsOverlay.ts). Her words are in the ordinary chat bubble, not here. */
+.rps-overlay { position: absolute; z-index: 26; transition: left .35s ease, top .35s ease; display: flex; flex-direction: column; align-items: center; gap: 5px; width: 160px; pointer-events: auto; color: #e3eee8; font-size: 12px; }
+.rps-overlay[hidden] { display: none; }
+.rps-call { font-size: 17px; font-weight: 700; letter-spacing: 1px; color: #ffe3b0; text-shadow: 0 1px 4px #000a; }
+.rps-score { padding: 2px 9px; border-radius: 9px; background: #17232df2; font-size: 13px; line-height: 1.35; color: #f1f7f3; letter-spacing: 1px; box-shadow: 0 2px 8px #0005; }
+.rps-hands, .rps-invite { display: flex; gap: 6px; }
+.rps-hands[hidden], .rps-invite[hidden], .rps-call[hidden], .rps-score[hidden], .rps-quit[hidden] { display: none; }
+.rps-hand { width: 40px; height: 40px; padding: 0; border: 1px solid #c1e2d355; border-radius: 50%; background: #17232df0; font-size: 20px; line-height: 1; cursor: pointer; box-shadow: 0 3px 10px #0005; transition: transform .12s, opacity .12s, background .12s; }
+.rps-hand:not(:disabled):hover { transform: translateY(-2px); background: #22333ff5; }
+.rps-hand:disabled { cursor: default; opacity: .45; }
+.rps-hand.rps-chosen { opacity: 1; background: #3b5a4cf5; border-color: #bfe6cf; }
+.rps-invite button { padding: 5px 11px; border: 1px solid #c1e2d355; border-radius: 14px; background: #17232df0; color: #e3eee8; font-size: 12px; cursor: pointer; }
+.rps-invite .rps-yes { background: #2f5546f5; }
+.rps-quit { position: absolute; top: -6px; left: 0; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 50%; background: #17232dcc; color: #c4d5cb; font-size: 13px; line-height: 20px; cursor: pointer; }

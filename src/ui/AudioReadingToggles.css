@@ -1,0 +1,69 @@
+.audio-reading-toggles { display: grid; gap: .5rem; }
+.audio-reading-toggles fieldset { display: grid; gap: .35rem; min-width: 0; margin: 0; padding: .5rem .65rem; border: 1px solid currentColor; border-radius: .5rem; }
+.audio-reading-toggles legend { padding: 0 .25rem; }
+.audio-reading-toggles__choice { display: grid; grid-template-columns: auto auto minmax(0, 1fr); align-items: center; gap: .45rem; }
+.audio-reading-toggles__choice input { margin: 0; }
+.audio-reading-toggles__cell-status, .audio-reading-toggles__source-status, .audio-reading-toggles__total { font-size: .85em; overflow-wrap: anywhere; }
+.audio-reading-toggles__cell-status { text-align: end; }
+
+.audio-rhythm-controls { display: grid; gap: 7px; grid-column: 1 / -1; min-width: 0; margin: 0; padding: 8px; border: 1px solid #b7dfcc38; border-radius: 9px; }
+.audio-rhythm-controls label { display: flex; gap: 7px; align-items: center; font-size: 11px; }
+.audio-rhythm-controls input { accent-color: var(--accent); }
+.audio-rhythm-controls legend { padding: 0 4px; font-size: 11px; }
+.audio-rhythm-controls output, .audio-rhythm-controls p { margin: 0; font-size: 10px; line-height: 1.5; overflow-wrap: anywhere; }
+.audio-rhythm-controls button { padding: 5px 9px; border: 1px solid #b7dfcc38; border-radius: 8px; color: inherit; background: #222f38; font-size: 11px; }
+
+/* The pet's reading panel shares the toolbar's compact, soft-green surface. */
+.pet-mode #ambient-audio-controls > .ambient-audio-panel:not([hidden]) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+}
+.pet-mode #ambient-audio-controls > .ambient-audio-panel > strong {
+  color: #e3eee8;
+  font-size: 12px;
+}
+.pet-mode #ambient-audio-controls > .ambient-audio-panel > button {
+  padding: 5px 9px;
+  border-color: #b7dfcc30;
+  border-radius: 8px;
+  color: #d8e8df;
+  background: #222f38;
+  font-size: 11px;
+}
+.pet-mode #ambient-audio-controls > .ambient-audio-panel > button:hover {
+  border-color: #b7dfcc70;
+  background: #30443e;
+}
+.pet-mode #ambient-audio-controls > .ambient-audio-panel > button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.pet-mode #ambient-audio-controls > .ambient-audio-panel > .audio-reading-toggles,
+.pet-mode #ambient-audio-controls > .ambient-audio-panel > button:last-child { grid-column: 1 / -1; }
+.pet-mode #ambient-audio-controls .audio-reading-toggles { gap: 8px; }
+.pet-mode #ambient-audio-controls .audio-reading-toggles fieldset {
+  gap: 5px;
+  padding: 7px 9px;
+  border-color: #b7dfcc38;
+  border-radius: 9px;
+  background: #101c263d;
+}
+.pet-mode #ambient-audio-controls .audio-reading-toggles legend { color: #c4ddd0; font-size: 11px; }
+.pet-mode #ambient-audio-controls .audio-reading-toggles__choice { gap: 7px; min-height: 25px; }
+.pet-mode #ambient-audio-controls .audio-reading-toggles__choice input { accent-color: var(--accent); }
+.pet-mode #ambient-audio-controls .audio-reading-toggles output {
+  margin: 0;
+  color: #bfd4c8;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+/* I-016 一起听: the one switch replaces the four toggles and the rhythm button above (their rules stay for older markup). */
+.listen-together-switch { display: grid; gap: 6px; grid-column: 1 / -1; min-width: 0; padding: 8px; border: 1px solid #b7dfcc38; border-radius: 9px; }
+.listen-together-switch__choice { display: flex; gap: 8px; align-items: center; font-size: 12px; font-weight: 600; }
+.listen-together-switch__choice input { margin: 0; accent-color: var(--accent); }
+.listen-together-switch__status { font-size: 11px; overflow-wrap: anywhere; }
+.listen-together-switch__status[data-active="true"] { color: #bfe9d2; }
+.listen-together-switch__note { margin: 0; font-size: 10px; line-height: 1.5; opacity: .85; overflow-wrap: anywhere; }

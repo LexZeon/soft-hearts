@@ -1,0 +1,66 @@
+.topbar.pet-recovery-topbar {
+  height: auto;
+  min-height: 105px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.top-status.pet-recovery-status {
+  min-width: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.pet-recovery-button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 9px 13px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pet-recovery-button svg {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+}
+
+.pet-recovery-button:focus-visible {
+  outline: 2px solid var(--accent, #c3dfce);
+  outline-offset: 3px;
+}
+
+.pet-recovery-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+@media (max-width: 760px) {
+  .top-status.pet-recovery-status {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+  }
+
+  .pet-recovery-status .connection-pill {
+    max-width: min(245px, 100%);
+  }
+}
+
+.pet-window-diagnostics pre {
+  max-height: 240px;
+  overflow: auto;
+  margin: 8px 0 0;
+  padding: 8px;
+  font-size: 11px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-all;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.22);
+}

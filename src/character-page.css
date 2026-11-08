@@ -1,0 +1,92 @@
+/* C2 角色页: the card wall above the editor. Same quiet palette as character-cards.css. */
+.character-page [hidden] { display:none !important; }
+/* Navigation focuses the wall to scroll to it; a quiet ring instead of the default white box. */
+.character-page:focus { outline:none; }
+.character-page:focus-visible { outline:1px solid #b7dfcc40; outline-offset:4px; }
+.character-wall { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px; }
+.character-tile { position:relative; display:flex; flex-direction:column; gap:9px; min-width:0; padding:13px; border:1px solid #ffffff10; border-radius:12px; background:#ffffff03; }
+.character-tile.active { border-color:#b7dfcc55; background:#b7dfcc0a; box-shadow:0 0 0 1px #b7dfcc22 inset; }
+.character-tile-avatar { width:64px; height:64px; border-radius:50%; overflow:hidden; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:#b7dfcc14; border:1px solid #b7dfcc26; }
+.character-tile-avatar img { width:100%; height:100%; object-fit:cover; }
+.character-tile-initial { font-size:24px; color:#b7dfcc; font-weight:500; }
+.character-tile-body { min-width:0; display:flex; flex-direction:column; gap:4px; }
+.character-tile-heading { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.character-tile-name { font-size:13px; color:#dfe8ee; overflow-wrap:anywhere; }
+.character-tile-badge { font-size:9px; color:#b7dfcc; background:#b7dfcc14; border:1px solid #b7dfcc30; border-radius:20px; padding:2px 8px; white-space:nowrap; }
+.character-tile-tagline { margin:0; font-size:10px; line-height:1.7; color:#9cafbf; overflow-wrap:anywhere; }
+.character-tile-model, .character-tile-meta { margin:0; font-size:9px; line-height:1.7; color:#718a99; overflow-wrap:anywhere; }
+.character-tile-model.model-missing { color:#d9a295; }
+.character-tile-model button.link { padding:0; border:0; background:none; color:#d9a295; text-decoration:underline; font-size:9px; cursor:pointer; text-align:left; }
+.character-tile-actions, .character-add-actions, .character-tile-confirm-actions { display:flex; flex-wrap:wrap; gap:6px; }
+.character-tile button { font-size:10px; padding:6px 10px; }
+.character-tile-menu { display:flex; flex-direction:column; gap:4px; padding:6px; border:1px solid #ffffff10; border-radius:9px; background:#11171f; }
+.character-tile-menu button { text-align:left; background:none; border-color:transparent; color:#a8bdcb; }
+.character-tile-menu button:hover:not([disabled]) { background:#ffffff08; }
+.character-tile-menu button.danger, .character-tile-confirm button.danger { color:#e3a89a; }
+.character-tile-confirm { display:flex; flex-direction:column; gap:8px; padding:10px; border:1px solid #d9a29533; border-radius:9px; background:#d9a2950a; }
+.character-tile-confirm p { margin:0; font-size:10px; line-height:1.7; color:#c9b3ad; }
+.character-tile-forget { display:flex; gap:7px; align-items:flex-start; font-size:10px; line-height:1.6; color:#b9a7a2; }
+/* C3 用角色卡文件更新: calmer than deleting (nothing of hers goes), but a different name stands out. */
+.character-tile-update { border-color:#b7dfcc33; background:#b7dfcc08; }
+.character-update-lines { display:flex; flex-direction:column; gap:4px; }
+.character-tile-update p { color:#b9c9c2; }
+.character-tile-update p.character-update-title { color:#dfe8ee; font-size:11px; }
+.character-tile-update p.character-update-warning { color:#f2c48d; font-weight:600; padding:6px 8px; border-left:3px solid #f2c48d; border-radius:4px; background:#f2c48d14; }
+.character-tile-status { display:block; min-height:0; font-size:9px; line-height:1.7; color:#8baa9a; overflow-wrap:anywhere; }
+.character-tile-status:empty { display:none; }
+.character-add { border-style:dashed; justify-content:center; }
+.character-add .hint { font-size:9px; color:#657c8d; }
+.character-page-status { display:block; min-height:16px; margin-top:10px; font-size:10px; color:#8baa9a; }
+.character-tile [disabled] { cursor:not-allowed; opacity:.6; }
+#character-cards-moved .hint { margin-bottom:10px; }
+/* I-018 和 Claude 聊聊这个角色: a quiet conversation box above the wall; extended mood values stand out. */
+.character-understanding-holder:empty { display:none; }
+.character-understanding { display:flex; flex-direction:column; gap:8px; margin:0 0 14px; padding:13px; border:1px solid #b7dfcc33; border-radius:12px; background:#b7dfcc08; }
+.understanding-header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.understanding-title { font-size:12px; color:#dfe8ee; overflow-wrap:anywhere; }
+.understanding-lead, .understanding-privacy { margin:0; font-size:10px; line-height:1.7; color:#9cafbf; }
+.understanding-privacy { color:#718a99; font-size:9px; }
+.understanding-messages { display:flex; flex-direction:column; gap:8px; max-height:420px; overflow-y:auto; }
+.understanding-message { padding:9px 11px; border-radius:9px; font-size:10px; line-height:1.75; color:#c8d6df; overflow-wrap:anywhere; }
+.understanding-message p, .understanding-message ul, .understanding-message ol { margin:2px 0; }
+.understanding-message ul, .understanding-message ol { padding-left:18px; }
+.understanding-message.from-claude { background:#ffffff05; border:1px solid #ffffff0d; }
+.understanding-message.from-user { background:#b7dfcc10; border:1px solid #b7dfcc22; align-self:flex-end; max-width:85%; }
+.understanding-who { display:block; font-size:9px; color:#8baa9a; margin-bottom:2px; }
+.understanding-heading { margin:8px 0 2px; font-size:10px; font-weight:600; color:#dfe8ee; }
+.understanding-misread { color:#f2c48d; }
+.understanding-mood li.extended { border-left:3px solid #f2c48d; padding-left:6px; }
+.understanding-extended { color:#f2c48d; font-weight:600; }
+.understanding-effect, .understanding-reason { font-size:9px; color:#9cafbf; }
+.understanding-warning { color:#f2c48d; font-size:10px; font-weight:600; padding:6px 8px; border-left:3px solid #f2c48d; border-radius:4px; background:#f2c48d14; }
+.understanding-raw { white-space:pre-wrap; font-size:9px; color:#9cafbf; max-height:200px; overflow:auto; }
+.understanding-status { display:block; font-size:10px; color:#8baa9a; }
+.understanding-status:empty { display:none; }
+.understanding-status.error { color:#e3a89a; }
+.understanding-compose, .understanding-final-body { display:flex; flex-direction:column; gap:6px; }
+.understanding-final { font-size:10px; line-height:1.75; color:#c8d6df; overflow-wrap:anywhere; }
+.understanding-final p, .understanding-final ul { margin:2px 0; }
+.understanding-final ul { padding-left:18px; }
+.understanding-input, .understanding-notes { width:100%; font-size:11px; line-height:1.8; resize:vertical; }
+.understanding-buttons { display:flex; flex-wrap:wrap; gap:6px; }
+.character-understanding button { font-size:10px; padding:6px 10px; }
+.understanding-check { display:flex; gap:7px; align-items:flex-start; font-size:10px; line-height:1.6; color:#c8d6df; }
+.understanding-saved { margin:0; font-size:10px; color:#b7dfcc; }
+.character-understanding [disabled] { cursor:not-allowed; opacity:.6; }
+/* I-024 这个模型能做什么: the same quiet box as the blush calibration below it; rows reuse the app's switch (.toggle-row). */
+.model-capabilities { margin-top:18px; padding:15px; border:1px solid #ffffff1a; border-radius:12px; background:#141d2780; }
+.model-capabilities h3 { margin:0 0 9px; font-size:14px; }
+.model-capabilities-hint { margin:7px 0; color:#a8b6c4; font-size:12px; line-height:1.6; overflow-wrap:anywhere; }
+.model-capability-list { display:flex; flex-direction:column; }
+.model-capability-row { display:flex; align-items:center; gap:10px; border-top:1px solid #ffffff0d; }
+.model-capability-row:first-child { border-top:0; }
+.model-capability-row .toggle-row { flex:1; min-width:0; margin:11px 0; }
+.model-capability-row[data-source="none"] .model-capability-detail { color:#8c7f7b; }
+.model-capability-row[data-source="haiku"] .model-capability-detail { color:#b7dfcc; }
+.model-capability-try { font-size:10px; padding:6px 10px; white-space:nowrap; }
+.model-capability-actions { margin-top:10px; padding-top:10px; border-top:1px solid #ffffff0d; font-size:12px; line-height:1.6; overflow-wrap:anywhere; }
+.model-capability-actions[hidden] { display:none; }
+.model-capability-actions strong { display:block; font-weight:600; }
+.model-capability-action-missing { margin:3px 0 0; color:#c9b3a6; }
+.model-capabilities [disabled] { cursor:not-allowed; opacity:.6; }
+.model-capabilities-status { display:block; margin-top:10px; min-height:1.5em; white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; color:#b7cbbe; }

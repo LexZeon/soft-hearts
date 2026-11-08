@@ -1,0 +1,4862 @@
+{
+  "version": 1,
+  "modelSha256": "0ef63a75a7699f58399ae655357f91542fc5209355aac925a589aac42669df37",
+  "modelBytes": 2814228,
+  "coordinateSystem": "MMDParser.parsePmx leftToRight=true; original bound positions",
+  "rawFactsSha256": "31b0788639b190d4d3ec6f4cabf6263c13972c704d1fa29b16b57e6c42400083",
+  "qualification": "Pinned public Gene structural facts only; actual hierarchy, positions and skin-weight counts, plus recorded grant/IK. No playback, mask, natural-combination or general-model admission.",
+  "bones": [
+    {
+      "index": 0,
+      "name": "全ての親",
+      "parentIndex": -1,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 50349,
+      "part": "torso",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 1,
+      "name": "センター",
+      "parentIndex": 0,
+      "position": [
+        0,
+        9.236658096313477,
+        0.31586235761642456
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 50349,
+      "part": "torso",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 2,
+      "name": "グルーブ",
+      "parentIndex": 1,
+      "position": [
+        0,
+        9.436657905578613,
+        0.31586235761642456
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 50349,
+      "part": "torso",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 3,
+      "name": "下半身",
+      "parentIndex": 2,
+      "position": [
+        -1.376495306626424e-10,
+        11.544929504394531,
+        0.6683332920074463
+      ],
+      "directWeightedVertices": 1296,
+      "weightedInfluenceCountIncludingDescendants": 11278,
+      "part": "torso",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 4,
+      "name": "下半身先",
+      "parentIndex": 3,
+      "position": [
+        0,
+        10.20603084564209,
+        0.24818897247314453
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 5,
+      "name": "上半身",
+      "parentIndex": 2,
+      "position": [
+        -2.2659063075294514e-15,
+        11.768570899963379,
+        0.6648411154747009
+      ],
+      "directWeightedVertices": 956,
+      "weightedInfluenceCountIncludingDescendants": 39071,
+      "part": "torso",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 6,
+      "name": "上半身補",
+      "parentIndex": 5,
+      "position": [
+        -3.8657279281947496e-15,
+        12.743741989135742,
+        0.6855011582374573
+      ],
+      "directWeightedVertices": 1129,
+      "weightedInfluenceCountIncludingDescendants": 38115,
+      "part": "torso",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 7,
+      "name": "上半身2",
+      "parentIndex": 6,
+      "position": [
+        7.100084409294993e-11,
+        13.823735237121582,
+        0.6111149191856384
+      ],
+      "directWeightedVertices": 3320,
+      "weightedInfluenceCountIncludingDescendants": 36396,
+      "part": "torso",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 8,
+      "name": "首",
+      "parentIndex": 7,
+      "position": [
+        -2.5727077357373673e-8,
+        15.833732604980469,
+        -0.024284780025482178
+      ],
+      "directWeightedVertices": 1253,
+      "weightedInfluenceCountIncludingDescendants": 17419,
+      "part": "neck",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 9,
+      "name": "頭",
+      "parentIndex": 8,
+      "position": [
+        -3.904896317408202e-8,
+        17.326248168945312,
+        0.11957910656929016
+      ],
+      "directWeightedVertices": 9022,
+      "weightedInfluenceCountIncludingDescendants": 16166,
+      "part": "head",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 10,
+      "name": "頭先",
+      "parentIndex": 9,
+      "position": [
+        -0.000981470919214189,
+        19.57965087890625,
+        0.11957917362451553
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 11,
+      "name": "両目",
+      "parentIndex": 9,
+      "position": [
+        0,
+        19.50236701965332,
+        0.9994329214096069
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 12,
+      "name": "両目先",
+      "parentIndex": 11,
+      "position": [
+        0,
+        19.50236701965332,
+        2.1234326362609863
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 13,
+      "name": "左目",
+      "parentIndex": 9,
+      "position": [
+        0.2597771883010864,
+        17.93876075744629,
+        0.5
+      ],
+      "directWeightedVertices": 531,
+      "weightedInfluenceCountIncludingDescendants": 531,
+      "part": null,
+      "grant": {
+        "isLocal": false,
+        "affectRotation": true,
+        "affectPosition": false,
+        "parentIndex": 11,
+        "ratio": 0.15000000596046448
+      },
+      "ik": null
+    },
+    {
+      "index": 14,
+      "name": "左目先",
+      "parentIndex": 13,
+      "position": [
+        0.2591683566570282,
+        17.905202865600586,
+        1.3128886222839355
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 15,
+      "name": "右目",
+      "parentIndex": 9,
+      "position": [
+        -0.2596440017223358,
+        17.93903923034668,
+        0.5
+      ],
+      "directWeightedVertices": 536,
+      "weightedInfluenceCountIncludingDescendants": 536,
+      "part": null,
+      "grant": {
+        "isLocal": false,
+        "affectRotation": true,
+        "affectPosition": false,
+        "parentIndex": 11,
+        "ratio": 0.15000000596046448
+      },
+      "ik": null
+    },
+    {
+      "index": 16,
+      "name": "右目先",
+      "parentIndex": 15,
+      "position": [
+        -0.2603868246078491,
+        17.90515899658203,
+        1.312927484512329
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 17,
+      "name": "左肩",
+      "parentIndex": 7,
+      "position": [
+        0.2737472951412201,
+        15.768651008605957,
+        -0.002505779266357422
+      ],
+      "directWeightedVertices": 1472,
+      "weightedInfluenceCountIncludingDescendants": 7029,
+      "part": "left-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 18,
+      "name": "左腕",
+      "parentIndex": 17,
+      "position": [
+        1.3334012031555176,
+        15.360919952392578,
+        -0.07036242634057999
+      ],
+      "directWeightedVertices": 571,
+      "weightedInfluenceCountIncludingDescendants": 5557,
+      "part": "left-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 19,
+      "name": "左腕捩",
+      "parentIndex": 18,
+      "position": [
+        2.5141329765319824,
+        14.564886093139648,
+        -0.10488748550415039
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 4677,
+      "part": "left-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 20,
+      "name": "左腕捩連",
+      "parentIndex": 18,
+      "position": [
+        2.5141329765319824,
+        14.564886093139648,
+        -0.10488748550415039
+      ],
+      "directWeightedVertices": 309,
+      "weightedInfluenceCountIncludingDescendants": 309,
+      "part": "left-arm",
+      "grant": {
+        "isLocal": false,
+        "affectRotation": true,
+        "affectPosition": false,
+        "parentIndex": 19,
+        "ratio": 0.5
+      },
+      "ik": null
+    },
+    {
+      "index": 21,
+      "name": "左ひじ",
+      "parentIndex": 19,
+      "position": [
+        3.6948766708374023,
+        13.768841743469238,
+        -0.1394272744655609
+      ],
+      "directWeightedVertices": 445,
+      "weightedInfluenceCountIncludingDescendants": 4677,
+      "part": "left-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 22,
+      "name": "左手捩",
+      "parentIndex": 21,
+      "position": [
+        4.970132350921631,
+        12.909079551696777,
+        -0.0888783410191536
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 3325,
+      "part": "left-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 23,
+      "name": "左手捩連",
+      "parentIndex": 21,
+      "position": [
+        4.970132350921631,
+        12.909079551696777,
+        -0.0888783410191536
+      ],
+      "directWeightedVertices": 907,
+      "weightedInfluenceCountIncludingDescendants": 907,
+      "part": "left-arm",
+      "grant": {
+        "isLocal": false,
+        "affectRotation": true,
+        "affectPosition": false,
+        "parentIndex": 22,
+        "ratio": 0.5
+      },
+      "ik": null
+    },
+    {
+      "index": 24,
+      "name": "左手首",
+      "parentIndex": 22,
+      "position": [
+        6.245386600494385,
+        12.04931640625,
+        -0.03832944855093956
+      ],
+      "directWeightedVertices": 1144,
+      "weightedInfluenceCountIncludingDescendants": 3325,
+      "part": "left-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 25,
+      "name": "左手先",
+      "parentIndex": 24,
+      "position": [
+        6.5704665184021,
+        11.831474304199219,
+        -0.04197605699300766
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 26,
+      "name": "右肩",
+      "parentIndex": 7,
+      "position": [
+        -0.27425599098205566,
+        15.768594741821289,
+        -0.0022479891777038574
+      ],
+      "directWeightedVertices": 665,
+      "weightedInfluenceCountIncludingDescendants": 5963,
+      "part": "right-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 27,
+      "name": "右腕",
+      "parentIndex": 26,
+      "position": [
+        -1.3334012031555176,
+        15.360919952392578,
+        -0.0703623816370964
+      ],
+      "directWeightedVertices": 314,
+      "weightedInfluenceCountIncludingDescendants": 5298,
+      "part": "right-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 28,
+      "name": "右腕捩",
+      "parentIndex": 27,
+      "position": [
+        -2.514141798019409,
+        14.564898490905762,
+        -0.10488812625408173
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 4677,
+      "part": "right-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 29,
+      "name": "右腕捩連",
+      "parentIndex": 27,
+      "position": [
+        -2.514141798019409,
+        14.564898490905762,
+        -0.10488812625408173
+      ],
+      "directWeightedVertices": 307,
+      "weightedInfluenceCountIncludingDescendants": 307,
+      "part": "right-arm",
+      "grant": {
+        "isLocal": false,
+        "affectRotation": true,
+        "affectPosition": false,
+        "parentIndex": 28,
+        "ratio": 0.5
+      },
+      "ik": null
+    },
+    {
+      "index": 30,
+      "name": "右ひじ",
+      "parentIndex": 28,
+      "position": [
+        -3.694888114929199,
+        13.768832206726074,
+        -0.1394277960062027
+      ],
+      "directWeightedVertices": 445,
+      "weightedInfluenceCountIncludingDescendants": 4677,
+      "part": "right-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 31,
+      "name": "右手捩",
+      "parentIndex": 30,
+      "position": [
+        -4.970141887664795,
+        12.90907096862793,
+        -0.08887891471385956
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 3325,
+      "part": "right-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 32,
+      "name": "右手捩連",
+      "parentIndex": 30,
+      "position": [
+        -4.970141887664795,
+        12.90907096862793,
+        -0.08887891471385956
+      ],
+      "directWeightedVertices": 907,
+      "weightedInfluenceCountIncludingDescendants": 907,
+      "part": "right-arm",
+      "grant": {
+        "isLocal": false,
+        "affectRotation": true,
+        "affectPosition": false,
+        "parentIndex": 31,
+        "ratio": 0.5
+      },
+      "ik": null
+    },
+    {
+      "index": 33,
+      "name": "右手首",
+      "parentIndex": 31,
+      "position": [
+        -6.245398044586182,
+        12.049307823181152,
+        -0.03833000734448433
+      ],
+      "directWeightedVertices": 1144,
+      "weightedInfluenceCountIncludingDescendants": 3325,
+      "part": "right-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 34,
+      "name": "右手先",
+      "parentIndex": 33,
+      "position": [
+        -6.569795608520508,
+        11.82923698425293,
+        -0.041249923408031464
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 35,
+      "name": "右肩連",
+      "parentIndex": 7,
+      "position": [
+        -0.27425599098205566,
+        15.768595695495605,
+        -0.0022479891777038574
+      ],
+      "directWeightedVertices": 844,
+      "weightedInfluenceCountIncludingDescendants": 2011,
+      "part": null,
+      "grant": {
+        "isLocal": false,
+        "affectRotation": true,
+        "affectPosition": false,
+        "parentIndex": 26,
+        "ratio": 1
+      },
+      "ik": null
+    },
+    {
+      "index": 36,
+      "name": "右腕xca",
+      "parentIndex": 35,
+      "position": [
+        -1.3334012031555176,
+        15.360919952392578,
+        -0.0703623816370964
+      ],
+      "directWeightedVertices": 439,
+      "weightedInfluenceCountIncludingDescendants": 1167,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 37,
+      "name": "右腕xcb",
+      "parentIndex": 36,
+      "position": [
+        -3.6948883533477783,
+        13.76883316040039,
+        -0.1394277960062027
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 38,
+      "name": "右腕xcIK",
+      "parentIndex": 30,
+      "position": [
+        -3.694888114929199,
+        13.768832206726074,
+        -0.1394277960062027
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": {
+        "effector": 37,
+        "target": null,
+        "iteration": 15,
+        "maxAngle": 2.0071287155151367,
+        "linkCount": 1,
+        "links": [
+          {
+            "index": 36,
+            "angleLimitation": 0
+          }
+        ]
+      }
+    },
+    {
+      "index": 39,
+      "name": "左親指０",
+      "parentIndex": 24,
+      "position": [
+        6.348998069763184,
+        11.891526222229004,
+        0.2643870711326599
+      ],
+      "directWeightedVertices": 171,
+      "weightedInfluenceCountIncludingDescendants": 586,
+      "part": "left-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 40,
+      "name": "左親指１",
+      "parentIndex": 39,
+      "position": [
+        6.582783222198486,
+        11.706725120544434,
+        0.5191358923912048
+      ],
+      "directWeightedVertices": 265,
+      "weightedInfluenceCountIncludingDescendants": 415,
+      "part": "left-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 41,
+      "name": "左親指２",
+      "parentIndex": 40,
+      "position": [
+        6.845156192779541,
+        11.536554336547852,
+        0.7047541737556458
+      ],
+      "directWeightedVertices": 150,
+      "weightedInfluenceCountIncludingDescendants": 150,
+      "part": "left-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 42,
+      "name": "左親指先",
+      "parentIndex": 41,
+      "position": [
+        7.097292900085449,
+        11.33542251586914,
+        0.8118523359298706
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 43,
+      "name": "左人指１",
+      "parentIndex": 24,
+      "position": [
+        7.112200736999512,
+        11.53533935546875,
+        0.2329629361629486
+      ],
+      "directWeightedVertices": 159,
+      "weightedInfluenceCountIncludingDescendants": 420,
+      "part": "left-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 44,
+      "name": "左人指２",
+      "parentIndex": 43,
+      "position": [
+        7.463217735290527,
+        11.327661514282227,
+        0.2697139084339142
+      ],
+      "directWeightedVertices": 108,
+      "weightedInfluenceCountIncludingDescendants": 261,
+      "part": "left-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 45,
+      "name": "左人指３",
+      "parentIndex": 44,
+      "position": [
+        7.673566818237305,
+        11.179825782775879,
+        0.29115524888038635
+      ],
+      "directWeightedVertices": 153,
+      "weightedInfluenceCountIncludingDescendants": 153,
+      "part": "left-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 46,
+      "name": "左人指先",
+      "parentIndex": 45,
+      "position": [
+        7.886412620544434,
+        11.028083801269531,
+        0.31227099895477295
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 47,
+      "name": "左中指１",
+      "parentIndex": 24,
+      "position": [
+        7.139254093170166,
+        11.551904678344727,
+        0.04304702952504158
+      ],
+      "directWeightedVertices": 142,
+      "weightedInfluenceCountIncludingDescendants": 370,
+      "part": "left-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 48,
+      "name": "左中指２",
+      "parentIndex": 47,
+      "position": [
+        7.527155876159668,
+        11.315942764282227,
+        0.05053894594311714
+      ],
+      "directWeightedVertices": 90,
+      "weightedInfluenceCountIncludingDescendants": 228,
+      "part": "left-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 49,
+      "name": "左中指３",
+      "parentIndex": 48,
+      "position": [
+        7.792807102203369,
+        11.130780220031738,
+        0.053665950894355774
+      ],
+      "directWeightedVertices": 138,
+      "weightedInfluenceCountIncludingDescendants": 138,
+      "part": "left-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 50,
+      "name": "左中指先",
+      "parentIndex": 49,
+      "position": [
+        8.055802345275879,
+        10.943219184875488,
+        0.05580560117959976
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 51,
+      "name": "左薬指１",
+      "parentIndex": 24,
+      "position": [
+        7.110246181488037,
+        11.555354118347168,
+        -0.1634291559457779
+      ],
+      "directWeightedVertices": 161,
+      "weightedInfluenceCountIncludingDescendants": 402,
+      "part": "left-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 52,
+      "name": "左薬指２",
+      "parentIndex": 51,
+      "position": [
+        7.479191780090332,
+        11.32432746887207,
+        -0.177056223154068
+      ],
+      "directWeightedVertices": 103,
+      "weightedInfluenceCountIncludingDescendants": 241,
+      "part": "left-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 53,
+      "name": "左薬指３",
+      "parentIndex": 52,
+      "position": [
+        7.678855895996094,
+        11.165244102478027,
+        -0.18319866061210632
+      ],
+      "directWeightedVertices": 138,
+      "weightedInfluenceCountIncludingDescendants": 138,
+      "part": "left-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 54,
+      "name": "左薬指先",
+      "parentIndex": 53,
+      "position": [
+        7.8792266845703125,
+        11.009610176086426,
+        -0.18986524641513824
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 55,
+      "name": "左小指１",
+      "parentIndex": 24,
+      "position": [
+        7.056455135345459,
+        11.552329063415527,
+        -0.33732011914253235
+      ],
+      "directWeightedVertices": 176,
+      "weightedInfluenceCountIncludingDescendants": 403,
+      "part": "left-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 56,
+      "name": "左小指２",
+      "parentIndex": 55,
+      "position": [
+        7.334003448486328,
+        11.3531494140625,
+        -0.35683581233024597
+      ],
+      "directWeightedVertices": 95,
+      "weightedInfluenceCountIncludingDescendants": 227,
+      "part": "left-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 57,
+      "name": "左小指３",
+      "parentIndex": 56,
+      "position": [
+        7.475625514984131,
+        11.239459991455078,
+        -0.3661338686943054
+      ],
+      "directWeightedVertices": 132,
+      "weightedInfluenceCountIncludingDescendants": 132,
+      "part": "left-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 58,
+      "name": "左小指先",
+      "parentIndex": 57,
+      "position": [
+        7.652222156524658,
+        11.106266021728516,
+        -0.3784991204738617
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 59,
+      "name": "右親指０",
+      "parentIndex": 33,
+      "position": [
+        -6.349009037017822,
+        11.891517639160156,
+        0.26438647508621216
+      ],
+      "directWeightedVertices": 171,
+      "weightedInfluenceCountIncludingDescendants": 586,
+      "part": "right-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 60,
+      "name": "右親指１",
+      "parentIndex": 59,
+      "position": [
+        -6.582794189453125,
+        11.706716537475586,
+        0.5191353559494019
+      ],
+      "directWeightedVertices": 265,
+      "weightedInfluenceCountIncludingDescendants": 415,
+      "part": "right-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 61,
+      "name": "右親指２",
+      "parentIndex": 60,
+      "position": [
+        -6.84516716003418,
+        11.536545753479004,
+        0.704753577709198
+      ],
+      "directWeightedVertices": 150,
+      "weightedInfluenceCountIncludingDescendants": 150,
+      "part": "right-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 62,
+      "name": "右親指先",
+      "parentIndex": 61,
+      "position": [
+        -7.096333026885986,
+        11.332967758178711,
+        0.8126306533813477
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 63,
+      "name": "右人指１",
+      "parentIndex": 33,
+      "position": [
+        -7.112212181091309,
+        11.53532886505127,
+        0.23296241462230682
+      ],
+      "directWeightedVertices": 159,
+      "weightedInfluenceCountIncludingDescendants": 420,
+      "part": "right-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 64,
+      "name": "右人指２",
+      "parentIndex": 63,
+      "position": [
+        -7.463228225708008,
+        11.327652931213379,
+        0.2697134017944336
+      ],
+      "directWeightedVertices": 108,
+      "weightedInfluenceCountIncludingDescendants": 261,
+      "part": "right-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 65,
+      "name": "右人指３",
+      "parentIndex": 64,
+      "position": [
+        -7.673577785491943,
+        11.179817199707031,
+        0.2911547124385834
+      ],
+      "directWeightedVertices": 153,
+      "weightedInfluenceCountIncludingDescendants": 153,
+      "part": "right-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 66,
+      "name": "右人指先",
+      "parentIndex": 65,
+      "position": [
+        -7.885404586791992,
+        11.025357246398926,
+        0.31313905119895935
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 67,
+      "name": "右中指１",
+      "parentIndex": 33,
+      "position": [
+        -7.139265537261963,
+        11.551896095275879,
+        0.043046485632658005
+      ],
+      "directWeightedVertices": 142,
+      "weightedInfluenceCountIncludingDescendants": 370,
+      "part": "right-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 68,
+      "name": "右中指２",
+      "parentIndex": 67,
+      "position": [
+        -7.527166843414307,
+        11.315933227539062,
+        0.05053840950131416
+      ],
+      "directWeightedVertices": 90,
+      "weightedInfluenceCountIncludingDescendants": 228,
+      "part": "right-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 69,
+      "name": "右中指３",
+      "parentIndex": 68,
+      "position": [
+        -7.792818546295166,
+        11.13077163696289,
+        0.053665418177843094
+      ],
+      "directWeightedVertices": 138,
+      "weightedInfluenceCountIncludingDescendants": 138,
+      "part": "right-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 70,
+      "name": "右中指先",
+      "parentIndex": 69,
+      "position": [
+        -8.05479621887207,
+        10.940439224243164,
+        0.05669241398572922
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 71,
+      "name": "右薬指１",
+      "parentIndex": 33,
+      "position": [
+        -7.110258102416992,
+        11.555343627929688,
+        -0.16342970728874207
+      ],
+      "directWeightedVertices": 161,
+      "weightedInfluenceCountIncludingDescendants": 402,
+      "part": "right-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 72,
+      "name": "右薬指２",
+      "parentIndex": 71,
+      "position": [
+        -7.479202747344971,
+        11.324318885803223,
+        -0.17705675959587097
+      ],
+      "directWeightedVertices": 103,
+      "weightedInfluenceCountIncludingDescendants": 241,
+      "part": "right-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 73,
+      "name": "右薬指３",
+      "parentIndex": 72,
+      "position": [
+        -7.678866863250732,
+        11.16523551940918,
+        -0.1831992119550705
+      ],
+      "directWeightedVertices": 138,
+      "weightedInfluenceCountIncludingDescendants": 138,
+      "part": "right-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 74,
+      "name": "右薬指先",
+      "parentIndex": 73,
+      "position": [
+        -7.878274917602539,
+        11.006901741027832,
+        -0.18899863958358765
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 75,
+      "name": "右小指１",
+      "parentIndex": 33,
+      "position": [
+        -7.056466102600098,
+        11.55232048034668,
+        -0.3373206555843353
+      ],
+      "directWeightedVertices": 176,
+      "weightedInfluenceCountIncludingDescendants": 403,
+      "part": "right-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 76,
+      "name": "右小指２",
+      "parentIndex": 75,
+      "position": [
+        -7.334014415740967,
+        11.353139877319336,
+        -0.35683634877204895
+      ],
+      "directWeightedVertices": 95,
+      "weightedInfluenceCountIncludingDescendants": 227,
+      "part": "right-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 77,
+      "name": "右小指３",
+      "parentIndex": 76,
+      "position": [
+        -7.475636005401611,
+        11.23945140838623,
+        -0.3661344051361084
+      ],
+      "directWeightedVertices": 132,
+      "weightedInfluenceCountIncludingDescendants": 132,
+      "part": "right-arm",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 78,
+      "name": "右小指先",
+      "parentIndex": 77,
+      "position": [
+        -7.651329040527344,
+        11.103644371032715,
+        -0.3776582181453705
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 79,
+      "name": "左足",
+      "parentIndex": 3,
+      "position": [
+        0.8812159895896912,
+        10.48354721069336,
+        0.3731679618358612
+      ],
+      "directWeightedVertices": 700,
+      "weightedInfluenceCountIncludingDescendants": 4991,
+      "part": "legs",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 80,
+      "name": "左足捩",
+      "parentIndex": 79,
+      "position": [
+        0.8806661367416382,
+        8.126142501831055,
+        0.2895685136318207
+      ],
+      "directWeightedVertices": 564,
+      "weightedInfluenceCountIncludingDescendants": 564,
+      "part": "legs",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 81,
+      "name": "左ひざ",
+      "parentIndex": 79,
+      "position": [
+        0.8812159299850464,
+        5.769436836242676,
+        0.5329061150550842
+      ],
+      "directWeightedVertices": 1091,
+      "weightedInfluenceCountIncludingDescendants": 3727,
+      "part": "legs",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 82,
+      "name": "左ひざ捩",
+      "parentIndex": 81,
+      "position": [
+        0.8806660771369934,
+        3.146596908569336,
+        0.0655369758605957
+      ],
+      "directWeightedVertices": 1263,
+      "weightedInfluenceCountIncludingDescendants": 1263,
+      "part": "legs",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 83,
+      "name": "左足首",
+      "parentIndex": 81,
+      "position": [
+        0.8812158703804016,
+        1.329296588897705,
+        -0.16193336248397827
+      ],
+      "directWeightedVertices": 1027,
+      "weightedInfluenceCountIncludingDescendants": 1373,
+      "part": "legs",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 84,
+      "name": "左足先",
+      "parentIndex": 83,
+      "position": [
+        0.8791322112083435,
+        -0.00017964839935302734,
+        1.3459036350250244
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 85,
+      "name": "左足IK親",
+      "parentIndex": 0,
+      "position": [
+        0.8812158703804016,
+        0,
+        -0.16247360408306122
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 86,
+      "name": "左足ＩＫ",
+      "parentIndex": 85,
+      "position": [
+        0.8812158703804016,
+        1.3293169736862183,
+        -0.16247360408306122
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": {
+        "effector": 83,
+        "target": null,
+        "iteration": 40,
+        "maxAngle": 2.0071287155151367,
+        "linkCount": 2,
+        "links": [
+          {
+            "index": 81,
+            "angleLimitation": 1,
+            "lowerLimitationAngle": [
+              -2.879793405532837,
+              0,
+              0
+            ],
+            "upperLimitationAngle": [
+              0.1745329350233078,
+              0,
+              0
+            ]
+          },
+          {
+            "index": 79,
+            "angleLimitation": 0
+          }
+        ]
+      }
+    },
+    {
+      "index": 87,
+      "name": "左つま先ＩＫ",
+      "parentIndex": 86,
+      "position": [
+        0.8791326880455017,
+        0,
+        1.3451730012893677
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": {
+        "effector": 84,
+        "target": null,
+        "iteration": 3,
+        "maxAngle": 4.014257431030273,
+        "linkCount": 1,
+        "links": [
+          {
+            "index": 83,
+            "angleLimitation": 0
+          }
+        ]
+      }
+    },
+    {
+      "index": 88,
+      "name": "左つま先EX",
+      "parentIndex": 83,
+      "position": [
+        0.8789673447608948,
+        0.33138537406921387,
+        1.2415788173675537
+      ],
+      "directWeightedVertices": 346,
+      "weightedInfluenceCountIncludingDescendants": 346,
+      "part": "legs",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 89,
+      "name": "左つま先先",
+      "parentIndex": 88,
+      "position": [
+        0.8790796995162964,
+        0.06732511520385742,
+        1.7991206645965576
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 90,
+      "name": "右足",
+      "parentIndex": 3,
+      "position": [
+        -0.8542399406433105,
+        10.48354721069336,
+        0.3731679618358612
+      ],
+      "directWeightedVertices": 700,
+      "weightedInfluenceCountIncludingDescendants": 4991,
+      "part": "legs",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 91,
+      "name": "右足捩",
+      "parentIndex": 90,
+      "position": [
+        -0.8545436263084412,
+        8.126141548156738,
+        0.2895682156085968
+      ],
+      "directWeightedVertices": 564,
+      "weightedInfluenceCountIncludingDescendants": 564,
+      "part": "legs",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 92,
+      "name": "右ひざ",
+      "parentIndex": 90,
+      "position": [
+        -0.8545436263084412,
+        5.769436836242676,
+        0.5329061150550842
+      ],
+      "directWeightedVertices": 1091,
+      "weightedInfluenceCountIncludingDescendants": 3727,
+      "part": "legs",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 93,
+      "name": "右ひざ捩",
+      "parentIndex": 92,
+      "position": [
+        -0.8545436263084412,
+        3.146597146987915,
+        0.06553709506988525
+      ],
+      "directWeightedVertices": 1263,
+      "weightedInfluenceCountIncludingDescendants": 1263,
+      "part": "legs",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 94,
+      "name": "右足首",
+      "parentIndex": 92,
+      "position": [
+        -0.8545436263084412,
+        1.329296588897705,
+        -0.16193336248397827
+      ],
+      "directWeightedVertices": 1027,
+      "weightedInfluenceCountIncludingDescendants": 1373,
+      "part": "legs",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 95,
+      "name": "右足先",
+      "parentIndex": 94,
+      "position": [
+        -0.8560773730278015,
+        -0.0003952980041503906,
+        1.3457129001617432
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 96,
+      "name": "右足IK親",
+      "parentIndex": 0,
+      "position": [
+        -0.8545436263084412,
+        0,
+        -0.16247360408306122
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 97,
+      "name": "右足ＩＫ",
+      "parentIndex": 96,
+      "position": [
+        -0.8545436263084412,
+        1.3293169736862183,
+        -0.16247360408306122
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": {
+        "effector": 94,
+        "target": null,
+        "iteration": 40,
+        "maxAngle": 2.0071287155151367,
+        "linkCount": 2,
+        "links": [
+          {
+            "index": 92,
+            "angleLimitation": 1,
+            "lowerLimitationAngle": [
+              -2.879793405532837,
+              0,
+              0
+            ],
+            "upperLimitationAngle": [
+              0.1745329350233078,
+              0,
+              0
+            ]
+          },
+          {
+            "index": 90,
+            "angleLimitation": 0
+          }
+        ]
+      }
+    },
+    {
+      "index": 98,
+      "name": "右つま先ＩＫ",
+      "parentIndex": 97,
+      "position": [
+        -0.8560768961906433,
+        0,
+        1.3451730012893677
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": {
+        "effector": 95,
+        "target": null,
+        "iteration": 3,
+        "maxAngle": 4.014257431030273,
+        "linkCount": 1,
+        "links": [
+          {
+            "index": 94,
+            "angleLimitation": 0
+          }
+        ]
+      }
+    },
+    {
+      "index": 99,
+      "name": "右つま先EX",
+      "parentIndex": 94,
+      "position": [
+        -0.8564884662628174,
+        0.33118462562561035,
+        1.2414360046386719
+      ],
+      "directWeightedVertices": 346,
+      "weightedInfluenceCountIncludingDescendants": 346,
+      "part": "legs",
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 100,
+      "name": "右つま先先",
+      "parentIndex": 99,
+      "position": [
+        -0.8789686560630798,
+        0.06704464554786682,
+        1.7989400625228882
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 101,
+      "name": "イヤリング1_1",
+      "parentIndex": 9,
+      "position": [
+        0.8870121836662292,
+        17.257369995117188,
+        0.0806209146976471
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 1260,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 102,
+      "name": "イヤリング1_2",
+      "parentIndex": 101,
+      "position": [
+        0.8870121836662292,
+        17.12569236755371,
+        0.0806209146976471
+      ],
+      "directWeightedVertices": 1260,
+      "weightedInfluenceCountIncludingDescendants": 1260,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 103,
+      "name": "イヤリング1End",
+      "parentIndex": 102,
+      "position": [
+        0.8865169882774353,
+        16.81451988220215,
+        0.08056392520666122
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 104,
+      "name": "前髪1_1",
+      "parentIndex": 9,
+      "position": [
+        -0.01945183053612709,
+        18.987581253051758,
+        1.289072871208191
+      ],
+      "directWeightedVertices": 266,
+      "weightedInfluenceCountIncludingDescendants": 484,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 105,
+      "name": "前髪1_2",
+      "parentIndex": 104,
+      "position": [
+        -0.006995946168899536,
+        18.35359764099121,
+        1.4071437120437622
+      ],
+      "directWeightedVertices": 218,
+      "weightedInfluenceCountIncludingDescendants": 218,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 106,
+      "name": "前髪1End",
+      "parentIndex": 105,
+      "position": [
+        0.10152772068977356,
+        17.959686279296875,
+        1.2812670469284058
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 107,
+      "name": "右横髪1_1",
+      "parentIndex": 9,
+      "position": [
+        -0.9680941104888916,
+        18.035175323486328,
+        1.030619502067566
+      ],
+      "directWeightedVertices": 137,
+      "weightedInfluenceCountIncludingDescendants": 501,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 108,
+      "name": "右横髪1_2",
+      "parentIndex": 107,
+      "position": [
+        -0.9882925152778625,
+        17.446109771728516,
+        0.9859579205513
+      ],
+      "directWeightedVertices": 214,
+      "weightedInfluenceCountIncludingDescendants": 364,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 109,
+      "name": "右横髪1_3",
+      "parentIndex": 108,
+      "position": [
+        -0.9685906171798706,
+        16.9737548828125,
+        0.8936276435852051
+      ],
+      "directWeightedVertices": 150,
+      "weightedInfluenceCountIncludingDescendants": 150,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 110,
+      "name": "右横髪1End",
+      "parentIndex": 109,
+      "position": [
+        -0.7359920144081116,
+        16.556856155395508,
+        0.6523365378379822
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 111,
+      "name": "右横髪2_1",
+      "parentIndex": 9,
+      "position": [
+        -1.166150689125061,
+        18.118356704711914,
+        0.5383040904998779
+      ],
+      "directWeightedVertices": 50,
+      "weightedInfluenceCountIncludingDescendants": 258,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 112,
+      "name": "右横髪2_2",
+      "parentIndex": 111,
+      "position": [
+        -1.0927495956420898,
+        17.501426696777344,
+        0.5067569613456726
+      ],
+      "directWeightedVertices": 122,
+      "weightedInfluenceCountIncludingDescendants": 208,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 113,
+      "name": "右横髪2_3",
+      "parentIndex": 112,
+      "position": [
+        -1.1313470602035522,
+        17.020919799804688,
+        0.4523279368877411
+      ],
+      "directWeightedVertices": 86,
+      "weightedInfluenceCountIncludingDescendants": 86,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 114,
+      "name": "右横髪2End",
+      "parentIndex": 113,
+      "position": [
+        -1.2942678928375244,
+        16.539098739624023,
+        0.286972314119339
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 115,
+      "name": "後髪A1_1",
+      "parentIndex": 9,
+      "position": [
+        1.0695433616638184,
+        17.39105224609375,
+        -0.3813779056072235
+      ],
+      "directWeightedVertices": 130,
+      "weightedInfluenceCountIncludingDescendants": 222,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 116,
+      "name": "後髪A1_2",
+      "parentIndex": 115,
+      "position": [
+        1.1283783912658691,
+        16.876243591308594,
+        -0.25294220447540283
+      ],
+      "directWeightedVertices": 92,
+      "weightedInfluenceCountIncludingDescendants": 92,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 117,
+      "name": "後髪A1End",
+      "parentIndex": 116,
+      "position": [
+        1.5011745691299438,
+        16.771657943725586,
+        0.08042985200881958
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 118,
+      "name": "後髪A2_1",
+      "parentIndex": 9,
+      "position": [
+        0.5883168578147888,
+        17.01565170288086,
+        -0.6587971448898315
+      ],
+      "directWeightedVertices": 91,
+      "weightedInfluenceCountIncludingDescendants": 91,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 119,
+      "name": "後髪A2End",
+      "parentIndex": 118,
+      "position": [
+        0.8356842398643494,
+        16.551809310913086,
+        -0.91831374168396
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 120,
+      "name": "後髪A3_1",
+      "parentIndex": 9,
+      "position": [
+        0.2642221450805664,
+        16.97494125366211,
+        -0.8787460327148438
+      ],
+      "directWeightedVertices": 96,
+      "weightedInfluenceCountIncludingDescendants": 96,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 121,
+      "name": "後髪A3End",
+      "parentIndex": 120,
+      "position": [
+        0.5436869859695435,
+        16.59499168395996,
+        -1.262345790863037
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 122,
+      "name": "後髪A4_1",
+      "parentIndex": 9,
+      "position": [
+        -0.01617126539349556,
+        16.991151809692383,
+        -0.9942992925643921
+      ],
+      "directWeightedVertices": 93,
+      "weightedInfluenceCountIncludingDescendants": 93,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 123,
+      "name": "後髪A4End",
+      "parentIndex": 122,
+      "position": [
+        -0.32907846570014954,
+        16.750885009765625,
+        -1.399956226348877
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 124,
+      "name": "後髪A5_1",
+      "parentIndex": 9,
+      "position": [
+        -0.2863841950893402,
+        16.981470108032227,
+        -0.8836666345596313
+      ],
+      "directWeightedVertices": 53,
+      "weightedInfluenceCountIncludingDescendants": 53,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 125,
+      "name": "後髪A5End",
+      "parentIndex": 124,
+      "position": [
+        -0.6217570304870605,
+        16.58721923828125,
+        -1.1673531532287598
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 126,
+      "name": "後髪A6_1",
+      "parentIndex": 9,
+      "position": [
+        -0.5897760987281799,
+        17.022340774536133,
+        -0.6600480079650879
+      ],
+      "directWeightedVertices": 65,
+      "weightedInfluenceCountIncludingDescendants": 65,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 127,
+      "name": "後髪A6End",
+      "parentIndex": 126,
+      "position": [
+        -0.8359894156455994,
+        16.551822662353516,
+        -0.9179139137268066
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 128,
+      "name": "後髪A7_1",
+      "parentIndex": 9,
+      "position": [
+        -1.0695432424545288,
+        17.391090393066406,
+        -0.3813777267932892
+      ],
+      "directWeightedVertices": 100,
+      "weightedInfluenceCountIncludingDescendants": 186,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 129,
+      "name": "後髪A7_2",
+      "parentIndex": 128,
+      "position": [
+        -1.1283835172653198,
+        16.876298904418945,
+        -0.2529427409172058
+      ],
+      "directWeightedVertices": 86,
+      "weightedInfluenceCountIncludingDescendants": 86,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 130,
+      "name": "後髪A7End",
+      "parentIndex": 129,
+      "position": [
+        -1.5021523237228394,
+        16.771163940429688,
+        0.08062303066253662
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 131,
+      "name": "後髪B1_1",
+      "parentIndex": 9,
+      "position": [
+        0.9077502489089966,
+        17.383438110351562,
+        -0.13196513056755066
+      ],
+      "directWeightedVertices": 115,
+      "weightedInfluenceCountIncludingDescendants": 207,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 132,
+      "name": "後髪B1_2",
+      "parentIndex": 131,
+      "position": [
+        0.7523996233940125,
+        16.961130142211914,
+        -0.05260495841503143
+      ],
+      "directWeightedVertices": 92,
+      "weightedInfluenceCountIncludingDescendants": 92,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 133,
+      "name": "後髪B1End",
+      "parentIndex": 132,
+      "position": [
+        0.3990496098995209,
+        16.660430908203125,
+        0.3637501001358032
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 134,
+      "name": "後髪B2_1",
+      "parentIndex": 9,
+      "position": [
+        0.7384679913520813,
+        17.347814559936523,
+        -0.3652999699115753
+      ],
+      "directWeightedVertices": 72,
+      "weightedInfluenceCountIncludingDescendants": 136,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 135,
+      "name": "後髪B2_2",
+      "parentIndex": 134,
+      "position": [
+        0.738987386226654,
+        17.348146438598633,
+        -0.36539915204048157
+      ],
+      "directWeightedVertices": 64,
+      "weightedInfluenceCountIncludingDescendants": 64,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 136,
+      "name": "後髪B2End",
+      "parentIndex": 135,
+      "position": [
+        0.9948912858963013,
+        16.59235954284668,
+        -0.39747774600982666
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 137,
+      "name": "後髪B3_1",
+      "parentIndex": 9,
+      "position": [
+        0.5024279952049255,
+        17.33657455444336,
+        -0.5608760118484497
+      ],
+      "directWeightedVertices": 72,
+      "weightedInfluenceCountIncludingDescendants": 136,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 138,
+      "name": "後髪B3_2",
+      "parentIndex": 137,
+      "position": [
+        0.5025696754455566,
+        17.336755752563477,
+        -0.5604569911956787
+      ],
+      "directWeightedVertices": 64,
+      "weightedInfluenceCountIncludingDescendants": 64,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 139,
+      "name": "後髪B3End",
+      "parentIndex": 138,
+      "position": [
+        0.3458412289619446,
+        16.600601196289062,
+        -0.26406529545783997
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 140,
+      "name": "後髪B4_1",
+      "parentIndex": 9,
+      "position": [
+        0.1360040009021759,
+        17.32421112060547,
+        -0.5856040716171265
+      ],
+      "directWeightedVertices": 61,
+      "weightedInfluenceCountIncludingDescendants": 115,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 141,
+      "name": "後髪B4_2",
+      "parentIndex": 140,
+      "position": [
+        0.13633111119270325,
+        17.32457733154297,
+        -0.5859206318855286
+      ],
+      "directWeightedVertices": 54,
+      "weightedInfluenceCountIncludingDescendants": 54,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 142,
+      "name": "後髪B4End",
+      "parentIndex": 141,
+      "position": [
+        0.2929953634738922,
+        16.659170150756836,
+        -0.5936950445175171
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 143,
+      "name": "後髪B5_1",
+      "parentIndex": 9,
+      "position": [
+        -0.1360040009021759,
+        17.32421112060547,
+        -0.5856040716171265
+      ],
+      "directWeightedVertices": 61,
+      "weightedInfluenceCountIncludingDescendants": 115,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 144,
+      "name": "後髪B5_2",
+      "parentIndex": 143,
+      "position": [
+        -0.13633108139038086,
+        17.324548721313477,
+        -0.585921049118042
+      ],
+      "directWeightedVertices": 54,
+      "weightedInfluenceCountIncludingDescendants": 54,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 145,
+      "name": "後髪B5End",
+      "parentIndex": 144,
+      "position": [
+        -0.29401877522468567,
+        16.659088134765625,
+        -0.5936575531959534
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 146,
+      "name": "後髪B6_1",
+      "parentIndex": 9,
+      "position": [
+        -0.5024279952049255,
+        17.33657455444336,
+        -0.5608760118484497
+      ],
+      "directWeightedVertices": 72,
+      "weightedInfluenceCountIncludingDescendants": 136,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 147,
+      "name": "後髪B6_2",
+      "parentIndex": 146,
+      "position": [
+        -0.5025696158409119,
+        17.336801528930664,
+        -0.5604567527770996
+      ],
+      "directWeightedVertices": 64,
+      "weightedInfluenceCountIncludingDescendants": 64,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 148,
+      "name": "後髪B6End",
+      "parentIndex": 147,
+      "position": [
+        -0.3468014895915985,
+        16.60051918029785,
+        -0.26402100920677185
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 149,
+      "name": "後髪B7_1",
+      "parentIndex": 9,
+      "position": [
+        -0.7384679913520813,
+        17.347814559936523,
+        -0.3652999699115753
+      ],
+      "directWeightedVertices": 72,
+      "weightedInfluenceCountIncludingDescendants": 136,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 150,
+      "name": "後髪B7_2",
+      "parentIndex": 149,
+      "position": [
+        -0.7389872670173645,
+        17.34815216064453,
+        -0.3653988838195801
+      ],
+      "directWeightedVertices": 64,
+      "weightedInfluenceCountIncludingDescendants": 64,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 151,
+      "name": "後髪B7End",
+      "parentIndex": 150,
+      "position": [
+        -0.9958657622337341,
+        16.59197425842285,
+        -0.3973497748374939
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 152,
+      "name": "後髪B8_1",
+      "parentIndex": 9,
+      "position": [
+        -0.9077502489089966,
+        17.383445739746094,
+        -0.1319655179977417
+      ],
+      "directWeightedVertices": 102,
+      "weightedInfluenceCountIncludingDescendants": 194,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 153,
+      "name": "後髪B8_2",
+      "parentIndex": 152,
+      "position": [
+        -0.7523999810218811,
+        16.961158752441406,
+        -0.05260494351387024
+      ],
+      "directWeightedVertices": 92,
+      "weightedInfluenceCountIncludingDescendants": 92,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 154,
+      "name": "後髪B8End",
+      "parentIndex": 153,
+      "position": [
+        -0.39995038509368896,
+        16.660306930541992,
+        0.3638014793395996
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 155,
+      "name": "後髪C1_1",
+      "parentIndex": 9,
+      "position": [
+        1.353295922279358,
+        18.30321502685547,
+        -0.4080120623111725
+      ],
+      "directWeightedVertices": 126,
+      "weightedInfluenceCountIncludingDescendants": 235,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 156,
+      "name": "後髪C1_2",
+      "parentIndex": 155,
+      "position": [
+        1.353373408317566,
+        18.30376625061035,
+        -0.408448189496994
+      ],
+      "directWeightedVertices": 109,
+      "weightedInfluenceCountIncludingDescendants": 109,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 157,
+      "name": "後髪C1End",
+      "parentIndex": 156,
+      "position": [
+        1.2499912977218628,
+        17.06583023071289,
+        -0.29917463660240173
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 158,
+      "name": "後髪C2_1",
+      "parentIndex": 9,
+      "position": [
+        0.38103601336479187,
+        18.512277603149414,
+        -1.1891919374465942
+      ],
+      "directWeightedVertices": 99,
+      "weightedInfluenceCountIncludingDescendants": 208,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 159,
+      "name": "後髪C2_2",
+      "parentIndex": 158,
+      "position": [
+        0.380963534116745,
+        18.512529373168945,
+        -1.1887609958648682
+      ],
+      "directWeightedVertices": 109,
+      "weightedInfluenceCountIncludingDescendants": 109,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 160,
+      "name": "後髪C2End",
+      "parentIndex": 159,
+      "position": [
+        -0.2128688395023346,
+        17.313356399536133,
+        -1.0770151615142822
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 161,
+      "name": "後髪C3_1",
+      "parentIndex": 9,
+      "position": [
+        -0.23266799747943878,
+        17.89070701599121,
+        -1.1622159481048584
+      ],
+      "directWeightedVertices": 96,
+      "weightedInfluenceCountIncludingDescendants": 182,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 162,
+      "name": "後髪C3_2",
+      "parentIndex": 161,
+      "position": [
+        -0.2325841635465622,
+        17.89069366455078,
+        -1.1620458364486694
+      ],
+      "directWeightedVertices": 86,
+      "weightedInfluenceCountIncludingDescendants": 86,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 163,
+      "name": "後髪C3End",
+      "parentIndex": 162,
+      "position": [
+        -0.5602683424949646,
+        17.04676628112793,
+        -1.5711392164230347
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 164,
+      "name": "アホ毛C_IA",
+      "parentIndex": 9,
+      "position": [
+        0.40576398372650146,
+        19.608179092407227,
+        -0.3349520266056061
+      ],
+      "directWeightedVertices": 108,
+      "weightedInfluenceCountIncludingDescendants": 964,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 165,
+      "name": "アホ毛C_IB",
+      "parentIndex": 164,
+      "position": [
+        0.40609467029571533,
+        19.607736587524414,
+        -0.3352852165699005
+      ],
+      "directWeightedVertices": 162,
+      "weightedInfluenceCountIncludingDescendants": 856,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 166,
+      "name": "アホ毛C_IC",
+      "parentIndex": 165,
+      "position": [
+        0.12470793724060059,
+        19.89595603942871,
+        -0.11914853751659393
+      ],
+      "directWeightedVertices": 135,
+      "weightedInfluenceCountIncludingDescendants": 694,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 167,
+      "name": "アホ毛C_ID",
+      "parentIndex": 166,
+      "position": [
+        -0.3862800598144531,
+        19.87588119506836,
+        0.2507314085960388
+      ],
+      "directWeightedVertices": 108,
+      "weightedInfluenceCountIncludingDescendants": 559,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 168,
+      "name": "アホ毛C_IE",
+      "parentIndex": 167,
+      "position": [
+        -0.8291075229644775,
+        19.520376205444336,
+        0.566265344619751
+      ],
+      "directWeightedVertices": 99,
+      "weightedInfluenceCountIncludingDescendants": 451,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 169,
+      "name": "アホ毛C_IF",
+      "parentIndex": 168,
+      "position": [
+        -1.0802948474884033,
+        19.065916061401367,
+        0.7155568599700928
+      ],
+      "directWeightedVertices": 117,
+      "weightedInfluenceCountIncludingDescendants": 352,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 170,
+      "name": "アホ毛C_IG",
+      "parentIndex": 169,
+      "position": [
+        -1.2436195611953735,
+        18.332502365112305,
+        0.7454898357391357
+      ],
+      "directWeightedVertices": 135,
+      "weightedInfluenceCountIncludingDescendants": 235,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 171,
+      "name": "アホ毛C_IH",
+      "parentIndex": 170,
+      "position": [
+        -1.23597252368927,
+        17.715503692626953,
+        0.6315934658050537
+      ],
+      "directWeightedVertices": 100,
+      "weightedInfluenceCountIncludingDescendants": 100,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 172,
+      "name": "アホ毛C_IEnd",
+      "parentIndex": 171,
+      "position": [
+        -1.7112607955932617,
+        17.287738800048828,
+        0.3269334137439728
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 173,
+      "name": "前クローク1_1",
+      "parentIndex": 7,
+      "position": [
+        -0.0067439996637403965,
+        15.635963439941406,
+        0.9441599249839783
+      ],
+      "directWeightedVertices": 138,
+      "weightedInfluenceCountIncludingDescendants": 246,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 174,
+      "name": "前クローク1_2",
+      "parentIndex": 173,
+      "position": [
+        -0.006723395083099604,
+        15.636112213134766,
+        0.9443487524986267
+      ],
+      "directWeightedVertices": 108,
+      "weightedInfluenceCountIncludingDescendants": 108,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 175,
+      "name": "前クローク1End",
+      "parentIndex": 174,
+      "position": [
+        -0.015683172270655632,
+        14.331438064575195,
+        1.6624161005020142
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 176,
+      "name": "前クローク2_1xca",
+      "parentIndex": 7,
+      "position": [
+        -0.5372719764709473,
+        15.480851173400879,
+        0.9587719440460205
+      ],
+      "directWeightedVertices": 56,
+      "weightedInfluenceCountIncludingDescendants": 103,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 177,
+      "name": "前クローク2_1xc+",
+      "parentIndex": 176,
+      "position": [
+        -3.6328394412994385,
+        13.802472114562988,
+        -0.11784422397613525
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 178,
+      "name": "前クローク2_1xcIK",
+      "parentIndex": 27,
+      "position": [
+        -3.694888114929199,
+        13.768832206726074,
+        -0.1394277960062027
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": {
+        "effector": 177,
+        "target": null,
+        "iteration": 15,
+        "maxAngle": 2.0071287155151367,
+        "linkCount": 1,
+        "links": [
+          {
+            "index": 176,
+            "angleLimitation": 1,
+            "lowerLimitationAngle": [
+              0,
+              -1.5707963705062866,
+              -1.5707963705062866
+            ],
+            "upperLimitationAngle": [
+              1.5707963705062866,
+              1.5707963705062866,
+              1.5707963705062866
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "index": 179,
+      "name": "前クローク2_2",
+      "parentIndex": 176,
+      "position": [
+        -0.5369666218757629,
+        15.481142044067383,
+        0.9591696262359619
+      ],
+      "directWeightedVertices": 47,
+      "weightedInfluenceCountIncludingDescendants": 47,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 180,
+      "name": "前クローク2End",
+      "parentIndex": 179,
+      "position": [
+        -1.240342617034912,
+        13.890303611755371,
+        1.6870694160461426
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 181,
+      "name": "横クローク1_1",
+      "parentIndex": 36,
+      "position": [
+        -0.9626613855361938,
+        15.405400276184082,
+        0.8195926547050476
+      ],
+      "directWeightedVertices": 43,
+      "weightedInfluenceCountIncludingDescendants": 94,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 182,
+      "name": "横クローク1_2",
+      "parentIndex": 181,
+      "position": [
+        -0.9630734324455261,
+        15.405682563781738,
+        0.8191899657249451
+      ],
+      "directWeightedVertices": 51,
+      "weightedInfluenceCountIncludingDescendants": 51,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 183,
+      "name": "横クローク1End",
+      "parentIndex": 182,
+      "position": [
+        -2.25368070602417,
+        13.729950904846191,
+        1.4119855165481567
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 184,
+      "name": "横クローク2_1",
+      "parentIndex": 36,
+      "position": [
+        -1.397992730140686,
+        15.527478218078613,
+        0.5955682992935181
+      ],
+      "directWeightedVertices": 89,
+      "weightedInfluenceCountIncludingDescendants": 172,
+      "part": null,
+      "grant": {
+        "isLocal": false,
+        "affectRotation": true,
+        "affectPosition": false,
+        "parentIndex": 36,
+        "ratio": 0.20000000298023224
+      },
+      "ik": null
+    },
+    {
+      "index": 185,
+      "name": "横クローク2_2",
+      "parentIndex": 184,
+      "position": [
+        -1.3976638317108154,
+        15.527345657348633,
+        0.5957216024398804
+      ],
+      "directWeightedVertices": 83,
+      "weightedInfluenceCountIncludingDescendants": 83,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 186,
+      "name": "横クローク2End",
+      "parentIndex": 185,
+      "position": [
+        -3.1468100547790527,
+        14.085956573486328,
+        0.9702175259590149
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 187,
+      "name": "横クローク3_1",
+      "parentIndex": 36,
+      "position": [
+        -1.621604561805725,
+        15.8204984664917,
+        -0.08805003762245178
+      ],
+      "directWeightedVertices": 99,
+      "weightedInfluenceCountIncludingDescendants": 200,
+      "part": null,
+      "grant": {
+        "isLocal": false,
+        "affectRotation": true,
+        "affectPosition": false,
+        "parentIndex": 36,
+        "ratio": 0.10000000149011612
+      },
+      "ik": null
+    },
+    {
+      "index": 188,
+      "name": "横クローク3_2",
+      "parentIndex": 187,
+      "position": [
+        -1.6217148303985596,
+        15.820476531982422,
+        -0.08794818818569183
+      ],
+      "directWeightedVertices": 101,
+      "weightedInfluenceCountIncludingDescendants": 101,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 189,
+      "name": "横クローク3End",
+      "parentIndex": 188,
+      "position": [
+        -3.804847002029419,
+        14.515700340270996,
+        -0.19843021035194397
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 190,
+      "name": "横クローク4_1",
+      "parentIndex": 36,
+      "position": [
+        -1.136841058731079,
+        15.723977088928223,
+        -0.7711430191993713
+      ],
+      "directWeightedVertices": 97,
+      "weightedInfluenceCountIncludingDescendants": 210,
+      "part": null,
+      "grant": {
+        "isLocal": false,
+        "affectRotation": true,
+        "affectPosition": false,
+        "parentIndex": 36,
+        "ratio": -0.10000000149011612
+      },
+      "ik": null
+    },
+    {
+      "index": 191,
+      "name": "横クローク4_2",
+      "parentIndex": 190,
+      "position": [
+        -1.136962890625,
+        15.72395133972168,
+        -0.7714584469795227
+      ],
+      "directWeightedVertices": 113,
+      "weightedInfluenceCountIncludingDescendants": 113,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 192,
+      "name": "横クローク4End",
+      "parentIndex": 191,
+      "position": [
+        -2.7092556953430176,
+        13.97538948059082,
+        -1.0503549575805664
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 193,
+      "name": "横クローク5_1",
+      "parentIndex": 36,
+      "position": [
+        -0.7631928324699402,
+        15.65548038482666,
+        -0.8782680034637451
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 52,
+      "part": null,
+      "grant": {
+        "isLocal": false,
+        "affectRotation": true,
+        "affectPosition": false,
+        "parentIndex": 36,
+        "ratio": -0.5
+      },
+      "ik": null
+    },
+    {
+      "index": 194,
+      "name": "横クローク5_2",
+      "parentIndex": 193,
+      "position": [
+        -0.7636707425117493,
+        15.655657768249512,
+        -0.878312349319458
+      ],
+      "directWeightedVertices": 52,
+      "weightedInfluenceCountIncludingDescendants": 52,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 195,
+      "name": "横クローク5End",
+      "parentIndex": 194,
+      "position": [
+        -1.7461804151535034,
+        13.662980079650879,
+        -1.1279312372207642
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 196,
+      "name": "後クローク1_1",
+      "parentIndex": 7,
+      "position": [
+        0.008992000482976437,
+        15.918087005615234,
+        -0.9509039521217346
+      ],
+      "directWeightedVertices": 71,
+      "weightedInfluenceCountIncludingDescendants": 203,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 197,
+      "name": "後クローク1_2",
+      "parentIndex": 196,
+      "position": [
+        0.00946388766169548,
+        15.918501853942871,
+        -0.9507409334182739
+      ],
+      "directWeightedVertices": 132,
+      "weightedInfluenceCountIncludingDescendants": 132,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 198,
+      "name": "後クローク1End",
+      "parentIndex": 197,
+      "position": [
+        -0.16450290381908417,
+        14.143448829650879,
+        -1.0445556640625
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 199,
+      "name": "後クローク2_1",
+      "parentIndex": 7,
+      "position": [
+        -0.4619639813899994,
+        15.76409912109375,
+        -0.9216800332069397
+      ],
+      "directWeightedVertices": 50,
+      "weightedInfluenceCountIncludingDescendants": 102,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 200,
+      "name": "後クローク2_2",
+      "parentIndex": 199,
+      "position": [
+        -0.4618074595928192,
+        15.7642183303833,
+        -0.9218847751617432
+      ],
+      "directWeightedVertices": 52,
+      "weightedInfluenceCountIncludingDescendants": 52,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 201,
+      "name": "後クローク2End",
+      "parentIndex": 200,
+      "position": [
+        -1.038460373878479,
+        13.744811058044434,
+        -1.101776361465454
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 202,
+      "name": "すそ1_1",
+      "parentIndex": 6,
+      "position": [
+        -0.00006037794446456246,
+        12.897053718566895,
+        1.7109334468841553
+      ],
+      "directWeightedVertices": 113,
+      "weightedInfluenceCountIncludingDescendants": 113,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 203,
+      "name": "すそ1End",
+      "parentIndex": 202,
+      "position": [
+        0.0010715631069615483,
+        12.2166109085083,
+        1.7398258447647095
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 204,
+      "name": "すそ2_1",
+      "parentIndex": 6,
+      "position": [
+        1.2457484006881714,
+        12.964189529418945,
+        1.0577479600906372
+      ],
+      "directWeightedVertices": 115,
+      "weightedInfluenceCountIncludingDescendants": 115,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 205,
+      "name": "すそ2End",
+      "parentIndex": 204,
+      "position": [
+        1.2415803670883179,
+        12.396760940551758,
+        1.0608954429626465
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 206,
+      "name": "すそ3_1",
+      "parentIndex": 6,
+      "position": [
+        1.1323838233947754,
+        12.855026245117188,
+        -0.16809827089309692
+      ],
+      "directWeightedVertices": 88,
+      "weightedInfluenceCountIncludingDescendants": 88,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 207,
+      "name": "すそ3End",
+      "parentIndex": 206,
+      "position": [
+        1.1265716552734375,
+        12.34068489074707,
+        -0.1270420253276825
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 208,
+      "name": "すそ4_1",
+      "parentIndex": 6,
+      "position": [
+        -0.0000741995609132573,
+        12.827093124389648,
+        -0.7228253483772278
+      ],
+      "directWeightedVertices": 79,
+      "weightedInfluenceCountIncludingDescendants": 79,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 209,
+      "name": "すそ4End",
+      "parentIndex": 208,
+      "position": [
+        0.0007732343510724604,
+        12.182465553283691,
+        -0.5745142102241516
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 210,
+      "name": "すそ5_1",
+      "parentIndex": 6,
+      "position": [
+        -1.1245380640029907,
+        12.757049560546875,
+        -0.1661704182624817
+      ],
+      "directWeightedVertices": 95,
+      "weightedInfluenceCountIncludingDescendants": 95,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 211,
+      "name": "すそ5End",
+      "parentIndex": 210,
+      "position": [
+        -1.1249792575836182,
+        12.128872871398926,
+        -0.12884551286697388
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 212,
+      "name": "すそ6_1",
+      "parentIndex": 6,
+      "position": [
+        -1.2436387538909912,
+        12.844088554382324,
+        1.058268666267395
+      ],
+      "directWeightedVertices": 100,
+      "weightedInfluenceCountIncludingDescendants": 100,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 213,
+      "name": "すそ6End",
+      "parentIndex": 212,
+      "position": [
+        -1.2412335872650146,
+        12.151473999023438,
+        1.0623507499694824
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 214,
+      "name": "後クローク2_2錘",
+      "parentIndex": 200,
+      "position": [
+        -0.17348092794418335,
+        14.754511833190918,
+        -0.8319388628005981
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 215,
+      "name": "後クローク1_2錘",
+      "parentIndex": 197,
+      "position": [
+        0.09644728899002075,
+        15.030981063842773,
+        -0.9038334488868713
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 216,
+      "name": "横クローク5_2錘",
+      "parentIndex": 194,
+      "position": [
+        -0.509048342704773,
+        14.573893547058105,
+        -0.7576824426651001
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 217,
+      "name": "横クローク4_2錘",
+      "parentIndex": 191,
+      "position": [
+        -0.7626259326934814,
+        14.608528137207031,
+        -0.6389859318733215
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 218,
+      "name": "横クローク3_2錘",
+      "parentIndex": 188,
+      "position": [
+        -0.9754336476325989,
+        14.72493839263916,
+        -0.04008789733052254
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 219,
+      "name": "横クローク2_2錘",
+      "parentIndex": 185,
+      "position": [
+        -1.0221524238586426,
+        14.459568977355957,
+        0.4002927839756012
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 220,
+      "name": "横クローク1_2錘",
+      "parentIndex": 182,
+      "position": [
+        -0.7496041059494019,
+        14.371992111206055,
+        0.515555739402771
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 221,
+      "name": "前クローク2_2錘",
+      "parentIndex": 179,
+      "position": [
+        2.8859877586364746,
+        -78.25547790527344,
+        -5.151335716247559
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 222,
+      "name": "前クローク1_2錘",
+      "parentIndex": 174,
+      "position": [
+        -0.0022435011342167854,
+        14.983773231506348,
+        0.5853148698806763
+      ],
+      "directWeightedVertices": 0,
+      "weightedInfluenceCountIncludingDescendants": 0,
+      "part": null,
+      "grant": null,
+      "ik": null
+    },
+    {
+      "index": 223,
+      "name": "平面",
+      "parentIndex": 9,
+      "position": [
+        1,
+        19,
+        2
+      ],
+      "directWeightedVertices": 4,
+      "weightedInfluenceCountIncludingDescendants": 4,
+      "part": null,
+      "grant": null,
+      "ik": null
+    }
+  ],
+  "morphs": [
+    {
+      "index": 0,
+      "name": "browInnerUp",
+      "type": 1,
+      "count": 44,
+      "part": null
+    },
+    {
+      "index": 1,
+      "name": "browDown",
+      "type": 1,
+      "count": 330,
+      "part": null
+    },
+    {
+      "index": 2,
+      "name": "browDownLeft",
+      "type": 1,
+      "count": 165,
+      "part": null
+    },
+    {
+      "index": 3,
+      "name": "browDownRight",
+      "type": 1,
+      "count": 165,
+      "part": null
+    },
+    {
+      "index": 4,
+      "name": "browOuterUp",
+      "type": 1,
+      "count": 68,
+      "part": null
+    },
+    {
+      "index": 5,
+      "name": "browOuterUpLeft",
+      "type": 1,
+      "count": 34,
+      "part": null
+    },
+    {
+      "index": 6,
+      "name": "browOuterUpRight",
+      "type": 1,
+      "count": 34,
+      "part": null
+    },
+    {
+      "index": 7,
+      "name": "eyeLookUp",
+      "type": 1,
+      "count": 416,
+      "part": null
+    },
+    {
+      "index": 8,
+      "name": "eyeLookUpLeft",
+      "type": 1,
+      "count": 208,
+      "part": null
+    },
+    {
+      "index": 9,
+      "name": "eyeLookUpRight",
+      "type": 1,
+      "count": 208,
+      "part": null
+    },
+    {
+      "index": 10,
+      "name": "eyeLookDown",
+      "type": 1,
+      "count": 370,
+      "part": null
+    },
+    {
+      "index": 11,
+      "name": "eyeLookDownLeft",
+      "type": 1,
+      "count": 185,
+      "part": null
+    },
+    {
+      "index": 12,
+      "name": "eyeLookDownRight",
+      "type": 1,
+      "count": 185,
+      "part": null
+    },
+    {
+      "index": 13,
+      "name": "eyeLookIn",
+      "type": 1,
+      "count": 270,
+      "part": null
+    },
+    {
+      "index": 14,
+      "name": "eyeLookInLeft",
+      "type": 1,
+      "count": 135,
+      "part": null
+    },
+    {
+      "index": 15,
+      "name": "eyeLookInRight",
+      "type": 1,
+      "count": 135,
+      "part": null
+    },
+    {
+      "index": 16,
+      "name": "eyeLookOut",
+      "type": 1,
+      "count": 144,
+      "part": null
+    },
+    {
+      "index": 17,
+      "name": "eyeLookOutLeft",
+      "type": 1,
+      "count": 135,
+      "part": null
+    },
+    {
+      "index": 18,
+      "name": "eyeLookOutRight",
+      "type": 1,
+      "count": 72,
+      "part": null
+    },
+    {
+      "index": 19,
+      "name": "eyeBlink",
+      "type": 1,
+      "count": 795,
+      "part": null
+    },
+    {
+      "index": 20,
+      "name": "eyeBlinkLeft",
+      "type": 1,
+      "count": 397,
+      "part": null
+    },
+    {
+      "index": 21,
+      "name": "eyeBlinkRight",
+      "type": 1,
+      "count": 398,
+      "part": null
+    },
+    {
+      "index": 22,
+      "name": "eyeSquint",
+      "type": 1,
+      "count": 793,
+      "part": null
+    },
+    {
+      "index": 23,
+      "name": "eyeSquintLeft",
+      "type": 1,
+      "count": 396,
+      "part": null
+    },
+    {
+      "index": 24,
+      "name": "eyeSquintRight",
+      "type": 1,
+      "count": 397,
+      "part": null
+    },
+    {
+      "index": 25,
+      "name": "eyeWide",
+      "type": 1,
+      "count": 422,
+      "part": null
+    },
+    {
+      "index": 26,
+      "name": "eyeWideLeft",
+      "type": 1,
+      "count": 212,
+      "part": null
+    },
+    {
+      "index": 27,
+      "name": "eyeWideRight",
+      "type": 1,
+      "count": 210,
+      "part": null
+    },
+    {
+      "index": 28,
+      "name": "cheekPuff",
+      "type": 1,
+      "count": 1287,
+      "part": null
+    },
+    {
+      "index": 29,
+      "name": "cheekSquint",
+      "type": 1,
+      "count": 739,
+      "part": null
+    },
+    {
+      "index": 30,
+      "name": "cheekSquintLeft",
+      "type": 1,
+      "count": 354,
+      "part": null
+    },
+    {
+      "index": 31,
+      "name": "cheekSquintRight",
+      "type": 1,
+      "count": 385,
+      "part": null
+    },
+    {
+      "index": 32,
+      "name": "noseSneer",
+      "type": 1,
+      "count": 330,
+      "part": null
+    },
+    {
+      "index": 33,
+      "name": "noseSneerLeft",
+      "type": 1,
+      "count": 165,
+      "part": null
+    },
+    {
+      "index": 34,
+      "name": "noseSneerRight",
+      "type": 1,
+      "count": 165,
+      "part": null
+    },
+    {
+      "index": 35,
+      "name": "jawOpen",
+      "type": 1,
+      "count": 1139,
+      "part": null
+    },
+    {
+      "index": 36,
+      "name": "jawForward",
+      "type": 1,
+      "count": 388,
+      "part": null
+    },
+    {
+      "index": 37,
+      "name": "jawLeft",
+      "type": 1,
+      "count": 456,
+      "part": null
+    },
+    {
+      "index": 38,
+      "name": "jawRight",
+      "type": 1,
+      "count": 456,
+      "part": null
+    },
+    {
+      "index": 39,
+      "name": "mouthFunnel",
+      "type": 1,
+      "count": 637,
+      "part": null
+    },
+    {
+      "index": 40,
+      "name": "mouthPucker",
+      "type": 1,
+      "count": 306,
+      "part": null
+    },
+    {
+      "index": 41,
+      "name": "mouthLeft",
+      "type": 1,
+      "count": 667,
+      "part": null
+    },
+    {
+      "index": 42,
+      "name": "mouthRight",
+      "type": 1,
+      "count": 667,
+      "part": null
+    },
+    {
+      "index": 43,
+      "name": "mouthRollUpper",
+      "type": 1,
+      "count": 132,
+      "part": null
+    },
+    {
+      "index": 44,
+      "name": "mouthRollLower",
+      "type": 1,
+      "count": 104,
+      "part": null
+    },
+    {
+      "index": 45,
+      "name": "mouthShrug",
+      "type": 1,
+      "count": 543,
+      "part": null
+    },
+    {
+      "index": 46,
+      "name": "mouthShrugUpper",
+      "type": 1,
+      "count": 265,
+      "part": null
+    },
+    {
+      "index": 47,
+      "name": "mouthShrugLower",
+      "type": 1,
+      "count": 278,
+      "part": null
+    },
+    {
+      "index": 48,
+      "name": "mouthClose",
+      "type": 1,
+      "count": 682,
+      "part": null
+    },
+    {
+      "index": 49,
+      "name": "mouthSmile",
+      "type": 1,
+      "count": 473,
+      "part": null
+    },
+    {
+      "index": 50,
+      "name": "mouthSmileLeft",
+      "type": 1,
+      "count": 349,
+      "part": null
+    },
+    {
+      "index": 51,
+      "name": "mouthSmileRight",
+      "type": 1,
+      "count": 349,
+      "part": null
+    },
+    {
+      "index": 52,
+      "name": "mouthFrownLeft",
+      "type": 1,
+      "count": 240,
+      "part": null
+    },
+    {
+      "index": 53,
+      "name": "mouthFrownRight",
+      "type": 1,
+      "count": 240,
+      "part": null
+    },
+    {
+      "index": 54,
+      "name": "mouthDimple",
+      "type": 1,
+      "count": 532,
+      "part": null
+    },
+    {
+      "index": 55,
+      "name": "mouthDimpleLeft",
+      "type": 1,
+      "count": 284,
+      "part": null
+    },
+    {
+      "index": 56,
+      "name": "mouthDimpleRight",
+      "type": 1,
+      "count": 284,
+      "part": null
+    },
+    {
+      "index": 57,
+      "name": "mouthUpperUpLeft",
+      "type": 1,
+      "count": 75,
+      "part": null
+    },
+    {
+      "index": 58,
+      "name": "mouthUpperUpRight",
+      "type": 1,
+      "count": 75,
+      "part": null
+    },
+    {
+      "index": 59,
+      "name": "mouthLowerDownLeft",
+      "type": 1,
+      "count": 102,
+      "part": null
+    },
+    {
+      "index": 60,
+      "name": "mouthLowerDownRight",
+      "type": 1,
+      "count": 102,
+      "part": null
+    },
+    {
+      "index": 61,
+      "name": "mouthPressLeft",
+      "type": 1,
+      "count": 150,
+      "part": null
+    },
+    {
+      "index": 62,
+      "name": "mouthPressRight",
+      "type": 1,
+      "count": 150,
+      "part": null
+    },
+    {
+      "index": 63,
+      "name": "mouthStretchLeft",
+      "type": 1,
+      "count": 487,
+      "part": null
+    },
+    {
+      "index": 64,
+      "name": "mouthStretchRight",
+      "type": 1,
+      "count": 487,
+      "part": null
+    },
+    {
+      "index": 65,
+      "name": "tongueOut",
+      "type": 1,
+      "count": 151,
+      "part": null
+    },
+    {
+      "index": 66,
+      "name": "jawOpen+mouthClose",
+      "type": 1,
+      "count": 1066,
+      "part": null
+    },
+    {
+      "index": 67,
+      "name": "真面目",
+      "type": 1,
+      "count": 140,
+      "part": null
+    },
+    {
+      "index": 68,
+      "name": "困る",
+      "type": 1,
+      "count": 158,
+      "part": null
+    },
+    {
+      "index": 69,
+      "name": "にこり",
+      "type": 1,
+      "count": 118,
+      "part": null
+    },
+    {
+      "index": 70,
+      "name": "怒り",
+      "type": 1,
+      "count": 125,
+      "part": null
+    },
+    {
+      "index": 71,
+      "name": "brow_laugh_geo_L",
+      "type": 1,
+      "count": 35,
+      "part": null
+    },
+    {
+      "index": 72,
+      "name": "brow_laugh_geo_R",
+      "type": 1,
+      "count": 35,
+      "part": null
+    },
+    {
+      "index": 73,
+      "name": "brow_surprise_geo_",
+      "type": 1,
+      "count": 35,
+      "part": null
+    },
+    {
+      "index": 74,
+      "name": "brow_surprise_geo_.001",
+      "type": 1,
+      "count": 35,
+      "part": null
+    },
+    {
+      "index": 75,
+      "name": "brow_sad_geo_L",
+      "type": 1,
+      "count": 35,
+      "part": null
+    },
+    {
+      "index": 76,
+      "name": "brow_sad_geo_R",
+      "type": 1,
+      "count": 35,
+      "part": null
+    },
+    {
+      "index": 77,
+      "name": "brow_ridicule_geo_",
+      "type": 1,
+      "count": 35,
+      "part": null
+    },
+    {
+      "index": 78,
+      "name": "brow_ridicule_geo_.001",
+      "type": 1,
+      "count": 35,
+      "part": null
+    },
+    {
+      "index": 79,
+      "name": "brow_angry_geo_L",
+      "type": 1,
+      "count": 36,
+      "part": null
+    },
+    {
+      "index": 80,
+      "name": "brow_angry_geo_R",
+      "type": 1,
+      "count": 35,
+      "part": null
+    },
+    {
+      "index": 81,
+      "name": "困り",
+      "type": 1,
+      "count": 158,
+      "part": null
+    },
+    {
+      "index": 82,
+      "name": "困り左",
+      "type": 1,
+      "count": 35,
+      "part": null
+    },
+    {
+      "index": 83,
+      "name": "困り右",
+      "type": 1,
+      "count": 35,
+      "part": null
+    },
+    {
+      "index": 84,
+      "name": "上",
+      "type": 1,
+      "count": 118,
+      "part": null
+    },
+    {
+      "index": 85,
+      "name": "下",
+      "type": 1,
+      "count": 70,
+      "part": null
+    },
+    {
+      "index": 86,
+      "name": "怒り左",
+      "type": 1,
+      "count": 35,
+      "part": null
+    },
+    {
+      "index": 87,
+      "name": "怒り右",
+      "type": 1,
+      "count": 35,
+      "part": null
+    },
+    {
+      "index": 88,
+      "name": "まばたき",
+      "type": 1,
+      "count": 795,
+      "part": null
+    },
+    {
+      "index": 89,
+      "name": "笑い",
+      "type": 1,
+      "count": 793,
+      "part": null
+    },
+    {
+      "index": 90,
+      "name": "ウィンク",
+      "type": 1,
+      "count": 396,
+      "part": null
+    },
+    {
+      "index": 91,
+      "name": "ウィンク右",
+      "type": 1,
+      "count": 397,
+      "part": null
+    },
+    {
+      "index": 92,
+      "name": "ウィンク２",
+      "type": 1,
+      "count": 397,
+      "part": null
+    },
+    {
+      "index": 93,
+      "name": "ｳｨﾝｸ２右",
+      "type": 1,
+      "count": 398,
+      "part": null
+    },
+    {
+      "index": 94,
+      "name": "びっくり",
+      "type": 1,
+      "count": 422,
+      "part": null
+    },
+    {
+      "index": 95,
+      "name": "じと目",
+      "type": 1,
+      "count": 542,
+      "part": null
+    },
+    {
+      "index": 96,
+      "name": "なぬ！",
+      "type": 1,
+      "count": 1180,
+      "part": null
+    },
+    {
+      "index": 97,
+      "name": "瞳小",
+      "type": 1,
+      "count": 516,
+      "part": null
+    },
+    {
+      "index": 98,
+      "name": "キラキラ目",
+      "type": 1,
+      "count": 132,
+      "part": null
+    },
+    {
+      "index": 99,
+      "name": "HLなし",
+      "type": 1,
+      "count": 196,
+      "part": null
+    },
+    {
+      "index": 100,
+      "name": "ぐるぐる",
+      "type": 1,
+      "count": 1096,
+      "part": null
+    },
+    {
+      "index": 101,
+      "name": "ｺｯﾁﾐﾝﾅ",
+      "type": 1,
+      "count": 970,
+      "part": null
+    },
+    {
+      "index": 102,
+      "name": "eye_wink_geo_L",
+      "type": 1,
+      "count": 268,
+      "part": null
+    },
+    {
+      "index": 103,
+      "name": "eye_wink_geo_R",
+      "type": 1,
+      "count": 268,
+      "part": null
+    },
+    {
+      "index": 104,
+      "name": "eye_close_geo_L",
+      "type": 1,
+      "count": 269,
+      "part": null
+    },
+    {
+      "index": 105,
+      "name": "eye_close_geo_R",
+      "type": 1,
+      "count": 269,
+      "part": null
+    },
+    {
+      "index": 106,
+      "name": "eye_surprise_geo_L",
+      "type": 1,
+      "count": 167,
+      "part": null
+    },
+    {
+      "index": 107,
+      "name": "eye_surprise_geo_R",
+      "type": 1,
+      "count": 167,
+      "part": null
+    },
+    {
+      "index": 108,
+      "name": "eye_sad_geo_L",
+      "type": 1,
+      "count": 250,
+      "part": null
+    },
+    {
+      "index": 109,
+      "name": "eye_sad_geo_R",
+      "type": 1,
+      "count": 250,
+      "part": null
+    },
+    {
+      "index": 110,
+      "name": "eye_angry_geo_L",
+      "type": 1,
+      "count": 159,
+      "part": null
+    },
+    {
+      "index": 111,
+      "name": "eye_angry_geo_R",
+      "type": 1,
+      "count": 159,
+      "part": null
+    },
+    {
+      "index": 112,
+      "name": "eye_downcast_geo_L",
+      "type": 1,
+      "count": 213,
+      "part": null
+    },
+    {
+      "index": 113,
+      "name": "eye_downcast_geo_R",
+      "type": 1,
+      "count": 210,
+      "part": null
+    },
+    {
+      "index": 114,
+      "name": "eye_star_geo_C",
+      "type": 1,
+      "count": 132,
+      "part": null
+    },
+    {
+      "index": 115,
+      "name": "見開き",
+      "type": 1,
+      "count": 422,
+      "part": null
+    },
+    {
+      "index": 116,
+      "name": "驚き",
+      "type": 1,
+      "count": 516,
+      "part": null
+    },
+    {
+      "index": 117,
+      "name": "星目",
+      "type": 1,
+      "count": 132,
+      "part": null
+    },
+    {
+      "index": 118,
+      "name": "しいたけ",
+      "type": 1,
+      "count": 132,
+      "part": null
+    },
+    {
+      "index": 119,
+      "name": "絶望目",
+      "type": 1,
+      "count": 1096,
+      "part": null
+    },
+    {
+      "index": 120,
+      "name": "まば左",
+      "type": 1,
+      "count": 397,
+      "part": null
+    },
+    {
+      "index": 121,
+      "name": "まば右",
+      "type": 1,
+      "count": 398,
+      "part": null
+    },
+    {
+      "index": 122,
+      "name": "グル目",
+      "type": 1,
+      "count": 1096,
+      "part": null
+    },
+    {
+      "index": 123,
+      "name": "あ",
+      "type": 1,
+      "count": 910,
+      "part": null
+    },
+    {
+      "index": 124,
+      "name": "い",
+      "type": 1,
+      "count": 880,
+      "part": null
+    },
+    {
+      "index": 125,
+      "name": "う",
+      "type": 1,
+      "count": 839,
+      "part": null
+    },
+    {
+      "index": 126,
+      "name": "え",
+      "type": 1,
+      "count": 921,
+      "part": null
+    },
+    {
+      "index": 127,
+      "name": "お",
+      "type": 1,
+      "count": 927,
+      "part": null
+    },
+    {
+      "index": 128,
+      "name": "おお~",
+      "type": 1,
+      "count": 926,
+      "part": null
+    },
+    {
+      "index": 129,
+      "name": "ワ",
+      "type": 1,
+      "count": 939,
+      "part": null
+    },
+    {
+      "index": 130,
+      "name": "∧",
+      "type": 1,
+      "count": 634,
+      "part": null
+    },
+    {
+      "index": 131,
+      "name": "はんっ！",
+      "type": 1,
+      "count": 823,
+      "part": null
+    },
+    {
+      "index": 132,
+      "name": "えー",
+      "type": 1,
+      "count": 982,
+      "part": null
+    },
+    {
+      "index": 133,
+      "name": "にやり",
+      "type": 1,
+      "count": 385,
+      "part": null
+    },
+    {
+      "index": 134,
+      "name": "mouth_a_geo_C",
+      "type": 1,
+      "count": 896,
+      "part": null
+    },
+    {
+      "index": 135,
+      "name": "mouth_i_geo_C",
+      "type": 1,
+      "count": 870,
+      "part": null
+    },
+    {
+      "index": 136,
+      "name": "mouth_u_geo_C",
+      "type": 1,
+      "count": 831,
+      "part": null
+    },
+    {
+      "index": 137,
+      "name": "mouth_e_geo_C",
+      "type": 1,
+      "count": 901,
+      "part": null
+    },
+    {
+      "index": 138,
+      "name": "mouth_o_geo_C",
+      "type": 1,
+      "count": 907,
+      "part": null
+    },
+    {
+      "index": 139,
+      "name": "mouth_oh_geo_C",
+      "type": 1,
+      "count": 908,
+      "part": null
+    },
+    {
+      "index": 140,
+      "name": "mouth_smile_geo_C",
+      "type": 1,
+      "count": 919,
+      "part": null
+    },
+    {
+      "index": 141,
+      "name": "mouth_angry_geo_C",
+      "type": 1,
+      "count": 624,
+      "part": null
+    },
+    {
+      "index": 142,
+      "name": "mouth_sad_geo_C",
+      "type": 1,
+      "count": 427,
+      "part": null
+    },
+    {
+      "index": 143,
+      "name": "mouth_flat_geo_C",
+      "type": 1,
+      "count": 346,
+      "part": null
+    },
+    {
+      "index": 144,
+      "name": "mouth_surprise_geo",
+      "type": 1,
+      "count": 954,
+      "part": null
+    },
+    {
+      "index": 145,
+      "name": "mouth_ridicule_geo",
+      "type": 1,
+      "count": 809,
+      "part": null
+    },
+    {
+      "index": 146,
+      "name": "mouth_laugh_geo_C",
+      "type": 1,
+      "count": 371,
+      "part": null
+    },
+    {
+      "index": 147,
+      "name": "にっこり",
+      "type": 1,
+      "count": 385,
+      "part": null
+    },
+    {
+      "index": 148,
+      "name": "口締め",
+      "type": 1,
+      "count": 346,
+      "part": null
+    },
+    {
+      "index": 149,
+      "name": "ああ",
+      "type": 1,
+      "count": 910,
+      "part": null
+    },
+    {
+      "index": 150,
+      "name": "いい",
+      "type": 1,
+      "count": 880,
+      "part": null
+    },
+    {
+      "index": 151,
+      "name": "にたり",
+      "type": 1,
+      "count": 809,
+      "part": null
+    },
+    {
+      "index": 152,
+      "name": "結び",
+      "type": 1,
+      "count": 427,
+      "part": null
+    },
+    {
+      "index": 153,
+      "name": "む",
+      "type": 1,
+      "count": 624,
+      "part": null
+    },
+    {
+      "index": 154,
+      "name": "頬照り",
+      "type": 1,
+      "count": 126,
+      "part": null
+    },
+    {
+      "index": 155,
+      "name": "頬斜線消し",
+      "type": 1,
+      "count": 53,
+      "part": null
+    },
+    {
+      "index": 156,
+      "name": "頬全消し",
+      "type": 1,
+      "count": 291,
+      "part": null
+    },
+    {
+      "index": 157,
+      "name": "頬赤み消し",
+      "type": 1,
+      "count": 238,
+      "part": null
+    },
+    {
+      "index": 158,
+      "name": "笑顔(総",
+      "type": 1,
+      "count": 1850,
+      "part": null
+    },
+    {
+      "index": 159,
+      "name": "驚き(総",
+      "type": 1,
+      "count": 2038,
+      "part": null
+    },
+    {
+      "index": 160,
+      "name": "怒り（総",
+      "type": 1,
+      "count": 1206,
+      "part": null
+    },
+    {
+      "index": 161,
+      "name": "悲しい（総",
+      "type": 1,
+      "count": 1373,
+      "part": null
+    },
+    {
+      "index": 162,
+      "name": "とじ目(総",
+      "type": 1,
+      "count": 1207,
+      "part": null
+    },
+    {
+      "index": 163,
+      "name": "じと目(総",
+      "type": 1,
+      "count": 1523,
+      "part": null
+    },
+    {
+      "index": 164,
+      "name": "キメ顔(総",
+      "type": 1,
+      "count": 477,
+      "part": null
+    },
+    {
+      "index": 165,
+      "name": "困り顔（総",
+      "type": 1,
+      "count": 898,
+      "part": null
+    },
+    {
+      "index": 166,
+      "name": "にっこり口(総",
+      "type": 1,
+      "count": 1178,
+      "part": null
+    },
+    {
+      "index": 167,
+      "name": "右袖縮小",
+      "type": 1,
+      "count": 314,
+      "part": null
+    },
+    {
+      "index": 168,
+      "name": "髪留なし",
+      "type": 1,
+      "count": 192,
+      "part": null
+    },
+    {
+      "index": 169,
+      "name": "tooth_up_geo_C",
+      "type": 1,
+      "count": 102,
+      "part": null
+    },
+    {
+      "index": 170,
+      "name": "tooth_down_geo_C",
+      "type": 1,
+      "count": 102,
+      "part": null
+    },
+    {
+      "index": 171,
+      "name": "tooth_upDown_geo_C",
+      "type": 1,
+      "count": 204,
+      "part": null
+    },
+    {
+      "index": 172,
+      "name": "pupil_decrease_geo",
+      "type": 1,
+      "count": 516,
+      "part": null
+    },
+    {
+      "index": 173,
+      "name": "cheek_blush_geo_C",
+      "type": 1,
+      "count": 126,
+      "part": null
+    },
+    {
+      "index": 174,
+      "name": "mabatakiparts",
+      "type": 1,
+      "count": 30,
+      "part": null
+    },
+    {
+      "index": 175,
+      "name": "照れ",
+      "type": 1,
+      "count": 126,
+      "part": null
+    },
+    {
+      "index": 176,
+      "name": "赤み",
+      "type": 1,
+      "count": 126,
+      "part": null
+    },
+    {
+      "index": 177,
+      "name": "青ざめ",
+      "type": 8,
+      "count": 1,
+      "part": null
+    },
+    {
+      "index": 178,
+      "name": "どんより",
+      "type": 8,
+      "count": 1,
+      "part": null
+    },
+    {
+      "index": 179,
+      "name": "いらいら",
+      "type": 8,
+      "count": 1,
+      "part": null
+    },
+    {
+      "index": 180,
+      "name": "メッシュなし",
+      "type": 3,
+      "count": 6747,
+      "part": null
+    },
+    {
+      "index": 181,
+      "name": "叫び",
+      "type": 0,
+      "count": 2,
+      "part": null
+    },
+    {
+      "index": 182,
+      "name": "あーれー",
+      "type": 0,
+      "count": 1,
+      "part": null
+    },
+    {
+      "index": 183,
+      "name": "口わらい",
+      "type": 0,
+      "count": 1,
+      "part": null
+    }
+  ],
+  "verifiedParts": [
+    "head",
+    "neck",
+    "left-arm",
+    "right-arm",
+    "torso",
+    "legs"
+  ],
+  "unknownParts": [
+    "eyes-brows",
+    "mouth"
+  ],
+  "coupling": "Recorded dependencies do not prove a complete safe compositing closure. Other models/duplicate/unmapped targets stay unknown.",
+  "provenance": {
+    "source": "MMDAgent-EX Gene",
+    "revision": "c7eace43dffaccff6ad0597433ef85fa57c91e03",
+    "originalModel": "Gene.pmx",
+    "normalizedModel": "assets/bundled/mmdagent-ex/gene/c7eace43dffaccff6ad0597433ef85fa57c91e03/model/gene.pmx",
+    "url": "https://github.com/mmdagent-ex/gene/tree/c7eace43dffaccff6ad0597433ef85fa57c91e03",
+    "license": {
+      "id": "CC-BY-4.0",
+      "url": "https://creativecommons.org/licenses/by/4.0/",
+      "attribution": "CG-CA Gene (c) 2023 by Nagoya Institute of Technology, Moonshot R&D Goal 1 Avatar Symbiotic Society"
+    },
+    "modification": "Readonly derived structural metadata; original PMX/VMD and third-party notices unchanged. Asset-derived data retains CC BY4.0, not the code MIT license."
+  }
+}

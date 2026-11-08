@@ -1,0 +1,11 @@
+Youngwoo Yoon, Pieter Wolfert, Taras Kucherenko, Carla Viegas, Teodor Nikolov, Mihail Tsakov, and Gustav Eje Henter. 2022. The GENEA Challenge 2022: A large evaluation of data-driven co-speech gesture generation. Proceedings of ACM ICMI 2022.
+
+CC BY 4.0: https://creativecommons.org/licenses/by/4.0/
+Source: https://zenodo.org/records/6977157
+Content revision: 78e7cf914e0679d94fe24410452e4f63e4860ccf
+
+BVH→VMD：从 FSB 的合格生成手势中截取两段并重定向 Gene 上半身，转为 30 FPS、固定根位移并平滑接缝。
+CC BY 4.0 subset only. FNA and UNA (CC BY-NC 4.0) are excluded. Body gestures only; no audio, face or finger articulation.
+
+Only motion data is included. Music, video, preview characters and stages are not included.
+English filenames, categories and descriptive tags do not create automatic moods or behaviors.

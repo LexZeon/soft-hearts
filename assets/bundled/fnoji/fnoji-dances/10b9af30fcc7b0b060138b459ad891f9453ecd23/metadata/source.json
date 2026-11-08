@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "packId": "fnoji-dances",
+  "revision": "10b9af30fcc7b0b060138b459ad891f9453ecd23",
+  "revisionKind": "sha256-of-reviewed-motion-descriptors-and-conversion-provenance-first-40-hex",
+  "source": "fnoji",
+  "sourceUrl": "https://booth.pm/ja/items/8103074",
+  "license": {
+    "id": "CC-BY-4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/",
+    "attribution": "Split Dance motion by fnoji (えふのじ), licensed under CC BY 4.0. Source: https://www.nicovideo.jp/watch/sm46039479"
+  },
+  "modifications": "Split Dance 原始 VMD 内容未改写，仅使用英文文件名、分类与 tags。",
+  "compatibilityNote": "Manual full-body dance. Model-specific clothing, hair and morph tracks may be ignored by Gene. No music, audio, video, model or stage is distributed.",
+  "geneModelRevision": "c7eace43dffaccff6ad0597433ef85fa57c91e03",
+  "motions": [
+    {
+      "id": "split-dance",
+      "name": "Split Dance",
+      "category": "dance",
+      "tags": [
+        "mmd",
+        "vmd",
+        "gene",
+        "fnoji",
+        "dance",
+        "short",
+        "manual",
+        "full-body"
+      ],
+      "relativePath": "motions/dance/split-dance.vmd",
+      "originalPath": "Split_Dance.vmd",
+      "downloadUrl": "https://drive.google.com/uc?export=download&id=1uX0kPi3zuOaOikoObw5rudYvmkItDqqT",
+      "sha256": "1857b2a763dec95f46666ade8d7fef9ef36ed0310178809f5b2fff214eb240f3",
+      "bytes": 1973515,
+      "durationFrames": 306,
+      "boneFrames": 17769,
+      "morphFrames": 43,
+      "provenance": {
+        "originalPath": "Split_Dance.vmd",
+        "sourceUrl": "https://www.nicovideo.jp/watch/sm46039479",
+        "downloadUrl": "https://drive.google.com/uc?export=download&id=1uX0kPi3zuOaOikoObw5rudYvmkItDqqT",
+        "originalSha256": "1857b2a763dec95f46666ade8d7fef9ef36ed0310178809f5b2fff214eb240f3",
+        "originalBytes": 1973515,
+        "modifications": "English filename only; original VMD bytes unchanged."
+      }
+    }
+  ]
+}

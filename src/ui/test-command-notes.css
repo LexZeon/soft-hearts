@@ -1,0 +1,5 @@
+.test-command-note { margin: 6px 0; padding: 6px 10px; border-left: 2px solid #b7dfcc66; border-radius: 4px; color: #a9bac0; font-size: 12px; line-height: 1.6; background: #1b283020; pointer-events: auto; }
+.test-command-note__user { color: #c4d5cb; overflow-wrap: anywhere; white-space: pre-wrap; }
+.test-command-note__line { color: #a9bac0; font-size: 11px; overflow-wrap: anywhere; white-space: pre-wrap; }
+.pet-chat .test-command-note { margin: 0 0 6px; max-height: 240px; overflow: auto; background: #1b2830f2; box-shadow: 0 8px 28px #0004; }
+.pet-chat:has(.test-command-note) { opacity: 1; pointer-events: auto; transform: none; }

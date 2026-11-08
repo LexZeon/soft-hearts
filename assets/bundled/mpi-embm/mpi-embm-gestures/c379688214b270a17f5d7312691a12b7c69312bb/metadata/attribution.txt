@@ -1,0 +1,11 @@
+Volkova, Ekaterina (2014). MPI EMBM Database Mocap Files. figshare. Dataset. https://doi.org/10.6084/m9.figshare.1220428.v1
+
+CC BY 4.0: https://creativecommons.org/licenses/by/4.0/
+Source: https://figshare.com/articles/dataset/MPI_EMBM_Database_Mocap_Files/1220428
+Content revision: c379688214b270a17f5d7312691a12b7c69312bb
+
+BVH→VMD：截取会话片段并重定向 Gene 上半身，保留站姿下肢、固定根位移、转为 30 FPS 并平滑接缝。添加英文命名与 tags。
+Gene upper-body gestures from seated body captures. No facial expressions or finger articulation; emotion tags describe source labels, not an automatic mood system.
+
+Only motion data is included. Music, video, preview characters and stages are not included.
+English filenames, categories and descriptive tags do not create automatic moods or behaviors.

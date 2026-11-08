@@ -1,0 +1,701 @@
+{
+  "version": 1,
+  "server": { "name": "soft-hearts-next", "title": "soft hearts" },
+  "tools": [
+    {
+      "name": "get_status",
+      "title": "读取状态",
+      "tier": "read",
+      "description": "读取 soft hearts 当前状态：版本、当前角色、模型名、语音方案、是否朗读回复、桌宠和控制窗口是否可见。不含聊天内容、路径和密钥。",
+      "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false }
+    },
+    {
+      "name": "get_her_state",
+      "title": "看看她现在怎么样",
+      "tier": "read",
+      "description": "读她此刻的状态，用白话说：心情（标签，加“轻/中/强”）、困不困、正在做的事、上次和用户互动（聊天、摸头、喂东西）是多久以前。只读；不含聊天、日记、画像的任何文字，也不给原始数字。用户问“她现在心情怎么样、在干嘛”时用它；说话前再读一次，别沿用旧的。",
+      "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false }
+    },
+    {
+      "name": "list_characters",
+      "title": "列出角色卡",
+      "tier": "read",
+      "description": "列出角色卡：id、名字、关联的模型名、是否为当前角色。不含角色卡正文。",
+      "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false }
+    },
+    {
+      "name": "list_settings",
+      "title": "列出可调设置",
+      "tier": "read",
+      "description": "列出可以通过 set_setting 调整的设置：中文名、一句说明、当前值、允许的取值（带中文名）或数值范围和单位、权限级别。不含密钥。用户的要求不明确时，先用它把选项列给用户选。",
+      "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false }
+    },
+    {
+      "name": "read_handbook",
+      "title": "翻手册",
+      "tier": "read",
+      "description": "翻 soft hearts 的手册（从功能清单自动生成）。不带 category：规则和分类目录（每类有几项、几项能通过通道改、几项需要用户原话、几项还不能、几项不开放）。带 category：这一类的每一项——现在的值、取值、怎么读、怎么改、要不要用户原话（needsUserWords）、能不能对她说。改任何设置前先翻这里；手册里写着“还不能”的，请告诉用户去设置界面哪里改。",
+      "inputSchema": {
+        "type": "object",
+        "properties": { "category": { "type": "string", "enum": ["window", "chat", "characters", "appearance", "memory", "providers", "agent", "privacy"], "description": "window 桌宠与预览、chat 陪伴对话、characters 角色、appearance 模型与镜头、memory 聊天记忆、providers 连接与声音、agent Claude 任务、privacy 隐私与设置" } },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_diagnostics",
+      "title": "读取诊断数字",
+      "tier": "read",
+      "description": "读取只有数字的诊断摘要：最近几次回复的延迟（毫秒，只在开发者模式下记录）、主进程内存、运行时长、桌宠窗口诊断条数。从不包含聊天文字。",
+      "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false }
+    },
+    {
+      "name": "activate_character",
+      "title": "切换角色",
+      "tier": "reversible",
+      "description": "切换到另一张角色卡（id 来自 list_characters）。会在 soft hearts 里显示“由 Claude 操作”。",
+      "inputSchema": {
+        "type": "object",
+        "properties": { "id": { "type": "string", "description": "角色卡 id（UUID）" } },
+        "required": ["id"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "set_read_aloud",
+      "title": "朗读开关",
+      "tier": "reversible",
+      "description": "打开或关闭“朗读回复”。只改开关，不切换语音方案。",
+      "inputSchema": {
+        "type": "object",
+        "properties": { "state": { "type": "string", "enum": ["on", "off"] } },
+        "required": ["state"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "set_setting",
+      "title": "调整设置",
+      "tier": "reversible",
+      "description": "把一项设置改成新值。id 和允许的值以 list_settings 为准；数值设置用整数，单位见 list_settings。只在用户本人要求时调用；之后可以用 undo_last_action 改回原来的值。打开语音输入（voice_input true）、下载或删除本机语音识别（local_asr）、打开更真实的情绪这类需要用户同意的：三方互通打开时要带上 userWords（用户的原话），没有就不执行；read_handbook 里 needsUserWords 为 true 的都是。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "enum": ["read_aloud", "readout_volume", "pet_visible", "always_on_top", "follow_mouse", "breath", "fps", "slow_warm_up", "realer_emotions", "experience_journal", "voice_provider", "recycle_bin_days", "voice_input", "local_asr", "click_through", "ui_language", "developer_mode", "music_strength", "music_always_dance", "voice_rate", "voice_mood_influence", "voice_first_chunk", "pause_talk", "chat_model", "proactive_vision", "feed_recognition", "pose_sensing", "physics_hair", "physics_chest", "physics_quality", "mood_judge", "user_activity", "new_reactions", "proactive_talk"] },
+          "value": { "description": "布尔、整数或枚举值，见 list_settings" },
+          "userWords": { "type": "string", "maxLength": 2000, "description": "三方互通打开时必填：用户在这次对话里说的原话，原样复制（不要改写，不要替用户编）。没有原话就先问用户。三方互通关着时可以省略（会弹窗确认）。" }
+        },
+        "required": ["id", "value"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "play_preview",
+      "title": "播放表情试作",
+      "tier": "reversible",
+      "description": "在控制窗口的模型预览里播放现有的手动试作：surprise（惊喜）或 shy（害羞）。需要控制窗口正在显示模型预览。",
+      "inputSchema": {
+        "type": "object",
+        "properties": { "kind": { "type": "string", "enum": ["surprise", "shy"] } },
+        "required": ["kind"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "list_model_capabilities",
+      "title": "看这个模型能做什么",
+      "tier": "read",
+      "description": "现在载入的模型能做什么（角色页「这个模型能做什么」那张表）：每一项（closeEyes 能闭眼、blush 能脸红、mouth 有口型、sleepPose 能做睡姿、gesture 能做手势、drowsyFace 困的脸、tears 能流泪）有没有、怎么认出来的（name 名字认出 / haiku 认出 / none 没找到）、用户的选择和现在开没开。不含部位名字和文件路径。",
+      "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false }
+    },
+    {
+      "name": "set_model_capability",
+      "title": "开关这个模型的一项能力",
+      "tier": "reversible",
+      "description": "在角色页「这个模型能做什么」里打开或关掉一项，只对现在载入的模型，存在本机，不改模型文件。关一定关；模型没有的打不开（先用 list_model_capabilities 看）。之后可以用 undo_last_action 改回去。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "enum": ["closeEyes", "blush", "mouth", "sleepPose", "gesture", "drowsyFace", "tears"] },
+          "value": { "type": "string", "enum": ["on", "off"] }
+        },
+        "required": ["id", "value"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "try_model_capability",
+      "title": "让她试一下这一项",
+      "tier": "reversible",
+      "description": "在桌宠上把这一项演一次（闭眼、脸红、张嘴、睡姿、挥手、困的脸、流泪），演完回到原样，什么都不保存。需要桌宠显示着；她正忙着别的时会说还没准备好。",
+      "inputSchema": {
+        "type": "object",
+        "properties": { "id": { "type": "string", "enum": ["closeEyes", "blush", "mouth", "sleepPose", "gesture", "drowsyFace", "tears"] } },
+        "required": ["id"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "play_her_action",
+      "title": "让她做一个小动作",
+      "tier": "reversible",
+      "description": "让桌宠做七个小动作之一，只做一次，什么都不保存：wave 挥手打招呼、nod 点头、tilt 歪头、heart 双手比心、clap 鼓掌、wink 眨一只眼、pout 撅嘴。只有这七个；不能借它让她说话或改设置。要用户想看或你在跟用户一起玩的时候用，别当装饰刷屏。这个模型做不了（缺什么部位会写在 note 和 missing 里）、她正在睡觉/被摸头/别的互动里、用户关了她的自动表现，都不会做，返回 played:false 和原因，不要硬试。撅嘴要等她说完话，会返回 status:waiting 并自己做。需要桌宠显示着。",
+      "inputSchema": {
+        "type": "object",
+        "properties": { "action": { "type": "string", "enum": ["wave", "nod", "tilt", "heart", "clap", "wink", "pout"] } },
+        "required": ["action"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "set_reaction_dispositions",
+      "title": "调她的反应倾向",
+      "tier": "reversible",
+      "description": "改当前角色的六项反应倾向（0～100 的整数，50 一般）：shy 害羞（被夸、被摸头、被捏脸时多容易脸红、低头害羞）、clingy 黏人（撒娇、比心这类亲近的反应）、lively 活泼（鼓掌、挥手、眨眼、歪头这些小动作）、soothable 好哄（被关心、听到好消息多容易开心）、volatile 情绪起伏（反应来得多快多大）、restrained 克制（把反应收着，动作少、表情轻）。可以只给其中几项；reset:true 回到按角色卡推算的值。只属于当前角色，存在本机，不写进角色卡；返回改之前和之后的值，之后可以用 undo_last_action 改回去。要和用户一起定、用户同意了再改，别自己拍脑袋。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "shy": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "clingy": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "lively": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "soothable": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "volatile": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "restrained": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "reset": { "type": "boolean", "description": "true：回到按角色卡推算的值（不能和六项同时给）" }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "show_pet",
+      "title": "显示桌宠",
+      "tier": "reversible",
+      "description": "让桌宠窗口显示出来（等同控制窗口里打开“显示桌宠”）。",
+      "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false }
+    },
+    {
+      "name": "undo_last_action",
+      "title": "撤回上一步",
+      "tier": "reversible",
+      "description": "撤回 Claude 最近一次能撤回的操作（30 分钟内）：改设置、切换角色、显示桌宠、载入模型、开关感知、删除记忆（从回收站放回）。那一项之后又被改过时不会覆盖，返回说明。导入角色卡、原地更新角色卡、关联模型和试听不能这样撤回。",
+      "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false }
+    },
+    {
+      "name": "set_perception",
+      "title": "开关感知",
+      "tier": "reversible",
+      "interconnectOnly": true,
+      "description": "打开或关闭一项感知：camera（摄像头）、microphone（麦克风语音输入）、screen（屏幕共享）、system_audio（电脑声音，purpose 是 music 陪听音乐或 movie 陪看视频，默认 music）。默认都是关的，只在用户本人明确要求时打开：打开要带上 userWords（用户的原话），没有就不执行；关掉随时可以，不需要原话。只在“三方互通”打开时开放，和用户自己在桌宠上点开关走同一条路。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string", "enum": ["camera", "microphone", "screen", "system_audio"] },
+          "state": { "type": "string", "enum": ["on", "off"] },
+          "purpose": { "type": "string", "enum": ["music", "movie"], "description": "只用于 system_audio；关掉时省略表示两种都关" },
+          "userWords": { "type": "string", "maxLength": 2000, "description": "打开感知时必填（三方互通打开时）：用户在这次对话里说的原话，原样复制。关掉不需要。" }
+        },
+        "required": ["kind", "state"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "import_character_card",
+      "title": "导入角色卡",
+      "tier": "confirm",
+      "description": "导入一张角色卡 JSON（本机绝对路径，不超过 1 MB）。只在用户本人要求时调用。三方互通打开时（默认）要带上 userWords（用户的原话），有就直接导入，soft hearts 上会显示“由 Claude 操作”；关掉时会弹窗显示文件名，用户点“允许”后才导入，60 秒不回应视为拒绝。导入不授予任何文件或执行权限。",
+      "inputSchema": {
+        "type": "object",
+        "properties": { "path": { "type": "string", "description": "角色卡 .json 文件的绝对路径" },
+          "userWords": { "type": "string", "maxLength": 2000, "description": "三方互通打开时必填：用户在这次对话里说的原话，原样复制（不要改写，不要替用户编）。没有原话就先问用户。三方互通关着时可以省略（会弹窗确认）。" }
+        },
+        "required": ["path", "userWords"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "update_character_card",
+      "title": "用角色卡文件更新角色",
+      "tier": "confirm",
+      "description": "用一张角色卡 JSON（本机绝对路径，不超过 1 MB；soft hearts v1～v3 或 Tavern）原地更新一个已有角色（id 来自 list_characters）：还是同一个她，编号、模型和头像不变，她的聊天、日记、画像、熟悉度和昵称都保留。人设文字以文件为准；文件里有心情模板、“关系慢慢升温”或反应细调才换，没有就保留她现在的。更新前先备份角色卡存档。只在用户本人要求时调用。三方互通打开时（默认）要带上 userWords（用户的原话），有就直接更新，soft hearts 上会显示“由 Claude 操作”；关掉时会弹窗写明文件、角色和改了什么（名字不同会醒目提示），用户点“允许”后才更新，60 秒不回应视为拒绝。不要用它导入新角色（那是 import_character_card）。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": "要更新的角色卡 id（UUID，来自 list_characters）" },
+          "path": { "type": "string", "description": "角色卡 .json 文件的绝对路径" },
+          "userWords": { "type": "string", "maxLength": 2000, "description": "三方互通打开时必填：用户在这次对话里说的原话，原样复制（不要改写，不要替用户编）。没有原话就先问用户。三方互通关着时可以省略（会弹窗确认）。" }
+        },
+        "required": ["id", "path", "userWords"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "load_model",
+      "title": "载入模型",
+      "tier": "confirm",
+      "description": "载入一个本机 MMD 模型（.pmx 或 .pmd 的绝对路径，贴图留在原目录），会替换当前模型并清除当前动作；之后可以用 undo_last_action 换回原来的模型。只在用户本人要求时调用。三方互通打开时（默认）要带上 userWords（用户的原话），有就直接载入，soft hearts 上会显示“由 Claude 操作”；关掉时用户在弹窗里点“允许”后才载入。",
+      "inputSchema": {
+        "type": "object",
+        "properties": { "path": { "type": "string", "description": ".pmx 或 .pmd 文件的绝对路径" },
+          "userWords": { "type": "string", "maxLength": 2000, "description": "三方互通打开时必填：用户在这次对话里说的原话，原样复制（不要改写，不要替用户编）。没有原话就先问用户。三方互通关着时可以省略（会弹窗确认）。" }
+        },
+        "required": ["path", "userWords"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "bind_current_model_to_character",
+      "title": "把当前模型关联到角色",
+      "tier": "confirm",
+      "description": "把当前载入的模型关联到一张角色卡（切换到该角色时自动载入这个模型）。只在用户本人要求时调用。三方互通打开时（默认）要带上 userWords（用户的原话），有就直接关联并提示；关掉时用户确认后才执行。",
+      "inputSchema": {
+        "type": "object",
+        "properties": { "id": { "type": "string", "description": "角色卡 id（UUID）" },
+          "userWords": { "type": "string", "maxLength": 2000, "description": "三方互通打开时必填：用户在这次对话里说的原话，原样复制（不要改写，不要替用户编）。没有原话就先问用户。三方互通关着时可以省略（会弹窗确认）。" }
+        },
+        "required": ["id", "userWords"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "voice_preview",
+      "title": "试听语音",
+      "tier": "confirm",
+      "description": "用当前语音方案试听一句固定的话。语音方案是百炼时会产生一次付费调用：调用前先告诉用户会花钱。三方互通打开时（默认）要带上 userWords（用户的原话），有就直接试听并提示；关掉时要用户在弹窗里确认。",
+      "inputSchema": { "type": "object", "properties": { "userWords": { "type": "string", "maxLength": 2000, "description": "三方互通打开时必填：用户在这次对话里说的原话，原样复制（不要改写，不要替用户编）。没有原话就先问用户。三方互通关着时可以省略（会弹窗确认）。" } }, "required": ["userWords"], "additionalProperties": false }
+    },
+    {
+      "name": "delete_memories",
+      "title": "删除记忆（进回收站）",
+      "tier": "confirm",
+      "interconnectOnly": true,
+      "description": "删除一个角色记得的东西：chat（她的聊天记忆）、profile（她对用户的画像和她的日记，存在同一个文件里）。不会直接永久删除：先进这个角色的回收站，期限内（默认 7 天，见 list_settings 的 recycle_bin_days）可以用 restore_memories 或 undo_last_action 找回，到期才清理。只在用户本人明确要求删除时调用；先和用户说清楚要删的是哪个角色、哪几部分，再带上 userWords（用户的原话），没有就不执行。只在“三方互通”打开时开放。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": "角色卡 id（UUID，来自 list_characters）" },
+          "parts": { "type": "array", "items": { "type": "string", "enum": ["chat", "profile"] }, "minItems": 1, "maxItems": 2, "uniqueItems": true },
+          "userWords": { "type": "string", "maxLength": 2000, "description": "三方互通打开时必填：用户在这次对话里说的原话，原样复制（不要改写，不要替用户编）。没有原话就先问用户。三方互通关着时可以省略（会弹窗确认）。" }
+        },
+        "required": ["id", "parts", "userWords"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "list_recycle_bin",
+      "title": "查看回收站",
+      "tier": "read",
+      "interconnectOnly": true,
+      "description": "列出回收站里的记忆（按角色分开）：编号、角色名、哪一部分、条数、删除时间、到期时间。不含聊天原文、日记和画像内容。",
+      "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false }
+    },
+    {
+      "name": "restore_memories",
+      "title": "从回收站找回",
+      "tier": "reversible",
+      "interconnectOnly": true,
+      "description": "把回收站里的一项（entryId 来自 list_recycle_bin）放回原来的角色。聊天记忆是加回去，删除之后新聊的内容不受影响；画像和日记如果删除之后又记了新的，新的那份换进回收站，不会丢。",
+      "inputSchema": {
+        "type": "object",
+        "properties": { "entryId": { "type": "string", "description": "回收站编号（UUID，来自 list_recycle_bin）" } },
+        "required": ["entryId"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "recover_pet",
+      "title": "一键恢复桌宠",
+      "tier": "reversible",
+      "description": "把桌宠居中显示，恢复默认大小和镜头（模型和连接不变），和控制窗口顶上的「一键恢复桌宠」一样。用户找不到她、她跑到屏幕外或变得太小时用。",
+      "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false }
+    },
+    {
+      "name": "use_bundled_model",
+      "title": "换回预装 Gene",
+      "tier": "confirm",
+      "description": "换回应用自带的 Gene 模型（替换当前模型，清除当前动作；之后可以用 undo_last_action 换回原来的模型）。只在用户本人要求时调用；三方互通打开时要带上 userWords（用户的原话）。",
+      "inputSchema": { "type": "object", "properties": { "userWords": { "type": "string", "maxLength": 2000, "description": "三方互通打开时必填：用户在这次对话里说的原话，原样复制（不要改写，不要替用户编）。没有原话就先问用户。三方互通关着时可以省略（会弹窗确认）。" } }, "required": ["userWords"], "additionalProperties": false }
+    },
+    {
+      "name": "unbind_character_model",
+      "title": "解除角色和模型的关联",
+      "tier": "reversible",
+      "description": "让一个角色（id 来自 list_characters）不再自动载入某个模型；现在载入的模型不变。刚解除后可以用 undo_last_action 关联回去（前提是现在载入的还是原来那个模型；之后换过模型或又做了别的操作，就要先载入原来的模型，再用 bind_current_model_to_character，那个需要用户的原话）。",
+      "inputSchema": {
+        "type": "object",
+        "properties": { "id": { "type": "string", "description": "角色卡 id（UUID）" } },
+        "required": ["id"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "create_character_for_current_model",
+      "title": "用现在的模型新建角色",
+      "tier": "reversible",
+      "description": "用桌面上现在的模型新建一张角色卡（名字取自模型，人设空着，之后可以用 update_character_card 填）。不会换到新角色。",
+      "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false }
+    },
+    {
+      "name": "set_interconnect",
+      "title": "三方互通开关",
+      "tier": "reversible",
+      "description": "关掉“三方互通”（off）：之后需要确认的操作重新弹窗，内部通道也随之关闭，这次调用之后就连不上了。打开（on）只在用户手动开着内部通道、但关了三方互通时才用得上，而且要用户在弹窗里确认。只在用户本人要求时调用。",
+      "inputSchema": {
+        "type": "object",
+        "properties": { "state": { "type": "string", "enum": ["on", "off"] } },
+        "required": ["state"],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "settings": [
+    {
+      "id": "read_aloud",
+      "label": "朗读回复",
+      "description": "回复完成后用当前语音方案读出来。",
+      "kind": "boolean",
+      "tier": "reversible",
+      "choices": [{ "value": true, "label": "朗读" }, { "value": false, "label": "不朗读" }]
+    },
+    {
+      "id": "readout_volume",
+      "label": "朗读音量",
+      "description": "朗读和试听的音量。",
+      "kind": "number",
+      "tier": "reversible",
+      "min": 0, "max": 100, "step": 1, "unit": "%",
+      "presets": [{ "value": 30, "label": "小声 30%" }, { "value": 60, "label": "适中 60%" }, { "value": 80, "label": "默认 80%" }, { "value": 100, "label": "最大 100%" }]
+    },
+    {
+      "id": "pet_visible",
+      "label": "显示桌宠",
+      "description": "桌面上的桌宠窗口是否显示；隐藏后可从托盘或 Ctrl+Alt+P 找回。",
+      "kind": "boolean",
+      "tier": "reversible",
+      "choices": [{ "value": true, "label": "显示" }, { "value": false, "label": "隐藏" }]
+    },
+    {
+      "id": "always_on_top",
+      "label": "始终置顶",
+      "description": "让桌宠停留在其他窗口上方。",
+      "kind": "boolean",
+      "tier": "reversible",
+      "choices": [{ "value": true, "label": "置顶" }, { "value": false, "label": "不置顶" }]
+    },
+    {
+      "id": "follow_mouse",
+      "label": "视线跟随鼠标",
+      "description": "眼睛和头跟着鼠标转，不记录轨迹。",
+      "kind": "boolean",
+      "tier": "reversible",
+      "choices": [{ "value": true, "label": "跟随" }, { "value": false, "label": "不跟随" }]
+    },
+    {
+      "id": "breath",
+      "label": "呼吸幅度",
+      "description": "待机时呼吸起伏的大小，0 为不呼吸。",
+      "kind": "number",
+      "tier": "reversible",
+      "min": 0, "max": 100, "step": 1, "unit": "%",
+      "presets": [{ "value": 0, "label": "不呼吸" }, { "value": 25, "label": "轻 25%" }, { "value": 50, "label": "默认 50%" }, { "value": 80, "label": "明显 80%" }]
+    },
+    {
+      "id": "fps",
+      "label": "渲染帧率",
+      "description": "桌宠每秒绘制的帧数，越高越流畅也越耗电。",
+      "kind": "enum",
+      "tier": "reversible",
+      "choices": [{ "value": 24, "label": "24 FPS · 节能" }, { "value": 30, "label": "30 FPS · 均衡" }, { "value": 60, "label": "60 FPS · 流畅" }]
+    },
+    {
+      "id": "slow_warm_up",
+      "label": "当前角色慢慢升温",
+      "description": "只改当前角色卡的“关系慢慢升温”：开了以后她刚认识时客气、好奇一点，相处的天数多了才慢慢放开；关掉后她从一开始就很熟。",
+      "kind": "boolean",
+      "tier": "reversible",
+      "choices": [{ "value": true, "label": "慢慢升温" }, { "value": false, "label": "一开始就很熟" }]
+    },
+    {
+      "id": "realer_emotions",
+      "confirmWhen": [true],
+      "label": "当前角色更真实的情绪",
+      "description": "只改当前角色卡的“更真实的情绪”：开了以后她可以说更重的话、闹别扭更久、不一定先和好、吃醋更明显；你本来就难过时她不加码，Claude 自己的安全规则不变。三方互通打开时，带上用户的原话（userWords）就打开，soft hearts 会把说明给用户看一次（不挡着）；关掉三方互通时，打开前先弹窗说明，用户点“我知道了，打开”才生效。关掉马上恢复。",
+      "kind": "boolean",
+      "tier": "reversible",
+      "choices": [{ "value": true, "label": "更真实" }, { "value": false, "label": "照常" }]
+    },
+    {
+      "id": "experience_journal",
+      "chat": false,
+      "label": "保留体验记录",
+      "description": "在本机配置目录的 journal 文件夹里按天记下她的心情变化和原因（只有时间、类型、数值和固定的白话原因，不含聊天原文、日记、画像、路径和密钥）。只存本机；关掉后不再写，已有的不删除。",
+      "kind": "boolean",
+      "tier": "reversible",
+      "choices": [{ "value": true, "label": "保留" }, { "value": false, "label": "不保留" }]
+    },
+    {
+      "id": "voice_provider",
+      "chat": false,
+      "confirmWhen": ["bailian"],
+      "interconnectOnly": true,
+      "label": "朗读用的语音方案",
+      "description": "系统声音免费；百炼按次付费（每读一句都会产生费用），要先在控制窗口设好百炼的连接和密钥。切到百炼前先告诉用户会花钱，并带上 userWords（用户的原话）。只在“三方互通”打开时开放。",
+      "kind": "enum",
+      "tier": "reversible",
+      "choices": [{ "value": "system", "label": "系统声音（免费）" }, { "value": "bailian", "label": "百炼（按次付费）" }]
+    },
+    {
+      "id": "recycle_bin_days",
+      "chat": false,
+      "interconnectOnly": true,
+      "label": "回收站保留天数",
+      "description": "通过内部通道删除的记忆在回收站里留几天，到期才真正清理。改短会让已经在回收站里的东西更早清理。",
+      "kind": "number",
+      "tier": "reversible",
+      "min": 1, "max": 30, "step": 1, "unit": "天",
+      "presets": [{ "value": 3, "label": "3 天" }, { "value": 7, "label": "默认 7 天" }, { "value": 14, "label": "14 天" }, { "value": 30, "label": "30 天" }]
+    },
+    {
+      "id": "voice_input",
+      "chat": "turn",
+      "chatWords": ["语音输入", "语音识别", "麦克风", "话筒", "听写", "语音转文字", "说话输入", "用说的", "\\b(?:voice input|microphone|mic|dictation)\\b"],
+      "confirmWhen": [true],
+      "cardConsent": true,
+      "label": "语音输入（麦克风）",
+      "description": "从麦克风识别用户说的话，停顿时自动转写。打开就是打开麦克风：只在用户本人明确要求时打开（三方互通打开时要带上用户的原话 userWords），随时可以关。要先有本机语音识别（local_asr）或在控制窗口设好兼容接口；桌宠要显示着。",
+      "kind": "boolean",
+      "tier": "reversible",
+      "choices": [{ "value": true, "label": "打开（会用麦克风）" }, { "value": false, "label": "关闭" }]
+    },
+    {
+      "id": "local_asr",
+      "chat": "turn",
+      "chatWords": ["语音输入", "语音识别", "识别组件", "下载.{0,6}语音", "\\bspeech recognition\\b"],
+      "confirmWhen": ["installed", "not-installed"],
+      "cardConsent": true,
+      "label": "本机语音识别组件",
+      "description": "语音输入用的本机识别组件：SenseVoice 识别模型（Hugging Face 上 sherpa-onnx 转换的版本）。下载后免费，声音只在这台电脑上识别、不上传。installed：开始下载（先告诉用户要下载多大、从哪里下，list_settings 的 detail 里有实际大小）；not-installed：取消正在进行的下载，或删除已下载的组件（不动聊天记录）。两者都需要用户的原话（userWords）。下载在后台进行，进度在控制窗口「连接与声音 → 语音输入」。",
+      "kind": "enum",
+      "tier": "reversible",
+      "choices": [{ "value": "installed", "label": "下载" }, { "value": "not-installed", "label": "不要（取消下载或删除组件）" }]
+    },
+    {
+      "id": "click_through",
+      "chat": "turn",
+      "chatWords": ["鼠标穿透", "点击穿透", "穿透", "点不到后面"],
+      "label": "鼠标穿透",
+      "description": "开启后只有她身边的空白处让点击穿过去，她本人、聊天框和工具栏照常能点；Ctrl + Alt + P 可以恢复操作。",
+      "kind": "boolean",
+      "tier": "reversible",
+      "choices": [{ "value": true, "label": "穿透" }, { "value": false, "label": "不穿透" }]
+    },
+    {
+      "id": "ui_language",
+      "chat": "turn",
+      "chatWords": ["界面语言", "英文界面", "中文界面", "界面.{0,4}(?:英文|中文|英语)", "\\binterface language\\b"],
+      "label": "界面语言",
+      "description": "设置窗口和桌宠界面的语言；下次打开应用时生效（她说话的语言不变）。",
+      "kind": "enum",
+      "tier": "reversible",
+      "choices": [{ "value": "system", "label": "跟随系统" }, { "value": "en", "label": "English（英文）" }, { "value": "zh-CN", "label": "简体中文" }]
+    },
+    {
+      "id": "developer_mode",
+      "chat": false,
+      "label": "开发者模式",
+      "description": "在设置窗口和桌宠上显示开发用的观察面板和诊断（心情数值、调试按钮）。平时关着。",
+      "kind": "boolean",
+      "tier": "reversible",
+      "choices": [{ "value": true, "label": "打开" }, { "value": false, "label": "关闭" }]
+    },
+    {
+      "id": "music_strength",
+      "chat": "turn",
+      "chatWords": ["律动", "跟着音乐", "音乐.{0,4}(?:动|跳|摇|晃)"],
+      "label": "音乐律动强度",
+      "description": "音乐响起时她律动的幅度，0 为不律动。让她听到电脑声音的音乐按钮另外开（在桌宠上）。",
+      "kind": "number",
+      "tier": "reversible",
+      "min": 0, "max": 100, "step": 5, "unit": "%",
+      "presets": [{ "value": 0, "label": "不律动" }, { "value": 30, "label": "轻 30%" }, { "value": 60, "label": "适中 60%" }, { "value": 100, "label": "最大 100%" }]
+    },
+    {
+      "id": "music_always_dance",
+      "chat": "turn",
+      "chatWords": ["一直跳", "一直跟着跳", "跟着跳"],
+      "label": "让她一直跟着跳",
+      "description": "打开后音乐一响她就跳；关掉时由她自己决定跳、点头还是不动。",
+      "kind": "boolean",
+      "tier": "reversible",
+      "choices": [{ "value": true, "label": "一直跟着跳" }, { "value": false, "label": "她自己决定" }]
+    },
+    {
+      "id": "voice_rate",
+      "chat": "turn",
+      "chatWords": ["语速", "读得?(?:太)?(?:快|慢)", "说(?:得)?(?:快|慢)(?:一)?点", "念(?:得)?(?:快|慢)"],
+      "label": "系统声音语速",
+      "description": "用系统声音朗读时的语速，100% 为正常。百炼的语速在百炼的风格设置里。",
+      "kind": "number",
+      "tier": "reversible",
+      "min": 50, "max": 200, "step": 10, "unit": "%",
+      "presets": [{ "value": 80, "label": "慢一点 80%" }, { "value": 100, "label": "正常 100%" }, { "value": 130, "label": "快一点 130%" }, { "value": 160, "label": "很快 160%" }]
+    },
+    {
+      "id": "voice_mood_influence",
+      "chat": "turn",
+      "chatWords": ["心情影响", "语调"],
+      "label": "心情影响系统语音",
+      "description": "她的心情对系统声音语速和音调的影响，0 为不影响。",
+      "kind": "number",
+      "tier": "reversible",
+      "min": 0, "max": 100, "step": 5, "unit": "%",
+      "presets": [{ "value": 0, "label": "不影响" }, { "value": 50, "label": "默认 50%" }, { "value": 100, "label": "最明显 100%" }]
+    },
+    {
+      "id": "voice_first_chunk",
+      "chat": false,
+      "label": "朗读从哪里开口",
+      "description": "一条回复的第一段读到哪里才开口。sentence：第一句完整（。！？）才开始读（默认）；comma：第一句里遇到逗号（，；），而且前面的字够多（系统声音 4 个、百炼 8 个），就先把这一段读出来，后面照旧一整句一整句读。两种都只读已经显示在气泡里的字，系统声音和百炼都适用。现在是开发版里对比用的，从下一条回复起生效。",
+      "kind": "enum",
+      "tier": "reversible",
+      "choices": [{ "value": "sentence", "label": "整句读（默认）" }, { "value": "comma", "label": "第一句遇到逗号先读" }]
+    },
+    {
+      "id": "pause_talk",
+      "chat": "turn",
+      "chatWords": ["停停说说"],
+      "confirmWhen": [true],
+      "cardConsent": true,
+      "label": "停停说说",
+      "description": "她说一小段可能停一下，或者说完一段就停下来等用户接话；在哪停、停多久、等不等，由你 Claude 里的 haiku 按她的性格和此刻的心情定（每条回复多问一次 haiku，占用量）。第一个字照样马上出来；用户在她停着时插话，没说出口的话只当下一轮的背景，提不提由她决定。默认关；打开要用户同意（三方互通打开时带上 userWords）。试用中。",
+      "kind": "boolean",
+      "tier": "reversible",
+      "choices": [{ "value": true, "label": "打开（haiku 帮她定停在哪）" }, { "value": false, "label": "关闭（照原来的节奏）" }]
+    },
+    {
+      "id": "chat_model",
+      "chat": "turn",
+      "chatWords": ["聊天模型", "\\b(?:opus|sonnet|haiku)\\b"],
+      "confirmWhen": ["", "haiku", "sonnet", "opus"],
+      "cardConsent": true,
+      "label": "聊天模型",
+      "description": "她聊天用你 Claude Code 的哪个模型；“默认”跟随 Claude Code 自己的默认。越大的模型越细，也越占你的 Claude 用量：换之前先告诉用户，并带上 userWords（用户的原话）。",
+      "kind": "enum",
+      "tier": "reversible",
+      "choices": [{ "value": "", "label": "默认" }, { "value": "haiku", "label": "haiku（快、省）" }, { "value": "sonnet", "label": "sonnet（适中）" }, { "value": "opus", "label": "opus（最细、最占用量）" }]
+    },
+    {
+      "id": "proactive_vision",
+      "chat": "turn",
+      "chatWords": ["主动聊天", "根据画面", "看(?:着)?(?:我的)?屏幕.{0,6}(?:说|聊)"],
+      "confirmWhen": [true],
+      "cardConsent": true,
+      "label": "根据画面主动聊天",
+      "description": "屏幕共享开着时，她会看画面主动找话题（画面会交给你的 Claude）。默认关；打开要用户同意（三方互通打开时带上 userWords）。",
+      "kind": "boolean",
+      "tier": "reversible",
+      "choices": [{ "value": true, "label": "打开（她会看画面找话题）" }, { "value": false, "label": "关闭" }]
+    },
+    {
+      "id": "feed_recognition",
+      "chat": "turn",
+      "chatWords": ["认图", "喂食.{0,6}认", "认出.{0,6}(?:吃|喂)"],
+      "confirmWhen": [true],
+      "cardConsent": true,
+      "label": "喂食认图",
+      "description": "喂食时把图缩小后交给你的 Claude，让她认出是什么（会用你的 Claude 用量）。默认关；打开要用户同意（三方互通打开时带上 userWords）。",
+      "kind": "boolean",
+      "tier": "reversible",
+      "choices": [{ "value": true, "label": "认图" }, { "value": false, "label": "不认图" }]
+    },
+    {
+      "id": "pose_sensing",
+      "chat": "turn",
+      "chatWords": ["姿态感知", "感知组件", "动作感知"],
+      "confirmWhen": ["installed", "not-installed"],
+      "cardConsent": true,
+      "label": "本机姿态感知组件",
+      "description": "摄像头姿态感知要用的本机组件：下载后在这台电脑上识别伸懒腰、打哈欠等，画面不上传。installed：开始下载（先告诉用户要下载多大，list_settings 的 detail 里有）；not-installed：取消下载或删除组件。两者都要用户的原话（userWords）。",
+      "kind": "enum",
+      "tier": "reversible",
+      "choices": [{ "value": "installed", "label": "下载" }, { "value": "not-installed", "label": "不要（取消下载或删除组件）" }]
+    },
+    {
+      "id": "physics_hair",
+      "chat": "turn",
+      "chatWords": ["头发物理", "头发.{0,4}(?:飘|动|甩)"],
+      "label": "头发物理",
+      "description": "用模型已有的头发刚体和关节让头发跟着动作摆动（模型没有相应结构时不起作用）。",
+      "kind": "boolean",
+      "tier": "reversible",
+      "choices": [{ "value": true, "label": "打开" }, { "value": false, "label": "关闭" }]
+    },
+    {
+      "id": "physics_chest",
+      "chat": false,
+      "label": "胸部弹性",
+      "description": "只在模型具备相应骨骼、权重与连接时可用。",
+      "kind": "boolean",
+      "tier": "reversible",
+      "choices": [{ "value": true, "label": "打开" }, { "value": false, "label": "关闭" }]
+    },
+    {
+      "id": "physics_quality",
+      "chat": false,
+      "label": "物理质量",
+      "description": "局部物理的计算频率和求解预算，越细越耗电。",
+      "kind": "enum",
+      "tier": "reversible",
+      "choices": [{ "value": "low", "label": "省电" }, { "value": "standard", "label": "标准" }, { "value": "high", "label": "细致" }]
+    },
+    {
+      "id": "mood_judge",
+      "chat": "turn",
+      "chatWords": ["心情调整员", "haiku.{0,8}心情", "心情.{0,8}haiku"],
+      "confirmWhen": [true],
+      "cardConsent": true,
+      "label": "心情调整员",
+      "description": "她身上发生的事（你说的话、摸头、喂食、睡醒、很久没人理……）照常马上起作用；过一两分钟，再交给你 Claude 里的 haiku 按她的性格和此刻的心情微调一下心情数（会用你的 Claude 用量，每天最多 200 次）。默认关；打开要用户同意（三方互通打开时带上 userWords）。",
+      "kind": "boolean",
+      "tier": "reversible",
+      "choices": [{ "value": true, "label": "打开（haiku 帮她再想一想）" }, { "value": false, "label": "关闭" }]
+    },
+    {
+      "id": "user_activity",
+      "chat": "turn",
+      "chatWords": ["知道.{0,4}在忙", "在不在忙", "专心做事", "有没有在操作", "键盘鼠标"],
+      "confirmWhen": [true],
+      "cardConsent": true,
+      "label": "知道你是不是在忙",
+      "description": "每秒读一次“距你上次动键盘鼠标过了多少秒”，加上有没有锁屏、电脑有没有睡眠、她的窗口有没有焦点；你专心做事时她安静下来做自己的事。不知道你按了什么、在哪个窗口，不存记录。默认开；关掉直接改，重新打开要用户同意（三方互通打开时带上 userWords）。",
+      "kind": "boolean",
+      "tier": "reversible",
+      "choices": [{ "value": true, "label": "打开（她知道你是不是在忙）" }, { "value": false, "label": "关闭（一次都不读）" }]
+    },
+    {
+      "id": "new_reactions",
+      "chat": false,
+      "confirmWhen": [true],
+      "label": "新的反应方式",
+      "description": "被夸、报喜、撒娇、被关心、摸头、捏脸、喂点心时，她按自己的六项反应倾向更敏感地反应（脸红、害羞、开心、点头、比心……）。每条消息会多问一次你 Claude 里的 haiku（和她的回答同时，第一个字不等它；会用你的 Claude 用量，每天最多 800 次），它替她从反应清单里挑 0～2 个，并给这句话的心情变化；开着时「心情调整员」不再重复看消息。所有版本默认开；打开要用户同意（三方互通打开时带上 userWords），关掉直接改。",
+      "kind": "boolean",
+      "tier": "reversible",
+      "choices": [{ "value": true, "label": "打开（新的反应方式）" }, { "value": false, "label": "关闭（照原来的规则）" }]
+    },
+    {
+      "id": "proactive_talk",
+      "chat": "turn",
+      "chatWords": ["少说.{0,3}话", "多说.{0,3}话", "话.{0,3}(少|多)一?点", "(主动|自己).{0,6}(找我|说话|聊)", "太(吵|安静)", "安静.{0,2}点", "话痨"],
+      "label": "她主动找你说话",
+      "description": "她自己开口、自己动一动、自己想事情的频繁程度。less 少一点：明显更少（大约一半）；normal 适中（默认，和以前一样）；more 多一点：更勤快一些，但不会比原来的最短间隔更密。不管选哪一档，她两次说话至少隔多久、一小时最多说几次、深夜和困了的安静，都照她角色卡上的上限，一个都不放宽。不涉及隐私和用量，可以直接改，随时改回。",
+      "kind": "enum",
+      "tier": "reversible",
+      "choices": [{ "value": "less", "label": "少一点" }, { "value": "normal", "label": "适中（默认）" }, { "value": "more", "label": "多一点" }]
+    }
+  ],
+  "neverExposed": [
+    "读取、修改或导出 API 密钥和其他密钥",
+    "运行命令、脚本或任务执行（R20）",
+    "任意读写文件、列目录",
+    "修改“三方互通”开关以外的权限和安全设置（包括单独关掉某一项确认）",
+    "永久删除任何记忆：聊天记忆、日记和画像只能先进回收站，到期才清理；删除角色卡、转写和文字纪念不开放"
+  ]
+}

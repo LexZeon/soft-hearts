@@ -1,0 +1,8 @@
+.r20-proactive-offer { margin: 8px 0; padding: 10px; border: 1px solid var(--border, #8b829566); border-radius: 12px; background: var(--panel, #fff); color: var(--text, #292330); font-size: 13px; }
+.r20-proactive-offer p { margin: 7px 0; overflow-wrap: anywhere; }
+.r20-offer-plan { white-space: pre-wrap; }
+.r20-offer-actions { display: flex; flex-wrap: wrap; gap: 5px; }
+.r20-proactive-offer textarea { display: block; width: 100%; box-sizing: border-box; min-height: 48px; margin: 7px 0; resize: vertical; }
+.r20-proactive-offer button { margin: 3px 0; }
+.r20-proactive-offer form label { display: block; margin-top: 8px; }
+.pet .r20-proactive-offer { max-height: 40vh; overflow-y: auto; }

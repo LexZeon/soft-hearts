@@ -1,0 +1,12 @@
+.blush-calibration { margin-top: 18px; padding: 15px; border: 1px solid #ffffff1a; border-radius: 12px; background: #141d2780; }
+.blush-calibration h3 { margin: 0 0 9px; font-size: 14px; }
+.blush-calibration-hint, .blush-calibration-support { margin: 7px 0; color: #a8b6c4; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+.blush-calibration-support { color: #bbd4c8; white-space: pre-wrap; }
+.blush-calibration-field { display: grid; grid-template-columns: minmax(140px, 1.3fr) minmax(90px, 1fr) 92px; gap: 10px; align-items: center; margin: 13px 0; font-size: 12px; }
+.blush-calibration-field input { width: 100%; accent-color: #b7dfcc; }
+.blush-calibration-field output { text-align: right; font-variant-numeric: tabular-nums; color: #c5d8ce; }
+.blush-calibration-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.blush-calibration-actions button { font-size: 12px; }
+#blush-calibration-status { display: block; margin-top: 10px; min-height: 1.5em; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; color: #b7cbbe; }
+#blush-calibration-status[data-error="true"] { color: #f0bbb0; }
+@media (max-width: 640px) { .blush-calibration-field { grid-template-columns: minmax(110px, 1fr) 1fr; } .blush-calibration-field output { grid-column: 2; } }

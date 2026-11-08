@@ -1,0 +1,18 @@
+.journal-status { min-height: 1.9em; }
+.journal-recent h4 { margin: 10px 0 6px; font-size: 11px; color: #c5d0dd; }
+.journal-filter { max-width: 220px; margin-bottom: 6px; }
+.journal-lines {
+  margin: 0;
+  padding: 6px 10px;
+  max-height: 260px;
+  overflow: auto;
+  list-style: none;
+  font-size: 11px;
+  line-height: 1.7;
+  color: #c5d0dd;
+  background: #0d1017;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  user-select: text;
+}
+.journal-lines li { overflow-wrap: anywhere; }

@@ -1,0 +1,16 @@
+.agent-channel-status { min-height: 1.9em; }
+.agent-channel-setup summary { cursor: pointer; font-size: 10px; color: #9daebf; margin: 6px 0; }
+.agent-channel-snippet {
+  margin: 6px 0;
+  padding: 8px 10px;
+  max-height: 160px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font: 10px/1.6 ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color: #c5d0dd;
+  background: #0d1017;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  user-select: text;
+}

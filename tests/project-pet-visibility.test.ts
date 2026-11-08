@@ -1,0 +1,22 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import ts from 'typescript';
+import { transformSync } from 'esbuild';
+const source=readFileSync(new URL('../src/main.ts',import.meta.url),'utf8');
+const ast=ts.createSourceFile('main.ts',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
+const found=ast.statements.filter(n=>ts.isFunctionDeclaration(n)&&n.name?.text==='projectPetVisibility');
+assert.equal(found.length,1);
+const code=transformSync(`function make(deps:any){const {document,windowVisibility,settings}=deps;let pendingPetVisibility=false;${found[0].getText(ast)};return projectPetVisibility}`,{loader:'ts',target:'es2022'}).code;
+const make=new Function(code+'\nreturn make')() as (deps:unknown)=>()=>void;
+test('actual projection restores latest desired value without discarding other settings',()=>{
+  const input={disabled:false,checked:false},button={disabled:false};
+  const settings={pet:{visible:false,alwaysOnTop:true},camera:{yaw:0.35}};
+  const tracker:{petVisible:boolean|null}={petVisible:null};
+  const document={getElementById:(id:string)=>id==='pet-visible'?input:id==='show-pet'?button:null};
+  const project=make({document,windowVisibility:tracker,settings});
+  project();assert.equal(input.disabled,true);assert.equal(button.disabled,true);
+  tracker.petVisible=true;project();assert.equal(input.checked,true);assert.equal(settings.pet.visible,true);
+  settings.pet.visible=false;settings.camera.yaw=0.7;project();
+  assert.equal(settings.pet.visible,true);assert.equal(settings.camera.yaw,0.7);assert.equal(settings.pet.alwaysOnTop,true);
+});

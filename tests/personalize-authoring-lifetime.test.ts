@@ -1,0 +1,20 @@
+import test from 'node:test';import assert from 'node:assert/strict';import ts from 'typescript';import { readFile } from 'node:fs/promises';
+import { createHash,randomUUID } from 'node:crypto';import path from 'node:path';
+import { PersonalizeAuthoring } from '../electron/personalize-authoring';import { emptyLanguageRules } from '../shared/personalize-language';
+const source=await readFile(new URL('../electron/main.ts',import.meta.url),'utf8'),tree=ts.createSourceFile('main.ts',source,ts.ScriptTarget.Latest,true);
+const all:ts.Node[]=[];function visit(n:ts.Node){all.push(n);ts.forEachChild(n,visit);}visit(tree);
+const evaluate=<T>(code:string,env:Record<string,unknown>)=>new Function(...Object.keys(env),ts.transpileModule(code,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText)(...Object.values(env)) as T;
+test('actual window destroy loop aborts authoring without releasing its shared lease before real adapter settlement',async()=>{
+ let resolve!:()=>void;const gate=new Promise<void>(done=>{resolve=done;});const pending=new Map<string,any>(),id=randomUUID();let syncs=0;
+ const ctor=all.filter((n):n is ts.NewExpression=>ts.isNewExpression(n)&&n.expression.getText(tree)==='PersonalizeAuthoring');assert.equal(ctor.length,1);
+ const reserve=tree.statements.find((n):n is ts.FunctionDeclaration=>ts.isFunctionDeclaration(n)&&n.name?.text==='reserveCompanionAuthoring');assert.ok(reserve);
+ const service=evaluate<PersonalizeAuthoring>(`${reserve.getText(tree)}\nreturn ${ctor[0].getText(tree)};`,{PersonalizeAuthoring,createHash,path,store:{directory:'synthetic',current:{provider:{kind:'claude',model:'mock'}}},characterCards:{getActive:()=>({id})},personalizeLanguage:{get:()=>({revision:0})},speechScope:()=> 'scope',compileCharacterPersona:()=> 'persona',exiting:false,pending,asrTask:null,foregroundAsr:{foregroundBusy:false},readingInputSpeech:false,voiceHost:{busy:false},proactiveVision:{pendingId:null},replySpeechBusy:()=>false,ambientSpeakingOwners:new Set(),syncFatigueActivity:()=>{syncs++;},streamClaude:async()=>{await gate;}});
+ const s=service.open(7,id,0),run=service.research(7,{sessionId:s.id,revision:0,materials:'合成',refinement:'',rules:emptyLanguageRules()});
+ assert.equal(pending.size,1);const entry=[...pending.values()][0];assert.equal(entry.source,'language-authoring');
+ const destroyed=all.filter((n):n is ts.CallExpression=>ts.isCallExpression(n)&&n.expression.getText(tree)==='win.webContents.on'&&n.arguments[0]?.getText(tree)==='"destroyed"');assert.equal(destroyed.length,1);
+ const callback=destroyed[0].arguments[1];assert.ok(ts.isArrowFunction(callback)&&ts.isBlock(callback.body));
+ const loop=callback.body.statements.filter(ts.isForOfStatement);assert.equal(loop.length,1);
+ service.close(7,s.id);evaluate(loop[0].getText(tree),{pending,windowId:7});assert.equal(pending.size,1);assert.equal(entry.controller.signal.aborted,true);
+ const second=service.open(8,id,0);await assert.rejects(service.research(8,{sessionId:second.id,revision:0,materials:'合成',refinement:'',rules:emptyLanguageRules()}),/不会打断或排队/);
+ resolve();await assert.rejects(run);assert.equal(pending.size,0);assert.equal(syncs,2);
+});

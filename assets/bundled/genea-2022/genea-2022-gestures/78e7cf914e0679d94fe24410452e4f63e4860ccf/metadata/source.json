@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 1,
+  "packId": "genea-2022-gestures",
+  "revision": "78e7cf914e0679d94fe24410452e4f63e4860ccf",
+  "revisionKind": "sha256-of-reviewed-motion-descriptors-and-conversion-provenance-first-40-hex",
+  "source": "genea-2022",
+  "sourceUrl": "https://zenodo.org/records/6977157",
+  "license": {
+    "id": "CC-BY-4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/",
+    "attribution": "Youngwoo Yoon, Pieter Wolfert, Taras Kucherenko, Carla Viegas, Teodor Nikolov, Mihail Tsakov, and Gustav Eje Henter. 2022. The GENEA Challenge 2022: A large evaluation of data-driven co-speech gesture generation. Proceedings of ACM ICMI 2022."
+  },
+  "modifications": "BVH→VMD：从 FSB 的合格生成手势中截取两段并重定向 Gene 上半身，转为 30 FPS、固定根位移并平滑接缝。",
+  "compatibilityNote": "CC BY 4.0 subset only. FNA and UNA (CC BY-NC 4.0) are excluded. Body gestures only; no audio, face or finger articulation.",
+  "geneModelRevision": "c7eace43dffaccff6ad0597433ef85fa57c91e03",
+  "motions": [
+    {
+      "id": "speaking-gesture-1",
+      "name": "Speaking Gesture 1",
+      "category": "gesture",
+      "tags": [
+        "mmd",
+        "vmd",
+        "gene",
+        "genea-2022",
+        "gesture",
+        "speaking",
+        "upper-body",
+        "loop",
+        "fsb"
+      ],
+      "relativePath": "motions/gesture/speaking-gesture-1.vmd",
+      "originalPath": "full-body_bvh/FSB/tst_2022_v1_003.bvh",
+      "downloadUrl": "https://zenodo.org/records/6977157/files/full-body_bvh.zip?download=1",
+      "sha256": "446d38b66bfc8f4935c309bb06a29239cac68731db0b5ac804d27751c1b6626a",
+      "bytes": 421985,
+      "durationFrames": 180,
+      "boneFrames": 3801,
+      "morphFrames": 0,
+      "provenance": {
+        "originalPath": "full-body_bvh/FSB/tst_2022_v1_003.bvh",
+        "sourceUrl": "https://zenodo.org/records/6977157",
+        "downloadUrl": "https://zenodo.org/records/6977157/files/full-body_bvh.zip?download=1",
+        "originalSha256": "a5cbbd20f21883c4808cc346debe3a7dc714cd02e2ef037349c53bd3f9270364",
+        "originalBytes": 9525746,
+        "archive": {
+          "file": "full-body_bvh.zip",
+          "memberCrc32": "5bd694c3",
+          "condition": "FSB",
+          "version": "1.1.0"
+        },
+        "modifications": "BVH body retargeted to Gene; cropped, resampled to 30fps, fixed root, loop seam blended. Face and fingers are not synthesized.",
+        "options": {
+          "startFrame": 150,
+          "endFrame": 330,
+          "rootMode": "fixed",
+          "faceForward": true,
+          "upperBodyOnly": true,
+          "loopBlendSeconds": 0.4
+        },
+        "conversion": {
+          "sourceFrameCount": 1771,
+          "sourceFrameTime": 0.033333,
+          "startFrame": 150,
+          "endFrame": 330,
+          "outputFrameCount": 181,
+          "outputFps": 30,
+          "durationSeconds": 6,
+          "scale": 0.06621463445753877,
+          "sourceUpAxis": "y",
+          "faceForward": true,
+          "rootMode": "fixed",
+          "upperBodyOnly": true,
+          "loopBlendSeconds": 0.4,
+          "mapping": {
+            "下半身": "b_root",
+            "上半身": "b_spine0",
+            "上半身2": "b_spine3",
+            "首": "b_neck0",
+            "頭": "b_head",
+            "左肩": "b_l_shoulder",
+            "左腕": "b_l_arm",
+            "左ひじ": "b_l_forearm",
+            "左手首": "b_l_wrist",
+            "左足": "b_l_upleg",
+            "左ひざ": "b_l_leg",
+            "左足首": "b_l_foot",
+            "右肩": "b_r_shoulder",
+            "右腕": "b_r_arm",
+            "右ひじ": "b_r_forearm",
+            "右手首": "b_r_wrist",
+            "右足": "b_r_upleg",
+            "右ひざ": "b_r_leg",
+            "右足首": "b_r_foot"
+          },
+          "missingTargets": [],
+          "warnings": [
+            "Body bones only; no face, finger articulation or physics.",
+            "Source non-root translations are not copied; the target keeps its own limb lengths.",
+            "Retargeted clips require visual playback review before inclusion."
+          ]
+        },
+        "converterSha256": "bdfcc80e02377ca0b658e533a1e3770c0fc6df5f30d3be1ad122a3f1468f2077"
+      }
+    },
+    {
+      "id": "speaking-gesture-2",
+      "name": "Speaking Gesture 2",
+      "category": "gesture",
+      "tags": [
+        "mmd",
+        "vmd",
+        "gene",
+        "genea-2022",
+        "gesture",
+        "speaking",
+        "upper-body",
+        "loop",
+        "fsb"
+      ],
+      "relativePath": "motions/gesture/speaking-gesture-2.vmd",
+      "originalPath": "full-body_bvh/FSB/tst_2022_v1_017.bvh",
+      "downloadUrl": "https://zenodo.org/records/6977157/files/full-body_bvh.zip?download=1",
+      "sha256": "6abec61bc8fde28e6d340c9c7cdd00e08edd2340c3939efc3ab041fdf327748d",
+      "bytes": 421985,
+      "durationFrames": 180,
+      "boneFrames": 3801,
+      "morphFrames": 0,
+      "provenance": {
+        "originalPath": "full-body_bvh/FSB/tst_2022_v1_017.bvh",
+        "sourceUrl": "https://zenodo.org/records/6977157",
+        "downloadUrl": "https://zenodo.org/records/6977157/files/full-body_bvh.zip?download=1",
+        "originalSha256": "78cf4ce211f05e1cafe03b2f1815dfc6114d68f457ac6e7a2e64ae16dd754be7",
+        "originalBytes": 9845723,
+        "archive": {
+          "file": "full-body_bvh.zip",
+          "memberCrc32": "e32b725e",
+          "condition": "FSB",
+          "version": "1.1.0"
+        },
+        "modifications": "BVH body retargeted to Gene; cropped, resampled to 30fps, fixed root, loop seam blended. Face and fingers are not synthesized.",
+        "options": {
+          "startFrame": 150,
+          "endFrame": 330,
+          "rootMode": "fixed",
+          "faceForward": true,
+          "upperBodyOnly": true,
+          "loopBlendSeconds": 0.4
+        },
+        "conversion": {
+          "sourceFrameCount": 1831,
+          "sourceFrameTime": 0.033333,
+          "startFrame": 150,
+          "endFrame": 330,
+          "outputFrameCount": 181,
+          "outputFps": 30,
+          "durationSeconds": 6,
+          "scale": 0.06657890682090041,
+          "sourceUpAxis": "y",
+          "faceForward": true,
+          "rootMode": "fixed",
+          "upperBodyOnly": true,
+          "loopBlendSeconds": 0.4,
+          "mapping": {
+            "下半身": "b_root",
+            "上半身": "b_spine0",
+            "上半身2": "b_spine3",
+            "首": "b_neck0",
+            "頭": "b_head",
+            "左肩": "b_l_shoulder",
+            "左腕": "b_l_arm",
+            "左ひじ": "b_l_forearm",
+            "左手首": "b_l_wrist",
+            "左足": "b_l_upleg",
+            "左ひざ": "b_l_leg",
+            "左足首": "b_l_foot",
+            "右肩": "b_r_shoulder",
+            "右腕": "b_r_arm",
+            "右ひじ": "b_r_forearm",
+            "右手首": "b_r_wrist",
+            "右足": "b_r_upleg",
+            "右ひざ": "b_r_leg",
+            "右足首": "b_r_foot"
+          },
+          "missingTargets": [],
+          "warnings": [
+            "Body bones only; no face, finger articulation or physics.",
+            "Source non-root translations are not copied; the target keeps its own limb lengths.",
+            "Retargeted clips require visual playback review before inclusion."
+          ]
+        },
+        "converterSha256": "bdfcc80e02377ca0b658e533a1e3770c0fc6df5f30d3be1ad122a3f1468f2077"
+      }
+    }
+  ]
+}

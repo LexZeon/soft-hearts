@@ -1,0 +1,90 @@
+{
+  "name": "soft-hearts-next",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A small, modular MMD desktop companion",
+  "license": "MIT",
+  "author": "soft hearts contributors",
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "main": "dist-electron/main.cjs",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "node scripts/verify-bundled-assets.mjs && tsc --noEmit && vite build && node scripts/build-electron.mjs",
+    "build:app": "node scripts/verify-bundled-assets.mjs && vite build && node scripts/build-electron.mjs",
+    "start": "node scripts/source-profile.mjs --start",
+    "typecheck": "tsc --noEmit",
+    "test": "node scripts/dev/test-all.mjs",
+    "test:first-run": "powershell.exe -NoProfile -File tests/first-run-setup.test.ps1",
+    "smoke": "node scripts/smoke.mjs",
+    "smoke:motions": "node scripts/motion-library-smoke.mjs",
+    "motions:sync": "node scripts/sync-motion-catalog.mjs",
+    "assets:prepare": "node scripts/prepare-bundled-assets.mjs",
+    "assets:verify": "node scripts/verify-bundled-assets.mjs",
+    "smoke:bundled": "node scripts/bundled-assets-smoke.mjs",
+    "pack": "node scripts/package.mjs --dir",
+    "dist:win": "node scripts/package.mjs --win portable --x64",
+    "desktop:update": "node scripts/update-desktop.mjs --install",
+    "desktop:promote": "node scripts/update-desktop.mjs --promote",
+    "desktop:rollback": "node scripts/update-desktop.mjs --rollback-stable",
+    "desktop:pin-delivery": "node scripts/update-desktop.mjs --promote",
+    "setup:unix": "node scripts/setup.mjs",
+    "test:setup-platform": "node --test tests/setup-platform.test.mjs tests/codex-discovery.test.mjs",
+    "dist:win:arm64": "node scripts/package.mjs --win portable --arm64",
+    "dist:mac:arm64": "node scripts/package.mjs --mac zip --arm64",
+    "dist:mac:x64": "node scripts/package.mjs --mac zip --x64",
+    "dist:linux": "node scripts/package.mjs --linux tar.gz --x64"
+  },
+  "dependencies": {
+    "three": "0.170.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/three": "0.170.0",
+    "electron": "^45.0.0",
+    "electron-builder": "^26.0.12",
+    "esbuild": "^0.25.0",
+    "tsx": "^4.20.0",
+    "typescript": "~5.8.3",
+    "vite": "^8.3.5",
+    "playwright": "^1.56.0"
+  },
+  "build": {
+    "artifactName": "soft-hearts-next-${version}-${os}-${arch}.${ext}",
+    "appId": "io.softhearts.next",
+    "productName": "soft hearts next",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "assets/bundled/**/*",
+      "package.json",
+      "LICENSE",
+      "ACKNOWLEDGEMENTS.md",
+      "THIRD_PARTY_NOTICES.md"
+    ],
+    "extraResources": [
+      { "from": "scripts/soft-hearts-mcp.mjs", "to": "agent-channel/soft-hearts-mcp.mjs" },
+      { "from": "scripts/soft-hearts-task-mcp.mjs", "to": "agent-channel/soft-hearts-task-mcp.mjs" },
+      { "from": "scripts/agent-channel-wire.mjs", "to": "agent-channel/agent-channel-wire.mjs" },
+      { "from": "shared/agent-channel-catalog.json", "to": "agent-channel/agent-channel-catalog.json" }
+    ],
+    "win": {
+      "target": "portable"
+    },
+    "mac": {
+      "target": "zip",
+      "category": "public.app-category.entertainment",
+      "minimumSystemVersion": "13.0"
+    },
+    "linux": {
+      "target": "tar.gz",
+      "category": "Game"
+    }
+  }
+}

@@ -1,0 +1,15 @@
+/* Let longer English labels remain readable without changing navigation or focus order. */
+html[lang="en"] .control-nav-label {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+html[lang="en"] .pet-recovery-button {
+  max-width: 100%;
+  white-space: normal;
+}
+html[lang="en"] .settings-section .hint,
+html[lang="en"] .toggle-row small {
+  overflow-wrap: anywhere;
+}

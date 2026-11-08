@@ -1,0 +1,68 @@
+.screen-sharing-options {
+  box-sizing: border-box;
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  padding: 11px 12px;
+  margin-top: 8px;
+  border: 1px solid rgba(125, 125, 155, .2);
+  border-radius: 12px;
+  color: inherit;
+  background: rgba(125, 125, 155, .055);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.screen-sharing-options[hidden],
+.screen-sharing-options [hidden] { display: none !important; }
+.screen-sharing-options-screen { display: grid; gap: 8px; min-width: 0; }
+.screen-sharing-options-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  cursor: pointer;
+}
+.screen-sharing-options-toggle input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #8070bc;
+}
+.screen-sharing-options-interval { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+.screen-sharing-options-interval[data-enabled="false"] { opacity: .6; }
+.screen-sharing-options-interval input[type="number"] {
+  box-sizing: border-box;
+  width: 76px;
+  min-width: 58px;
+  padding: 5px 7px;
+  border: 1px solid rgba(125, 125, 155, .35);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, .85);
+  color: #383447;
+  font: inherit;
+}
+.screen-sharing-options-interval input[aria-invalid="true"] { border-color: #b94c55; }
+.screen-sharing-options-hint, .screen-sharing-options-issue { margin: 0; overflow-wrap: anywhere; }
+.screen-sharing-options-hint { opacity: .75; }
+.screen-sharing-options-issue { color: #b24450; }
+.pet-sharing-options { flex: 0 0 100%; width: 100%; min-width: 0; }
+.pet-sharing-options:has(.screen-sharing-options[hidden]) { display: none; }
+.pet-toolbar:has(.screen-sharing-options:not([hidden])) { flex-wrap: wrap; max-width: calc(100vw - 24px); }
+#vision-runtime-status { display: block; max-width: 100%; font-size: 11px; line-height: 1.45; white-space: normal; }
+#vision-runtime-status:empty { display: none; }
+/* I-036: the pet's camera button expands the two camera switches (src/ui/CameraSharingPanel.ts). */
+.pet-camera-panel[hidden], .camera-sharing-panel [hidden] { display: none !important; }
+.pet-camera-panel { position: fixed; right: 12px; top: 55px; z-index: 60; width: min(340px, calc(100vw - 24px)); max-height: calc(100vh - 80px); overflow: auto;
+  box-sizing: border-box; display: grid; gap: 8px; padding: 11px 12px; border: 1px solid #bad8c550; border-radius: 12px; background: #17232df7; color: #e3eee8;
+  box-shadow: 0 8px 28px #0005; font-size: 12px; line-height: 1.5; }
+.camera-sharing-title { font-size: 13px; }
+.camera-sharing-hint { margin: 0; opacity: .75; overflow-wrap: anywhere; }
+.camera-sharing-toggle { display: flex; align-items: flex-start; gap: 8px; min-width: 0; cursor: pointer; }
+.camera-sharing-toggle input[type="checkbox"] { flex: 0 0 auto; width: 16px; height: 16px; margin: 2px 0 0; accent-color: #8070bc; }
+.camera-sharing-text { display: grid; gap: 2px; min-width: 0; }
+.camera-sharing-text small { opacity: .75; overflow-wrap: anywhere; }
+#pet-camera-sharing[aria-expanded="true"] { box-shadow: inset 0 0 0 2px #b7dfcc; }
+.camera-sharing-group { display: grid; gap: 6px; margin: 6px 0; }
+.camera-sharing-group > small { opacity: .75; }

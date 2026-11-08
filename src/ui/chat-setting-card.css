@@ -1,0 +1,30 @@
+.chat-setting-card { margin: 8px 0; padding: 10px 12px; border: 1px solid #b7dfcc40; border-radius: 12px; background: #1b2830f2; color: #d8e8df; font-size: 12px; line-height: 1.6; pointer-events: auto; }
+.chat-setting-card p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.chat-setting-card__title { font-weight: 600; }
+.chat-setting-card__change { color: #c4d5cb; }
+.chat-setting-card__reason, .chat-setting-card__note, .chat-setting-card__result { color: #a9bac0; font-size: 11px; }
+/* I-025: what the proposed value does (download size and source, the microphone), read before tapping. */
+.chat-setting-card__detail { color: #d4e1e5; font-size: 11px; line-height: 1.45; }
+.chat-setting-card__actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.chat-setting-card__actions button { width: auto; height: auto; padding: 5px 10px; border: 1px solid #b7dfcc30; border-radius: 8px; background: #222f38; color: #d8e8df; font-size: 11px; }
+.chat-setting-card__actions button.is-proposed { border-color: #b7dfcc90; background: #2c4038; }
+.chat-setting-card__actions button:hover:not(:disabled) { background: #30443e; border-color: #b7dfcc70; }
+.chat-setting-card__actions button:disabled { opacity: .45; cursor: default; }
+.chat-setting-card__actions button:focus-visible { outline: 2px solid #b7dfcc; outline-offset: 2px; }
+.chat-setting-card[data-state="applied"] { border-color: #b7dfcc90; }
+.pet-chat .chat-setting-card { margin: 0 0 8px; max-height: 220px; overflow: auto; box-shadow: 0 8px 28px #0004; }
+/* R46: a settled card folds into its one-line result instead of vanishing;
+   on the pet it stays readable, then fades out (CHAT_SETTING_LEAVE_MS = .6s) before it is removed. */
+.chat-setting-card__fold { display: grid; grid-template-rows: 1fr; }
+.chat-setting-card__body { min-height: 0; overflow: hidden; }
+.chat-setting-card:not([data-state="open"]):not([data-state="busy"]) .chat-setting-card__fold { grid-template-rows: 0fr; opacity: 0; animation: chat-setting-fold .42s ease both; }
+.chat-setting-card:not([data-state="open"]):not([data-state="busy"]) .chat-setting-card__result { color: #c4d5cb; animation: chat-setting-result .42s ease both; }
+@keyframes chat-setting-fold { from { grid-template-rows: 1fr; opacity: 1; } to { grid-template-rows: 0fr; opacity: 0; } }
+@keyframes chat-setting-result { from { opacity: .55; } to { opacity: 1; } }
+.chat-setting-card[data-leaving="true"] { opacity: 0; transform: translateY(4px); transition: opacity .6s ease, transform .6s ease; }
+/* Any card, settled or leaving, keeps the pet chat area up; it used to drop the moment the card left "open". */
+.pet-chat:has(.chat-setting-card) { opacity: 1; pointer-events: auto; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .chat-setting-card .chat-setting-card__fold, .chat-setting-card .chat-setting-card__result { animation: none; }
+  .chat-setting-card[data-leaving="true"] { transition: none; }
+}

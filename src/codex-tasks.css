@@ -1,0 +1,31 @@
+.codex-tasks { display: grid; gap: 16px; }
+.codex-tasks .panel-heading { margin-bottom: 0; flex-wrap: wrap; }
+.codex-tasks .panel-heading > div { flex: 1; min-width: 160px; }
+.codex-tasks .settings-section { margin: 0; }
+.codex-task-offer, .codex-task-approval { padding: 16px; border: 1px solid var(--accent, #91baa9); border-radius: 14px; background: #91baa90d; }
+.codex-task-offer[hidden], .codex-tasks button[hidden] { display: none; }
+.codex-task-inline-offer { pointer-events: auto; color: #e0eeeb; background: #18262ef5; box-shadow: 0 8px 28px #0004; }
+.codex-task-inline-offer .action-line { display: flex; flex-wrap: wrap; gap: 6px; }
+.codex-task-inline-offer button { padding: 7px 10px; font-size: 12px; }
+.pet-chat .codex-task-inline-offer button { width: auto; height: auto; }
+.pet-chat:has(.codex-task-inline-offer) { opacity: 1; pointer-events: auto; transform: none; }
+.pet-chat .codex-task-inline-offer { margin-bottom: 8px; padding: 12px; font-size: 12px; max-height: 230px; overflow: auto; }
+.codex-task-offer p, .codex-task-approval p { margin: 8px 0; line-height: 1.6; }
+.codex-task-warning { color: #e8bd89; font-size: 13px; }
+.codex-task-folder { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.codex-task-directory { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 13px; color: var(--muted, #9ba9ac); }
+.codex-task-state { display: block; margin-top: 12px; font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--muted, #9ba9ac); }
+.codex-task-approvals { display: grid; gap: 12px; }
+.codex-task-approval pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 180px; overflow: auto; font-size: 12px; }
+.codex-task-file-diff summary { cursor: pointer; overflow-wrap: anywhere; font-size: 12px; }
+.codex-task-transcript { display: grid; gap: 18px; min-height: 100px; max-height: 420px; padding: 16px; overflow: auto; border: 1px solid var(--border, #ffffff14); border-radius: 14px; background: #00000015; }
+.codex-task-message strong { color: var(--muted, #9ba9ac); font-size: 11px; font-weight: 500; }
+.codex-task-message-body { margin-top: 6px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; line-height: 1.75; }
+.codex-task-message.user .codex-task-message-body { color: var(--accent, #91baa9); }
+@media (max-width: 700px) { .codex-task-folder { flex-wrap: wrap; } }
+.codex-task-switch .toggle-row { margin: 0 0 8px; }
+.codex-task-switch .codex-task-sandbox { margin: 0; }
+.codex-task-step { font-size: 12px; color: var(--muted, #9ba9ac); overflow-wrap: anywhere; margin-top: -10px; }
+.codex-task-summary { padding: 14px 16px; border: 1px solid var(--accent, #91baa9); border-radius: 14px; background: #91baa914; }
+.codex-task-summary[hidden] { display: none; }
+.codex-task-summary strong { color: var(--accent, #91baa9); font-size: 12px; font-weight: 500; }

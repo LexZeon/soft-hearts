@@ -1,0 +1,9 @@
+.single-emoji-controls { display: grid; gap: 12px; }
+.single-emoji-controls h3, .single-emoji-controls p { margin: 0; }
+.single-emoji-controls-enabled, .single-emoji-controls-choice { display: flex; align-items: center; gap: 8px; }
+.single-emoji-controls-catalog { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 10px; border: 1px solid var(--line, #d8d6df); border-radius: 10px; padding: 12px; }
+.single-emoji-controls-catalog legend { padding: 0 6px; font-size: .9rem; }
+.single-emoji-controls-glyph { font: 24px/1.25 "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif; }
+.single-emoji-controls-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+.single-emoji-controls-preview-choice { display: grid; gap: 5px; font-size: .9rem; }
+.single-emoji-controls-status { font-size: .9rem; color: var(--muted, #696571); min-height: 1.5em; }

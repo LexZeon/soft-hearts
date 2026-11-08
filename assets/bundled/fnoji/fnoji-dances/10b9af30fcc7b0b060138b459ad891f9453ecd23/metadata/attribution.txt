@@ -1,0 +1,11 @@
+Split Dance motion by fnoji (えふのじ), licensed under CC BY 4.0. Source: https://www.nicovideo.jp/watch/sm46039479
+
+CC BY 4.0: https://creativecommons.org/licenses/by/4.0/
+Source: https://booth.pm/ja/items/8103074
+Content revision: 10b9af30fcc7b0b060138b459ad891f9453ecd23
+
+Split Dance 原始 VMD 内容未改写，仅使用英文文件名、分类与 tags。
+Manual full-body dance. Model-specific clothing, hair and morph tracks may be ignored by Gene. No music, audio, video, model or stage is distributed.
+
+Only motion data is included. Music, video, preview characters and stages are not included.
+English filenames, categories and descriptive tags do not create automatic moods or behaviors.

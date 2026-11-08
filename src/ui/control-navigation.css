@@ -1,0 +1,96 @@
+.sidebar:has(.control-navigation) {
+  min-height: 0;
+  overflow: hidden;
+}
+.sidebar .control-navigation {
+  display: block;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #455362 transparent;
+  margin: 0 -5px 16px;
+  padding: 0 5px 5px;
+}
+.control-navigation ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.control-navigation .control-nav-roots {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.control-navigation .control-nav-row {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 7px;
+  padding: 9px 8px;
+  min-height: 35px;
+  border-radius: 7px;
+  line-height: 1.35;
+  font-size: 12px;
+}
+.control-nav-row > svg:not(.control-nav-chevron) {
+  flex: 0 0 15px;
+  width: 15px;
+  height: 15px;
+}
+.control-navigation .control-nav-depth-1 {
+  padding: 8px 8px 8px 16px;
+  min-height: 31px;
+  font-size: 11.5px;
+}
+.control-navigation .control-nav-depth-2 {
+  padding: 7px 8px 7px 24px;
+  min-height: 30px;
+  font-size: 11.5px;
+}
+.control-nav-label {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.control-nav-chevron {
+  flex: 0 0 12px;
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  transition: transform 120ms ease;
+}
+.control-nav-group[aria-expanded="true"] > .control-nav-chevron {
+  transform: rotate(90deg);
+}
+.control-navigation .control-nav-row.contains-current {
+  color: #b1c5bd;
+}
+.control-navigation .control-nav-row.active {
+  color: #c8eadb;
+  background: #a9d6c01d;
+  box-shadow: inset 2px 0 #a9d6c0;
+}
+.control-navigation .control-nav-row:focus-visible {
+  outline: 2px solid #a9d6c0;
+  outline-offset: -2px;
+}
+.control-navigation .control-nav-children[hidden] {
+  display: none;
+}
+.sidebar:has(.control-navigation) .sidebar-bottom {
+  flex-shrink: 0;
+}
+@media (max-width: 1100px) {
+  .control-navigation .control-nav-depth-2 { padding-left: 21px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .control-nav-chevron { transition: none; }
+}

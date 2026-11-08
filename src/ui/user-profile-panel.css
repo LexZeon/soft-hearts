@@ -1,0 +1,17 @@
+.user-profile-panel[hidden] { display:none !important; }
+.user-profile-panel { position:fixed; right:12px; top:55px; z-index:60; width:min(380px,calc(100vw - 24px)); max-height:calc(100vh - 80px); overflow:auto; padding:12px; border:1px solid #bad8c550; border-radius:12px; background:#17232df7; color:#e3eee8; box-shadow:0 8px 28px #0005; font-size:12px; line-height:1.55; }
+.user-profile-panel header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.user-profile-panel p { margin:7px 0; overflow-wrap:anywhere; }
+.user-profile-panel button { padding:5px 9px; font-size:11px; border-radius:8px; }
+.user-profile-panel button:focus-visible, .user-profile-panel textarea:focus-visible, .user-profile-panel select:focus-visible, .user-profile-panel input:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.user-profile-toggle { display:flex; align-items:center; gap:8px; margin:9px 0; }
+.user-profile-toggle input { accent-color:var(--accent); }
+.user-profile-entry { display:grid; gap:6px; min-width:0; margin:8px 0; padding:9px; border:1px solid #b7dfcc38; border-radius:9px; background:#101c263d; }
+.user-profile-entry textarea, .user-profile-entry select { width:100%; min-width:0; color:#e3eee8; background:#11171f; border:1px solid #b7dfcc38; border-radius:8px; padding:6px 8px; }
+.user-profile-entry textarea { resize:vertical; min-height:48px; overflow-wrap:anywhere; }
+.user-profile-entry details { color:#bfd4c8; font-size:11px; }
+.user-profile-entry summary { cursor:pointer; }
+.user-profile-actions { display:flex; flex-wrap:wrap; gap:5px; }
+.user-profile-status { color:#bfd4c8; font-size:11px; }
+#user-profile-toggle[aria-expanded="true"] { box-shadow:inset 0 0 0 2px #b7dfcc; }
+.text-memorial-section { margin-top:12px; padding-top:10px; border-top:1px solid #b7dfcc38; }

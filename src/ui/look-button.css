@@ -1,0 +1,16 @@
+/* 识图第 1 步: "给她看看屏幕" (src/ui/LookButton.ts). Shown only while screen sharing is on. */
+.look-screen[hidden] { display: none !important; }
+.pet-chat .look-screen { flex: 0 0 auto; background: #30443e; color: #e3eee8; }
+.pet-chat .look-screen:hover { background: #3b5650; }
+.pet-chat .look-screen svg { width: 18px; height: 18px; }
+/* 屏幕只读大概: her "要我凑近看看吗" as a small prompt in the pet's chat (src/ui/LookOfferPrompt.ts), styled like her other cards there
+   (chat-setting-card.css). */
+.look-offer-card { margin: 0 0 8px; padding: 10px 12px; border: 1px solid #b7dfcc40; border-radius: 12px; background: #1b2830f2; color: #d8e8df; font-size: 12px; line-height: 1.6; pointer-events: auto; box-shadow: 0 8px 28px #0004; }
+.look-offer-card__question { margin: 0; font-weight: 600; }
+.look-offer-card__actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.look-offer-card__actions button { width: auto; height: auto; padding: 5px 10px; border: 1px solid #b7dfcc30; border-radius: 8px; background: #222f38; color: #d8e8df; font-size: 11px; }
+.look-offer-card__actions button.is-proposed { border-color: #b7dfcc90; background: #2c4038; }
+.look-offer-card__actions button:hover { background: #30443e; border-color: #b7dfcc70; }
+.look-offer-card__actions button:focus-visible { outline: 2px solid #b7dfcc; outline-offset: 2px; }
+/* While it is up, the pet's chat area stays up (like a chat-setting card). */
+.pet-chat:has(.look-offer-card) { opacity: 1; pointer-events: auto; transform: none; }

@@ -1,0 +1,12 @@
+CG-CA Gene (c) 2023 by Nagoya Institute of Technology, Moonshot R&D Goal 1 Avatar Symbiotic Society
+
+License: CC-BY-4.0
+https://creativecommons.org/licenses/by/4.0/
+Source: https://github.com/mmdagent-ex/gene
+Revision: c7eace43dffaccff6ad0597433ef85fa57c91e03
+
+Model, referenced textures and VMD bytes are unmodified. Gene.pmx was renamed externally to model/gene.pmx; original model texture references are preserved. Motion filenames and folders were normalized to English kebab-case; descriptive categories and tags were added.
+
+Gene model trademark and design rights remain with the copyright holder. Academic and personal non-commercial uses are permitted as described in the upstream README; other commercial uses of the model require contacting the author.
+
+Keep this attribution, the license text and upstream-readme.md with redistributions. The original README includes the author's usage guidelines. The MIT license for soft hearts source code does not replace this asset license.

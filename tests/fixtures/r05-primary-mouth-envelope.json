@@ -1,0 +1,54 @@
+{
+  "scope": "Actual public Gene CPU rest/primary-six-morph positions. Coordinate-wise conservative hull of independent weights[0,1]; not all184 morphs/bone poses or native.",
+  "model": {
+    "path": "assets/bundled/mmdagent-ex/gene/c7eace43dffaccff6ad0597433ef85fa57c91e03/model/gene.pmx",
+    "sha256": "0ef63a75a7699f58399ae655357f91542fc5209355aac925a589aac42669df37",
+    "bytes": 2814228
+  },
+  "names": [
+    "あ",
+    "い",
+    "う",
+    "え",
+    "お",
+    "にやり"
+  ],
+  "protectedFaceVertices": 925,
+  "base": {
+    "min": [
+      -0.5296349900021953,
+      -1.317149069766544,
+      -0.2886884771871391
+    ],
+    "max": [
+      0.5288395238749422,
+      -0.5502774644519373,
+      0.3899136364164003
+    ]
+  },
+  "singles": {
+    "min": [
+      -0.5296349900021953,
+      -1.317149069766544,
+      -0.32070707778248875
+    ],
+    "max": [
+      0.5288395238749422,
+      -0.5261669566933292,
+      0.39400088826967106
+    ]
+  },
+  "independentPrimaryMixtures": {
+    "min": [
+      -0.5296349900021953,
+      -1.9908314364682307,
+      -0.6177078070774464
+    ],
+    "max": [
+      0.5288395238749422,
+      -0.06909040263514987,
+      0.39400088826967106
+    ]
+  },
+  "native": false
+}

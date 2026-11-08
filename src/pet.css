@@ -1,0 +1,68 @@
+.camera-section h3 { flex-wrap: wrap; }
+.camera-section .camera-edit-button { margin-left:auto; padding:6px 9px; font-size:10px; }
+.camera-edit-button[aria-pressed="true"] { background:#b7dfcc; color:#244333; }
+.preview-card.camera-editing { border-color:#b7dfcc7d; box-shadow:0 0 0 1px #b7dfcc20; }
+.preview-camera-help { position:absolute; top:55px; left:20px; right:20px; z-index:4; padding:10px 13px; border:1px solid #b7dfcc26; border-radius:9px; color:#bad5c8; background:#101923dc; font-size:10px; line-height:1.9; pointer-events:none; backdrop-filter:blur(8px); }
+.preview-camera-help small { font-size:9px; color:#879c91; }
+.preview-card.camera-editing canvas { cursor:crosshair; }
+.preview-card.camera-editing canvas:focus-visible { outline:none; }
+.pet-mode .pet-stage canvas { cursor:default; }
+#pet-move-window { cursor:grab; touch-action:none; }
+#pet-move-window.dragging { cursor:grabbing; background:#b7dfcc20; }
+.pet-mode.camera-editing .pet-stage canvas { cursor:crosshair; }
+.pet-toolbar { position:absolute; top:7px; right:8px; z-index:30; display:flex; flex-wrap:wrap; justify-content:center; gap:4px; max-width:calc(100% - 16px); padding:5px 38px 5px 5px; background:#17232de8; border:1px solid #c1e2d32b; border-radius:12px; box-shadow:0 6px 20px #0004; backdrop-filter:blur(10px); opacity:0; pointer-events:none; transform:translateY(-4px); transition:opacity .18s, transform .18s; }
+.pet-toolbar.is-visible { opacity:1; pointer-events:auto; transform:none; }
+.pet-toolbar>button { width:29px; height:29px; padding:6px; background:transparent; color:#d1ded9; border:0; border-radius:8px; }
+.pet-toolbar>button:hover { background:#b7dfcc20; }
+.pet-toolbar>button[aria-pressed="true"] { color:#173729; background:#b7dfcc; }
+.pet-toolbar>#pet-system-audio-sharing { position:relative; }
+.pet-toolbar>#pet-system-audio-sharing[aria-expanded="true"] { box-shadow:inset 0 0 0 2px #b7dfcc; }
+.pet-panel-chevron { position:absolute; right:1px; bottom:0; font-size:9px; line-height:1; color:inherit; }
+.pet-toolbar>#pet-system-audio-sharing[aria-expanded="true"] .pet-panel-chevron { transform:rotate(180deg); }
+.pet-toolbar svg { width:17px; height:17px; }
+.pet-toolbar>#pet-toolbar-toggle { position:absolute; top:5px; right:5px; padding:0; font-size:20px; line-height:1; }
+.pet-toolbar>#pet-toolbar-toggle:focus-visible { outline:1px solid #b7dfcc; outline-offset:2px; }
+.pet-toolbar.is-collapsed { padding-right:5px; }
+.pet-toolbar.is-collapsed>:not(#pet-toolbar-toggle) { display:none; }
+.pet-toolbar.is-collapsed>#pet-toolbar-toggle { position:static; }
+@media(prefers-reduced-motion:reduce) { .pet-toolbar { transition:none; } }
+.pet-tooltip { position:fixed; z-index:45; max-width:calc(100vw - 12px); padding:6px 9px; border:1px solid #bad8c550; border-radius:8px; background:#101c26fa; color:#e3eee8; font-size:11px; line-height:1.6; text-align:center; box-shadow:0 4px 12px #0005; pointer-events:none; }
+.pet-voice-state { position:absolute; bottom:82px; left:12px; right:12px; z-index:25; width:fit-content; max-width:calc(100% - 24px); margin:auto; padding:4px 8px; border-radius:8px; background:#15222cf2; color:#c9dfd1; font-size:10px; line-height:1.6; pointer-events:none; }
+.pet-window-size { flex-basis:100%; text-align:center; font:9px/1.4 Consolas,"Microsoft YaHei UI",monospace; color:#a4baaf; }
+.pet-window-adjustment { display:none; position:absolute; inset:0; z-index:40; border:1px solid #b7dfcc80; pointer-events:none; }
+.window-adjusting .pet-window-adjustment { display:block; }
+.pet-resize-handle { position:absolute; width:22px; height:22px; padding:0; border:0 solid #d0efdf; border-radius:3px; background:#17362ed9; pointer-events:auto; touch-action:none; }
+.pet-resize-handle:hover,.pet-resize-handle.dragging { background:#4b7565; }
+.pet-resize-nw { top:0; left:0; border-top-width:3px; border-left-width:3px; cursor:nwse-resize; }
+.pet-resize-ne { top:0; right:0; border-top-width:3px; border-right-width:3px; cursor:nesw-resize; }
+.pet-resize-sw { bottom:0; left:0; border-bottom-width:3px; border-left-width:3px; cursor:nesw-resize; }
+.pet-resize-se { bottom:0; right:0; border-bottom-width:3px; border-right-width:3px; cursor:nwse-resize; }
+.pet-window-help { position:absolute; left:28px; right:28px; bottom:88px; width:fit-content; max-width:calc(100% - 56px); margin:auto; display:flex; align-items:center; gap:8px; padding:7px 10px; border-radius:9px; background:#14232df2; color:#d8e8df; font-size:10px; pointer-events:auto; }
+.pet-window-help button { padding:4px 8px; border:0; border-radius:5px; background:#b7dfcc; color:#244333; }
+.pet-edit-help { position:absolute; top:78px; right:8px; left:8px; z-index:18; padding:8px 10px; border-radius:9px; color:#d8e8df; background:#14232de8; font-size:10px; text-align:center; line-height:1.9; pointer-events:none; }
+.pet-media-indicator { position:absolute; top:9px; right:9px; z-index:27; max-width:calc(100% - 18px); padding:5px 9px; font-size:9px; border-radius:12px; color:#f1d4ad; border:1px solid #e4be7938; background:#17232df2; text-shadow:none; pointer-events:none; }
+.pet-toolbar.is-visible:not(.is-collapsed) ~ .pet-media-indicator { opacity:0; }
+.pet-toolbar.is-collapsed ~ .pet-media-indicator { right:58px; max-width:calc(100% - 66px); }
+.pet-chat { position:absolute; left:12px; right:12px; bottom:12px; z-index:24; color:#c4d5cb; opacity:0; pointer-events:none; transform:translateY(4px); transition:opacity .18s,transform .18s; }
+.pet-chat.is-visible { opacity:1; pointer-events:auto; transform:none; }
+.pet-chat form { display:flex; align-items:center; gap:5px; padding:4px; border:1px solid #bddccb45; border-radius:13px; background:#15222cf2; box-shadow:0 5px 18px #0004; backdrop-filter:blur(8px); }
+.pet-chat form:focus-within { border-color:#b7dfcc; }
+.pet-chat textarea { flex:1; min-width:0; resize:none; height:36px; max-height:90px; padding:7px 8px; border:0; background:transparent; color:#e3eee8; font-size:12px; line-height:22px; outline:none; }
+.pet-chat button { width:30px; height:30px; padding:6px; border:0; background:#b7dfcc; color:#254032; border-radius:9px; }
+.pet-chat .voice-action-slot { margin-top:5px; }
+.pet-chat .voice-action-slot .voice-talk-actions button { width:auto; height:auto; background:#30443e; color:#e3eee8; }
+.pet-chat .voice-action-slot .voice-talk-actions button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.pet-chat #stop-chat { color:#f4c7bd; background:#583b37; }
+.pet-chat #chat-state { display:block; max-width:100%; margin:3px 8px 0; font-size:8px; color:#d2e5da; text-shadow:0 1px 3px #000; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pet-mode .pet-caption { bottom:2px; font-size:8px; }
+.pet-mode:not(.developer-mode) .pet-caption, .pet-mode:not(.developer-mode) .pet-chat #chat-state { display:none; }
+/* no status bar on the pet in ordinary mode (capture state stays in the control window). */
+.pet-mode:not(.developer-mode) .pet-media-indicator { display:none !important; }
+.pet-mode .toast { bottom:90px; z-index:40; }
+@media(max-width:1100px) { .camera-section h3 small { display:none; } }
+.pet-reply-reader { width: min(94vw, 560px); max-height: 86vh; margin: auto; padding: 14px; color: #e5eee9; background: #192630; border: 1px solid #bad8c56b; border-radius: 14px; box-shadow: 0 8px 28px #0007; }
+.pet-reply-reader[open] { display: flex; flex-direction: column; gap: 10px; }
+.pet-reply-reader::backdrop { background: #09101966; }
+.pet-reply-reader header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+#pet-reply-reader-status { margin: 0; font-size: 11px; color: #aec4b9; }
+#pet-reply-reader-body { white-space: pre-wrap; overflow-wrap: anywhere; overflow: auto; min-height: 60px; max-height: 64vh; padding: 8px; font-size: 13px; line-height: 1.85; user-select: text; cursor: text; scrollbar-width: thin; }

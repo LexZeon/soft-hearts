@@ -1,0 +1,4 @@
+.notice-details-button[hidden], .notice-detail-panel[hidden] { display:none !important; }
+.notice-detail-panel { position:fixed; right:12px; bottom:110px; z-index:60; max-width:min(460px,calc(100vw - 24px)); max-height:50vh; overflow:auto; padding:12px; border:1px solid #bad8c550; border-radius:10px; background:#17232df7; color:#e3eee8; box-shadow:0 6px 22px #0006; }
+.notice-detail-panel button { float:right; }
+.notice-detail-panel pre { white-space:pre-wrap; overflow-wrap:anywhere; font:11px/1.5 system-ui,sans-serif; user-select:text; }

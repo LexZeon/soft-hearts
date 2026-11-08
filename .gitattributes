@@ -1,0 +1,88 @@
+# Line endings (2026-11-02, docs/claude/2026-11-02-legacy-cleanup.md).
+# Default: text is stored and checked out with LF on every machine, whatever core.autocrlf says. This keeps
+# pinned source hashes (scripts/*-discovery.mjs, smoke harness) identical on a Windows clone.
+* text=auto eol=lf
+
+# Preserve reviewed upstream bytes so source ZIPs match the pinned asset hashes.
+assets/bundled/** -text
+# Windows launchers keep CRLF regardless of checkout settings.
+*.cmd -text
+
+# Files committed with CRLF or mixed line endings keep their exact bytes. "-text" (not "eol=crlf") on purpose:
+# eol=crlf would store LF in the index, so `git add --renormalize .` would rewrite them, and a mixed file has no
+# single eol to declare. electron/codex.ts is pinned by hash (scripts/lib/smoke-isolation.mjs LOCATOR_SHA256).
+# To convert one to LF, do it in its own commit and remove its line here.
+# CRLF
+README.md -text
+docs/chat-handoff.md -text
+docs/continuous-voice-implementation.md -text
+docs/mood/exaggerated-expression-and-pose-study.md -text
+docs/mood/procedural-expression-research.md -text
+docs/requested-work.md -text
+docs/system-audio-understanding-implementation.md -text
+electron/ambient-audio-runtime.ts -text
+electron/ambient-comments.ts -text
+electron/audio-capture-host.ts -text
+electron/audio-reading-archive.ts -text
+electron/foreground-asr.ts -text
+electron/main.ts -text
+electron/runtime.ts -text
+scripts/additional-motions-smoke.mjs -text
+scripts/bundled-assets-smoke.mjs -text
+scripts/experience/register-archive-task.ps1 -text
+shared/audio-capture.ts -text
+src/ui/MicrophoneInput.ts -text
+src/ui/SystemAudio.ts -text
+tests/audio-capture-release-race.test.ts -text
+tests/motion-library.test.ts -text
+tests/r34-main-integration.test.ts -text
+tests/r34-playback-host.test.ts -text
+tests/text-memorial-presentation-coordination.test.ts -text
+# Mixed CRLF and LF
+AGENTS.md -text
+THIRD_PARTY_NOTICES.md -text
+docs/DEVELOPMENT.md -text
+docs/archive/codex-handbook/examples/layered-motion-production.md -text
+docs/archive/codex-handbook/source-observations.md -text
+docs/behavior-coverage-implementation.md -text
+docs/character-voice-implementation.md -text
+docs/chat-motion-repair-implementation.md -text
+docs/cheek-pinch-implementation.md -text
+docs/claude/2026-11-01-research-plan-from-codex.md -text
+docs/codex-computer-implementation.md -text
+docs/codex-execution-boundary.md -text
+docs/companion-chat-commands.md -text
+docs/conversation-experience-implementation.md -text
+docs/crying-implementation.md -text
+docs/engineering-delivery-workflow.md -text
+docs/integration-next-implementation.md -text
+docs/mood/README.md -text
+docs/mood/implementation-log.md -text
+docs/mood/music-response-implementation.md -text
+docs/mood/single-emoji.md -text
+docs/motion-library.md -text
+docs/pet-window-visibility-and-recovery.md -text
+docs/physics-implementation.md -text
+docs/project-coordination.md -text
+docs/project-status/README.md -text
+docs/stage-interaction-contracts.md -text
+docs/user-experience-acceptance.md -text
+electron/audio-reading-host-broker.ts -text
+electron/codex.ts -text
+electron/tts.ts -text
+scripts/motion-library-smoke.mjs -text
+src/character-cards.css -text
+src/main.ts -text
+src/pet.css -text
+src/ui/AmbientTranscriptHistory.ts -text
+src/ui/AudioReadingClient.ts -text
+src/ui/MediaInput.ts -text
+src/ui/companion-command-choices.css -text
+tests/ambient-conversation-history.test.ts -text
+tests/renderer-window-visibility.test.ts -text
+tests/reply-continuity.test.ts -text
+tests/reply-reader.test.ts -text
+tests/reply-speech-native-receipt.test.ts -text
+tests/single-emoji-controls.test.ts -text
+tests/text-memorial-ui.test.ts -text
+tests/voice-media-input.test.ts -text

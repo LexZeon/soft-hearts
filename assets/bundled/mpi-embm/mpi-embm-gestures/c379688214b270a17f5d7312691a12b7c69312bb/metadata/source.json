@@ -1,0 +1,508 @@
+{
+  "schemaVersion": 1,
+  "packId": "mpi-embm-gestures",
+  "revision": "c379688214b270a17f5d7312691a12b7c69312bb",
+  "revisionKind": "sha256-of-reviewed-motion-descriptors-and-conversion-provenance-first-40-hex",
+  "source": "mpi-embm",
+  "sourceUrl": "https://figshare.com/articles/dataset/MPI_EMBM_Database_Mocap_Files/1220428",
+  "license": {
+    "id": "CC-BY-4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/",
+    "attribution": "Volkova, Ekaterina (2014). MPI EMBM Database Mocap Files. figshare. Dataset. https://doi.org/10.6084/m9.figshare.1220428.v1"
+  },
+  "modifications": "BVH→VMD：截取会话片段并重定向 Gene 上半身，保留站姿下肢、固定根位移、转为 30 FPS 并平滑接缝。添加英文命名与 tags。",
+  "compatibilityNote": "Gene upper-body gestures from seated body captures. No facial expressions or finger articulation; emotion tags describe source labels, not an automatic mood system.",
+  "geneModelRevision": "c7eace43dffaccff6ad0597433ef85fa57c91e03",
+  "motions": [
+    {
+      "id": "conversation-neutral",
+      "name": "Conversation Neutral",
+      "category": "gesture",
+      "tags": [
+        "mmd",
+        "vmd",
+        "gene",
+        "mpi-embm",
+        "gesture",
+        "conversation",
+        "upper-body",
+        "loop",
+        "neutral"
+      ],
+      "relativePath": "motions/gesture/conversation-neutral.vmd",
+      "originalPath": "bvh/AnBh_0208_ftf_wd_t3-002_98_594709_598650_3941_Neutral.bvh",
+      "downloadUrl": "https://ndownloader.figshare.com/files/1763862",
+      "sha256": "dc886664263b058932197476dd8eaf0c1adf96e411babb39408811f2b80f7933",
+      "bytes": 261146,
+      "durationFrames": 111,
+      "boneFrames": 2352,
+      "morphFrames": 0,
+      "provenance": {
+        "originalPath": "bvh/AnBh_0208_ftf_wd_t3-002_98_594709_598650_3941_Neutral.bvh",
+        "sourceUrl": "https://figshare.com/articles/dataset/MPI_EMBM_Database_Mocap_Files/1220428",
+        "downloadUrl": "https://ndownloader.figshare.com/files/1763862",
+        "originalSha256": "892ceba70553e306d9c4843e2f4256aaa56ae9bd81bd07f3a9763f3004e019ed",
+        "originalBytes": 339919,
+        "archive": {
+          "relativePath": "original/mpi-embm-bvh.zip",
+          "bytes": 50099276,
+          "sha256": "1a942f5f504ed442f3fc7c4e06bfd3c2ab13ea06586cf46108598f51039a1c4e",
+          "upstreamMd5": "fceb078bafc1a0002fb7b0a3a81e3079",
+          "status": "upstream-truncated-with-matching-checksum",
+          "defects": [
+            {
+              "originalPath": "bvh/DiMi_0709_ftf_flower_t1-002_38_254833_257583_2750_Pride.bvh",
+              "reason": "upstream archive ends inside this compressed member",
+              "offset": 50044318,
+              "partialBytesDiscarded": 123407
+            }
+          ]
+        },
+        "modifications": "BVH body retargeted to Gene; cropped, resampled to 30fps, fixed root, loop seam blended. Face and fingers are not synthesized.",
+        "options": {
+          "startFrame": 30,
+          "endFrame": 473,
+          "rootMode": "fixed",
+          "faceForward": true,
+          "upperBodyOnly": true,
+          "loopBlendSeconds": 0.35
+        },
+        "conversion": {
+          "sourceFrameCount": 474,
+          "sourceFrameTime": 0.008333,
+          "startFrame": 30,
+          "endFrame": 473,
+          "outputFrameCount": 112,
+          "outputFps": 30,
+          "durationSeconds": 3.7,
+          "scale": 0.18327807182979836,
+          "sourceUpAxis": "y",
+          "faceForward": true,
+          "rootMode": "fixed",
+          "upperBodyOnly": true,
+          "loopBlendSeconds": 0.35,
+          "mapping": {
+            "下半身": "Hips",
+            "上半身": "Chest",
+            "上半身2": "Chest4",
+            "首": "Neck",
+            "頭": "Head",
+            "左肩": "LeftCollar",
+            "左腕": "LeftShoulder",
+            "左ひじ": "LeftElbow",
+            "左手首": "LeftWrist",
+            "左足": "LeftHip",
+            "左ひざ": "LeftKnee",
+            "左足首": "LeftAnkle",
+            "右肩": "RightCollar",
+            "右腕": "RightShoulder",
+            "右ひじ": "RightElbow",
+            "右手首": "RightWrist",
+            "右足": "RightHip",
+            "右ひざ": "RightKnee",
+            "右足首": "RightAnkle"
+          },
+          "missingTargets": [],
+          "warnings": [
+            "Body bones only; no face, finger articulation or physics.",
+            "Source non-root translations are not copied; the target keeps its own limb lengths.",
+            "Retargeted clips require visual playback review before inclusion."
+          ]
+        },
+        "converterSha256": "bdfcc80e02377ca0b658e533a1e3770c0fc6df5f30d3be1ad122a3f1468f2077"
+      }
+    },
+    {
+      "id": "conversation-joy",
+      "name": "Conversation Joy",
+      "category": "gesture",
+      "tags": [
+        "mmd",
+        "vmd",
+        "gene",
+        "mpi-embm",
+        "gesture",
+        "conversation",
+        "upper-body",
+        "loop",
+        "joy"
+      ],
+      "relativePath": "motions/gesture/conversation-joy.vmd",
+      "originalPath": "bvh/AnBh_0708_ftf_bluebeard_t3-002_92_401175_404367_3192_Joy.bvh",
+      "downloadUrl": "https://ndownloader.figshare.com/files/1763862",
+      "sha256": "027860a2db2891277a36e723dc69300b16828a701e33169ec29edd3397db710b",
+      "bytes": 207533,
+      "durationFrames": 88,
+      "boneFrames": 1869,
+      "morphFrames": 0,
+      "provenance": {
+        "originalPath": "bvh/AnBh_0708_ftf_bluebeard_t3-002_92_401175_404367_3192_Joy.bvh",
+        "sourceUrl": "https://figshare.com/articles/dataset/MPI_EMBM_Database_Mocap_Files/1220428",
+        "downloadUrl": "https://ndownloader.figshare.com/files/1763862",
+        "originalSha256": "a4c2da70a8fd71bfb919778e0bcb5d1e37f3ab99d0215196009e3b1752921d12",
+        "originalBytes": 279427,
+        "archive": {
+          "relativePath": "original/mpi-embm-bvh.zip",
+          "bytes": 50099276,
+          "sha256": "1a942f5f504ed442f3fc7c4e06bfd3c2ab13ea06586cf46108598f51039a1c4e",
+          "upstreamMd5": "fceb078bafc1a0002fb7b0a3a81e3079",
+          "status": "upstream-truncated-with-matching-checksum",
+          "defects": [
+            {
+              "originalPath": "bvh/DiMi_0709_ftf_flower_t1-002_38_254833_257583_2750_Pride.bvh",
+              "reason": "upstream archive ends inside this compressed member",
+              "offset": 50044318,
+              "partialBytesDiscarded": 123407
+            }
+          ]
+        },
+        "modifications": "BVH body retargeted to Gene; cropped, resampled to 30fps, fixed root, loop seam blended. Face and fingers are not synthesized.",
+        "options": {
+          "startFrame": 30,
+          "endFrame": 383,
+          "rootMode": "fixed",
+          "faceForward": true,
+          "upperBodyOnly": true,
+          "loopBlendSeconds": 0.35
+        },
+        "conversion": {
+          "sourceFrameCount": 384,
+          "sourceFrameTime": 0.008333,
+          "startFrame": 30,
+          "endFrame": 383,
+          "outputFrameCount": 89,
+          "outputFps": 30,
+          "durationSeconds": 2.933333333333333,
+          "scale": 0.1998081121584131,
+          "sourceUpAxis": "y",
+          "faceForward": true,
+          "rootMode": "fixed",
+          "upperBodyOnly": true,
+          "loopBlendSeconds": 0.35,
+          "mapping": {
+            "下半身": "Hips",
+            "上半身": "Chest",
+            "上半身2": "Chest4",
+            "首": "Neck",
+            "頭": "Head",
+            "左肩": "LeftCollar",
+            "左腕": "LeftShoulder",
+            "左ひじ": "LeftElbow",
+            "左手首": "LeftWrist",
+            "左足": "LeftHip",
+            "左ひざ": "LeftKnee",
+            "左足首": "LeftAnkle",
+            "右肩": "RightCollar",
+            "右腕": "RightShoulder",
+            "右ひじ": "RightElbow",
+            "右手首": "RightWrist",
+            "右足": "RightHip",
+            "右ひざ": "RightKnee",
+            "右足首": "RightAnkle"
+          },
+          "missingTargets": [],
+          "warnings": [
+            "Body bones only; no face, finger articulation or physics.",
+            "Source non-root translations are not copied; the target keeps its own limb lengths.",
+            "Retargeted clips require visual playback review before inclusion."
+          ]
+        },
+        "converterSha256": "bdfcc80e02377ca0b658e533a1e3770c0fc6df5f30d3be1ad122a3f1468f2077"
+      }
+    },
+    {
+      "id": "conversation-pride",
+      "name": "Conversation Pride",
+      "category": "gesture",
+      "tags": [
+        "mmd",
+        "vmd",
+        "gene",
+        "mpi-embm",
+        "gesture",
+        "conversation",
+        "upper-body",
+        "loop",
+        "pride"
+      ],
+      "relativePath": "motions/gesture/conversation-pride.vmd",
+      "originalPath": "bvh/DiMi_0709_ftf_flower_t1-001_92_633350_636733_3383_Pride.bvh",
+      "downloadUrl": "https://ndownloader.figshare.com/files/1763862",
+      "sha256": "249b0f474506bc1fba38e60bb1cb600d9d297639571227d7f8994bd449dd17a5",
+      "bytes": 221519,
+      "durationFrames": 94,
+      "boneFrames": 1995,
+      "morphFrames": 0,
+      "provenance": {
+        "originalPath": "bvh/DiMi_0709_ftf_flower_t1-001_92_633350_636733_3383_Pride.bvh",
+        "sourceUrl": "https://figshare.com/articles/dataset/MPI_EMBM_Database_Mocap_Files/1220428",
+        "downloadUrl": "https://ndownloader.figshare.com/files/1763862",
+        "originalSha256": "b209f4821dbfd09c9c0bd8513d713f3c8ed0bed0103bae80b86328baa12d06fb",
+        "originalBytes": 296764,
+        "archive": {
+          "relativePath": "original/mpi-embm-bvh.zip",
+          "bytes": 50099276,
+          "sha256": "1a942f5f504ed442f3fc7c4e06bfd3c2ab13ea06586cf46108598f51039a1c4e",
+          "upstreamMd5": "fceb078bafc1a0002fb7b0a3a81e3079",
+          "status": "upstream-truncated-with-matching-checksum",
+          "defects": [
+            {
+              "originalPath": "bvh/DiMi_0709_ftf_flower_t1-002_38_254833_257583_2750_Pride.bvh",
+              "reason": "upstream archive ends inside this compressed member",
+              "offset": 50044318,
+              "partialBytesDiscarded": 123407
+            }
+          ]
+        },
+        "modifications": "BVH body retargeted to Gene; cropped, resampled to 30fps, fixed root, loop seam blended. Face and fingers are not synthesized.",
+        "options": {
+          "startFrame": 30,
+          "endFrame": 406,
+          "rootMode": "fixed",
+          "faceForward": true,
+          "upperBodyOnly": true,
+          "loopBlendSeconds": 0.35
+        },
+        "conversion": {
+          "sourceFrameCount": 407,
+          "sourceFrameTime": 0.008333,
+          "startFrame": 30,
+          "endFrame": 406,
+          "outputFrameCount": 95,
+          "outputFps": 30,
+          "durationSeconds": 3.1333333333333333,
+          "scale": 0.2032852560220351,
+          "sourceUpAxis": "y",
+          "faceForward": true,
+          "rootMode": "fixed",
+          "upperBodyOnly": true,
+          "loopBlendSeconds": 0.35,
+          "mapping": {
+            "下半身": "Hips",
+            "上半身": "Chest",
+            "上半身2": "Chest4",
+            "首": "Neck",
+            "頭": "Head",
+            "左肩": "LeftCollar",
+            "左腕": "LeftShoulder",
+            "左ひじ": "LeftElbow",
+            "左手首": "LeftWrist",
+            "左足": "LeftHip",
+            "左ひざ": "LeftKnee",
+            "左足首": "LeftAnkle",
+            "右肩": "RightCollar",
+            "右腕": "RightShoulder",
+            "右ひじ": "RightElbow",
+            "右手首": "RightWrist",
+            "右足": "RightHip",
+            "右ひざ": "RightKnee",
+            "右足首": "RightAnkle"
+          },
+          "missingTargets": [],
+          "warnings": [
+            "Body bones only; no face, finger articulation or physics.",
+            "Source non-root translations are not copied; the target keeps its own limb lengths.",
+            "Retargeted clips require visual playback review before inclusion."
+          ]
+        },
+        "converterSha256": "bdfcc80e02377ca0b658e533a1e3770c0fc6df5f30d3be1ad122a3f1468f2077"
+      }
+    },
+    {
+      "id": "conversation-sadness",
+      "name": "Conversation Sadness",
+      "category": "gesture",
+      "tags": [
+        "mmd",
+        "vmd",
+        "gene",
+        "mpi-embm",
+        "gesture",
+        "conversation",
+        "upper-body",
+        "loop",
+        "sadness"
+      ],
+      "relativePath": "motions/gesture/conversation-sadness.vmd",
+      "originalPath": "bvh/AnBh_0208_ftf_wd_t3-002_82_507225_510509_3284_Sadness.bvh",
+      "downloadUrl": "https://ndownloader.figshare.com/files/1763862",
+      "sha256": "1e3b4171e99c5bfe112a18562f36692ae71f925cce0507e8031d5ee3a0635d12",
+      "bytes": 214526,
+      "durationFrames": 91,
+      "boneFrames": 1932,
+      "morphFrames": 0,
+      "provenance": {
+        "originalPath": "bvh/AnBh_0208_ftf_wd_t3-002_82_507225_510509_3284_Sadness.bvh",
+        "sourceUrl": "https://figshare.com/articles/dataset/MPI_EMBM_Database_Mocap_Files/1220428",
+        "downloadUrl": "https://ndownloader.figshare.com/files/1763862",
+        "originalSha256": "9b9153559d7a98ae1e4dc229b7981ae7c6e7d56934b3b64dd9c07ff67fd2b119",
+        "originalBytes": 285613,
+        "archive": {
+          "relativePath": "original/mpi-embm-bvh.zip",
+          "bytes": 50099276,
+          "sha256": "1a942f5f504ed442f3fc7c4e06bfd3c2ab13ea06586cf46108598f51039a1c4e",
+          "upstreamMd5": "fceb078bafc1a0002fb7b0a3a81e3079",
+          "status": "upstream-truncated-with-matching-checksum",
+          "defects": [
+            {
+              "originalPath": "bvh/DiMi_0709_ftf_flower_t1-002_38_254833_257583_2750_Pride.bvh",
+              "reason": "upstream archive ends inside this compressed member",
+              "offset": 50044318,
+              "partialBytesDiscarded": 123407
+            }
+          ]
+        },
+        "modifications": "BVH body retargeted to Gene; cropped, resampled to 30fps, fixed root, loop seam blended. Face and fingers are not synthesized.",
+        "options": {
+          "startFrame": 30,
+          "endFrame": 394,
+          "rootMode": "fixed",
+          "faceForward": true,
+          "upperBodyOnly": true,
+          "loopBlendSeconds": 0.35
+        },
+        "conversion": {
+          "sourceFrameCount": 395,
+          "sourceFrameTime": 0.008333,
+          "startFrame": 30,
+          "endFrame": 394,
+          "outputFrameCount": 92,
+          "outputFps": 30,
+          "durationSeconds": 3.033333333333333,
+          "scale": 0.18297232076082925,
+          "sourceUpAxis": "y",
+          "faceForward": true,
+          "rootMode": "fixed",
+          "upperBodyOnly": true,
+          "loopBlendSeconds": 0.35,
+          "mapping": {
+            "下半身": "Hips",
+            "上半身": "Chest",
+            "上半身2": "Chest4",
+            "首": "Neck",
+            "頭": "Head",
+            "左肩": "LeftCollar",
+            "左腕": "LeftShoulder",
+            "左ひじ": "LeftElbow",
+            "左手首": "LeftWrist",
+            "左足": "LeftHip",
+            "左ひざ": "LeftKnee",
+            "左足首": "LeftAnkle",
+            "右肩": "RightCollar",
+            "右腕": "RightShoulder",
+            "右ひじ": "RightElbow",
+            "右手首": "RightWrist",
+            "右足": "RightHip",
+            "右ひざ": "RightKnee",
+            "右足首": "RightAnkle"
+          },
+          "missingTargets": [],
+          "warnings": [
+            "Body bones only; no face, finger articulation or physics.",
+            "Source non-root translations are not copied; the target keeps its own limb lengths.",
+            "Retargeted clips require visual playback review before inclusion."
+          ]
+        },
+        "converterSha256": "bdfcc80e02377ca0b658e533a1e3770c0fc6df5f30d3be1ad122a3f1468f2077"
+      }
+    },
+    {
+      "id": "conversation-anger",
+      "name": "Conversation Anger",
+      "category": "gesture",
+      "tags": [
+        "mmd",
+        "vmd",
+        "gene",
+        "mpi-embm",
+        "gesture",
+        "conversation",
+        "upper-body",
+        "loop",
+        "anger"
+      ],
+      "relativePath": "motions/gesture/conversation-anger.vmd",
+      "originalPath": "bvh/AnBh_0708_ftf_bluebeard_t3-002_28_132067_135125_3058_Anger.bvh",
+      "downloadUrl": "https://ndownloader.figshare.com/files/1763862",
+      "sha256": "ec81873d3f9b0917cc425bc2dacc66f1bd56a8df5d637761edbe2885bfba2b08",
+      "bytes": 198209,
+      "durationFrames": 84,
+      "boneFrames": 1785,
+      "morphFrames": 0,
+      "provenance": {
+        "originalPath": "bvh/AnBh_0708_ftf_bluebeard_t3-002_28_132067_135125_3058_Anger.bvh",
+        "sourceUrl": "https://figshare.com/articles/dataset/MPI_EMBM_Database_Mocap_Files/1220428",
+        "downloadUrl": "https://ndownloader.figshare.com/files/1763862",
+        "originalSha256": "92009b7186cf775ad042b5a82a36bc4475fc8b84c82bc48ebfcea2eda8fed6ef",
+        "originalBytes": 266107,
+        "archive": {
+          "relativePath": "original/mpi-embm-bvh.zip",
+          "bytes": 50099276,
+          "sha256": "1a942f5f504ed442f3fc7c4e06bfd3c2ab13ea06586cf46108598f51039a1c4e",
+          "upstreamMd5": "fceb078bafc1a0002fb7b0a3a81e3079",
+          "status": "upstream-truncated-with-matching-checksum",
+          "defects": [
+            {
+              "originalPath": "bvh/DiMi_0709_ftf_flower_t1-002_38_254833_257583_2750_Pride.bvh",
+              "reason": "upstream archive ends inside this compressed member",
+              "offset": 50044318,
+              "partialBytesDiscarded": 123407
+            }
+          ]
+        },
+        "modifications": "BVH body retargeted to Gene; cropped, resampled to 30fps, fixed root, loop seam blended. Face and fingers are not synthesized.",
+        "options": {
+          "startFrame": 30,
+          "endFrame": 367,
+          "rootMode": "fixed",
+          "faceForward": true,
+          "upperBodyOnly": true,
+          "loopBlendSeconds": 0.35
+        },
+        "conversion": {
+          "sourceFrameCount": 368,
+          "sourceFrameTime": 0.008333,
+          "startFrame": 30,
+          "endFrame": 367,
+          "outputFrameCount": 85,
+          "outputFps": 30,
+          "durationSeconds": 2.8,
+          "scale": 0.1993504314205296,
+          "sourceUpAxis": "y",
+          "faceForward": true,
+          "rootMode": "fixed",
+          "upperBodyOnly": true,
+          "loopBlendSeconds": 0.35,
+          "mapping": {
+            "下半身": "Hips",
+            "上半身": "Chest",
+            "上半身2": "Chest4",
+            "首": "Neck",
+            "頭": "Head",
+            "左肩": "LeftCollar",
+            "左腕": "LeftShoulder",
+            "左ひじ": "LeftElbow",
+            "左手首": "LeftWrist",
+            "左足": "LeftHip",
+            "左ひざ": "LeftKnee",
+            "左足首": "LeftAnkle",
+            "右肩": "RightCollar",
+            "右腕": "RightShoulder",
+            "右ひじ": "RightElbow",
+            "右手首": "RightWrist",
+            "右足": "RightHip",
+            "右ひざ": "RightKnee",
+            "右足首": "RightAnkle"
+          },
+          "missingTargets": [],
+          "warnings": [
+            "Body bones only; no face, finger articulation or physics.",
+            "Source non-root translations are not copied; the target keeps its own limb lengths.",
+            "Retargeted clips require visual playback review before inclusion."
+          ]
+        },
+        "converterSha256": "bdfcc80e02377ca0b658e533a1e3770c0fc6df5f30d3be1ad122a3f1468f2077"
+      }
+    }
+  ]
+}

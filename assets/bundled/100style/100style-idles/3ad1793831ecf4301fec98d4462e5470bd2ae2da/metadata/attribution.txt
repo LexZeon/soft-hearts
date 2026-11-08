@@ -1,0 +1,11 @@
+The 100STYLE Dataset - Ian Mason. Ian Mason, Sebastian Starke and Taku Komura (2022), Real-Time Style Modelling of Human Locomotion via Feature-Wise Transformations and Local Motion Phases. DOI: 10.1145/3522618.
+
+CC BY 4.0: https://creativecommons.org/licenses/by/4.0/
+Source: https://www.ianxmason.com/100style/
+Content revision: 3ad1793831ecf4301fec98d4462e5470bd2ae2da
+
+BVH→VMD：为 Gene 重定向，裁去 T-pose，转为 30 FPS，固定根位移并平滑循环接缝。英文命名与 tags 由 soft hearts 添加。
+Adapted for Gene. Body motion only; no face, finger articulation or physics. Each idle is selected manually; style names are descriptive tags.
+
+Only motion data is included. Music, video, preview characters and stages are not included.
+English filenames, categories and descriptive tags do not create automatic moods or behaviors.

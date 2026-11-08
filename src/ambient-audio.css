@@ -1,0 +1,14 @@
+.ambient-audio-panel { position:relative; z-index:35; width:340px; max-width:calc(100vw - 24px); padding:12px; border:1px solid #b7dfcc45; border-radius:12px; color:#d8e6df; background:#17232df5; box-shadow:0 8px 28px #0005; font-size:12px; line-height:1.65; text-align:left; }
+.ambient-audio-panel[hidden] { display:none; }
+.ambient-audio-heading,.ambient-audio-choices,.ambient-audio-actions { display:flex; align-items:center; gap:6px; }
+.ambient-audio-heading { justify-content:space-between; margin-bottom:9px; }
+.ambient-audio-heading button { padding:3px 7px; font-size:10px; }
+.ambient-audio-choices button { flex:1; }
+.ambient-audio-choices button[aria-pressed="true"] { color:#183c2a; border-color:#b7dfcc; background:#b7dfcc; }
+.ambient-audio-panel p { margin:8px 0; }
+.ambient-audio-destination { color:#c4ddd0; overflow-wrap:anywhere; }
+.ambient-audio-notice { color:#a3b6ac; font-size:10px; }
+.ambient-audio-actions { flex-wrap:wrap; margin-top:10px; }
+.ambient-audio-actions button { flex:1; padding:6px 8px; font-size:11px; }
+.ambient-audio-panel output { display:block; margin-top:8px; color:#bfd4c8; overflow-wrap:anywhere; }
+.pet-mode .ambient-audio-panel { position:absolute; top:55px; right:12px; max-height:calc(100vh - 150px); overflow:auto; }

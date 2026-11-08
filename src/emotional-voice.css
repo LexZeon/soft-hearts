@@ -1,0 +1,16 @@
+.emotional-voice { display: grid; gap: 12px; }
+.emotional-voice-intro { padding: 12px; border: 1px solid #b7dfcc45; border-radius: 10px; background: #20392d55; color: #d6e8dd; }
+.emotional-voice-intro p { margin: 0 0 10px; line-height: 1.7; font-size: 12px; }
+.emotional-voice-intro button + button { margin-left: 8px; }
+.emotional-voice-cloud { display: grid; gap: 11px; }
+.emotional-voice [hidden] { display: none !important; }
+.emotional-voice-field { display: grid; gap: 6px; color: #b6c0cf; font-size: 12px; }
+.emotional-voice-field > input, .emotional-voice-field > select, .emotional-voice-field > textarea { min-width: 0; width: 100%; }
+.emotional-voice-field textarea { resize: vertical; min-height: 62px; }
+.emotional-voice-field output { justify-self: end; color: #d1e6d9; font-size: 11px; }
+.emotional-voice-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.emotional-voice-actions button, .emotional-voice-intro button { min-height: 32px; font-size: 11px; padding: 7px 10px; }
+.emotional-voice-status { margin: 0; padding: 9px 11px; border-radius: 8px; background: #172821; color: #bed7c8; font-size: 11px; line-height: 1.7; overflow-wrap: anywhere; }
+.emotional-voice-status[data-phase="error"] { color: #f4b5ad; background: #3d252b; }
+.emotional-voice .hint { margin: 0; line-height: 1.6; }
+.emotional-voice-context { margin: 0; padding: 9px 11px; border-left: 3px solid #b7dfcc80; background: #b7dfcc0a; color: #c9dfd2; font-size: 12px; }

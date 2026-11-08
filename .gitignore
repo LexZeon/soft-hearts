@@ -1,0 +1,37 @@
+node_modules/
+dist/
+dist-electron/
+release/
+test-results/
+.local/
+*.log
+.env
+.env.*
+!.env.example
+*.pmx
+*.pmd
+*.vmd
+*.vpd
+*.zip
+*.wav
+*.mp3
+
+# Reviewed CC BY 4.0 Gene assets explicitly authorized for source ZIPs/releases.
+!assets/bundled/mmdagent-ex/gene/c7eace43dffaccff6ad0597433ef85fa57c91e03/model/gene.pmx
+!assets/bundled/mmdagent-ex/gene/c7eace43dffaccff6ad0597433ef85fa57c91e03/motions/**/*.vmd
+
+# User-authorized, separately attributed CC BY 4.0 curated motions; originals stay in .local.
+!assets/bundled/100style/100style-idles/*/motions/idle/*.vmd
+!assets/bundled/mpi-embm/mpi-embm-gestures/*/motions/gesture/*.vmd
+!assets/bundled/genea-2022/genea-2022-gestures/*/motions/gesture/*.vmd
+!assets/bundled/fnoji/fnoji-dances/*/motions/dance/*.vmd
+
+# The project's own motions (T-211: original VMDs Codex made for soft hearts next; provenance in the pack's metadata).
+!assets/bundled/soft-hearts-next/soft-hearts-actions/*/motions/gesture/*.vmd
+
+# Claude fork: local scratch / probes
+_probe/
+.claude-local/
+
+# The public-snapshot exporter lives in scripts/release/ (the plain "release/" rule above is for build output).
+!scripts/release/

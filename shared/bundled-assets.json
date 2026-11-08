@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "root": "mmdagent-ex/gene/c7eace43dffaccff6ad0597433ef85fa57c91e03",
+  "defaultMotionId": "stand",
+  "model": {
+    "relativePath": "model/gene.pmx",
+    "originalPath": "Gene.pmx",
+    "downloadUrl": "https://raw.githubusercontent.com/mmdagent-ex/gene/c7eace43dffaccff6ad0597433ef85fa57c91e03/Gene.pmx",
+    "sha256": "0ef63a75a7699f58399ae655357f91542fc5209355aac925a589aac42669df37",
+    "bytes": 2814228
+  },
+  "textures": [
+    {
+      "relativePath": "model/tex/arm.png",
+      "originalPath": "tex/arm.png",
+      "downloadUrl": "https://raw.githubusercontent.com/mmdagent-ex/gene/c7eace43dffaccff6ad0597433ef85fa57c91e03/tex/arm.png",
+      "sha256": "c8161694ae0802f9dff006da72430365f465e3408d116bf78f84fe26d49c1d5f",
+      "bytes": 8735893
+    },
+    {
+      "relativePath": "model/tex/bottoms.png",
+      "originalPath": "tex/bottoms.png",
+      "downloadUrl": "https://raw.githubusercontent.com/mmdagent-ex/gene/c7eace43dffaccff6ad0597433ef85fa57c91e03/tex/bottoms.png",
+      "sha256": "42349edae505244adcfedf1e732a9067a0c1ad06aff07d7a6169cdd1de0a1f7b",
+      "bytes": 11221174
+    },
+    {
+      "relativePath": "model/tex/extra.png",
+      "originalPath": "tex/extra.png",
+      "downloadUrl": "https://raw.githubusercontent.com/mmdagent-ex/gene/c7eace43dffaccff6ad0597433ef85fa57c91e03/tex/extra.png",
+      "sha256": "818ee32f26749139826bd705cff9120affb6b2528032d07916aa9741c8c339dc",
+      "bytes": 925921
+    },
+    {
+      "relativePath": "model/tex/eye.png",
+      "originalPath": "tex/eye.png",
+      "downloadUrl": "https://raw.githubusercontent.com/mmdagent-ex/gene/c7eace43dffaccff6ad0597433ef85fa57c91e03/tex/eye.png",
+      "sha256": "e841c0c8f31d586f1685c0115fb3e50957fa04a156c771e5ca051b5f91954dbf",
+      "bytes": 1578575
+    },
+    {
+      "relativePath": "model/tex/eye2.png",
+      "originalPath": "tex/eye2.png",
+      "downloadUrl": "https://raw.githubusercontent.com/mmdagent-ex/gene/c7eace43dffaccff6ad0597433ef85fa57c91e03/tex/eye2.png",
+      "sha256": "2db49fe7ed13a099be45fd70d50ed6c360dc9be2d4db62054faf4ec7698f7337",
+      "bytes": 6115093
+    },
+    {
+      "relativePath": "model/tex/face.png",
+      "originalPath": "tex/face.png",
+      "downloadUrl": "https://raw.githubusercontent.com/mmdagent-ex/gene/c7eace43dffaccff6ad0597433ef85fa57c91e03/tex/face.png",
+      "sha256": "0352bbaaa0ff83c074b56ad7f7d4a07474f09fba8f828c8e2873c21b2357c867",
+      "bytes": 8721499
+    },
+    {
+      "relativePath": "model/tex/hair2.png",
+      "originalPath": "tex/hair2.png",
+      "downloadUrl": "https://raw.githubusercontent.com/mmdagent-ex/gene/c7eace43dffaccff6ad0597433ef85fa57c91e03/tex/hair2.png",
+      "sha256": "e790ca66313933effcf9a27e91ebcf9d4df0cd127e6276402ab273dad91bbbc7",
+      "bytes": 9690365
+    },
+    {
+      "relativePath": "model/tex/iraira.png",
+      "originalPath": "tex/iraira.png",
+      "downloadUrl": "https://raw.githubusercontent.com/mmdagent-ex/gene/c7eace43dffaccff6ad0597433ef85fa57c91e03/tex/iraira.png",
+      "sha256": "6a5c3153169d903eaae6a566ee0104ceb0ffcc414f69ce9135ce0312e6f69e8e",
+      "bytes": 11819
+    },
+    {
+      "relativePath": "model/tex/pale.png",
+      "originalPath": "tex/pale.png",
+      "downloadUrl": "https://raw.githubusercontent.com/mmdagent-ex/gene/c7eace43dffaccff6ad0597433ef85fa57c91e03/tex/pale.png",
+      "sha256": "da02ad1bf55694d9b6deb3c089aa2dc28d6c928e1c55ca83b95f9616b05efa62",
+      "bytes": 111030
+    },
+    {
+      "relativePath": "model/tex/top.png",
+      "originalPath": "tex/top.png",
+      "downloadUrl": "https://raw.githubusercontent.com/mmdagent-ex/gene/c7eace43dffaccff6ad0597433ef85fa57c91e03/tex/top.png",
+      "sha256": "02ac007efab8c3f1c87bbfa60f89b4bfe23e122d81c51d979f5be2d6b52249e0",
+      "bytes": 10120940
+    }
+  ]
+}

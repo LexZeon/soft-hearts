@@ -1,0 +1,111 @@
+.mood-panel {
+  color: #e9edf2;
+  background: #151d28f5;
+  border: 1px solid #ffffff1f;
+  border-radius: 14px;
+  padding: 12px;
+  width: min(370px, calc(100vw - 16px));
+  max-height: calc(100vh - 100px);
+  overflow: auto;
+  pointer-events: auto;
+  box-shadow: 0 12px 32px #0005;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.mood-panel[hidden] { display: none !important; }
+.pet-mode .mood-panel, body.pet .mood-panel, .pet-mood-panel .mood-panel {
+  position: fixed;
+  top: 56px;
+  right: 8px;
+  z-index: 45;
+}
+.mood-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.mood-heading button, .mood-actions button { font-size: 11px; padding: 5px 8px; }
+.mood-description, .mood-baseline { color: #a4aebd; }
+.mood-description { margin: 7px 0; font-size: 11px; }
+.mood-summary { color: #b7dfcc; font-weight: 600; font-size: 14px; margin: 8px 0 3px; }
+.mood-phase { margin: 3px 0 8px; }
+.mood-channels { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.mood-channels th, .mood-channels td { padding: 4px; border-bottom: 1px solid #ffffff10; text-align: left; font-size: 11px; }
+.mood-channels meter { display: block; width: 100%; height: 7px; margin: 3px 0; }
+.mood-waiting, .mood-reason, .mood-user-state, .mood-expression, .mood-idle-gesture, .mood-reply-linger, .mood-boredom-timing, .mood-touch-feed, .mood-feed-cue, .mood-blush, .mood-judge-line, .mood-pause-talk, .mood-budget { margin: 8px 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.mood-parameters { border-top: 1px solid #ffffff14; padding-top: 8px; }
+.mood-parameters summary { cursor: pointer; color: #c9d3e2; }
+.mood-parameters fieldset { border: 1px solid #ffffff14; border-radius: 8px; padding: 6px 8px; margin: 8px 0; }
+.mood-parameters legend { color: #b7c4d4; font-size: 11px; padding: 0 4px; }
+.mood-inner-loop { border: 1px solid #ffffff14; border-radius: 8px; padding: 6px 8px; margin: 8px 0; font-size: 11px; }
+.mood-inner-loop legend { color: #b7c4d4; padding: 0 4px; }
+.mood-inner-loop label { display: flex; gap: 6px; align-items: center; }
+.mood-inner-loop summary { cursor: pointer; color: #c9d3e2; }
+.mood-inner-loop pre { margin: 4px 0; max-height: 14em; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.mood-slider { display: grid; grid-template-columns: 94px minmax(50px, 1fr) 28px; align-items: center; gap: 6px; margin: 5px 0; font-size: 11px; }
+.mood-slider input { width: 100%; min-width: 0; accent-color: #b7dfcc; }
+.mood-slider output { text-align: right; font-variant-numeric: tabular-nums; }
+.mood-json { display: block; width: 100%; min-height: 190px; margin-top: 7px; font: 11px/1.5 Consolas, monospace; resize: vertical; }
+.mood-actions { display: flex; flex-wrap: wrap; gap: 6px; margin: 9px 0; }
+.mood-notice { display: block; color: #adcbbf; font-size: 11px; overflow-wrap: anywhere; }
+/* Hide existing nodes without replacing them, so draft/attachment/IME state survives. */
+.pet-mode #pet-tooltip,
+.pet-mode #pet-edit-help {
+  filter: opacity(var(--pet-interaction-opacity, 1));
+  transition: filter .18s linear, opacity .18s, transform .18s;
+}
+.pet-ui-faded #pet-tooltip,
+.pet-ui-faded #pet-edit-help { pointer-events: none !important; }
+.pet-interacting .mood-panel { visibility: visible; }
+.mood-companion { position: fixed; top: 54px; right: 8px; z-index: 80; width: min(370px, calc(100vw - 16px)); pointer-events: auto; }
+.mood-companion[hidden] { display: none !important; }
+.mood-companion .mood-panel { position: static; width: 100%; max-height: none; }
+.mood-companion-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.mood-companion-heading strong { font-size: 12px; }
+.mood-companion-heading button { font-size: 10px; padding: 3px 6px; }
+.mood-companion-body { max-height: calc(100vh - 130px); overflow: auto; margin-top: 6px; }
+.mood-companion-body[hidden] { display: none !important; }
+.mood-companion.is-compact { width: min(156px, calc(100vw - 16px)); background: #151d28ed; padding: 7px 8px; border: 1px solid #ffffff1f; border-radius: 10px; }
+.mood-companion.mood-no-room { display: none !important; }
+.mood-observer-host { display: flex; flex-direction: column; }
+.mood-observer-host > .tab-panel { flex: 1 1 0; min-height: 0; height: auto; }
+.mood-companion.mood-controls-observer {
+  position: static;
+  flex: 0 1 62%;
+  width: auto;
+  min-width: 0;
+  min-height: 160px;
+  max-height: 62%;
+  margin: 12px;
+  display: flex;
+  flex-direction: column;
+}
+.mood-controls-observer .mood-companion-body { flex: 1; min-height: 0; max-height: none; overflow: auto; }
+/*
+ * Developer mode in the control window (the observer is open): the chat keeps a usable list and its whole input box;
+ * the observer gives way and scrolls inside itself. It used to take up to 62% of the card and squeeze #messages to
+ * about 20 px, with the input box cut off below the card (tests/control-chat-layout.test.mjs). Normal mode is untouched.
+ * The chat panel's minimum is its heading + input box + the list's own minimum: `contain: size` keeps a long history
+ * out of that minimum (the list scrolls), so only the observer gives way.
+ */
+.mood-observer-host:has(> .mood-controls-observer:not([hidden])) > .chat-panel { min-height: auto; }
+.mood-observer-host:has(> .mood-controls-observer:not([hidden])) .messages { contain: size; min-height: clamp(120px, calc(50vh - 240px), 240px); }
+.mood-companion.mood-controls-observer:not([hidden]) { min-height: 96px; }
+.mood-local-feedback { display: block; font: 10px/1.5 "Segoe UI", "Microsoft YaHei UI", sans-serif; color: #c2d7cb; white-space: nowrap; }
+.mood-storage-error { display: block; background: #6a2020; color: #ffe1e1; padding: 4px 6px; font-size: 11px; overflow-wrap: anywhere; }
+.mood-storage-error[hidden] { display: none !important; }
+.mood-touch-tuning { margin-top: 8px; padding: 8px; background: #151d28f5; border: 1px solid #ffffff1f; border-radius: 9px; font-size: 11px; }
+.mood-touch-tuning summary { cursor: pointer; }
+.mood-touch-tuning textarea { display: block; width: 100%; margin-top: 6px; font: 11px/1.5 Consolas, monospace; }
+.mood-touch-tuning output { color: #adcbbf; }
+.mood-expression-toggle { margin-bottom: 5px; font-size: 11px; padding: 5px 9px; }
+.mood-procedural-life { display: flex; align-items: center; gap: 6px; margin: 0 0 6px; font-size: 11px; cursor: pointer; }
+.memory-panel .memory-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.memory-tools input { flex: 1; min-width: 180px; }
+.memory-tools output { flex: 1; color: var(--muted, #a4aebd); font-size: 12px; }
+.memory-panel #memory-list { display: grid; gap: 7px; }
+.memory-panel .memory-record { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; padding: 11px 13px; text-align: left; white-space: normal; overflow-wrap: anywhere; }
+.memory-record small { color: var(--muted, #a4aebd); }
+.memory-detail { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 12px; }
+.memory-detail:empty { padding-top: 0; }
+.memory-detail > input { flex: 1; min-width: 190px; }
+.memory-messages { width: 100%; display: grid; gap: 10px; }
+.memory-messages article { border: 1px solid #ffffff10; background: #11171f80; border-radius: 9px; padding: 10px; }
+.memory-original { margin: 6px 0; white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
+.memory-panel #memory-parameters { display: block; width: 100%; margin: 8px 0; font: 12px/1.5 Consolas, monospace; }

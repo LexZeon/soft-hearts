@@ -1,0 +1,22 @@
+export type DesktopChannel = 'stable' | 'development';
+export declare const PACKAGE_NAME: 'soft-hearts-next';
+export declare const PRODUCT_NAME: 'soft hearts next';
+export declare const APP_ID: 'io.softhearts.next';
+export declare const EXECUTABLE_NAME: 'soft hearts next.exe';
+export declare const STABLE_PROFILE_FOLDER: 'soft-hearts-claude';
+export declare const DEVELOPMENT_PROFILE_FOLDER: 'soft-hearts-claude-dev';
+export declare const CHANNELS: readonly DesktopChannel[];
+export declare const SHORTCUT_NAMES: Readonly<Record<DesktopChannel, string>>;
+export declare const APP_USER_MODEL_IDS: Readonly<Record<DesktopChannel, string>>;
+export declare const CODEX_EDITION: Readonly<{
+  packageName: string; productName: string; executableName: string; appId: string; profileFolder: string;
+  shortcutNames: readonly string[];
+}>;
+export declare function windowsName(name: string): string;
+export declare function shortcutName(channel: DesktopChannel): string;
+export declare function appUserModelId(channel: DesktopChannel): string;
+export declare function profileFolder(channel: DesktopChannel): string;
+export declare function isOwnExecutable(file: unknown): boolean;
+export declare function isOwnShortcut(file: unknown, channel: DesktopChannel): boolean;
+export declare function isCodexProfilePath(directory: unknown): boolean;
+export declare function assertNotCodexProfile<T extends string>(directory: T): T;
