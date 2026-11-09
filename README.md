@@ -4,6 +4,8 @@
 
 项目仓库：[GitHub](https://github.com/LexZeon/soft-hearts)。这是用 **Claude Code** 聊天的版本，聊天走你自己的 Claude Code 登录。
 
+demo video1:https://www.bilibili.com/video/BV1eEWW6DEQL/
+
 一个面向 MMD 模型的轻量 AI 桌宠，首版为 Windows 桌面开发预览。独立实现，准备长期开发和开源；只支持 PMX/PMD，不引入 Live2D。
 
 ## 把仓库交给 Claude Code 安装
