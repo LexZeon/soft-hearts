@@ -127,4 +127,32 @@ pnpm smoke
 
 原创源码采用 [MIT](LICENSE)。参考项目见[鸣谢](ACKNOWLEDGEMENTS.md)，实际依赖见[第三方通知](THIRD_PARTY_NOTICES.md)。模型、动作、纹理和语音服务各自遵循其权利与使用条件。
 
+## 鸣谢
+
+soft hearts 的成长，离不开这些工具、开源项目和创作者。
+
+特别感谢 **OpenAI Codex** 和 **Anthropic Claude / Claude Code**，在代码开发、问题排查、测试、研究和文档整理中提供了大量帮助，让这个桌面陪伴的想法一步步变成可以使用的作品。
+
+| 感谢对象 | 对项目的帮助 |
+|---|---|
+| **Electron、Chromium、Node.js** | 桌面应用与运行环境。 |
+| **Three.js、mmd-parser** | 3D 渲染，以及 MMD 模型和动作的加载。 |
+| **Ammo.js、Bullet** | 模型的物理模拟。 |
+| **[Gene / 名古屋工业大学](https://github.com/mmdagent-ex/gene)** | 预装模型、贴图和配套动作。 |
+| **[100STYLE](https://www.ianxmason.com/100style/)** — Ian Mason、Sebastian Starke、Taku Komura | 用于制作待机动作的动作数据。 |
+| **[MPI EMBM](https://figshare.com/articles/dataset/MPI_EMBM_Database_Mocap_Files/1220428)** — Ekaterina Volkova | 用于制作身体与会话手势的动作数据。 |
+| **[GENEA Challenge 2022](https://zenodo.org/records/6977157)** 团队与贡献者 | 用于制作会话手势的动作数据。 |
+| **[fnoji（えふのじ）](https://booth.pm/ja/items/8103074)** | Split Dance 舞蹈动作。 |
+| **SenseVoice / 阿里通义实验室、FunASR、sherpa-onnx、Kaldi** | 本地语音识别模型、模型转换，以及音频处理方法的参考。 |
+| **OpenMMLab 的 RTMPose、RTMDet，以及 rtmlib** | 本地姿态感知模型与处理方法参考。 |
+| **ONNX Runtime、DirectML、DirectX Shader Compiler** | 本地模型推理与可选 GPU 加速。 |
+| **阿里云百炼、通义千问语音团队** | 可选的情感语音合成服务。 |
+| **[Project AIRI](https://github.com/moeru-ai/airi)** | 虚拟陪伴、桌面体验和角色管理方面的启发。 |
+| **[Character Card V2](https://github.com/malfoyslastname/character-card-spec-v2/blob/main/spec_v2.md)** | 角色卡数据格式的参考。 |
+| **TypeScript、Vite、esbuild、tsx、pnpm、electron-builder、Playwright** | 开发、构建、打包与测试工具。 |
+
+也感谢愿意试用 soft hearts、报告问题、分享想法的人。你们的反馈，会帮助她一点点变得更好。
+
+完整的素材署名、来源、修改记录及许可说明见[第三方通知](https://github.com/LexZeon/soft-hearts/blob/main/THIRD_PARTY_NOTICES.md)。
+
 
