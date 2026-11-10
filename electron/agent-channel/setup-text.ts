@@ -14,12 +14,14 @@ export function agentServerName(profileDirectory: string): string {
  */
 export function registrationArguments(launch: ShimLaunch, name: string): string[] {
   return ['mcp', 'add', '--transport', 'stdio', '--scope', 'user',
-    ...Object.entries(launch.env).flatMap(([key, value]) => ['--env', `${key}=${value}`]), name, '--', launch.command, ...launch.args];
+    // `--env=K=V`, one value each: Claude Code 2.1.319 lets a bare `--env` take every following word up to the next option, so
+    // the server name right after it was read as a second variable and the add failed (x64 install report, 2026-11-09).
+    ...Object.entries(launch.env).map(([key, value]) => `--env=${key}=${value}`), name, '--', launch.command, ...launch.args];
 }
 
 export function setupSnippets(launch: ShimLaunch, name: string): { claudeCode: string; desktopConfig: string } {
   const quote = (value: string) => `"${value.replace(/"/g, '\\"')}"`;
-  const env = Object.entries(launch.env).map(([key, value]) => `--env ${key}=${value}`).join(' ');
+  const env = Object.entries(launch.env).map(([key, value]) => `--env=${key}=${value}`).join(' ');
   return {
     claudeCode: `claude mcp add --transport stdio --scope user ${env} ${name} -- ${[launch.command, ...launch.args].map(quote).join(' ')}`,
     desktopConfig: JSON.stringify({ mcpServers: { [name]: launch } }, null, 2),

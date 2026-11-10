@@ -1,10 +1,10 @@
 # soft hearts
 
+**▶ [演示视频（B 站）](https://www.bilibili.com/video/BV1eEWW6DEQL/)**
+
 > **English:** soft hearts currently talks in Chinese only (the interface already has English). An English version, where she talks in English too, is in progress.
 
 项目仓库：[GitHub](https://github.com/LexZeon/soft-hearts)。这是用 **Claude Code** 聊天的版本，聊天走你自己的 Claude Code 登录。
-
-demo video1:https://www.bilibili.com/video/BV1eEWW6DEQL/
 
 一个面向 MMD 模型的轻量 AI 桌宠，首版为 Windows 桌面开发预览。独立实现，准备长期开发和开源；只支持 PMX/PMD，不引入 Live2D。
 
@@ -12,7 +12,9 @@ demo video1:https://www.bilibili.com/video/BV1eEWW6DEQL/
 
 把仓库地址发给你自己的 Claude Code：
 
-> 请从 https://github.com/LexZeon/soft-hearts 帮我安装并启动 soft hearts，聊天用我自己的 Claude Code 登录。请先介绍能用的功能，偏好可以先用默认值，以后再改。
+> 请从 https://github.com/LexZeon/soft-hearts 按仓库里的 START-HERE.md 一步步帮我安装并启动 soft hearts，聊天用我自己的 Claude Code 登录。请先介绍能用的功能，偏好可以先用默认值，以后再改。
+
+**给安装它的 Claude Code：** 请先完整读 [START-HERE.md](START-HERE.md)，照它的第 1–9 步做。装好、她回过话以后还有三步别漏：替作者说一句话（第 7 步），主动问用户要不要定制角色或换上自己的模型（第 8 步），问要不要带感情的朗读（第 9 步）。
 
 Claude Code 会先检查仓库访问和本机环境，再按[首次使用引导](START-HERE.md)准备、启动并验证。也可以下载源码 ZIP：完整解压到一个短一点的路径（比如 `C:\soft-hearts`），再双击 `start-soft-hearts.cmd`；Windows 给浏览器下载的脚本打了"来自网络"的标记时，它会先说明并问你要不要只给这个文件夹里的 soft hearts 文件去掉标记（按 Y；也可以解压前在压缩包上右键 → 属性 → 勾选"解除锁定"）。第一次只安装并启动源码版桌宠，几分钟就好。首次默认使用预装 Gene；已有的模型设置会保留，也可以稍后换成自己的 PMX/PMD。源码不包含私人模型、账户或密钥。
 

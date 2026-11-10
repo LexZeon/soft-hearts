@@ -385,7 +385,7 @@ test('registration text: options before the name, one quoted launch line, and va
   assert.equal(agentServerName('C:\\Users\\me\\AppData\\Roaming\\soft-hearts-claude'), 'soft-hearts-next');
   assert.equal(agentServerName('C:\\Users\\me\\AppData\\Roaming\\soft-hearts-claude-dev\\'), 'soft-hearts-next-dev');
   const text = setupSnippets(launch, 'soft-hearts-next');
-  assert.equal(text.claudeCode, 'claude mcp add --transport stdio --scope user --env ELECTRON_RUN_AS_NODE=1 soft-hearts-next -- '
+  assert.equal(text.claudeCode, 'claude mcp add --transport stdio --scope user --env=ELECTRON_RUN_AS_NODE=1 soft-hearts-next -- '
     + '"C:\\Users\\me\\soft hearts next\\soft hearts next.exe" "C:\\Users\\me\\soft hearts next\\resources\\agent-channel\\soft-hearts-mcp.mjs" "--profile" "C:\\Users\\me\\AppData\\Roaming\\soft-hearts-claude"');
   assert.deepEqual(JSON.parse(text.desktopConfig), { mcpServers: { 'soft-hearts-next': launch } });
   assert.ok(!/token|[a-f0-9]{64}/.test(text.claudeCode + text.desktopConfig), 'the token stays in the profile file');

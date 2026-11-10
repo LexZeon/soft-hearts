@@ -4288,8 +4288,10 @@ if (hasLock) {
       localAsr = createLocalAsrOrNull({ directory: __dirname, publish: view => broadcast('desk:local-asr', view), promptRaised: owner => { if (owner === 'pet') showControls(); } });
       void localAsr?.init();
       registerIPC();
-      // Preview/player pre-dispatch ownership is not connected yet. Fail closed
-      // until its exact host-acknowledged lifetime is integrated by the Voice owner.
+      // Sleep entry stayed failed closed (as if a chat, speech and a manual motion were always on) until renderer playback
+      // reported its own lifetime. It does now (begin/endSpeechPlaybackActivity from src/ui/VoiceOutput.ts), so the real
+      // state counts from here. Without this she could only ever get drowsy and never fall asleep (found 2026-11-09).
+      fatigueActivityReady = true;
       fatigueActivity.setSelection(store.current);
       syncFatigueActivity();
       moodTimer = setInterval(() => {
