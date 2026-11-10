@@ -27,7 +27,7 @@ const OLD_LINE = asLine(OLD), CURRENT_LINE = asLine(CURRENT), OTHER_LINE = asLin
 const EXTERNAL = 'Q:\\Third-party\\unrelated.exe --manual';
 const REST = 'Q:\\Other\\github.exe';
 const add = (name: string) => ['mcp', 'add', '--transport', 'stdio', '--scope', 'user',
-  '--env', 'ELECTRON_RUN_AS_NODE=1', name, '--', CURRENT.command, ...CURRENT.args];
+  '--env=ELECTRON_RUN_AS_NODE=1', name, '--', CURRENT.command, ...CURRENT.args];
 const remove = (name: string) => ['mcp', 'remove', name, '--scope', 'user'];
 const LIST = ['mcp', 'list'];
 const successfulOrder = [LIST, add(SPARE), remove(NAME), add(NAME), remove(SPARE)];

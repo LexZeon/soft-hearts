@@ -24,7 +24,7 @@ setUiLanguage('zh-CN');
 
 const off: AgentChannelView = { enabled: false, listening: false, connections: 0, lastAction: null };
 const on: AgentChannelView = { enabled: true, listening: true, connections: 1, lastAction: null,
-  setup: { claudeCode: 'claude mcp add --transport stdio --scope user --env ELECTRON_RUN_AS_NODE=1 soft-hearts-next -- "a" "b"', desktopConfig: '{"mcpServers":{}}' } };
+  setup: { claudeCode: 'claude mcp add --transport stdio --scope user --env=ELECTRON_RUN_AS_NODE=1 soft-hearts-next -- "a" "b"', desktopConfig: '{"mcpServers":{}}' } };
 
 test('status line: off by default, then on with connections and the last action', () => {
   assert.match(agentChannelStatusText(off), /^已关闭/);
