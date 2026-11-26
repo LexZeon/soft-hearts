@@ -1,15 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import type { ChatSettingCardView } from '../shared/chat-settings';
-import { CHAT_SETTING_LEAVE_MS, ChatSettingCards, renderChatSettingCard } from '../src/ui/ChatSettingCard';
-import { setUiLanguage } from '../shared/ui-language';
+import type { ChatSettingCardView } from '../shared/brain/chat-settings';
+import { CHAT_SETTING_LEAVE_MS, ChatSettingCards, renderChatSettingCard } from '../src/brain/ChatSettingCard';
+import { setUiLanguage } from '../shared/foundation/ui-language';
 
 setUiLanguage('zh-CN');
 
 /**
  * R46.
- * On the pet the card vanished the moment it settled: its chat area was kept
+ * On the companion the card vanished the moment it settled: its chat area was kept
  * visible only by an open/busy card, so the tap faded the whole area in 0.18 s,
  * and the card was cut out 8 s later. Now a settled card folds into its
  * one-line result, stays readable for a while, fades out and only then goes.
@@ -98,7 +98,7 @@ test('R46: on the pet a settled card stays readable, then fades, then is removed
 });
 
 test('R46: the pet chat area stays up while any card is shown, the fold animates, and reduced motion skips it', () => {
-  const css = readFileSync(new URL('../src/ui/chat-setting-card.css', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../src/brain/chat-setting-card.css', import.meta.url), 'utf8');
   assert.match(css, /\.pet-chat:has\(\.chat-setting-card\)\s*\{[^}]*opacity:\s*1/, 'a settled or leaving card no longer drops the chat area at once');
   assert.match(css, /@keyframes\s+chat-setting-fold/);
   assert.match(css, /\[data-leaving="true"\][^{]*\{[^}]*opacity:\s*0[^}]*transition:[^}]*opacity\s*\.6s/, `fade length matches CHAT_SETTING_LEAVE_MS (${CHAT_SETTING_LEAVE_MS} ms)`);

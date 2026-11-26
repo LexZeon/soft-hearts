@@ -2,10 +2,10 @@
  * Codex T-207 round 2 (2026-11-04, bridge X-257, pinned 9f58785) counterexample for #5 "how long her bubble stays"
  * (docs/claude/2026-11-04-reply-linger.md, section "Codex 第二轮反例和修复"). "嗯。" completed at t=0 while her face was not
  * on screen, and no face anchor came until t=2800 ms. The host was still owed its whole lifetime (it counts only while the
- * bubble can be seen), but the pet window had counted its own deadline from the completion and sent 'hidden' first: the
- * bubble was on screen for 0 ms. The rule held here: while the host still owes time, the pet window never hides first, and
+ * bubble can be seen), but the companion window had counted its own deadline from the completion and sent 'hidden' first: the
+ * bubble was on screen for 0 ms. The rule held here: while the host still owes time, the companion window never hides first, and
  * from the first moment a reply can be seen it stays at least its readable floor (in fact its whole lifetime).
- * The real pet window (src/ui/PetUI.ts, fake DOM and IPC) drives the real host window (electron/reply-window.ts, fake
+ * The real companion window (src/stage/PetUI.ts, fake DOM and IPC) drives the real host window (electron/brain/reply-window.ts, fake
  * Electron boundaries) as electron/main.ts wires updatePetReply; no app window, model or chat record is used.
  */
 import test, { type TestContext } from 'node:test';
@@ -16,13 +16,13 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { transformSync } from 'esbuild';
-import type { PetReplyUpdate } from '../shared/contracts';
+import type { PetReplyUpdate } from '../shared/foundation/pet-reply';
 import type { ReplyLingerBubble } from '../shared/behaviors/reply-linger/interface';
 import { chooseReplyLinger, replyLingerNow } from '../shared/behaviors/reply-linger/choose';
 import { REPLY_LINGER_KNOBS } from '../shared/behaviors/reply-linger/knobs';
-import { replyPieces } from '../shared/reply-bubbles';
-import { PetUI } from '../src/ui/PetUI';
-import { ReplySpeechState } from '../src/ui/reply-speech';
+import { replyPieces } from '../shared/voice/reply-bubbles';
+import { PetUI } from '../src/stage/PetUI';
+import { ReplySpeechState } from '../src/voice/reply-speech';
 
 const lingerOf = (bubble: ReplyLingerBubble) => chooseReplyLinger(replyLingerNow(bubble, null), () => 0);
 const FACE = { x: 200, y: 210, radius: 110, visible: true };
@@ -59,7 +59,7 @@ function hostWindow(t: TestContext) {
     showInactive() { if (!this.visible) { this.visible = true; this.shown.push(Date.now()); this.emit('show'); } }
     destroy() { this.destroyed = true; this.emit('closed'); }
   }
-  const filename = new URL('../electron/reply-window.ts', import.meta.url);
+  const filename = new URL('../electron/brain/reply-window.ts', import.meta.url);
   const localRequire = createRequire(filename), module = { exports: {} };
   const code = transformSync(readFileSync(filename, 'utf8'), { loader: 'ts', format: 'cjs', target: 'es2022' }).code;
   const injected = (name: string) => name === 'electron'
@@ -74,7 +74,7 @@ function hostWindow(t: TestContext) {
   return { reply, decided, child: () => windows[1]! };
 }
 
-/** The real pet window wired to the real host window; her face starts off screen, as at the start of Codex's case. */
+/** The real companion window wired to the real host window; her face starts off screen, as at the start of Codex's case. */
 function petAndHost(t: TestContext) {
   const host = hostWindow(t);
   const published: { at: number; patch: PetReplyUpdate }[] = [];
@@ -197,7 +197,7 @@ test('T-207 round 2 control: in sight the whole time, the pet window still ends 
   const text = '好呀。', ms = lingerOf({ text, pieces: null, segmented: false }).ms;
   ui.setFaceAnchor(FACE);
   ui.showAnswer(text, false, 'control'); await settle();
-  // No callback until long after: the host ends it on time by itself, and the pet window lets go at its next update.
+  // No callback until long after: the host ends it on time by itself, and the companion window lets go at its next update.
   t.mock.timers.tick(ms);
   assert.deepEqual(host.child().hidden, [ms]);
   t.mock.timers.tick(5000);

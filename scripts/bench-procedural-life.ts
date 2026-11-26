@@ -8,7 +8,7 @@
 import { Session } from 'node:inspector/promises';
 import { EyelidCompositor } from '../src/stage/channel-compositors';
 import { ProceduralLife, type LifeGates, type LifeInput, type LifePort } from '../src/stage/procedural-life';
-import { SHY_CLIP_ID } from '../shared/surprise-preview';
+import { SHY_CLIP_ID } from '../shared/initiative/surprise-preview';
 
 const FRAMES = 200_000, DT = 1 / 60;
 const owner = {}, bone = {};

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { scanFollowMouseRequest as scan, type FollowMouseTextHint } from '../electron/scan-follow-mouse-request';
+import { scanFollowMouseRequest as scan, type FollowMouseTextHint } from '../electron/settings/scan-follow-mouse-request';
 
 function examples(expected: FollowMouseTextHint, inputs: string[]): void {
   for (const input of inputs) assert.equal(scan(input), expected, JSON.stringify(input));

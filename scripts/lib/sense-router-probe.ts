@@ -2,9 +2,9 @@
 // haiku reads a made-up transcript and writes its facts, then the chat model (Claude Code's default, as for her chat) says her short
 // line as Gene. Two real requests. Prints the facts, her line and the times. Run it through the heavy gate:
 //   node scripts/dev/heavy.mjs --label sense-router-probe -- node node_modules/tsx/dist/cli.mjs scripts/lib/sense-router-probe.ts
-import { senseAskWithClaude, senseLineWithClaude } from '../../electron/sense-router/model';
+import { senseAskWithClaude, senseLineWithClaude } from '../../electron/senses/sense-router/model';
 import { genePersona } from './prompt-eval-runner';
-import { SENSE_SUMMARY_SYSTEM_PROMPT, parseSenseLine, parseSenseSummary, senseLinePrompt, senseSummaryPrompt } from '../../shared/sense-router';
+import { SENSE_SUMMARY_SYSTEM_PROMPT, parseSenseLine, parseSenseSummary, senseLinePrompt, senseSummaryPrompt } from '../../shared/senses/sense-router';
 
 const HEARD = '欢迎回到今天的节目。今天我们请到的嘉宾是一位研究彗星的天文学家，她说明年春天会有一颗肉眼可见的彗星经过，最佳观测时间是凌晨四点左右，往东北方向看。';
 const USER = '刚才视频里说的那个彗星什么时候能看到';

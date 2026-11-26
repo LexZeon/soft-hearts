@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { RECORDING_ON_MARKER, UserProfileStore, userProfileScopeId, type UserProfileScope } from '../electron/user-profile';
-import { UserProfileManagement } from '../electron/user-profile-management';
+import { RECORDING_ON_MARKER, UserProfileStore, userProfileScopeId, type UserProfileScope } from '../electron/memory/user-profile';
+import { UserProfileManagement } from '../electron/memory/user-profile-management';
 
 const a: UserProfileScope = { characterId: 'char-a', providerScope: 'p' };
 const b: UserProfileScope = { characterId: 'char-b', providerScope: 'p' };

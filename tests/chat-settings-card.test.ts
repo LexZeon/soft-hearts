@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { ChatSettingCardView } from '../shared/chat-settings';
-import { ChatSettingCards, readChatSettingCard, renderChatSettingCard } from '../src/ui/ChatSettingCard';
-import { setUiLanguage } from '../shared/ui-language';
+import type { ChatSettingCardView } from '../shared/brain/chat-settings';
+import { ChatSettingCards, readChatSettingCard, renderChatSettingCard } from '../src/brain/ChatSettingCard';
+import { setUiLanguage } from '../shared/foundation/ui-language';
 
 setUiLanguage('zh-CN');
 

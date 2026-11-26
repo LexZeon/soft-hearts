@@ -7,8 +7,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { _electron as electron } from 'playwright';
-import { createMoodState, serializeMoodState, DEFAULT_MOOD_PARAMETERS } from '../shared/mood.ts';
-import { DEFAULT_SETTINGS } from '../shared/defaults.ts';
+import { createMoodState, serializeMoodState, DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood.ts';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults.ts';
 import { createClaudeFixture } from './lib/claude-smoke-fixture.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -17,7 +17,7 @@ const executable = process.env.MMD_TEST_EXE && await realpath(process.env.MMD_TE
 assert.ok(source && executable, 'Use an owner-validated frozen source and packaged executable.');
 assert.notEqual(source.toLowerCase(), (await realpath(root)).toLowerCase());
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
-for (const name of ['shared/mood.ts', 'shared/contracts.ts', 'shared/defaults.ts'])
+for (const name of ['shared/foundation/mood.ts', 'shared/contracts.ts', 'shared/foundation/defaults.ts'])
   assert.equal(sha(await readFile(path.join(root, name))), sha(await readFile(path.join(source, name))), 'Fixture helpers must match the frozen runtime source.');
 const asar = path.join(path.dirname(executable), 'resources/app.asar');
 const asarSha256 = sha(await readFile(asar)), harnessSha256 = sha(await readFile(fileURLToPath(import.meta.url)));

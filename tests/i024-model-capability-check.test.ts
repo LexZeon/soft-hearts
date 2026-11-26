@@ -1,12 +1,12 @@
 // I-024 模型体检: what haiku may see (names only), its strict answer, and the vertex check its names must pass (synthetic models).
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildModelProfile, type ModelProfile } from '../shared/model-profile';
-import { deriveModelCapabilities } from '../shared/model-capability';
+import { buildModelProfile, type ModelProfile } from '../shared/stage/model-profile';
+import { deriveModelCapabilities } from '../shared/stage/model-capability';
 import {
   MODEL_CHECK_SYSTEM_PROMPT, missingNeeds, modelCheckNames, modelCheckPrompt, parseHaikuCandidates, validateModelCheckRequest,
   verifyHaikuCandidates, type ModelCheckRequest,
-} from '../shared/model-capability-check';
+} from '../shared/stage/model-capability-check';
 import { StageModelProfile, onStageModelProfile, requestModelProfileCache } from '../src/stage/model-profile';
 import { JAPANESE_MORPHS, profileInput, toThreeMesh, toyModel, type ModelData, type ToyMorph } from './helpers/model-fixtures';
 

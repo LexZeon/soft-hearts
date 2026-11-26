@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import { bodyPoseBinding,bodyPoseChoices } from '../shared/personalize-body-bindings';
+import { bodyPoseBinding,bodyPoseChoices } from '../shared/stage/personalize-body-bindings';
 test('only the adopted Gene fixed pose resolves with its exact source and three rotation properties',()=>{
  const target='0ef63a75a7699f58399ae655357f91542fc5209355aac925a589aac42669df37';
  const choices=bodyPoseChoices(target);assert.equal(choices.length,1);

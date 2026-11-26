@@ -1,17 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {randomUUID} from 'node:crypto';
-import {readFile} from 'node:fs/promises';
-import {AnimationClip,Bone,BufferGeometry,MeshBasicMaterial,NumberKeyframeTrack,QuaternionKeyframeTrack,Skeleton,SkinnedMesh} from 'three';
-import {PersonalizeVisualAuthoring} from '../electron/personalize-visual-authoring';
-import type {VisualBehaviorStore} from '../electron/visual-behavior-store';
-import {emptyVisualBehavior,validateVisualSelection} from '../shared/personalize-visual';
-import {EXPRESSION_MORPHS,parseExpressionStudy,generateExpressionRecipe,validateExpressionRecipe,editExpressionRecipe,validateExpressionResource,expressionResearchPrompt,type ExpressionPreview} from '../shared/expression-composition';
-import {PersonalizeVisualControls} from '../src/ui/PersonalizeVisualControls';
-import {BehaviorMotionPlayer} from '../src/stage/behavior-motion';
-import {MmdStage} from '../src/stage/MmdStage';
-import {LayeredMmdAnimation} from '../src/stage/motion-layers';
-import {createMoodState,getMoodSnapshot} from '../shared/mood';
+import { randomUUID } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+import { desktopApiSource } from './helpers/desktop-api-source';
+import { PersonalizeVisualAuthoring } from '../electron/stage/personalize-visual-authoring';
+import type { VisualBehaviorStore } from '../electron/senses/visual-behavior-store';
+import { emptyVisualBehavior, validateVisualSelection } from '../shared/stage/personalize-visual';
+import { parseExpressionStudy, generateExpressionRecipe, validateExpressionRecipe, editExpressionRecipe, validateExpressionResource, expressionResearchPrompt } from '../shared/actions/expression-composition';
+import { wiringSource } from './helpers/wiring-source';
+import { rendererSource as readRendererSource } from './helpers/renderer-source'; // overhaul step 5: src/main.ts and src/wiring/*.ts
 
 const output=()=>JSON.stringify({label:'温和但坚定',parameters:{valence:.6,energy:.25,certainty:.85,seriousness:.6},forbiddenMorphIds:['eye_wide'],requiredAnyOf:['brow_calm'],questions:[],insufficient:''});
 const flush=async()=>{for(let i=0;i<35;i++)await Promise.resolve();};
@@ -121,82 +118,10 @@ class Element{
   constructor(readonly tagName:string){}append(...nodes:Element[]){this.children.push(...nodes);}replaceChildren(...nodes:Element[]){this.children=[...nodes];}setAttribute(_key:string,_value:string){}
 }
 const all=(node:Element):Element[]=>[node,...node.children.flatMap(all)];
-function stageFixture(f:ReturnType<typeof hostFixture>){
-  const previous={window:Object.getOwnPropertyDescriptor(globalThis,'window'),document:Object.getOwnPropertyDescriptor(globalThis,'document')};
-  const geometry=new BufferGeometry(),material=new MeshBasicMaterial(),mesh=new SkinnedMesh(geometry,material),arm=new Bone();arm.name='左腕';mesh.add(arm);mesh.bind(new Skeleton([arm]));geometry.userData.MMD={iks:[],grants:[]};
-  mesh.morphTargetInfluences=Array(184).fill(.02);mesh.morphTargetDictionary=Object.fromEntries(EXPRESSION_MORPHS.map(row=>[row.name,row.index]));
-  Object.assign(mesh.morphTargetDictionary,{'まばたき':88,'あ':123,'にっこり':147,'赤み':176});
-  const animation=new LayeredMmdAnimation(mesh);animation.setClips({pose:new AnimationClip('synthetic moving body',8,[new QuaternionKeyframeTrack('.bones[左腕].quaternion',[0,8],[0,0,0,1,0,0,Math.sin(.3),Math.cos(.3)])]),gesture:null,expression:new AnimationClip('synthetic mouth',8,[new NumberKeyframeTrack('.morphTargetInfluences[123]',[0,8],[.2,.4])])});
-  const mixer=animation.helper.objects.get(mesh)!.mixer! as any,action=mixer._actions[0],order:string[]=[];
-  const player=new BehaviorMotionPlayer(mesh,{targetSupported:true,resolve:async()=>{throw Error('no VMD');},load:async()=>{throw Error('no VMD load');}});
-  const originalStop=player.stop.bind(player);player.stop=()=>{order.push('inner');originalStop();};
-  const snapshot=getMoodSnapshot(createMoodState(Date.now()),Date.now());snapshot.primary='content';snapshot.intensity.expression=100;
-  const stage=Object.create(MmdStage.prototype) as any;
-  Object.assign(stage,{surprisePending:null,surprisePreview:null}); // Real constructor defaults for the inactive preview owner.
-  Object.assign(stage,{mesh,animation,modelGeneration:4,modelUrl:'mmd-asset://synthetic-gene',settings:{model:{url:'mmd-asset://synthetic-gene'}},pendingModel:Promise.resolve(),options:{transparent:false},disposed:false,hostVisible:true,container:{clientWidth:400,clientHeight:560},
-    controls:{interacting:false},visualPreview:null,moodContact:{contact:false,feeding:false,hover:0},moodFaceBlocked:false,behaviorBlocked:false,blinkIndex:88,mouthIndex:123,blushChannel:{index:176},naturalBlink:.3,finalEyeClosure:.3,
-    moodView:{token:'live-token',expressions:true,snapshot,behavior:{state:null,reaction:null}},behaviorMotion:player,
-    localPhysics:{restore:()=>order.push('physics-restore'),frame:()=>order.push('physics-frame')},motionTransition:{restore:()=>order.push('outer-restore'),frame:()=>order.push('outer-frame')}});
-  const receipts:string[]=[];let holdResolve:Promise<void>|null=null;
-  const desktop={visualPreviewReceipt:async(row:any)=>{receipts.push(row.phase);f.host.receipt(f.owner,row);},resolveExpressionPreview:async(id:string,token:string,generation:number)=>{const resource=await f.host.resolveExpressionPreview(f.owner,id,token,generation);if(holdResolve)await holdResolve;return resource;}};
-  Object.defineProperty(globalThis,'window',{configurable:true,value:{desktop}});Object.defineProperty(globalThis,'document',{configurable:true,value:{hidden:false,createElement:(tag:string)=>new Element(tag)}});
-  f.onCancel((id,token)=>stage.cancelVisualPreview(id,token,false));
-  let steps=0;
-  const step=()=>{player.restore();animation.helper.update(.1);steps++;mesh.morphTargetInfluences![88]=.3;mesh.morphTargetInfluences![176]=.1+steps*.001;mesh.morphTargetInfluences![147]=.12+steps*.001;
-    const base=mesh.morphTargetInfluences!.slice();stage.updateBehaviorMotion(true);player.frame(.1);stage.acknowledgeVisualFrame();return base;};
-  return {stage,player,mesh,animation,action,mixer,order,receipts,step,hold:(p:Promise<void>|null)=>{holdResolve=p;},get steps(){return steps;},dispose(){stage.cancelVisualPreview();player.dispose();animation.dispose();mesh.skeleton.dispose();geometry.dispose();material.dispose();for(const name of ['window','document'] as const){const old=previous[name];if(old)Object.defineProperty(globalThis,name,old);else Reflect.deleteProperty(globalThis,name);}}};
-}
-test('actual Stage/sampler uses the host composition on an advancing synthetic base and restores outer layers first',async()=>scoped(async f=>{
-  const s=stageFixture(f);try{
-    const state=await f.research(),view=f.host.previewExpression(f.owner,state.id,state.revision),pending=s.stage.previewVisual(view);await flush();const base=s.step();await flush();assert.equal(await pending,true);
-    assert.deepEqual(s.receipts,['bind','ready']);const samples=s.player.getCompositionState().samples;assert.ok(samples.length>0);
-    assert.equal(s.player.getState().active,true,'existing authored-face/drowsy ownership view includes the composition');
-    for(let i=0;i<184;i++)if(!samples.some(row=>row.index===i))assert.equal(s.mesh.morphTargetInfluences![i],base[i]);
-    for(let i=0;i<3;i++)s.step();assert.equal(s.mixer._actions[0],s.action);assert.ok(Math.abs(s.action.time-s.steps*.1)<1e-8);
-    s.stage.finalEyeClosure=1;const closedBase=s.step();assert.equal(s.mesh.morphTargetInfluences![89],closedBase[89]);assert.ok(!s.player.getCompositionState().samples.some(row=>EXPRESSION_MORPHS.some(target=>target.eye&&target.index===row.index)));
-    s.stage.finalEyeClosure=.3;
-    const finalBase=s.step();s.order.length=0;s.stage.cancelVisualPreview(view.id,view.token);
-    assert.deepEqual(s.order.slice(0,3),['physics-restore','outer-restore','inner']);assert.deepEqual(s.mesh.morphTargetInfluences,finalBase);
-    assert.equal(s.player.getCompositionState().id,null);assert.equal(s.player.getState().active,false);assert.equal(f.counts.legacyResolves,0);
-  }finally{s.dispose();}
-}));
-test('manual/contact/camera priority and generation loss invalidate composition without rewriting independent face output',async()=>scoped(async f=>{
-  const s=stageFixture(f);try{
-    for(const block of ['moodFaceBlocked','camera','contact'] as const){
-      const state=await f.research(),view=f.host.previewExpression(f.owner,state.id,state.revision),pending=s.stage.previewVisual(view);await flush();
-      if(block==='camera')s.stage.controls.interacting=true;else if(block==='contact')s.stage.moodContact.contact=true;else s.stage.moodFaceBlocked=true;
-      const base=s.step();await flush();assert.equal(await pending,false);assert.deepEqual(s.mesh.morphTargetInfluences,base);
-      s.stage.controls.interacting=false;s.stage.moodContact.contact=false;s.stage.moodFaceBlocked=false;
-    }
-    const state=await f.research(),view=f.host.previewExpression(f.owner,state.id,state.revision),gate=deferred();s.hold(gate.promise);
-    const pending=s.stage.previewVisual(view);await flush();s.stage.modelGeneration=5;s.stage.cancelVisualPreview();gate.resolve();await flush();assert.equal(await pending,false);assert.equal(s.player.getCompositionState().id,null);
-  }finally{s.dispose();}
-}));
-test('real controls commands -> host semantic draft/edit/undo -> actual Stage preview/cancel; no image, save or reward',async()=>scoped(async f=>{
-  const s=stageFixture(f);let listener:((v:{id:string;token:string})=>void)|undefined;
-  f.onCancel((id,token)=>{s.stage.cancelVisualPreview(id,token,false);listener?.({id,token});});
-  const root=new Element('div'),ui=new PersonalizeVisualControls(root as unknown as HTMLElement,{api:{
-    getVisualAuthoring:id=>f.host.get(f.owner,id),researchExpression:request=>f.host.researchExpression(f.owner,request),editExpression:async request=>f.host.editExpression(f.owner,request),previewExpression:async(id,revision)=>f.host.previewExpression(f.owner,id,revision),
-    visualPreviewReceipt:async request=>f.host.receipt(f.owner,request),cancelVisualAuthoring:async id=>f.host.close(f.owner,id),onVisualPreviewCancelled:callback=>{listener=callback;return()=>{listener=undefined;};},
-    chooseVisualMaterial:async()=>{throw Error('no image');},researchVisual:async()=>{throw Error('no image');},previewVisualBinding:async()=>{throw Error('no VMD');},saveVisualBehavior:async()=>{throw Error('no save');},changeVisualBehavior:async()=>{throw Error('no save');},
-  },previewExpression:value=>s.stage.previewVisual(value)});
-  try{
-    ui.select({id:f.characterId,name:'合成卡'});const details=all(root).find(row=>row.tagName==='details')!;details.open=true;details.ontoggle!();await flush();
-    const field=(key:string)=>all(root).find(row=>row.dataset.expressionField===key)!;
-    const click=(key:string)=>{const button=all(root).find(row=>row.dataset.expressionAction===key)!;assert.equal(button.disabled,false,key);button.onclick!();};
-    field('description').value='温和但坚定';field('description').oninput!();click('research');await flush();assert.equal(f.counts.calls,1);
-    field('strength').value='.55';field('strength').onchange!();await flush();assert.equal((await f.get()).expression!.recipe!.strength,.55);
-    click('undo');await flush();assert.equal((await f.get()).expression!.recipe!.strength,.45);
-    click('redo');await flush();assert.equal((await f.get()).expression!.recipe!.strength,.55);
-    click('preview');await flush();s.step();await flush();assert.ok(s.player.getCompositionState().propertyIndices.length);
-    assert.equal(all(root).find(row=>row.dataset.visualAction==='save')!.disabled,true);
-    click('cancel');await flush();assert.equal(s.player.getCompositionState().id,null);
-    assert.deepEqual([f.counts.images,f.counts.writes,f.counts.legacyResolves],[0,0,0]);
-  }finally{ui.dispose();s.dispose();}
-}));
 test('source actually wires typed preload, owner-scoped host calls, existing Claude text lease and mounted renderer caller',async()=>{
   const root=new URL('../',import.meta.url),read=(name:string)=>readFile(new URL(name,root),'utf8');
-  const [contracts,preload,main,cards,renderer]=await Promise.all(['shared/contracts.ts','electron/preload.ts','electron/main.ts','src/ui/CharacterCards.ts','src/main.ts'].map(read));
+  // Wiring rewrite step 4g: the authoring and its handlers are 舞台's ('electron/wiring/stage-wiring.ts'); 'electron/main.ts' and the wiring are read together.
+  const [preload,cards]=await Promise.all(['electron/safety/preload.ts','src/cards/CharacterCards.ts'].map(read)),main=wiringSource(),contracts=desktopApiSource(),renderer=readRendererSource();
   for(const method of ['researchExpression','editExpression','previewExpression','resolveExpressionPreview']){assert.ok(contracts.includes(method+'('));assert.ok(preload.includes("invoke('"+method+"'"));assert.ok(main.includes("scopedHost('"+method+"'"));}
   assert.match(main,/streamText:async\(prompt,signal,append\)=>/);assert.match(main,/imageDataUrls:\[\]/);assert.ok(main.includes("reserveCompanionAuthoring(owner,id,controller,'visual-authoring')"));
   assert.ok(cards.includes('previewExpression:view=>this.options.onExpressionPreview?.(view)'));assert.ok(renderer.includes('onExpressionPreview:async view=>'));

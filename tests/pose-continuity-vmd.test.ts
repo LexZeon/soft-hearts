@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { Bone, Euler, Quaternion } from 'three';
-import { BaseSourceWatch, PoseContinuity } from '../src/stage/pose-continuity';
+import { BaseSourceWatch, PoseContinuity } from '../src/senses/pose-continuity';
 
 // The bundled CC BY dance is baked at every frame, with authored wrist changes up
 // to ~60 degrees per VMD frame. Read-only: original bytes are never modified.

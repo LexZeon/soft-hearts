@@ -108,3 +108,28 @@ test('unmanaged portable launches preserve the original path; requested managed 
   assert.equal(resolveInstalledDesktopChannel({ ...input, platform: 'darwin' }), null);
   assert.throws(() => resolveInstalledDesktopChannel({ ...input, packaged: false, requestedChannel: 'development' }), /installed Windows/);
 });
+
+test('a development install creates its own missing empty profile folder; stable still fails closed', async () => {
+  const f = await fixture();
+  try {
+    const dev = await f.install('development', 'b'.repeat(64)), stable = await f.install('stable', 'a'.repeat(64));
+    await rm(f.development, { recursive: true });
+    const b = resolveInstalledDesktopChannel(dev.input)!;
+    assert.equal(b.profile, f.development);
+    assert.ok((await import('node:fs')).statSync(f.development).isDirectory());
+    // Never inside the stable profile: the reference pointing into it is refused, and nothing is created there.
+    const intoStable = path.join(f.normal, 'dev-inside');
+    await writeFile(path.join(f.root, 'release', 'desktop-development-profile.json'), JSON.stringify({ version: 1, directory: intoStable }));
+    assert.throws(() => resolveInstalledDesktopChannel(dev.input));
+    assert.equal((await import('node:fs')).existsSync(intoStable), false);
+    // A missing parent is not created either.
+    const deep = path.join(path.dirname(f.development), 'no-such-parent', 'dev');
+    await writeFile(path.join(f.root, 'release', 'desktop-development-profile.json'), JSON.stringify({ version: 1, directory: deep }));
+    assert.throws(() => resolveInstalledDesktopChannel(dev.input));
+    assert.equal((await import('node:fs')).existsSync(path.dirname(deep)), false);
+    // Stable never creates its profile.
+    await rm(f.normal, { recursive: true });
+    assert.throws(() => resolveInstalledDesktopChannel({ ...stable.input, requestedChannel: 'stable' }));
+    assert.equal((await import('node:fs')).existsSync(f.normal), false);
+  } finally { await f.close(); }
+});

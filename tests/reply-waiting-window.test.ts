@@ -6,8 +6,8 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { transformSync } from 'esbuild';
-import type { ReplyLayout } from '../electron/reply-layout';
-import type { PetReplyUpdate } from '../shared/contracts';
+import type { ReplyLayout } from '../electron/brain/reply-layout';
+import type { PetReplyUpdate } from '../shared/foundation/pet-reply';
 
 interface Render { text?: string; waiting: boolean; layout: ReplyLayout; interactionOpacity: number; }
 interface Reply { update(patch: PetReplyUpdate): { lingerMs: number } | undefined; clear(): void; dispose(): void; }
@@ -46,7 +46,7 @@ function fixture(t: TestContext) {
     showInactive() { this.visible = true; this.emit('show'); }
     destroy() { this.destroyed = true; this.emit('closed'); }
   }
-  const filename = new URL('../electron/reply-window.ts', import.meta.url);
+  const filename = new URL('../electron/brain/reply-window.ts', import.meta.url);
   const localRequire = createRequire(filename), module = { exports: {} };
   const code = transformSync(readFileSync(filename, 'utf8'), { loader: 'ts', format: 'cjs', target: 'es2022' }).code;
   const injectedRequire = (name: string) => name === 'electron'
@@ -75,7 +75,7 @@ test('native reply waiting survives the old deadline and becomes normal text on 
   assert.equal(child.sent.at(-1)?.waiting, false); assert.equal(child.sent.at(-1)?.text, '第一段正文');
   assert.equal(child.sent.at(-1)?.layout.body.width, 285);
   f.advance(30_000); assert.equal(child.visible, true);
-  // #5: how long it stays is decided on completion (shared/behaviors/reply-linger/) and returned to the pet window.
+  // #5: how long it stays is decided on completion (shared/behaviors/reply-linger/) and returned to the companion window.
   const linger = f.reply.update({ state: 'complete' })!.lingerMs; f.advance(linger - 1); assert.equal(child.visible, true);
   f.advance(1); assert.equal(child.visible, false);
 });
@@ -94,7 +94,15 @@ test('new waiting cancels a preceding complete timer and anchor paints never ren
   f.waiting(); assert.equal(child.visible, true, 'an explicit new waiting state can begin again');
 });
 
-for (const event of ['hide', 'minimize', 'restore'])
+// I-171 (docs/claude/2026-11-21-i171-minimize-keeps-her.md): a minimize or its restore is a step away, not a hide: the waiting bubble is kept
+// (the turn goes on); only a hide to the tray clears it. These two events were pinned as "clears" before.
+for (const event of ['minimize', 'restore'])
+  test(`${event} keeps native waiting (the turn goes on); it shows again at her face`, async t => {
+    const f = fixture(t); f.waiting(); const child = f.child(); f.owner.emit(event); await f.ready();
+    f.reply.update({ anchor: { x: 210, y: 220, visible: true } }); f.reply.update({ interactionOpacity: 1 });
+    assert.equal(child.visible, true, event);
+  });
+for (const event of ['hide'])
   test(`${event} clears native waiting even before the asynchronous window load completes`, async t => {
     const f = fixture(t); f.waiting(); const child = f.child(); f.owner.emit(event); await f.ready();
     assert.equal(child.visible, false);

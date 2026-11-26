@@ -10,11 +10,11 @@
 // no network, no device, no real profile.
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { ListenTogether } from '../electron/listen-together/host';
-import type { ListenStore } from '../electron/listen-together/store';
-import { ListenKindHost } from '../shared/listen-kind';
-import { listenAskContext, matchListenAsk } from '../shared/listen-ask';
-import type { ListenNote, ListenSegment } from '../shared/listen-together';
+import { ListenTogether } from '../electron/senses/listen-together/host';
+import type { ListenStore } from '../electron/senses/listen-together/store';
+import { ListenKindHost } from '../shared/senses/listen-kind';
+import { listenAskContext, matchListenAsk } from '../shared/senses/listen-ask';
+import type { ListenNote, ListenSegment } from '../shared/senses/listen-together';
 
 const MIN = 60_000;
 const X262 = ['刚才那句台词，别给我照原话念一遍。只说今天星期几。', '刚才那句台词别给我原样来一遍'];

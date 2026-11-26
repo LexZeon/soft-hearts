@@ -4,8 +4,8 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CARE_STRETCH_GAP_MS, CareAskedTracker, careAskedLine, careKindsAsked, careKindsMentioned } from '../shared/care-asked';
-import { CompanionService } from '../electron/companion';
+import { CARE_STRETCH_GAP_MS, CareAskedTracker, careAskedLine, careKindsAsked, careKindsMentioned } from '../shared/senses/care-asked';
+import { CompanionService } from '../electron/brain/companion';
 
 test('her questions and nudges are sorted into kinds, plain mentions are not', () => {
   assert.deepEqual(careKindsAsked('吃饭了吗？'), ['吃饭']);

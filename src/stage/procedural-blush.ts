@@ -2,7 +2,9 @@ import {
   Bone, Camera, Color, Group, Matrix3, Matrix4, ShaderMaterial, SkinnedMesh, Vector2, Vector3,
   type Material,
 } from 'three';
-import { DEFAULT_BLUSH_CALIBRATION, validateBlushCalibration, type BlushCalibration } from '../../shared/blush';
+import { eyeMaterialPriority } from './blush-eye-names';
+import { keepDrawPlace } from '../foundation/draw-order';
+import { DEFAULT_BLUSH_CALIBRATION, validateBlushCalibration, type BlushCalibration } from '../../shared/mood';
 
 export type BlushPoint = [number, number, number];
 export interface BlushAnchors {
@@ -58,8 +60,7 @@ function visibleEyes(mesh: SkinnedMesh, toHead: Matrix4, midpoint: Vector3, righ
   const transform = toHead.clone().multiply(mesh.matrixWorld), normalTransform = new Matrix3().getNormalMatrix(transform);
   const candidates: { priority: number; value: VisibleEyes }[] = [];
   for (let materialIndex = 0; materialIndex < materials.length; materialIndex++) {
-    const material = materials[materialIndex], name = material.name.normalize('NFKC').trim().toLowerCase();
-    const priority = name === '目' ? 0 : /^(?:瞳|瞳孔|虹彩|iris|pupils?)$/.test(name) ? 1 : /^(?:眼|眼睛|白目|eyes?)$/.test(name) ? 2 : -1;
+    const material = materials[materialIndex], priority = eyeMaterialPriority(material.name);
     if (priority < 0 || material.opacity < 0.9) continue;
     const groups = mesh.geometry.groups.filter(group => group.materialIndex === materialIndex);
     if (!groups.length || groups.reduce((sum, group) => sum + group.count, 0) > 180_000) continue;
@@ -451,6 +452,8 @@ export class ProceduralBlush {
           this.compiled.add(clone);
         };
         clone.customProgramCacheKey = () => `${cacheKey.call(original)}:soft-hearts-local-blush-v1`;
+        // The clone is drawn where the face skin was, not after the brows and the hair (src/foundation/draw-order.ts).
+        keepDrawPlace(clone, original);
         next[index] = clone; this.attachments.push({ index, source: original, clone });
       }
       this.installedMaterials = Array.isArray(this.originalMaterials) ? next : next[0];

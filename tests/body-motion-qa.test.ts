@@ -4,7 +4,7 @@ import { mkdtemp, mkdir, rm, symlink, realpath, lstat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { readBodyQaStartup, selectBodyStartupProfile } from '../electron/body-motion-qa';
+import { readBodyQaStartup, selectBodyStartupProfile } from '../electron/actions/body-motion-qa';
 
 async function removeOwnedTemporary(directory: string): Promise<void> {
   const actual = await realpath(directory), temporary = await realpath(tmpdir());

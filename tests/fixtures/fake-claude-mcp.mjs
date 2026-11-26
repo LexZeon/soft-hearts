@@ -38,6 +38,16 @@ if (args[0] === 'mcp' && args[1] === 'list') {
   process.stdout.write('Checking MCP server health…\n\n' + [...rows, ...(state.rows ?? [])].map(row => wrap(row, state.wrap)).join('\n') + '\n');
   process.exit(0);
 }
+if (args[0] === 'mcp' && args[1] === 'get') {
+  // Claude Code 2.1.316's `mcp get`: fixed "  Label: value" lines; Command is the program, Args the rest joined by one space.
+  save();
+  const name = args[2];
+  if (state.failGet || !state.servers.includes(name)) { process.stderr.write(`No MCP server found with name: ${name}\n`); process.exit(1); }
+  const [program, rest] = state.getParts?.[name] ?? [state.commands[name] ?? '"C:\\some\\server.exe"', ''];
+  process.stdout.write([`${name}:`, `  Scope: ${state.getScope ?? 'User config (available in all your projects)'}`, `  Status: ✔ Connected`, '  Type: stdio',
+    `  Command: ${program}`, `  Args: ${rest}`, '  Environment:', '    ELECTRON_RUN_AS_NODE=1', '', `To remove this server, run: claude mcp remove ${name} -s user`, ''].join('\n'));
+  process.exit(0);
+}
 if (args[0] === 'mcp' && args[1] === 'add') {
   // Options before the name, the launch line after `--` (as the real command requires).
   const split = args.indexOf('--');

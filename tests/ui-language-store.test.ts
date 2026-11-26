@@ -3,7 +3,7 @@ import test from 'node:test';
 import {mkdtemp,readFile,writeFile,readdir} from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import {UiLanguageStore} from '../electron/ui-language';
+import {UiLanguageStore} from '../electron/settings/ui-language';
 
 test('separate language sidecar preserves legacy files and applies the preference only after a new load',async()=>{
  const directory=await mkdtemp(path.join(os.tmpdir(),'soft-hearts-ui-language-'));

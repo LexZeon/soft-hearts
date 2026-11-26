@@ -7,30 +7,32 @@ import os from 'node:os';
 import { createHash, randomUUID } from 'node:crypto';
 import { setImmediate as turn } from 'node:timers/promises';
 import ts from 'typescript';
-import { AudioCaptureHost } from '../electron/audio-capture-host';
-import { AudioReadingHostBroker } from '../electron/audio-reading-host-broker';
-import { AudioReadingArchive } from '../electron/audio-reading-archive';
-import { MediaRuntime } from '../electron/runtime';
-import { poseCameraPolicy } from '../electron/pose/camera-gate';
-import { SystemAudioRuntime } from '../electron/system-audio';
-import { ForegroundAsr } from '../electron/foreground-asr';
-import { SpeakingOwners } from '../electron/speaking-owners';
-import { PauseGuard } from '../electron/pause-guard';
-import { ListenTally } from '../electron/listen-tally';
-import { AmbientAudioRuntime } from '../electron/ambient-audio-runtime';
-import { AmbientAsrRoute, refusedReadingAck } from '../electron/asr/ambient-route';
-import { AmbientComments, type AmbientCommentOffer } from '../electron/ambient-comments';
-import { ProactiveSpeechGate } from '../electron/proactive-speech-gate';
-import { CompletedReplySpeech } from '../electron/completed-reply-speech';
-import { VoiceChatHost } from '../electron/voice-chat-host';
-import { audioReadingSources, audioReadingPurposes, parseAudioReadingIntent } from '../shared/audio-reading-toggles';
-import { parseAudioReadingPcm, type AudioCaptureDescriptor, type AudioCaptureState } from '../shared/audio-capture';
-import { listenSwitchOn } from '../shared/listen-together';
-import { ListenKindHost } from '../shared/listen-kind';
-import { ListenTogether } from '../electron/listen-together/host';
-import type { AmbientLanguage } from '../shared/ambient-audio';
-import { createMoodState, getMoodSnapshot, DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
-import type { MoodView } from '../shared/mood-runtime';
+import { AudioCaptureHost } from '../electron/senses/audio-capture-host';
+import { AudioReadingHostBroker } from '../electron/voice/audio-reading-host-broker';
+import { AudioReadingArchive } from '../electron/voice/audio-reading-archive';
+import { MediaRuntime } from '../electron/senses/media-runtime';
+import { poseCameraPolicy } from '../electron/senses/pose/camera-gate';
+import { SystemAudioRuntime } from '../electron/senses/system-audio';
+import { ForegroundAsr } from '../electron/senses/foreground-asr';
+import { SpeakingOwners } from '../electron/voice/speaking-owners';
+import { PauseGuard } from '../electron/senses/pause-guard';
+import { ListenTally } from '../electron/senses/listen-tally';
+import { AmbientAudioRuntime } from '../electron/senses/ambient-audio-runtime';
+import { AmbientAsrRoute, refusedReadingAck } from '../electron/senses/asr/ambient-route';
+import { AmbientComments, type AmbientCommentOffer } from '../electron/senses/ambient-comments';
+import { ProactiveSpeechGate } from '../electron/initiative/proactive-speech-gate';
+import { CompletedReplySpeech } from '../electron/voice/completed-reply-speech';
+import { VoiceChatHost } from '../electron/voice/voice-chat-host';
+import { audioReadingSources, audioReadingPurposes, parseAudioReadingIntent } from '../shared/voice/audio-reading-toggles';
+import { parseAudioReadingPcm, type AudioCaptureDescriptor, type AudioCaptureState } from '../shared/senses/audio-capture';
+import { listenSwitchOn } from '../shared/senses/listen-together';
+import { ListenKindHost } from '../shared/senses/listen-kind';
+import { ListenTogether } from '../electron/senses/listen-together/host';
+import type { AmbientLanguage } from '../shared/senses/ambient-audio';
+import { createMoodState, getMoodSnapshot, DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
+import type { MoodView } from '../shared/mood/mood-runtime';
+import { WIRING_PRELUDE, wiringDeclaration, wiringFunction, wiringRegistration } from './helpers/wiring-source';
+import { settledScope } from '../electron/foundation/settled-scope';
 
 // Extract actual registrations and their actual finite helpers, never import main
 // (which would import Electron/provider code) or reconstruct the new adapter.
@@ -38,26 +40,22 @@ const main = readFileSync(new URL('../electron/main.ts', import.meta.url), 'utf8
 const ast = ts.createSourceFile('main.ts', main, ts.ScriptTarget.Latest, true);
 const methodNames = ['getAudioReadingView', 'getAudioCaptureState', 'setAudioReadingIntent',
   'ackAudioCapture', 'setAudioDanceIntent', 'submitAudioReadingPcm', 'getRuntimeState', 'setRuntimeState'];
+// Wiring rewrite step 3: what moved to electron/wiring/*.ts (the IPC guard, broadcast, ownerFor, windows) is read there, still exactly one.
 function declaration(name: string): string {
   const matches = ast.statements.filter((n): n is ts.FunctionDeclaration => ts.isFunctionDeclaration(n) && n.name?.text === name);
+  if (!matches.length) return wiringFunction(name);
   assert.equal(matches.length, 1, `One actual declaration required: ${name}`);
   return matches[0].getText(ast);
 }
 function initial(name: string): string {
   const matches = ast.statements.filter((n): n is ts.VariableStatement => ts.isVariableStatement(n)
     && n.declarationList.declarations.some(d => ts.isIdentifier(d.name) && d.name.text === name));
+  if (!matches.length) return wiringDeclaration(name); // wiring rewrite step 4: a part's own object (completedReplySpeech, 声音) is made in its wire function
   assert.equal(matches.length, 1, `One actual initial statement required: ${name}`);
   return matches[0].getText(ast);
 }
-const register = ast.statements.find((n): n is ts.FunctionDeclaration => ts.isFunctionDeclaration(n) && n.name?.text === 'registerIPC');
-assert.ok(register?.body);
-const registrations = methodNames.map(name => {
-  const matches = register.body!.statements.filter(n => ts.isExpressionStatement(n) && ts.isCallExpression(n.expression)
-    && ['host', 'scopedHost'].includes(n.expression.expression.getText(ast))
-    && ts.isStringLiteral(n.expression.arguments[0]) && n.expression.arguments[0].text === name);
-  assert.equal(matches.length, 1, `One actual registration required: ${name}`);
-  return matches[0].getText(ast);
-});
+// Wiring rewrite step 4c: 感知's registrations are in electron/wiring/senses-wiring.ts; each is read across the wiring, still exactly one.
+const registrations = methodNames.map(name => wiringRegistration(name));
 const helpers = ['host', 'scopedHost', 'broadcast', 'readingContextIdentity', 'readingActive', 'syncAudioCapture',
   'allowsOwnedMedia', 'currentAmbientSession', 'initAudioReading', 'archiveReading', 'suspendAmbientSpeech',
   'updateReadingPause', 'replySpeechBusy', 'ownerFor', 'stopSystemAudio', 'journalStuck', 'noteStuck'].map(declaration);
@@ -68,8 +66,9 @@ const createHost = new Function('deps', ts.transpileModule(`
   const {ipcMain,pet,controls,store,companion,systemAudio,speechRuntime,mediaChanged,cancelAmbientPlayback,
     speechScope,transcribeWav,DEFAULT_SETTINGS,AudioCaptureHost,AudioReadingHostBroker,
     MediaRuntime,ForegroundAsr,CompletedReplySpeech,parseAudioReadingIntent,parseAudioReadingPcm,audioReadingSources,
-    audioReadingPurposes,createHash,randomUUID,Date,syncFatigueActivity,VoiceChatHost,poseCameraPolicy,poseSensing,voiceRoute,SpeakingOwners,PauseGuard,ListenTally,appJournal,journalCharacterId,
-    ambientAsr,refusedReadingAck,listenSwitchOn} = deps;
+    audioReadingPurposes,createHash,randomUUID,Date,syncFatigueActivity,VoiceChatHost,CallOffers,voiceSegmentSenses,takeMeThere,chatSettings,agentInterconnected,poseCameraPolicy,poseSensing,voiceRoute,SpeakingOwners,PauseGuard,ListenTally,appJournal,journalCharacterId,
+    ambientAsr,refusedReadingAck,listenSwitchOn,onScreen,petHeld,unbound,settledScope} = deps;
+  ${WIRING_PRELUDE}
   ${states.join('\n')}
   ${helpers.join('\n')}
   ambientStore=deps.archive; ambientAudio=deps.legacy;
@@ -85,7 +84,7 @@ const createHost = new Function('deps', ts.transpileModule(`
   (deps: Record<string, unknown>) => {
     media: MediaRuntime; capture: AudioCaptureHost; broker: AudioReadingHostBroker; foregroundAsr: ForegroundAsr;
     allowsOwnedMedia(owner: 'pet' | 'controls', kind: 'audio' | 'video', camera?: boolean): boolean;
-    currentAmbientSession(): import('../electron/ambient-comments').AmbientCommentSession | null;
+    currentAmbientSession(): import('../electron/senses/ambient-comments').AmbientCommentSession | null;
     stopSystemAudio(): void; installComments(value: AmbientComments): void; installListen(value: ListenTogether): void; pauseInput(value: boolean): void;
   };
 
@@ -146,21 +145,23 @@ async function fixture(t: TestContext, options: { engine?: 'local' | 'compatible
   };
   const api = createHost({ ipcMain: { handle: (name: string, handler: (event: unknown, ...args: unknown[]) => unknown) => {
     assert.equal(handlers.has(name), false); handlers.set(name, handler);
-  } }, pet, controls, archive, legacy, store, companion,
+  } }, pet, controls, archive, legacy, store, companion, settledScope, // switch lock 2026-11-23: the real helper
+    onScreen: (win: { isDestroyed(): boolean; isVisible(): boolean; isMinimized(): boolean }) => !win.isDestroyed() && win.isVisible() && !win.isMinimized(), petHeld: () => false, // Unbound v1 step 1 (not out in Unbound here)
     systemAudio: new SystemAudioRuntime('win32'), speechRuntime: { busy: false },
     mediaChanged: () => { boundaries.mediaChanged++; }, cancelAmbientPlayback: () => { boundaries.playbackCancelled++; },
     speechScope: () => 'synthetic-context',
     // Fatigue observation is outside this audio-reading wiring fixture's scope.
     syncFatigueActivity: () => {},
     // The actual voice host (R33), constructed with no capture: foreground ASR reads its capture.
-    VoiceChatHost,
+    VoiceChatHost, CallOffers: class { constructor(public ports: unknown) {} }, takeMeThere: {}, chatSettings: {}, agentInterconnected: () => true,
+    voiceSegmentSenses: () => undefined, // I-161 semantic look: outside this fixture
     // The camera policy main.ts gives the media runtime; no pose host in this fixture (camera requests are refused).
     poseCameraPolicy, poseSensing: null,
-    // 识别方式 (electron/asr/voice-route.ts): the compatible address here, so voice input is never refused by this fixture.
+    // 识别方式 (electron/senses/asr/voice-route.ts): the compatible address here, so voice input is never refused by this fixture.
     voiceRoute: { policy: { blocked: () => null }, engine: 'compatible' },
     // Her pauses let go by themselves (2026-11-06): the real lease/guard classes, a journal that records nothing.
     SpeakingOwners, PauseGuard, ListenTally, appJournal: { record() {} }, journalCharacterId: () => null,
-    // 陪听歌、看剧的转写 (electron/asr/ambient-route.ts): the actual route on the local recognizer above (ready, never refused),
+    // 陪听歌、看剧的转写 (electron/senses/asr/ambient-route.ts): the actual route on the local recognizer above (ready, never refused),
     // or on 识别方式 = compatible, where the words are refused and only the rhythm turns on.
     ambientAsr: new AmbientAsrRoute({ config: () => ({ ...config, engine: options.engine ?? 'local' }),
       local: () => ({ ready: true, voiceBlocked: () => null, recognize: recognizeLocal }), journal: () => {}, characterId: () => null }), refusedReadingAck,

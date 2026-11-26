@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { Attachment } from '../shared/contracts';
-import { ProactiveSpeechGate } from '../electron/proactive-speech-gate';
-import { ProactiveVision, type ProactiveVisionDependencies, type ProactiveVisionMessage } from '../electron/proactive-vision';
+import type { Attachment } from '../shared/foundation/chat';
+import { ProactiveSpeechGate } from '../electron/initiative/proactive-speech-gate';
+import { ProactiveVision, type ProactiveVisionDependencies, type ProactiveVisionMessage } from '../electron/senses/proactive-vision';
 
 const frame = (source: Attachment['source'] = 'screen'): Attachment => ({ source, dataUrl: 'data:image/jpeg;base64,YQ==' });
 const cue = (id = 'accepted-speech', until = 4000) => ({ id, kind: 'speech', until });

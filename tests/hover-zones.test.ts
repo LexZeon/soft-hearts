@@ -1,7 +1,7 @@
 import test, { type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
-import { nearHoverZone } from '../src/ui/HoverVisibility';
-import { PetUI } from '../src/ui/PetUI';
+import { nearHoverZone } from '../src/stage/HoverVisibility';
+import { PetUI } from '../src/stage/PetUI';
 
 test('hover zones follow their real rectangles, with a small exit margin and no whole-half activation', () => {
   const toolbar = { left: 100, top: 8, width: 280, height: 60 };
@@ -76,6 +76,15 @@ test('PetUI reveals toolbar and chat independently near their own layout and lea
   f.point(200, 260); f.advance(1000); assert.equal(f.toolbar.classList.contains('is-visible'), false);
   f.point(200, 465); assert.equal(f.chat.classList.contains('is-visible'), true); assert.equal(f.toolbar.classList.contains('is-visible'), false);
   f.point(5, 200); f.advance(1000); assert.equal(f.chat.classList.contains('is-visible'), false);
+});
+
+// I-171 (docs/claude/2026-11-21-i171-minimize-keeps-her.md): her window leaving the screen hides her answer; a minimize alone keeps it.
+test("her answer: the host not visible hides it, but only a minimize keeps it", t => {
+  const f = fixture(t);
+  const hide = t.mock.method(f.ui, 'hideAnswer', () => {});
+  f.ui.setHostVisible(false, true); assert.equal(hide.mock.callCount(), 0, 'minimized: her answer is kept');
+  f.ui.setHostVisible(false); assert.equal(hide.mock.callCount(), 1, 'hidden to the tray: her answer goes');
+  f.ui.setHostVisible(true); assert.equal(hide.mock.callCount(), 1, 'visible: nothing');
 });
 
 test('PetUI contact waits two seconds after emoji entry, ignores continuous progress, and cannot summon hidden zones', t => {

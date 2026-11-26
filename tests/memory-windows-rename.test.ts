@@ -9,7 +9,7 @@ import { build } from 'esbuild';
 // mood-smoke on Windows: deleting a memory failed with
 // "EPERM: operation not permitted, rename 'memories.jsonl.<id>.tmp' -> 'memories.jsonl'". A short sharing lock
 // (OneDrive, antivirus, indexer) on the journal makes the replacing rename fail for a moment; the project's
-// atomic writer (electron/atomic-file.ts) waits that out on win32, the memory journal's compaction did not.
+// atomic writer (electron/foundation/atomic-file.ts) waits that out on win32, the memory journal's compaction did not.
 // The production MemoryStore and atomic writer run unchanged; only node:fs/promises' rename is the fixture.
 async function storeWithLockedRenames(locks: number) {
   const key = 'memoryRenameFixture' + randomUUID().replaceAll('-', '');
@@ -26,7 +26,7 @@ async function storeWithLockedRenames(locks: number) {
     },
   };
   const names = Object.keys(fs).filter(name => /^[a-zA-Z]\w*$/.test(name) && name !== 'default');
-  const compiled = await build({ entryPoints: ['electron/memory.ts'], bundle: true, write: false, format: 'esm', platform: 'node', target: 'node22',
+  const compiled = await build({ entryPoints: ['electron/memory/memory.ts'], bundle: true, write: false, format: 'esm', platform: 'node', target: 'node22',
     plugins: [{ name: 'fs-promises-fixture', setup(b) {
       b.onResolve({ filter: /^(?:node:)?fs\/promises$/ }, () => ({ path: 'fs-promises', namespace: 'fixture' }));
       b.onLoad({ filter: /.*/, namespace: 'fixture' }, () => ({ contents: `const f=globalThis[${JSON.stringify(key)}];${names.map(name => `export const ${name}=f.${name};`).join('')}` }));

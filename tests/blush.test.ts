@@ -6,8 +6,8 @@
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { applyMoodEvent, createMoodState, DEFAULT_MOOD_PARAMETERS, getMoodSnapshot, type MoodBlushParameters, type MoodLabel, type MoodTendency } from '../shared/mood';
-import { MOOD_LABELS } from '../shared/mood-runtime';
+import { applyMoodEvent, createMoodState, DEFAULT_MOOD_PARAMETERS, getMoodSnapshot, type MoodBlushParameters, type MoodLabel, type MoodTendency } from '../shared/foundation/mood';
+import { MOOD_LABELS } from '../shared/mood/mood-runtime';
 import { blushEase, blushNow, blushProfileSafe, BlushDirector, drawBlush } from '../shared/behaviors/blush/choose';
 import { FixedBlush } from '../shared/behaviors/blush/fake';
 import { BLUSH_KNOBS, type BlushKnobs, type BlushLookId } from '../shared/behaviors/blush/knobs';

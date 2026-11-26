@@ -7,18 +7,18 @@ import { createHash } from 'node:crypto';
 import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { MEMORY_SCOPES_FILE, MemoryStore } from '../electron/memory';
-import { MemoryNotesCore, type MemoryNotesDeps } from '../electron/memory-notes/core';
-import { MemoryNotes, registerMemoryNotesIpc } from '../electron/memory-notes/host';
-import { MEMORY_NOTES_FILE, MemoryNotesStore, emptyMemoryNotesFile, validateMemoryNotesFile, type MemoryNotesFile } from '../electron/memory-notes/store';
-import { buildCompanionPersona } from '../electron/conversation-context';
-import { DEFAULT_MEMORY_CONFIG, type MemoryRecall, type MemoryScope } from '../shared/memory';
-import type { MemoryNoteBody, NoteArchive, NoteSegmentMessage } from '../shared/memory-notes/interface';
-import { MEMORY_NOTES_KNOBS, type MemoryNotesKnobs } from '../shared/memory-notes/knobs';
-import { MEMORY_NOTE_SYSTEM_PROMPT, NOTE_CAPS, faithfulNote, memoryNotePrompt, parseMemoryNote } from '../shared/memory-notes/note';
-import { noteHint, prepareNote, prepareNoteQuery } from '../shared/memory-notes/recall';
-import { FakeNoteArchive, FakeNoteWriter, fakeNoteBody } from '../shared/memory-notes/fake';
-import { ENGLISH_MEMORY_NOTES_UI_COPY } from '../shared/ui-copy.memory-notes.en';
+import { MEMORY_SCOPES_FILE, MemoryStore } from '../electron/memory/memory';
+import { MemoryNotesCore, type MemoryNotesDeps } from '../electron/memory/memory-notes/core';
+import { MemoryNotes, registerMemoryNotesIpc } from '../electron/memory/memory-notes/host';
+import { MEMORY_NOTES_FILE, MemoryNotesStore, emptyMemoryNotesFile, validateMemoryNotesFile, type MemoryNotesFile } from '../electron/memory/memory-notes/store';
+import { buildCompanionPersona } from '../electron/brain/conversation-context';
+import { DEFAULT_MEMORY_CONFIG, type MemoryRecall, type MemoryScope } from '../shared/memory/memory';
+import type { MemoryNoteBody, NoteArchive, NoteSegmentMessage } from '../shared/memory/memory-notes/interface';
+import { MEMORY_NOTES_KNOBS, type MemoryNotesKnobs } from '../shared/memory/memory-notes/knobs';
+import { MEMORY_NOTE_SYSTEM_PROMPT, NOTE_CAPS, faithfulNote, memoryNotePrompt, parseMemoryNote } from '../shared/memory/memory-notes/note';
+import { noteHint, prepareNote, prepareNoteQuery, sharedNoteTags } from '../shared/memory/memory-notes/recall';
+import { FakeNoteArchive, FakeNoteWriter, fakeNoteBody } from '../shared/memory/memory-notes/fake';
+import { ENGLISH_MEMORY_NOTES_UI_COPY } from '../shared/foundation/ui-copy.memory-notes.en';
 
 const T0 = 1_800_000_000_000;
 const HOUR = 3_600_000;
@@ -529,7 +529,7 @@ test('IPC: one memory\'s note for the current scope only; deleting just the note
     const handlers = new Map<string, (...args: any[]) => unknown>();
     let current: MemoryNotes | null = notes;
     registerMemoryNotesIpc((method, operation) => { handlers.set(method, operation); }, () => current);
-    assert.deepEqual([...handlers.keys()].sort(), ['deleteMemoryNote', 'readMemoryNote']);
+    assert.deepEqual([...handlers.keys()].sort(), ['changePeopleThings', 'deleteMemoryNote', 'getPeopleThings', 'readMemoryNote']); // I-088 added the two people-and-things requests
     const read = (id: unknown) => handlers.get('readMemoryNote')!(id) as ReturnType<MemoryNotes['state']>;
     assert.equal(read(ids.ramen).status, 'written');
     assert.equal(read(ids.ramen).note!.title, NOTES.拉面店.title);
@@ -547,7 +547,7 @@ test('IPC: one memory\'s note for the current scope only; deleting just the note
 });
 
 test('every new line in the memory panel has an English translation', async () => {
-  const source = await readFile(path.join(process.cwd(), 'src', 'ui', 'MemoryPanel.ts'), 'utf8');
+  const source = await readFile(path.join(process.cwd(), 'src/memory/MemoryPanel.ts'), 'utf8');
   const section = source.slice(source.indexOf('private async loadNote'), source.indexOf('private renderMessages'));
   const keys = new Set<string>();
   for (const m of section.matchAll(/uiText\('([^']+)'\)/gu)) keys.add(m[1]);
@@ -556,4 +556,40 @@ test('every new line in the memory panel has an English translation', async () =
   keys.add('已经整理了 {0} 段，还有 {1} 段等着整理。');
   assert.ok(keys.size >= 12);
   for (const key of keys) assert.ok(ENGLISH_MEMORY_NOTES_UI_COPY[key], `missing English for ${key}`);
+});
+
+// ---- I-083: a rare tag the title also names is the note's own topic ----
+
+test('I-083: "我的梦游冷笑话" brings back the sleepwalking note without "还记得"; a tag many notes share or one the title leaves out does not', () => {
+  const sleepwalk = fakeNoteBody({ title: '梦游写纸条与一段视频', summary: '用户说昨晚梦游写了张纸条。', things: ['纸条'], plans: [], tags: ['梦游', '纸条', '可爱'] });
+  const other = (title: string, tags: string[]) => fakeNoteBody({ title, things: [], plans: [], tags });
+  const notes = [sleepwalk, other('夸她可爱', ['可爱']), other('可爱的小狗', ['可爱', '小狗']), other('今天很可爱', ['可爱'])];
+  const shared = sharedNoteTags(notes);
+  assert.deepEqual([...shared], ['可爱'], 'four notes share 可爱 (more than ownTagMaxNotes); 梦游 is in one');
+  const prepared = prepareNote(sleepwalk);
+  const query = prepareNoteQuery('感觉不如我的梦游冷笑话')!;
+  assert.equal(query.cue, false, 'no "还记得" in it');
+  const hint = noteHint(query, prepared, MEMORY_NOTES_KNOBS, shared);
+  assert.ok(hint, 'the note\'s own rare tag, in its title, reaches the no-cue threshold');
+  assert.equal(hint!.score, MEMORY_NOTES_KNOBS.recall.ownTag);
+  assert.equal(noteHint(query, prepared, MEMORY_NOTES_KNOBS, null), null, 'without the shared-tag count the old rule stands (a two-character word alone)');
+  // A tag many notes share (their pet names, 可爱) is a passing word: alone it brings nothing back.
+  assert.equal(noteHint(prepareNoteQuery('你好可爱')!, prepared, MEMORY_NOTES_KNOBS, shared), null);
+  // A tag the title leaves out ("屏幕" in a note about something else) is a passing detail.
+  const screen = prepareNote(other('提醒小心一个人', ['屏幕', '提醒']));
+  assert.equal(noteHint(prepareNoteQuery('屏幕上这是谁')!, screen, MEMORY_NOTES_KNOBS, new Set()), null);
+  // With a "talking about before" cue the plain two-character word still works as before.
+  assert.ok(noteHint(prepareNoteQuery('还记得那次梦游吗')!, prepared, MEMORY_NOTES_KNOBS, new Set(['梦游'])));
+});
+
+test('I-083: the notes host counts the shared tags itself, so a written note with a rare title tag is found by one word', async () => {
+  const clock = { t: T0 + 10 * HOUR };
+  const fake = new FakeNoteArchive().add('walk', 'mine', T0, [{ role: 'user', content: '昨晚我梦游写了张纸条，就写了你的名字。' }, { role: 'assistant', content: '真的假的，纸条呢？' }]);
+  const writer = new FakeNoteWriter(JSON.stringify(fakeNoteBody({ title: '梦游写纸条', summary: '用户说昨晚梦游写了张纸条。', things: ['纸条'], plans: [], tags: ['梦游', '纸条', '名字'] })));
+  const { core } = coreFor(fake, writer, clock, { currentScope: () => 'mine' });
+  assert.ok(await drain(core, clock, 3) >= 1);
+  assert.equal(core.state('walk', 'mine').status, 'written');
+  const hint = core.prepare('我的梦游冷笑话')('walk');
+  assert.ok(hint, 'found without "还记得"');
+  assert.equal(hint!.explicit, false);
 });

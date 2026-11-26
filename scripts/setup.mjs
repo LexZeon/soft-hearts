@@ -4,7 +4,12 @@ import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
-import { setupPlan, findUnixCodex, findOnPath, applicationEnvironment, platformTarget } from './setup-platform.mjs';
+import { setupPlan, findUnixClaude, claudeVersion, claudeNextStep, findOtherAgents, otherAgentHint, findOnPath, applicationEnvironment, platformTarget } from './setup-platform.mjs';
+// REFERENCE ONLY: this macOS/Linux entry has not been run on real macOS or Linux machines and is
+// not maintained by the project. It is a starting point for a user's own agent (Claude, ChatGPT,
+// DeepSeek...) adapting soft hearts to their system. Keep the safety floor in docs/PORTING.md
+// section 5. It only checks that Claude Code is installed and its version: no login, no consent,
+// no paid call.
 import { PACKAGE_NAME, PRODUCT_NAME } from './lib/app-identity.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -24,20 +29,22 @@ try {
   const plan = setupPlan({ platform: process.platform, arch: process.arch, nodeVersion: process.versions.node, packageManager: pkg.packageManager, args: process.argv.slice(2) });
   const target = platformTarget(process.platform, process.arch);
   if (process.platform === 'darwin' && Number(os.release().split('.')[0]) < 22) throw new Error('This Electron version requires macOS 13 Ventura or later.');
-  const codex = await findUnixCodex(process.env);
+  const claude = await findUnixClaude(process.env);
+  const version = claude.path ? await claudeVersion(claude.path) : null;
+  if (claude.status === 'missing') console.log(otherAgentHint(await findOtherAgents(process.env)));
   const npm = await findOnPath('npm', process.env);
   console.log(`${PRODUCT_NAME} setup | ${target.os} ${target.arch} | Node ${process.versions.node} | pnpm ${plan.version}`);
-  console.log(codex.path ? `Codex executable: ${codex.path}` : `Codex: ${codex.status}. Use the official CLI installation/login instructions in START-HERE.md; no credentials were read.`);
+  console.log(claude.path ? `Claude Code: ${claude.path} (version ${version})` : `Claude Code: ${claude.status}. ${claudeNextStep(claude.status)}`);
   console.log(`npm: ${npm ?? 'missing'} | dependencies: ${await present('node_modules')} | build: ${await present('dist-electron/main.cjs')}`);
   const hasDisplay = process.platform !== 'linux' || Boolean(process.env.DISPLAY || process.env.WAYLAND_DISPLAY);
   if (!hasDisplay) console.log('No Linux desktop display session detected. A real desktop is required to launch; --no-launch only prepares sources.');
   if (process.argv.includes('--check-only')) {
-    console.log('Check only: no downloads, installs, builds, CLI calls, configuration writes or app launch. Login status and an actual reply remain separate checks.');
+    console.log('Check only: no downloads, installs, builds, logins, model calls, configuration writes or app launch. Login status and an actual reply remain separate checks (only `claude --version` is run, to read the version).');
   } else {
     if (!npm) throw new Error('npm is missing. Install Node.js with npm from the official Node.js download page.');
     if (plan.launch && !hasDisplay) throw new Error('Run setup from your Linux desktop session or use --no-launch for build preparation.');
-    if (codex.status === 'invalid-override') throw new Error('CODEX_PATH is invalid; correct that explicit setting before continuing. No fallback was selected.');
-    const env = applicationEnvironment(process.env, process.execPath, codex.path);
+    if (claude.status === 'invalid-override') throw new Error('CLAUDE_PATH is invalid; correct that explicit setting before continuing. No fallback was selected.');
+    const env = applicationEnvironment(process.env, process.execPath, claude.path);
     const pnpm = args => run(npm, ['exec', '--yes', `--package=pnpm@${plan.version}`, '--', 'pnpm', ...args], env);
     await pnpm(plan.commands[0]);
     // Prepare Electron's on-demand binary without opening the application.
@@ -46,7 +53,7 @@ try {
     if (!plan.launch) console.log('Setup and build complete; no application launched.');
     else {
       const electron = require('electron');
-      console.log(`Starting ${PRODUCT_NAME}. Verify its window, Gene (or your preserved model), and a real reply with your own Codex login.`);
+      console.log(`Starting ${PRODUCT_NAME}. Verify its window, Gene (or your preserved model), and a real reply with your own Claude Code login (log in yourself by running claude once in a terminal).`);
       await run(electron, [root], env);
     }
   }

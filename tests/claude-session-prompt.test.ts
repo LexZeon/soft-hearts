@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { ChatMessage } from '../shared/contracts';
-import { buildCodexChatPrompt, buildCompanionPersona, conversationReplyInstruction } from '../electron/conversation-context';
-import { MoodReplyProtocol } from '../electron/mood-chat';
-import { CLAUDE_FOLLOW_UP_HEADER, CLAUDE_SESSION_SYSTEM_PROMPT, composeSessionPrompt, planSessionTurn, sessionText, turnContext } from '../electron/claude-session-prompt';
-import { CLAUDE_SYSTEM_PROMPT } from '../electron/claude';
-import { ReplyLatencyProbe, type ReplyLatencyRecord } from '../electron/reply-latency';
-import { companionHasHistory } from '../electron/claude-session';
+import type { ChatMessage } from '../shared/foundation/chat';
+import { buildCodexChatPrompt, buildCompanionPersona, conversationReplyInstruction } from '../electron/brain/conversation-context';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
+import { CLAUDE_FOLLOW_UP_HEADER, CLAUDE_SESSION_SYSTEM_PROMPT, composeSessionPrompt, planSessionTurn, sessionText, turnContext } from '../electron/brain/claude-session-prompt';
+import { CLAUDE_SYSTEM_PROMPT } from '../electron/brain/claude';
+import { ReplyLatencyProbe, type ReplyLatencyRecord } from '../electron/brain/reply-latency';
+import { companionHasHistory } from '../electron/brain/claude-session';
 
 const u = (content: string): ChatMessage => ({ role: 'user', content });
 const a = (content: string): ChatMessage => ({ role: 'assistant', content });

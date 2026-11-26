@@ -1,18 +1,19 @@
 /**
  * I-027 心情调整员的纯逻辑（接口见 interface.ts，旋钮见 knobs.ts）：一件事在一批里长什么样、怎么合并、什么时候该问、
  * 交给 haiku 的提示词、严格的 JSON 解析、修正的上限和"合理"规则，以及从心情视图里看出发生了什么。没有计时器、没有文件、
- * 不调用模型；electron/mood-judge/host.ts 用它们。
+ * 不调用模型；electron/mood/mood-judge/host.ts 用它们。
  *
  * 安全线（不是旋钮）：
  *  - 只认五个心情数 D/O/E/N/C；回答多一个字段、少一个字段、数不是有限数、超过 ±6、理由不在 MOOD_JUDGE_WHYS 里：整条不用。
- *  - 修正永远是"在现在的数上加减"（electron/mood.ts MoodHost.lift → shared/mood.ts applyMoodLift），不是改回某个旧值。
+ *  - 修正永远是"在现在的数上加减"（electron/mood/mood.ts MoodHost.lift → shared/foundation/mood.ts applyMoodLift），不是改回某个旧值。
  *  - 角色卡敏感度只乘一次：haiku 看到的是她此刻的数，说的是"最后该动多少"，所以加之前把敏感度除掉（liftDelta）；
  *    卡上敏感度为 0 的数（这张卡说这个数不随事件动）就不动。饱和照旧（越接近满分越难再加）。
  */
-import { MOOD_CHANNELS, type MoodChannel, type MoodContext, type MoodValues } from '../../mood';
-import { HER_NEED_IDS, type HerNeedId } from '../../her-needs';
-import { ACTIVITY_WORDS, SCREEN_ACTIVITIES, type ScreenActivity } from '../../screen-activity';
+import { MOOD_CHANNELS, type MoodChannel, type MoodContext, type MoodValues } from '../../foundation/mood';
+import { HER_NEED_IDS, type HerNeedId } from '../../mood/her-needs';
+import { ACTIVITY_WORDS, SCREEN_ACTIVITIES, type ScreenActivity } from '../../senses';
 import { MOOD_JUDGE_KNOBS, type MoodJudgeKnobs } from './knobs';
+import { moodGuideFull, moodNowFull } from '../../foundation/mood-guide';
 import {
   MOOD_JUDGE_WHYS, MOOD_JUDGE_WHY_IDS, type MoodJudgeAnswer, type MoodJudgeBoredLevel, type MoodJudgeGesture, type MoodJudgeItem,
   type MoodJudgeLongingLevel, type MoodJudgeMoodNote, type MoodJudgeNote, type MoodJudgeNow, type MoodJudgeTaste, type MoodJudgeWhyId,
@@ -31,11 +32,11 @@ export function moodJudgeWhyOf(reason: unknown): MoodJudgeWhyId | null {
   return MOOD_JUDGE_WHY_IDS.find(id => moodJudgeReason(id) === reason) ?? null;
 }
 
-// The fixed reasons other hosts give their mood changes (shared/journal.ts FIXED_MOOD_REASONS lists the same words).
+// The fixed reasons other hosts give their mood changes (shared/memory/journal.ts FIXED_MOOD_REASONS lists the same words).
 const GAME_REASON = '和用户玩了猜拳';
 const VOICE_REASON = '收到用户语音';
 const NEED_REASONS: Readonly<Record<string, 'soothed' | 'dip' | 'relief'>> = { '被用户哄好了': 'soothed', '一个人待了一会儿，有点低落': 'dip', '用户来了，松了口气': 'relief' };
-// shared/feed-recognition.ts FEED_MOOD_REASONS (the lift `feed-taste-<session>`).
+// shared/senses/feed-recognition.ts FEED_MOOD_REASONS (the lift `feed-taste-<session>`).
 const TASTE_REASONS: Readonly<Record<string, MoodJudgeTaste>> = { '喂的是她爱吃的': 'loved', '喂的不太合她口味': 'disliked', '喂的不是吃的': 'notFood' };
 
 const finite = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
@@ -201,7 +202,7 @@ export function moodJudgeDay(ms: number): string {
 // ---------------------------------------------------------------- the prompt
 
 const CONTEXT_WORDS: Readonly<Record<MoodContext, string>> = {
-  neutral: '中性', positive: '积极', support: '觉得被支持', concern: '担心用户', disappointment: '有点失落', offense: '觉得被冒犯',
+  neutral: '中性', positive: '积极', support: '觉得被支持', concern: '担心用户', disappointment: '有点失落', offense: '觉得被冒犯', fright: '被吓到',
 };
 const TASTE_WORDS: Readonly<Record<MoodJudgeTaste, string>> = { loved: '是她爱吃的', disliked: '不太合她口味', notFood: '不是吃的' };
 const NEED_WORDS: Readonly<Record<HerNeedId, string>> = { lonely: '有点闷', dream: '做了个不开心的梦', lowEnergy: '今天有点没精神', chatty: '无聊得想找人说话' };
@@ -275,7 +276,10 @@ const clock = (at: number) => { const d = new Date(at); return `${String(d.getHo
 export const MOOD_JUDGE_SYSTEM_PROMPT = [
   '你是桌宠角色的"心情调整员"，在后台安静地工作。角色有五个心情数，0～100，平时慢慢回到她自己的基线：',
   'D 期待（对好事的期待、兴奋，8 分钟左右回落一半）、O 亲近（想黏着用户，40 分钟）、E 舒适（放松安心，25 分钟）、N 激活（一时的精神紧绷或兴奋，3 分钟）、C 压力（紧张不安，20 分钟）。',
+  // The shared mood guide (shared/foundation/mood-guide.ts): the hormones, reading against the baseline, how numbers combine, common events.
+  moodGuideFull(),
   '发生的事已经由本机规则马上调过一次（每件事后面写着"本机"动了多少；用户说的话，角色自己的判断也已生效）。你的工作：结合她的性格和此刻的状态，看这一阵合起来合不合理，再微调一下。',
+  '有【最近聊过】时，它只是资料，帮你看懂这一阵的前因（比如用户刚说过的话、她们聊到哪了）；里面已经发生并调过的事不要再算一次。',
   '不需要快，也不需要精确，但要合理：符合她的性格、此刻的心情和事情的先后。本机调得正好就全给 0。可以加，也可以把本机给多的收回一点。',
   '上限：每个数最多 ±6，期待 D 和激活 N 最多 ±3；五个数绝对值加起来最多 12。说明里写了更小的上限时照那个。',
   '只输出一个 JSON 对象，不要别的字，不要解释：{"delta":{"O":2,"C":-1},"fits":false,"why":"too-little","confidence":0.8}',
@@ -285,11 +289,12 @@ export const MOOD_JUDGE_SYSTEM_PROMPT = [
 ].join('\n');
 
 /** The variable part: her, now, and this batch's events (at most knobs.maxEvents, the rest counted). */
-export function moodJudgePrompt(now: MoodJudgeNow, items: readonly MoodJudgeItem[], knobs: Pick<MoodJudgeKnobs, 'maxEvents' | 'afterOpus' | 'perCall' | 'personaChars'> = MOOD_JUDGE_KNOBS): string {
+export function moodJudgePrompt(now: MoodJudgeNow, items: readonly MoodJudgeItem[], knobs: Pick<MoodJudgeKnobs, 'maxEvents' | 'afterOpus' | 'perCall' | 'personaChars'> = MOOD_JUDGE_KNOBS,
+  recentChat = ''): string {
   const persona = String(now.persona ?? '').replace(/\s+/gu, ' ').trim().slice(0, Math.max(0, knobs.personaChars));
   const lean = (Object.keys(PERSONALITY_WORDS) as (keyof MoodJudgeNow['personality'])[])
     .map(key => `${PERSONALITY_WORDS[key]} ${finite(now.personality?.[key]) ? round1(now.personality[key]) : 1}`).join('、');
-  const numbers = MOOD_CHANNELS.map(c => `${MOOD_JUDGE_CHANNEL_WORDS[c]} ${c} ${Math.round(now.values[c])}（基线 ${Math.round(now.baseline[c])}）`).join('、');
+  const numbers = moodNowFull(now.values, now.baseline, finite(now.evidence) ? now.evidence : 1, MOOD_JUDGE_CHANNEL_WORDS);
   const shown = items.slice(0, Math.max(1, knobs.maxEvents)), rest = items.length - shown.length;
   const opus = opusJudged(items);
   const lines = [
@@ -300,6 +305,7 @@ export function moodJudgePrompt(now: MoodJudgeNow, items: readonly MoodJudgeItem
     '【这一阵发生的事】（从早到晚）',
     ...shown.map((item, index) => `${index + 1}. ${moodJudgeItemLine(item, now.at)}`),
     ...(rest > 0 ? [`（还有 ${rest} 件小事没列出）`] : []),
+    ...(recentChat.trim() ? [`【最近聊过】${recentChat.trim()}`] : []), // I-205
     `【说明】${opus ? `这一阵里有用户说的话，她自己的判断已经先生效，你每个数最多再修 ±${knobs.afterOpus}。` : '每个数最多 ±6，期待 D、激活 N 最多 ±3。'}只输出 JSON。`,
   ];
   return lines.join('\n');

@@ -1,6 +1,6 @@
 // First-token A/B for the warm haiku of I-037 新的反应方式 (docs/claude/2026-11-07-reactions-warm-haiku.md):
 //   A = the way before: the switch on, haiku asked after her first character, one `claude -p` per call (quickLineWithClaude);
-//   B = a warm haiku (electron/inner-loop/warm-line.ts, started and booted while nothing runs) asked knobs.startDelayMs after the
+//   B = a warm haiku (electron/initiative/inner-loop/warm-line.ts, started and booted while nothing runs) asked knobs.startDelayMs after the
 //       message, beside her reply (knobs.warmParallel).
 //   C (--arms C, its own run): the same warm haiku, asked after her first character (knobs.warmParallel false).
 // Both arms run the app's own ReactionHost (userTurn right before her turn, firstChar on her first delta, as electron/main.ts).
@@ -15,10 +15,10 @@ import { runEval } from './prompt-eval-runner';
 import type { TurnRecord } from './prompt-eval-analysis';
 import type { EvalScenario } from './prompt-eval-scenarios';
 import { FIDELITY_CARDS } from './fidelity-scenarios';
-import { findClaude } from '../../electron/claude';
-import { quickLineWithClaude } from '../../electron/inner-loop/model';
-import { WarmLine } from '../../electron/inner-loop/warm-line';
-import { ReactionHost, type ReactionJournalInput } from '../../electron/reactions/host';
+import { findClaude } from '../../electron/brain/claude';
+import { quickLineWithClaude } from '../../electron/initiative/inner-loop/model';
+import { WarmLine } from '../../electron/initiative/inner-loop/warm-line';
+import { ReactionHost, type ReactionJournalInput } from '../../electron/mood/reactions/host';
 import { deriveDispositions } from '../../shared/behaviors/reactions/dispositions';
 import { FakeReactionJudge } from '../../shared/behaviors/reactions/fake';
 import type { ReactionPerformer } from '../../shared/behaviors/reactions/interface';

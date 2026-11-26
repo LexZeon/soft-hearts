@@ -11,13 +11,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import ts from 'typescript';
-import type { Attachment } from '../shared/contracts';
-import { LookTurns } from '../electron/look-turns';
-import { LookAttachments, SHARE_TICKETS_KEPT } from '../electron/look-attachments';
-import { MediaRuntime } from '../electron/runtime';
-import { validateChatRequest } from '../electron/validation';
-import { draftAfterClear, lookHint, turnAttachments } from '../src/look-send';
-import { perceptionTurnLine, perceptionTurnState } from '../shared/perception-rule';
+import type { Attachment } from '../shared/foundation/chat';
+import { LookTurns } from '../electron/senses/look-turns';
+import { LookAttachments, SHARE_TICKETS_KEPT } from '../electron/senses/look-attachments';
+import { MediaRuntime } from '../electron/senses/media-runtime';
+import { validateChatRequest } from '../electron/settings/validation';
+import { draftAfterClear, lookHint, turnAttachments } from '../src/senses/look-send';
+import { perceptionTurnLine, perceptionTurnState } from '../shared/brain/perception-rule';
+import { rendererSource as readRendererSource } from './helpers/renderer-source'; // overhaul step 5: src/main.ts and src/wiring/*.ts
 
 const PERSONA = '你是测试角色。';
 
@@ -173,7 +174,7 @@ test('聊天请求校验：记号原样留下给宿主核对（不是字符串�
   assert.deepEqual(manual.attachments, [{ source: 'screen', dataUrl }]);
 });
 
-// ---- 3. 控制窗口的草稿附件（src/main.ts clearChat，窗口这一半的规则在 src/look-send.ts draftAfterClear）
+// ---- 3. 控制窗口的草稿附件（src/main.ts clearChat，窗口这一半的规则在 src/senses/look-send.ts draftAfterClear）
 test('Codex 第四轮：草稿里用户亲手附的快照，关共享（或清视觉上下文）时留着；新对话、换角色、重置照旧清空', () => {
   const manual: Attachment[] = [{ source: 'screen', dataUrl: 'data:image/png;base64,iVBORw0KGgo=' }, { source: 'camera', dataUrl: 'data:image/jpeg;base64,/9j/hand' }];
   assert.deepEqual(draftAfterClear(manual, true), manual);
@@ -187,13 +188,13 @@ test('Codex 第四轮：草稿里有一张手动快照，从桌宠关掉共享�
   let draft: Attachment[] = [{ source: 'screen', dataUrl: 'data:image/jpeg;base64,/9j/handPicked' }];
   h.media.update({ screenSharing: false }, 'pet');
   h.look.abort();
-  draft = draftAfterClear(draft, true); // the control window gets the vision-cleared and runtime notices (and the pet's clear broadcast)
+  draft = draftAfterClear(draft, true); // the control window gets the vision-cleared and runtime notices (and the companion's clear broadcast)
   const sent = await h.ask('这个报错怎么回事', draft);
   h.chat(sent);
   assert.deepEqual(h.last().images, ['data:image/jpeg;base64,/9j/handPicked']);
 });
 
-const rendererSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
+const rendererSource = readRendererSource();
 const renderer = ts.createSourceFile('main.ts', rendererSource, ts.ScriptTarget.Latest, true);
 
 test('src/main.ts：撤权和清视觉上下文的清空留着手动草稿（本窗口和收到别的窗口的广播都是），清空时只按 draftAfterClear 留', () => {
@@ -211,11 +212,12 @@ test('src/main.ts：撤权和清视觉上下文的清空留着手动草稿（本
   assert.match(body, /attachments = draftAfterClear\(attachments, keepDraft\);/);
   assert.doesNotMatch(body, /\battachments = \[\];/, 'clearChat 不再无条件清空草稿');
   assert.match(body, /type: 'clear'[^\n]*keepDraft/, '广播带上"留着草稿"');
-  assert.match(rendererSource, /onVisionContextCleared\(\(\) => \{ clearChat\(false, false, true\);/);
-  assert.match(rendererSource, /if \(visionRevoked\) clearChat\(true, false, true\);/);
+  assert.match(rendererSource, /onVisionContextCleared\(value => \{ clearAfterReply\(value, \{ active: \(\) => activeChat \?\? replySpeechQueue\.replyId, clear: \(\) => \{ clearChat\(false, false, true\);/); // I-174 item 9b: a step away's clear waits for her reply (src/brain/clear-after-reply.ts)
+  // I-221 (2026-11-26): the window no longer clears by itself when sharing goes off (it cut her reply); the host's clear says what to do.
+  assert.doesNotMatch(rendererSource, /visionRevoked\) clearChat/);
   assert.match(rendererSource, /clearChat\(false, message\.greeting, message\.keepDraft === true\);/);
-  // 其他清空（新对话、换角色、换模型、重置、宿主重置聊天）照旧清空草稿：只有这三处带第三个参数。
+  // 其他清空（新对话、换角色、换模型、重置、宿主重置聊天）照旧清空草稿：只有这两处带第三个参数。
   const keeping = calls.filter(call => call.arguments.length === 3).map(call => call.getText(renderer));
-  assert.deepEqual(keeping, ['clearChat(false, false, true)', 'clearChat(true, false, true)', 'clearChat(false, message.greeting, message.keepDraft === true)']);
-  assert.ok(calls.length >= 10, '其余的清空都还在');
+  assert.deepEqual(keeping.sort(), ['clearChat(false, false, true)', 'clearChat(false, message.greeting, message.keepDraft === true)'].sort()); // the call sites, in whichever wiring file each lives (src/main.ts split)
+  assert.ok(calls.length >= 9, '其余的清空都还在');
 });

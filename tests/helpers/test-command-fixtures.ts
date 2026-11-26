@@ -1,12 +1,12 @@
-import type { DiaryWriteNow, HerLifeStart, InnerLoopAvailability, TestCommandDeps } from '../../electron/test-commands/entries';
-import type { HerLifeActivity } from '../../shared/her-life';
-import type { MoodLabel } from '../../shared/mood';
-import type { HerNeedId } from '../../shared/her-needs';
-import type { TestFatiguePhase } from '../../shared/mood-presets';
-import type { RelationshipStage } from '../../shared/relationship';
-import type { ActiveUserState } from '../../shared/user-state';
-import type { ExpressionRecipe } from '../../shared/expression-preview';
-import type { HerActionId, HerActionPlayResult } from '../../shared/her-actions';
+import type { DiaryWriteNow, HerLifeStart, InnerLoopAvailability, TestCommandDeps } from '../../electron/safety/test-commands/entries';
+import type { HerLifeActivity } from '../../shared/stage/her-life';
+import type { MoodLabel } from '../../shared/foundation/mood';
+import type { HerNeedId } from '../../shared/mood/her-needs';
+import type { TestFatiguePhase } from '../../shared/foundation/mood-presets';
+import type { RelationshipStage } from '../../shared/memory/relationship';
+import type { ActiveUserState } from '../../shared/senses/user-state';
+import type { ExpressionRecipe } from '../../shared/stage/expression-preview';
+import type { HerActionId, HerActionPlayResult } from '../../shared/actions/her-actions';
 
 /** A fake clock and timer set for the one entry that waits (L1): `advance` runs due callbacks in order. */
 export function fakeTimers() {
@@ -51,13 +51,17 @@ export function fakeTestDeps(over: Partial<TestCommandDeps> = {}) {
     rpsInvite: true,
     rpsStart: true,
     diary: 'started' as DiaryWriteNow,
-    /** E1: whether a pet window was there to show the preview. */
+    /** P-001: what the plan memory answers. */
+    upcoming: 'ok' as 'ok' | 'recording-off' | 'nothing',
+    /** I-059: what the special-day host answers. */
+    specialDay: 'ok' as 'ok' | 'recording-off' | 'folder-on' | 'no-character',
+    /** E1: whether a companion window was there to show the preview. */
     expressionShown: true as boolean | undefined,
     /** P1 第二阶段: what the pose host answers. */
     pose: 'ok' as 'ok' | 'no-character' | 'expressions-off',
     /** I-006: what the user-activity host answers (the switch off = 'switch-off'). */
     userActivity: 'ok' as 'ok' | 'switch-off',
-    /** 她的动作: what the pet window answers. */
+    /** 她的动作: what the companion window answers. */
     action: { status: 'played', missing: [], detail: '' } as HerActionPlayResult,
   };
   const deps: TestCommandDeps = {
@@ -84,6 +88,8 @@ export function fakeTestDeps(over: Partial<TestCommandDeps> = {}) {
     },
     rps: { invite: () => { calls.push('rps.invite'); return state.rpsInvite; }, start: () => { calls.push('rps.start'); return state.rpsStart; } },
     diary: { writeNow: () => { calls.push('diary.writeNow'); return state.diary; } },
+    upcoming: { add: async () => { calls.push('upcoming.add'); return state.upcoming; }, due: async () => { calls.push('upcoming.due'); return state.upcoming; } },
+    specialDay: { pretend: kind => { calls.push(`specialDay.pretend:${kind}`); return state.specialDay; } },
     pose: { simulate: kind => { calls.push(`pose.simulate:${kind}`); return state.pose; } },
     action: { play: async (id: HerActionId) => { calls.push(`action.play:${id}`); return state.action; } },
     userActivity: { pretend: kind => { calls.push(`userActivity.pretend:${kind}`); return state.userActivity; } },

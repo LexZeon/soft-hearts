@@ -2,17 +2,17 @@
 // card, profile or chats: every card here is made up for the test, and nothing is written outside .local/understanding/.
 //   node node_modules/tsx/dist/cli.mjs scripts/understanding-probe.ts --phase discuss --card title|clingy|inject
 //   node node_modules/tsx/dist/cli.mjs scripts/understanding-probe.ts --phase ab [--notes <file with the 理解说明>]
-// discuss: the app's own discussion host (electron/character-understanding.ts) with streamClaude and the chat model
+// discuss: the app's own discussion host (electron/cards/character-understanding.ts) with streamClaude and the chat model
 //          (Claude Code's default), scripted user answers, then the wrap-up; the "save" only records the draft.
 // ab:      the app's own chat pipeline (scripts/lib/prompt-eval-runner.ts) on the "裁决官" card without and with its
 //          理解说明, the same 10 user messages each; counts replies that use the title as a judge (宣判, 开庭, 法官…).
 // Every real call counts against .local/understanding/ledger.json (cap 40); a failed call ends the phase, nothing retried.
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { streamClaude, findClaude } from '../electron/claude';
-import { CharacterUnderstandingHost, type UnderstandingStream } from '../electron/character-understanding';
-import { compileCharacterPersona, defaultCharacterMoodTemplate, effectiveCharacterMood, type CharacterCard, type CharacterDraft, type CharacterTextDraft } from '../shared/character-cards';
-import type { UnderstandingPhase, UnderstandingView } from '../shared/character-understanding';
+import { streamClaude, findClaude } from '../electron/brain/claude';
+import { CharacterUnderstandingHost, type UnderstandingStream } from '../electron/cards/character-understanding';
+import { compileCharacterPersona, defaultCharacterMoodTemplate, effectiveCharacterMood, type CharacterCard, type CharacterDraft, type CharacterTextDraft } from '../shared/cards/character-cards';
+import type { UnderstandingPhase, UnderstandingView } from '../shared/cards/character-understanding';
 import { runEval } from './lib/prompt-eval-runner';
 import type { EvalScenario } from './lib/prompt-eval-scenarios';
 

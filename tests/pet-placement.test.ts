@@ -1,7 +1,7 @@
 // Test windows never land on top of the user's own companion (bottom right of the primary display).
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { initialPetPosition } from '../electron/pet-placement';
+import { initialPetPosition } from '../electron/stage/pet-placement';
 
 const area = { x: 0, y: 0, width: 1536, height: 912 };
 

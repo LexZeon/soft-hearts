@@ -1,4 +1,4 @@
-// Resource probe for the warm haiku (electron/inner-loop/warm-line.ts, docs/claude/2026-11-07-reactions-warm-haiku.md). No model
+// Resource probe for the warm haiku (electron/initiative/inner-loop/warm-line.ts, docs/claude/2026-11-07-reactions-warm-haiku.md). No model
 // call: the real Claude Code process is started and left idle (Claude Code sends nothing before its first message).
 //   1. CPU and memory of the booted, idle process (its child processes included) over --seconds (default 60).
 //   2. dispose() (the app's quit path): the process is gone.
@@ -6,8 +6,8 @@
 // Run: node node_modules/tsx/dist/cli.mjs scripts/lib/warm-haiku-resources.ts [--seconds 60]
 // The script runs part 3 by starting itself with --orphan-child.
 import { execFileSync, spawn, type ChildProcess } from 'node:child_process';
-import { ClaudeChatProcess } from '../../electron/claude-process';
-import { WarmLine } from '../../electron/inner-loop/warm-line';
+import { ClaudeChatProcess } from '../../electron/brain/claude-process';
+import { WarmLine } from '../../electron/initiative/inner-loop/warm-line';
 
 const option = (name: string, fallback = '') => { const i = process.argv.indexOf(`--${name}`); return i >= 0 ? process.argv[i + 1] ?? fallback : fallback; };
 const sleep = (ms: number) => new Promise(done => setTimeout(done, ms));

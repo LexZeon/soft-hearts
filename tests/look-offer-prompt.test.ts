@@ -4,9 +4,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { installPetWindow, type FakeElement } from './helpers/pet-window-dom';
-import { LOOK_OFFER_MESSAGE, LOOK_OFFER_NO, LOOK_OFFER_QUESTION, LOOK_OFFER_YES, LookOfferPrompt, lookOfferContent, readLookOffer } from '../src/ui/LookOfferPrompt';
-import { PET_FLOATING_NOT_POPUPS, PET_POPUPS } from '../src/ui/pet-popups';
-import { ENGLISH_UI_COPY } from '../shared/ui-copy.en';
+import { LOOK_OFFER_MESSAGE, LOOK_OFFER_NO, LOOK_OFFER_QUESTION, LOOK_OFFER_YES, LookOfferPrompt, lookOfferContent, readLookOffer } from '../src/senses/LookOfferPrompt';
+import { PET_FLOATING_NOT_POPUPS, PET_POPUPS } from '../src/stage/pet-popups';
+import { ENGLISH_UI_COPY } from '../shared/foundation/ui-copy.en';
 
 const ID = '0f8d7c6b-5a49-4382-9170-6e5d4c3b2a19';
 
@@ -88,9 +88,9 @@ test('宿主说关（被回答、换对话、关共享）、邀请过期、新�
 test('登记在 I-028 的浮窗登记表里（她在对话里问的话：收起工具栏不替你回答）；样子和她的卡片一致；中英文都有', () => {
   const entry = PET_FLOATING_NOT_POPUPS['look-offer'];
   assert.ok(entry, 'registered');
-  assert.deepEqual(entry.sources, ['src/ui/LookOfferPrompt.ts']);
-  assert.ok(!Object.values(PET_POPUPS).some(popup => (popup.sources as readonly string[]).includes('src/ui/LookOfferPrompt.ts')));
-  const css = readFileSync(new URL('../src/ui/look-button.css', import.meta.url), 'utf8');
+  assert.deepEqual(entry.sources, ['src/senses/LookOfferPrompt.ts']);
+  assert.ok(!Object.values(PET_POPUPS).some(popup => (popup.sources as readonly string[]).includes('src/senses/LookOfferPrompt.ts')));
+  const css = readFileSync(new URL('../src/senses/look-button.css', import.meta.url), 'utf8');
   assert.match(css, /\.look-offer-card \{[^}]*border-radius: 12px; background: #1b2830f2;/u, 'the same card look as chat-setting-card.css');
   assert.match(css, /\.pet-chat:has\(\.look-offer-card\) \{ opacity: 1; pointer-events: auto;/u, 'the chat area stays up while it is there');
   for (const text of [LOOK_OFFER_QUESTION, LOOK_OFFER_YES, LOOK_OFFER_NO, LOOK_OFFER_MESSAGE]) assert.ok(ENGLISH_UI_COPY[text], text);

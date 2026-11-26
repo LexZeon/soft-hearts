@@ -1,5 +1,5 @@
 /**
- * 她也会需要你 (L4): the pure rules in shared/her-needs.ts. docs/claude/2026-11-03-she-needs-you.md; the loop it belongs to is
+ * 她也会需要你 (L4): the pure rules in shared/mood/her-needs.ts. docs/claude/2026-11-03-she-needs-you.md; the loop it belongs to is
  * docs/claude/2026-11-03-mood-loop-design.md (everything starts from character and mood and returns to them).
  *
  * What is pinned: each kind wants to begin under its own conditions (a WANT from mood and character, 0..1); how often is a soft
@@ -11,14 +11,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  BIG_LINE_WORDS, HER_NEED_DEJECTION, HER_NEED_GLOW, HER_NEED_IDS, HER_NEED_LIMIT_DEFAULTS, HER_NEED_LOW, HER_NEED_OVERRIDE_FROM, HER_NEED_SPEAK_MIN_STRENGTH,
+  HER_NEED_DEJECTION, HER_NEED_GLOW, HER_NEED_IDS, HER_NEED_LIMIT_DEFAULTS, HER_NEED_LOW, HER_NEED_OVERRIDE_FROM, HER_NEED_SPEAK_MIN_STRENGTH,
   HER_NEED_TABLE, HER_NEED_TOUCH_MS_PER_INTERACTION, WELCOME_BACK_LINE, createHerNeedState, formatHerNeedLine, herNeedChatLine, herNeedDip, herNeedGlowStrength,
   herNeedLimitInput, herNeedLimits, herNeedPressure, herNeedRelief, herNeedSensitivity, herNeedSpeechLine, herNeedStartRate, herNeedStrength, herNeedTotalMs,
   herNeedTriggers, herNeedView, herNeedWakeChance, noteHerNeedInteraction, readHerNeedSaved, restoreHerNeedState, scaledHerNeedPresentation, serializeHerNeedState,
   stepHerNeed, takeHerNeedChatLine, takeHerNeedSpeech, welcomeBackLine,
   type HerNeedId, type HerNeedLimitFn, type HerNeedLimitInput, type HerNeedSignals, type HerNeedState, type HerNeedStepInput,
-} from '../shared/her-needs';
-import { HER_LIFE_NEUTRAL_PRESENTATION } from '../shared/her-life';
+} from '../shared/mood/her-needs';
+import { HER_LIFE_NEUTRAL_PRESENTATION } from '../shared/stage/her-life';
 
 const SECOND = 1_000, MIN = 60_000, HOUR = 3_600_000;
 const START = Date.UTC(2026, 10, 3, 6, 0, 0);
@@ -559,18 +559,17 @@ test('away or off: 自动表现 off or falling asleep puts everything away at on
 /** What none of her lines may carry, even as a joke: a lever on the user. */
 const LEVER = /你走了|难过死|别去|在乎我就|离不开|没有你|少了你|必须|应该来|该来|多陪|欠我|活该/u;
 /** Phrases that state the big line itself (so the checks look at what is left). */
-const BIG_LINE_PHRASES = new RegExp([BIG_LINE_WORDS, '不要求用户[^；。，]*', '也不要越说越委屈', '不要用户道歉或补偿', '不让用户不敢再离开', '不撒娇抱怨', '不惩罚、不加码、不翻旧账'].join('|'), 'gu');
+/** The old big-line phrases are gone from her lines (rules removal 2026-11-25); kept as a never-matching regex so the lever checks still run on the whole line. */
+const BIG_LINE_PHRASES = /(?!)/gu;
 
 test('words: every line she is given is a small 撒娇 inside the big line: light, no lever on the user, she makes up first, a sad user comes first', () => {
   for (const id of HER_NEED_IDS) {
     const speech = herNeedSpeechLine(id), need = herNeedChatLine('need', id), soothed = herNeedChatLine('soothed', id), relief = herNeedChatLine('relief');
     // The speech chance: a very short cute thing; a small sulk is allowed (the user's correction), a lever is not.
-    assert.match(speech, /很短、很可爱/); assert.match(speech, /小小地撒个娇、别扭一下/); assert.match(speech, /不要求用户做什么/);
-    assert.ok(speech.includes(BIG_LINE_WORDS), 'the big line is in the speech chance'); assert.match(speech, /不想说就选别的/);
+    assert.match(speech, /很短的话/); assert.doesNotMatch(speech, /很可爱|小小地撒个娇|不要求用户|不翻旧账|越说越委屈/u); assert.match(speech, /不想说就选别的/);
     // The chat lines.
-    assert.match(need, /小小地撒个娇、别扭一下/); assert.ok(need.includes(BIG_LINE_WORDS)); assert.match(need, /你先和好/); assert.match(need, /难过的事，先陪着用户/);
-    assert.match(relief, /松了口气/); assert.match(relief, /由你先给台阶、先和好/); assert.ok(relief.includes(BIG_LINE_WORDS)); assert.match(relief, /难过的事，先陪着用户/);
-    assert.match(soothed, /被用户哄好了/); assert.match(soothed, /很开心/); assert.match(soothed, /不翻之前的不开心/);
+    assert.match(need, /用户来了，你很高兴/); assert.match(relief, /松了口气/); assert.match(soothed, /被用户哄好了/); assert.match(soothed, /很开心/);
+    for (const line of [need, relief, soothed]) assert.doesNotMatch(line, /撒个娇|先和好|先给台阶|不惩罚|不翻|不让用户不敢|难过的事/u);
     for (const line of [speech, need, soothed, relief]) {
       assert.doesNotMatch(line.replace(BIG_LINE_PHRASES, ''), LEVER, `a lever in: ${line}`);
       assert.doesNotMatch(line, /他|她(?!自己)/u, '指用户时用「用户」，不用他 / 她');
@@ -626,9 +625,8 @@ test('welcome back: after a long absence and at the moment of reunion the line i
     ['the reunion itself', { ...longing, longing: 0, reunion: true }, true], ['gone a few hours', { ...longing, longing: 0, reunion: false }, false],
     ['just below the line', { ...longing, longing: 29.9, reunion: false }, false], ['never talked', { longing: 80, longingAt: 30, lastInteractionAt: null, reunion: false }, false],
   ] as const) assert.equal(welcomeBackLine(args) !== '', expected, name);
-  assert.match(WELCOME_BACK_LINE, /很想用户/); assert.match(WELCOME_BACK_LINE, /非常开心/); assert.match(WELCOME_BACK_LINE, /撒娇/);
-  assert.match(WELCOME_BACK_LINE, /不惩罚、不加码、不翻旧账/); assert.match(WELCOME_BACK_LINE, /先给台阶、先和好/);
-  assert.match(WELCOME_BACK_LINE, /难过的事，先陪着用户/);
+  // Rules removal 2026-11-25: only the fact that some time passed; no prescribed feeling or manner.
+  assert.match(WELCOME_BACK_LINE, /隔了一阵子/); assert.doesNotMatch(WELCOME_BACK_LINE, /撒娇|不惩罚|不翻旧账|先和好|先给台阶|很想用户|难过的事/u);
   assert.doesNotMatch(WELCOME_BACK_LINE.replace(BIG_LINE_PHRASES, ''), LEVER);
   assert.doesNotMatch(WELCOME_BACK_LINE, /伤感|失落|委屈|孤单|寂寞|冷落|等了|他|她(?!自己)/u);
 });

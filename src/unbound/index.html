@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: mmd-asset:; connect-src 'self' ws://127.0.0.1:5173 mmd-asset:; media-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <title>soft hearts · Unbound</title>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; user-select: none; }
+      #unbound { position: fixed; inset: 0; }
+      #unbound canvas.unbound-stage { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; }
+      .unbound-bubble { position: absolute; left: 0; top: 0; width: max-content; max-width: 340px; max-height: 46vh; overflow: hidden; box-sizing: border-box; padding: 9px 13px; border-radius: 14px;
+        background: rgba(255, 255, 255, 0.95); color: #2b2633; font: 15px/1.55 "Microsoft YaHei UI", "PingFang SC", system-ui, sans-serif;
+        box-shadow: 0 4px 16px rgba(30, 20, 50, 0.18); pointer-events: none; white-space: pre-wrap; word-break: break-word;
+        transition: opacity 600ms ease; opacity: 1; }
+      .unbound-bubble.fading { opacity: 0; }
+      .unbound-said { position: absolute; left: 0; top: 0; max-width: 260px; padding: 3px 10px; border-radius: 10px; background: rgba(60, 54, 72, 0.78); color: #f4f1f8;
+        font: 12px/1.5 "Microsoft YaHei UI", "PingFang SC", system-ui, sans-serif; pointer-events: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .unbound-senses { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 4px; padding: 6px; border-radius: 12px; background: rgba(40, 36, 52, 0.62); pointer-events: none; }
+      .unbound-sense-dot { width: 9px; height: 9px; border-radius: 50%; box-shadow: 0 0 5px 1px rgba(255, 255, 255, 0.35); }
+      .unbound-senses-tip { position: absolute; left: 0; top: 0; padding: 4px 9px; border-radius: 8px; background: rgba(40, 36, 52, 0.9); color: #f4f1f8;
+        font: 12px/1.5 "Microsoft YaHei UI", "PingFang SC", system-ui, sans-serif; white-space: pre; pointer-events: none; }
+      [hidden] { display: none !important; }
+      .unbound-debug-capsules { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+      .unbound-debug-line { position: absolute; left: 12px; bottom: 12px; padding: 4px 8px; border-radius: 6px; background: rgba(16, 21, 29, 0.72);
+        color: #cfe3ff; font: 12px/1.4 Consolas, "Cascadia Mono", monospace; pointer-events: none; white-space: pre; }
+    </style>
+  </head>
+  <body>
+    <div id="unbound"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

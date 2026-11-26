@@ -4,13 +4,13 @@ import { randomUUID } from 'node:crypto';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CharacterCardStore } from '../electron/character-cards';
+import { CharacterCardStore } from '../electron/cards/character-cards';
 import {
   CHARACTER_CARD_FORMAT, CHARACTER_CARD_VERSION, compileCharacterPersona,
   defaultCharacterMoodTemplate, effectiveCharacterMood, validateCharacterDraft, validateCharacterMoodTemplate,
   type CharacterDraft,
-} from '../shared/character-cards';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
+} from '../shared/cards/character-cards';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
 
 const draft = (name: string, fields: Partial<CharacterDraft> = {}): CharacterDraft => ({ name, description: '', personality: '', scenario: '', greeting: '', examples: '', systemPrompt: '', ...fields });
 async function withDirectory(run: (directory: string) => Promise<void>) {

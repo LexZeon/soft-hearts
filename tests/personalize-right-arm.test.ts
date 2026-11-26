@@ -1,11 +1,11 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';
 import {mkdtemp,readFile,rm} from 'node:fs/promises';import os from 'node:os';import path from 'node:path';
 import {Bone,BufferGeometry,MeshBasicMaterial,Quaternion,Skeleton,SkinnedMesh,Vector3} from 'three';
-import {BODY_TWEAK_BASE,BODY_TWEAK_BINDING,BODY_TWEAK_TARGET,BODY_VISUAL_PURPOSE,makeBodyRightTweak,parseBodyVisualStudy,validateBodyPoseProfile,validateBodyPoseSelection} from '../shared/personalize-body';
-import {bodyPoseBinding} from '../shared/personalize-body-bindings';import {applyBodyPoseTweak,applyBodyRightTweak,bodyBindingForProfile} from '../electron/personalize-body-tweak';
-import {PersonalizeStaticPose} from '../src/stage/personalize-static-pose';import {PersonalizeBodyAuthoring} from '../electron/personalize-body-authoring';
-import {PersonalizeBodyStore} from '../electron/personalize-body-store';import type {SelectedVisualImage} from '../electron/selected-visual-image';
-import {selectBodyPosePresentation} from '../shared/personalize-body-presentation';
+import {BODY_TWEAK_BASE,BODY_TWEAK_BINDING,BODY_TWEAK_TARGET,BODY_VISUAL_PURPOSE,makeBodyRightTweak,parseBodyVisualStudy,validateBodyPoseProfile,validateBodyPoseSelection} from '../shared/stage/personalize-body';
+import {bodyPoseBinding} from '../shared/stage/personalize-body-bindings';import {applyBodyPoseTweak,applyBodyRightTweak,bodyBindingForProfile} from '../electron/stage/personalize-body-tweak';
+import {PersonalizeStaticPose} from '../src/stage/personalize-static-pose';import {PersonalizeBodyAuthoring} from '../electron/stage/personalize-body-authoring';
+import {PersonalizeBodyStore} from '../electron/stage/personalize-body-store';import type {SelectedVisualImage} from '../electron/senses/selected-visual-image';
+import {selectBodyPosePresentation} from '../shared/stage/personalize-body-presentation';
 const base=bodyPoseBinding(BODY_TWEAK_BINDING,BODY_TWEAK_TARGET)!;const offsets={shoulderOffsetDegrees:0,upperArmOffsetDegrees:0,elbowOffsetDegrees:0};
 const right={enabled:true,strength:.8,shoulderOffsetDegrees:0,upperArmOffsetDegrees:10,elbowOffsetDegrees:-10};
 const fixed={enabled:true,bindingId:BODY_TWEAK_BINDING,semantic:'mood.happy',label:'固定',strength:.5,targetModelSha:BODY_TWEAK_TARGET,sourceSha:BODY_TWEAK_BASE} as const;

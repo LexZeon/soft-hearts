@@ -12,19 +12,19 @@ import {
   FEED_IPC_MAX_BYTES, FEED_RECOGNITION_SYSTEM_PROMPT, FEED_SOURCE_MAX_BYTES, FED_LIST_MAX, feedDiaryLine, imageHeaderSize, feedHistoryLabel, feedLinePrompt, feedMomentLine, feedMoodLift,
   feedRecognitionPrompt, feedTasteExcerpt, noteFed, parseFeedLine, parseFeedRecognition, readFeedLineMessage, readFeedSnackInput, sniffImageFormat,
   type FeedVerdict,
-} from '../shared/feed-recognition';
-import { feedImageSize, shrinkFeedImage, type FeedImageDecoded } from '../electron/feed-recognition/image';
-import { FeedRecognitionStore } from '../electron/feed-recognition/store';
-import { FEED_LINE_AFTER_MS, FeedRecognitionHost, type AcceptedFood, type FeedJournalEntry, type FeedRecognitionHostOptions } from '../electron/feed-recognition/host';
-import { feedLineWithClaude, recognizeWithClaude } from '../electron/feed-recognition/model';
-import { INNER_LOOP_MODEL } from '../electron/inner-loop/model';
-import { claudeInput } from '../electron/claude';
-import { FeedSnackClient, prepareSnackImage, preshrinkSize, type SnackImageDecoder } from '../src/ui/feed-snack';
-import { FeedLinePresenter } from '../src/ui/feed-line';
-import { feedRecognitionStatus } from '../src/ui/FeedRecognitionPanel';
-import type { FeedLineMessage } from '../shared/feed-recognition';
-import { contactWords } from '../shared/her-state';
-import { perceptionTurnLine, perceptionTurnState, SENSING_AND_HEARING_OFF_LINE } from '../shared/perception-rule';
+} from '../shared/senses/feed-recognition';
+import { feedImageSize, shrinkFeedImage, type FeedImageDecoded } from '../electron/senses/feed-recognition/image';
+import { FeedRecognitionStore } from '../electron/senses/feed-recognition/store';
+import { FEED_LINE_AFTER_MS, FeedRecognitionHost, type AcceptedFood, type FeedJournalEntry, type FeedRecognitionHostOptions } from '../electron/senses/feed-recognition/host';
+import { feedLineWithClaude, recognizeWithClaude } from '../electron/senses/feed-recognition/model';
+import { INNER_LOOP_MODEL } from '../electron/initiative/inner-loop/model';
+import { claudeInput } from '../electron/brain/claude';
+import { FeedSnackClient, prepareSnackImage, preshrinkSize, type SnackImageDecoder } from '../src/initiative/feed-snack';
+import { FeedLinePresenter } from '../src/initiative/feed-line';
+import { feedRecognitionStatus } from '../src/senses/FeedRecognitionPanel';
+import type { FeedLineMessage } from '../shared/senses/feed-recognition';
+import { contactWords } from '../shared/mood/her-state';
+import { perceptionTurnLine, perceptionTurnState, SENSING_AND_HEARING_OFF_LINE } from '../shared/brain/perception-rule';
 
 const PNG = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52, 0, 0, 0, 1]);
 const JPEG = Uint8Array.from([0xff, 0xd8, 0xff, 0xe0, 0, 16, 0x4a, 0x46, 0x49, 0x46, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0xff, 0xd9]);
@@ -447,9 +447,9 @@ test('late and stale results never speak: a character switch, the switch off, a 
   const busy = rig();
   busy.state.free = false; busy.state.phase = 'idle';
   await busy.host.accept(true, input());
-  await busy.advance(25_000);
+  await busy.advance(65_000); // 2026-11-12: waits until the bite stops being "a moment ago" (tests/i019-feed-line-wait.test.ts)
   assert.deepEqual(busy.log.published, [], 'a chat or another line the whole time: dropped, never late');
-  assert.equal(busy.log.journal.at(-1)?.outcome, 'missed');
+  assert.equal(busy.log.journal.at(-1)?.outcome, 'busy');
 
   const quiet = rig();
   quiet.state.line = say(''); quiet.state.phase = 'idle';
@@ -491,7 +491,7 @@ test('no cap: every bite is looked at and may be answered (user: "不设上限")
   assert.equal(r.log.archived.length, 12);
 });
 
-// ------------------------------------------------------------------------------------------------ the pet window
+// ------------------------------------------------------------------------------------------------ the companion window
 
 function fakeDecoder(width: number, height: number, log: string[]): SnackImageDecoder {
   return {
@@ -607,4 +607,30 @@ test('I-017 wiring: the next chat turn hears "用户刚才喂你吃了草莓蛋�
   await r.advance(61_000);
   assert.equal(r.host.recentFoodName('gene'), null, 'no longer "a moment ago"');
   assert.equal(r.host.momentLine('gene'), '用户约 1 分钟前喂你吃了草莓蛋糕。');
+});
+
+// I-086 我们的小东西: a recognised snack is handed to the keeper once, with her line, the shrunk picture and whether she loves it;
+// never a picture that was not food, never before her line was shown (or she chose quiet).
+test('I-086: a recognised snack goes to the keeper once her line is shown; a not-food picture never does', async () => {
+  const kept: { characterId: string; name: string; line: string | null; at: number; loved: boolean; image: string }[] = [];
+  const r = rig({ keep: entry => { kept.push(entry); } });
+  assert.equal(await r.host.accept(true, input()), true);
+  await r.advance(200);
+  assert.equal(kept.length, 0, 'nothing before her line is shown');
+  r.state.phase = 'idle';
+  await r.advance(2000);
+  const message = r.log.published[0];
+  assert.equal(r.host.done(true, { id: message.id, shown: true }), true);
+  await r.advance(100);
+  assert.equal(kept.length, 1);
+  assert.deepEqual({ ...kept[0], image: kept[0].image.slice(0, 23) }, { characterId: 'gene', name: '草莓蛋糕', line: '……草莓蛋糕？！（眼睛一亮）', at: 1_000_000, loved: true, image: 'data:image/jpeg;base64,' });
+  const notFood: typeof kept = [];
+  const other = rig({ keep: entry => { notFood.push(entry); } });
+  other.state.look = '{"edible":false,"name":"","category":"不是吃的","liking":"不知道","summary":"不是吃的"}';
+  assert.equal(await other.host.accept(true, input()), true);
+  other.state.phase = 'idle';
+  await other.advance(3000);
+  for (const shown of other.log.published) other.host.done(true, { id: shown.id, shown: true });
+  await other.advance(100);
+  assert.deepEqual(notFood, [], 'a picture that is not food is never kept');
 });

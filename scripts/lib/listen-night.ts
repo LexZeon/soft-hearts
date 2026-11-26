@@ -1,21 +1,22 @@
 // I-016 B part: one simulated evening of 一起听 (docs/claude/2026-11-03-listen-together.md, "主动频率"): 20 songs and 2
-// episodes through the real segment/note core, the real pause-point line and the real mood quota (shared/mood.ts, default
+// episodes through the real segment/note core, the real pause-point line and the real mood quota (shared/foundation/mood.ts, default
 // parameters: 2 lines an hour, 30 minutes apart, stop after 1 unanswered). Fake clock, fake small model, fake chat model.
 //
 // I-020 #10 (docs/claude/2026-11-04-opening-choice.md): with `choice`, every pause-point cue goes through the real opening host
-// (electron/inner-loop/opening-host.ts), which may give it to the listen line, her small feeling (a fake inner loop: one small-model
+// (electron/brain/opening-host.ts), which may give it to the listen line, her small feeling (a fake inner loop: one small-model
 // call that speaks with `innerSpeaks`), or silence. Without it, the old arm: every cue is the listen line's. The user's replies and
 // her choice draw from their own random streams, so both arms hear the same evening (same songs, notes and pause points).
 //
 //   node node_modules/tsx/dist/cli.mjs scripts/lib/listen-night.ts [--seeds 1,2,3] [--reply 0.5]
-import { ListenKindHost, type ListenKind } from '../../shared/listen-kind';
-import { ListenTogetherCore } from '../../electron/listen-together/core';
-import { ListenProactive } from '../../electron/listen-together/proactive';
-import { OpeningHost, type OpeningLoop } from '../../electron/inner-loop/opening-host';
+import { ListenKindHost, type ListenKind } from '../../shared/senses/listen-kind';
+import { ListenTogetherCore } from '../../electron/senses/listen-together/core';
+import { ListenProactive } from '../../electron/senses/listen-together/proactive';
+import { OpeningHost, type OpeningLoop } from '../../electron/brain/opening-host';
 import { OpeningChoiceDirector } from '../../shared/behaviors/opening-choice/choose';
 import type { OpeningChoiceHost } from '../../shared/behaviors/opening-choice/interface';
-import { applyMoodEvent, canRequestAmbientSpeech, createMoodState, getMoodSnapshot, releaseUnspokenSpeech, DEFAULT_MOOD_PARAMETERS, type MoodCue, type MoodState } from '../../shared/mood';
-import type { MoodView } from '../../shared/mood-runtime';
+import { applyMoodEvent, canRequestAmbientSpeech, createMoodState, getMoodSnapshot, releaseUnspokenSpeech, DEFAULT_MOOD_PARAMETERS, type MoodCue, type MoodState } from '../../shared/foundation/mood';
+import { speechIntervalAfterUnanswered as STRETCH } from '../../shared/behaviors/busy-chat/unanswered'; // the mood host passes it to the gate (overhaul parts 3)
+import type { MoodView } from '../../shared/mood/mood-runtime';
 
 export interface NightResult {
   songs: number; episodes: number; minutes: number;
@@ -56,7 +57,7 @@ export async function simulateNight(options: NightOptions = {}): Promise<NightRe
   let core!: ListenTogetherCore;
   const proactive = new ListenProactive({ gate, currentSession: () => session, canComment: () => true, persona: () => 'Gene', moodText: () => '',
     generate: async () => '{"comment":"刚才那段挺好的"}', offer: o => offers.push(o.id),
-    mood: () => { const s = getMoodSnapshot(mood, clock); return { primary: s.primary, tendencies: s.tendencies }; },
+    mood: () => { const s = getMoodSnapshot(mood, clock, DEFAULT_MOOD_PARAMETERS, STRETCH); return { primary: s.primary, tendencies: s.tendencies }; },
     readNote: id => core.readNote(id), talked: (id, at) => core.markTalked(id, at), now: () => clock, random });
   core = new ListenTogetherCore({ kinds, characterId: () => 'gene', listening: () => true, now: () => clock, save: async () => {},
     note: async request => { haikuCalls++;
@@ -83,9 +84,9 @@ export async function simulateNight(options: NightOptions = {}): Promise<NightRe
       core.tick();
       for (let k = 0; k < 6; k++) await Promise.resolve();
       const source = proactive.nextSourceObservation();
-      if (source && canRequestAmbientSpeech(mood, source, clock)) {
-        mood = applyMoodEvent(mood, { type: 'attention', id: `cue-${clock}`, kind: 'speech', source }, clock);
-        const snapshot = getMoodSnapshot(mood, clock);
+      if (source && canRequestAmbientSpeech(mood, source, clock, DEFAULT_MOOD_PARAMETERS, STRETCH)) {
+        mood = applyMoodEvent(mood, { type: 'attention', id: `cue-${clock}`, kind: 'speech', source }, clock, DEFAULT_MOOD_PARAMETERS, STRETCH);
+        const snapshot = getMoodSnapshot(mood, clock, DEFAULT_MOOD_PARAMETERS, STRETCH);
         if (snapshot.cue) {
           cues++;
           const view: MoodView = { characterId: 'gene', revision: cues, token: 't', developerMode: false, expressions: true, parameters: DEFAULT_MOOD_PARAMETERS, snapshot, gesture: null };
@@ -107,7 +108,7 @@ export async function simulateNight(options: NightOptions = {}): Promise<NightRe
       }
       if (replyAt !== null && clock >= replyAt) {
         replyAt = null; replies++;
-        mood = applyMoodEvent(mood, { type: 'chat', id: `reply-${clock}` }, clock);
+        mood = applyMoodEvent(mood, { type: 'chat', id: `reply-${clock}` }, clock, DEFAULT_MOOD_PARAMETERS, STRETCH);
         await proactive.acceptUserTurn(`reply-${clock}`, '嗯');
       }
     }

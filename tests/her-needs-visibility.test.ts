@@ -1,12 +1,12 @@
 /**
- * Pretrial 2026-11-03 (L4, 问题 5 and 9): "有小情绪时脸和平常几乎一样", and the warmth after soothing hardly showed. Besides the head
+ * Pretrial 2026-11-03 (L4, 问题 5 and 9): a small mood left the face almost as usual, and the warmth after soothing hardly showed. Besides the head
  * channel coming back with the default Stand (tests/stage-default-stand-head.test.ts) and a little more face in the table, how plainly
  * it shows now follows her character and her mood (I-013, not one fixed size): herNeedVisibility, eased in by the stage.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { HER_NEED_TABLE, herNeedVisibility, scaledHerNeedPresentation } from '../shared/her-needs';
-import { HER_LIFE_NEUTRAL_PRESENTATION } from '../shared/her-life';
+import { HER_NEED_TABLE, herNeedVisibility, scaledHerNeedPresentation } from '../shared/mood/her-needs';
+import { HER_LIFE_NEUTRAL_PRESENTATION } from '../shared/stage/her-life';
 import { HerLifeStage } from '../src/stage/her-life-stage';
 
 const neutral = { D: 50, O: 50, E: 50, N: 50, C: 50 };

@@ -4,6 +4,8 @@ import { readFileSync } from 'node:fs';
 import type { Bone } from 'three';
 import { EyelidCompositor, composeBrows, composeMouthExpression } from '../src/stage/channel-compositors';
 import { ContinuousExpression, EXPRESSION_FALL, EXPRESSION_LIMITS, EXPRESSION_RISE, emptyExpression, expressionTargets } from '../src/stage/continuous-expression';
+import { ANCHOR_LEVELS } from '../src/mood/mood-face/anchors';
+import { MOOD_FACE_KNOBS } from '../src/mood/mood-face/knobs';
 import { ProceduralLife, lifeRig, type LifeGates, type LifeInput, type LifeMood, type LifePort, type LifeRig } from '../src/stage/procedural-life';
 import { StageModelProfile } from '../src/stage/model-profile';
 import { readPmxLite } from './helpers/pmx-lite';
@@ -73,17 +75,21 @@ test('targets: moods differ, card intensity scales, drowsy shows jitome and a ch
     }
 });
 
-test('smoothing: rises with a 0.35 s and falls with a 0.5 s time constant, one step at most 0.25 s', () => {
-  const smooth = new ContinuousExpression(), target = { ...emptyExpression(), mouthSmile: 0.3 };
-  let t = 0;
-  while (t < EXPRESSION_RISE - 1e-9) { smooth.frame(DT, target); t += DT; }
-  assert.ok(Math.abs(smooth.value.mouthSmile - 0.3 * (1 - Math.exp(-1))) < 0.01, `63% at 0.35 s (${smooth.value.mouthSmile})`);
-  for (let i = 0; i < 240; i++) smooth.frame(DT, target);
-  const top = smooth.value.mouthSmile; target.mouthSmile = 0; t = 0;
-  while (t < EXPRESSION_FALL - 1e-9) { smooth.frame(DT, target); t += DT; }
-  assert.ok(Math.abs(smooth.value.mouthSmile - top * Math.exp(-1)) < 0.01, `37% left at 0.5 s (${smooth.value.mouthSmile})`);
+test('smoothing: each region rises and falls with its own time constants (the eyes 0.35 s / 0.5 s), one step at most 0.25 s', () => {
+  assert.deepEqual([EXPRESSION_RISE, EXPRESSION_FALL], [...MOOD_FACE_KNOBS.regions.eyes]);
+  for (const [key, region] of [['smileEyes', 'eyes'], ['mouthSmile', 'mouth'], ['sad', 'brows'], ['blush', 'blush']] as const) {
+    const [rise, fall] = MOOD_FACE_KNOBS.regions[region];
+    const smooth = new ContinuousExpression(), target = { ...emptyExpression(), [key]: 0.2 };
+    let t = 0;
+    while (t < rise - 1e-9) { smooth.frame(DT, target); t += DT; }
+    assert.ok(Math.abs(smooth.value[key] - 0.2 * (1 - Math.exp(-1))) < 0.01, `${key}: 63% at ${rise} s (${smooth.value[key]})`);
+    for (let i = 0; i < 360; i++) smooth.frame(DT, target);
+    const top = smooth.value[key]; target[key] = 0; t = 0;
+    while (t < fall - 1e-9) { smooth.frame(DT, target); t += DT; }
+    assert.ok(Math.abs(smooth.value[key] - top * Math.exp(-1)) < 0.01, `${key}: 37% left at ${fall} s (${smooth.value[key]})`);
+  }
   const long = new ContinuousExpression(); long.frame(10, { ...emptyExpression(), sad: 0.2 });
-  assert.ok(Math.abs(long.value.sad - 0.2 * (1 - Math.exp(-0.25 / EXPRESSION_RISE))) < 1e-9, 'a stalled frame advances at most 0.25 s');
+  assert.ok(Math.abs(long.value.sad - 0.2 * (1 - Math.exp(-0.25 / MOOD_FACE_KNOBS.regions.brows[0]))) < 1e-9, 'a stalled frame advances at most 0.25 s');
   for (let i = 0; i < 240; i++) long.frame(DT, emptyExpression());
   assert.equal(long.value.sad, 0, 'settles to an exact zero within a few seconds');
 });
@@ -93,7 +99,10 @@ test('smoothing: rises with a 0.35 s and falls with a 0.5 s time constant, one s
 const gates = (patch: Partial<LifeGates> = {}): LifeGates => ({ expressive: true, contact: false, manualPose: false, manualGesture: false, manualHead: false,
   manualExpression: false, manualMouth: false, chatGesture: false, music: false, bodyMotion: false, headOwned: false, authoredFace: false,
   preview: false, adjusting: false, speaking: false, gazeAllowed: true, ...patch });
-const mood = (primary: string): LifeMood => ({ primary, companion: null, values: { D: 50, O: 50, E: 50, N: 50, C: 50 }, intensity: { expression: 50, gaze: 50, posture: 50 } });
+/** I-073: a mood whose numbers match its name (the typical state's own numbers, mood-face/anchors.ts). */
+const mood = (primary: keyof typeof ANCHOR_LEVELS): LifeMood => ({ primary, companion: null,
+  values: { D: 50, O: 50, E: 50, N: 50, C: 50, ...ANCHOR_LEVELS[primary].levels }, longing: ANCHOR_LEVELS[primary].longing ?? 0,
+  intensity: { expression: 50, gaze: 50, posture: 50 } });
 const gene = toThreeMesh(readPmxLite(new Uint8Array(readFileSync(new URL('../assets/bundled/mmdagent-ex/gene/c7eace43dffaccff6ad0597433ef85fa57c91e03/model/gene.pmx', import.meta.url)))));
 const geneProfile = new StageModelProfile(gene, { reviewed: true });
 const geneRig: LifeRig<Bone> = lifeRig(gene, geneProfile);

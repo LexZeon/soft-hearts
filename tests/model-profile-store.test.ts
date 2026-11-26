@@ -3,8 +3,8 @@ import test from 'node:test';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { buildModelProfile } from '../shared/model-profile';
-import { MAX_MODEL_PROFILES, ModelProfileStore } from '../electron/model-profile-store';
+import { buildModelProfile } from '../shared/stage/model-profile';
+import { MAX_MODEL_PROFILES, ModelProfileStore } from '../electron/stage/model-profile-store';
 import { profileInput, toyModel } from './helpers/model-fixtures';
 
 const profile = JSON.parse(JSON.stringify(buildModelProfile(profileInput(toyModel()))));

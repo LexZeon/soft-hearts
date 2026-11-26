@@ -1,14 +1,14 @@
 import test from 'node:test';
-import { DEFAULT_TTS_CONFIG, type TtsConfig } from '../shared/tts';
+import { DEFAULT_TTS_CONFIG, type TtsConfig } from '../shared/voice/tts';
 import assert from 'node:assert/strict';
-import { SpeechRuntime, SPEECH_ROUTE_LEASE_MS } from '../electron/speech-runtime';
-import { SpeakingOwners, SPEAKING_OWNER_LEASE_MS } from '../electron/speaking-owners';
-import { AudioReadingHostBroker } from '../electron/audio-reading-host-broker';
-import { AmbientAudioSegments } from '../src/ui/ambient-audio-segments';
-import { MediaInput, SPEAKING_MAX_MS } from '../src/ui/MediaInput';
-import { PauseGuard } from '../electron/pause-guard';
-import { ListenTally } from '../electron/listen-tally';
-import { buildJournalEntry } from '../shared/journal';
+import { SpeechRuntime, SPEECH_ROUTE_LEASE_MS } from '../electron/voice/speech-runtime';
+import { SpeakingOwners, SPEAKING_OWNER_LEASE_MS } from '../electron/voice/speaking-owners';
+import { AudioReadingHostBroker } from '../electron/voice/audio-reading-host-broker';
+import { AmbientAudioSegments } from '../src/senses/ambient-audio-segments';
+import { MediaInput, SPEAKING_MAX_MS } from '../src/senses/MediaInput';
+import { PauseGuard } from '../electron/senses/pause-guard';
+import { ListenTally } from '../electron/senses/listen-tally';
+import { buildJournalEntry } from '../shared/memory/journal';
 
 // Everything that pauses listening while she speaks must let go again, however the reading ended.
 

@@ -1,14 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ChatAvailability } from '../electron/chat-availability';
-import { ClaudeFailureError } from '../electron/claude';
+import { ChatAvailability } from '../electron/brain/chat-availability';
+import { ClaudeFailureError } from '../electron/brain/claude';
 import {
   CHAT_AVAILABILITY_METHODS, CLAUDE_NETWORK_CONFIG_URL, CLAUDE_SETUP_URL, NETWORK_SETTINGS_URI,
   ChatAvailabilityHost, registerChatAvailabilityIpc,
-} from '../electron/chat-availability-host';
-import { OutageLineScheduler } from '../electron/outage-lines';
-import { OUTAGE_LINE_KINDS, actionsFor, helpTopicFor } from '../shared/chat-availability';
-import { CLAUDE_FAILURE_KINDS } from '../shared/claude-failure';
+} from '../electron/brain/chat-availability-host';
+import { OutageLineScheduler } from '../electron/brain/outage-lines';
+import { OUTAGE_LINE_KINDS, actionsFor, helpTopicFor } from '../shared/brain/chat-availability';
+import { CLAUDE_FAILURE_KINDS } from '../shared/brain/claude-failure';
 
 const LIMIT = new ClaudeFailureError('x', "You've hit your session limit · resets 1:20pm (America/Los_Angeles)");
 const OFFLINE = new ClaudeFailureError('x', "Can't reach the API server");

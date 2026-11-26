@@ -7,9 +7,9 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { MoodReplyProtocol } from '../electron/mood-chat';
-import { CompanionService } from '../electron/companion';
-import { ReplyDraftGuard, chatLooksChinese, draftFilterLine, isChineseChatNote, isChinesePlan } from '../electron/reply-draft-guard';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
+import { CompanionService } from '../electron/brain/companion';
+import { ReplyDraftGuard, chatLooksChinese, draftFilterLine, isChineseChatNote, isChinesePlan } from '../electron/brain/reply-draft-guard';
 import { replay } from '../scripts/lib/prompt-eval-analysis';
 
 function chunkings(text: string): string[][] {
@@ -310,6 +310,19 @@ test('a stray symbol in front of the reply goes, in any chat', () => {
     assert.deepEqual(played.protocol.draftDrops().map(drop => drop.kind), ['stray-symbol']);
   }
   assert.equal(play('�好呀', 0).shown, '好呀');
+});
+test('a stray closing bracket and English notes glued to the reply: both go, the reply stays (style check 2026-11-08)', () => {
+  const reply = '听到这儿就停了，后面还没放出来呢。\n\n你觉得老人看到纸条会怎么做？';
+  const raw = `】User asks "what happened to him later?" We only heard up to the note. Don't invent as fact; can wonder together. Char gentle, curious.${reply}`;
+  for (const chunking of [0, 1, 2, 3]) {
+    const played = play(raw, chunking);
+    assert.equal(played.shown, reply, `chunking ${chunking}`);
+    assert.ok(!/User|】/u.test(played.shown), `chunking ${chunking}: nothing of the notes is shown`);
+  }
+  // A reply that only starts with the bracket keeps everything after it.
+  for (const chunking of [0, 1]) assert.equal(play('】嗯，我在呢。', chunking).shown, '嗯，我在呢。');
+  // An opening bracket is not touched: 【】 used on purpose stays.
+  assert.equal(play('【今日推荐】这部电影真的很好看。', 0).shown, '【今日推荐】这部电影真的很好看。');
 });
 
 const NORMAL_LATER: Array<{ name: string; raw: string }> = [

@@ -56,21 +56,74 @@ function Find-Node {
     return $null
 }
 
+# A parent Claude Code session's variables (docs/claude/2026-11-25-claude-env-from-session.md). The same two lists as
+# shared/brain/claude-session-env.ts (tests/claude-env-launch.test.ts compares them). When this script runs inside a Claude Code
+# session (a marker below is set), the programs it starts for the user (the app, "claude auth status") do not get that session's
+# own variables, nor its endpoint and credential plumbing (the Claude desktop app points ANTHROPIC_BASE_URL at its local proxy).
+# Without a marker nothing is removed: those are the user's own settings. Only this process and its children are touched, for the
+# length of one start; no user or system environment setting is changed, and no value is ever printed.
+$claudeSessionMarkers = @('CLAUDECODE', 'CLAUDE_CODE_ENTRYPOINT', 'CLAUDE_CODE_SSE_PORT', 'CLAUDE_CODE_SESSION_ID', 'CLAUDE_CODE_HOST_SESSION_ID',
+    'CLAUDE_CODE_EXECPATH', 'CLAUDE_CODE_CHILD_SESSION', 'CLAUDE_CODE_DESKTOP_APP_VERSION', 'CLAUDE_AGENT_SDK_VERSION')
+$claudeSessionPlumbing = @('ANTHROPIC_BASE_URL', 'ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_API_KEY', 'ANTHROPIC_CUSTOM_HEADERS',
+    'ANTHROPIC_BEDROCK_BASE_URL', 'ANTHROPIC_VERTEX_BASE_URL', 'ANTHROPIC_FOUNDRY_BASE_URL', 'ANTHROPIC_FOUNDRY_API_KEY',
+    'ANTHROPIC_UNIX_SOCKET', 'CLAUDE_CODE_OAUTH_TOKEN')
+# The user's own choices the app itself reads or passes on (CLAUDE_PATH picks the executable); kept even inside a session.
+$claudeUserVariables = @('CLAUDE_PATH', 'CLAUDE_CONFIG_DIR', 'CLAUDE_CODE_GIT_BASH_PATH', 'CLAUDE_CODE_USE_BEDROCK', 'CLAUDE_CODE_USE_VERTEX',
+    'CLAUDE_CODE_USE_FOUNDRY', 'CLAUDE_CODE_SKIP_BEDROCK_AUTH', 'CLAUDE_CODE_SKIP_VERTEX_AUTH', 'CLAUDE_CODE_SKIP_FOUNDRY_AUTH')
+
+# The variable names to leave out of a child started from here; empty when no marker is set.
+function Get-ClaudeSessionVariables {
+    $names = @([Environment]::GetEnvironmentVariables('Process').Keys | ForEach-Object { [string]$_ })
+    $inSession = $false
+    foreach ($name in $names) {
+        if ($claudeSessionMarkers -contains $name.ToUpperInvariant() -and [Environment]::GetEnvironmentVariable($name, 'Process')) { $inSession = $true }
+    }
+    if (-not $inSession) { return @() }
+    $drop = @()
+    foreach ($name in $names) {
+        $upper = $name.ToUpperInvariant()
+        $plumbing = ($claudeSessionPlumbing -contains $upper) -or ($upper -match '^ANTHROPIC_[A-Z0-9_]*(_URL|_TOKEN|_KEY|_HEADERS|_SOCKET)$')
+        $session = $upper.StartsWith('CLAUDE') -and -not ($claudeUserVariables -contains $upper)
+        if ($plumbing -or $session) { $drop += $name }
+    }
+    return @($drop | Sort-Object -Unique)
+}
+
+# Runs $Action with those variables removed from this process, then puts them back (also on an error).
+function Invoke-WithoutClaudeSession([scriptblock]$Action) {
+    $saved = @{}
+    foreach ($name in @(Get-ClaudeSessionVariables)) {
+        $saved[$name] = [Environment]::GetEnvironmentVariable($name, 'Process')
+        [Environment]::SetEnvironmentVariable($name, $null, 'Process')
+    }
+    try { return (& $Action) }
+    finally { foreach ($name in $saved.Keys) { [Environment]::SetEnvironmentVariable($name, $saved[$name], 'Process') } }
+}
+
+# The Claude desktop app's own copy of Claude Code (same rule as scripts/claude-discovery.mjs isDesktopBundledClaude): not signed in
+# on its own and gone when the desktop app updates, so it is never used.
+function Test-DesktopBundledClaude([string]$File) {
+    return [bool]($File -and $File -match '(?i)[\\/]Claude[\\/]claude-code[\\/]\d+\.\d+\.\d+[^\\/]*[\\/]')
+}
+
 # Match the desktop host's discovery (scripts/claude-discovery.mjs) without logging in or reading credentials.
 function Find-ClaudeExecutable {
     $override = [Environment]::GetEnvironmentVariable('CLAUDE_PATH', 'Process')
     if ($override) {
         if (Test-Path -LiteralPath $override -PathType Leaf) {
+            if (Test-DesktopBundledClaude ([IO.Path]::GetFullPath($override))) { return [pscustomobject]@{ Path = $null; Status = 'desktop-bundled' } }
             return [pscustomobject]@{ Path = $override; Status = 'found' }
         }
         # An explicit override is authoritative, including when it is invalid.
         return [pscustomobject]@{ Path = $null; Status = 'invalid-override' }
     }
+    $bundledSeen = $false
     foreach ($directory in @(([Environment]::GetEnvironmentVariable('PATH', 'Process') -split [IO.Path]::PathSeparator))) {
         $directory = $directory.Trim('"')
         if (-not $directory) { continue }
         $candidate = Join-Path $directory 'claude.exe'
         if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+            if (Test-DesktopBundledClaude $candidate) { $bundledSeen = $true; continue }
             return [pscustomobject]@{ Path = $candidate; Status = 'found' }
         }
     }
@@ -81,13 +134,19 @@ function Find-ClaudeExecutable {
     foreach ($candidate in $candidates) {
         if (Test-Path -LiteralPath $candidate -PathType Leaf) { return [pscustomobject]@{ Path = $candidate; Status = 'found' } }
     }
+    $execPath = [Environment]::GetEnvironmentVariable('CLAUDE_CODE_EXECPATH', 'Process')
+    if ($bundledSeen -or ($execPath -and (Test-DesktopBundledClaude $execPath) -and (Test-Path -LiteralPath $execPath -PathType Leaf)) -or
+        ($env:APPDATA -and (Test-Path -LiteralPath (Join-Path $env:APPDATA 'Claude\claude-code') -PathType Container))) {
+        return [pscustomobject]@{ Path = $null; Status = 'desktop-bundled' }
+    }
     return [pscustomobject]@{ Path = $null; Status = 'missing' }
 }
 
-# Read-only: asks the official CLI whether it is signed in. Never prints account details or touches credentials.
+# Read-only: asks the official CLI whether it is signed in, without a parent Claude Code session's variables (inside the desktop
+# app those would report the app's own connection, which soft hearts never uses). Never prints account details or touches credentials.
 function Test-ClaudeLogin([string]$Executable) {
     try {
-        $raw = & $Executable 'auth' 'status' 2>$null
+        $raw = Invoke-WithoutClaudeSession { & $Executable 'auth' 'status' 2>$null }
         if ($LASTEXITCODE -ne 0 -and -not $raw) { return $null }
         $status = ($raw -join '') | ConvertFrom-Json
         return [bool]$status.loggedIn
@@ -221,12 +280,16 @@ function Start-SourceApp {
     $sourceProfile = Get-SourceProfile
     # Do not pass a process-scoped PowerShell policy override into the real app.
     [Environment]::SetEnvironmentVariable('PSExecutionPolicyPreference', $null, 'Process')
-    $launched = Start-Process -FilePath $electronExecutable -ArgumentList @(('"' + $projectRoot + '"'), ('"--user-data-dir=' + $sourceProfile + '"')) -WorkingDirectory $projectRoot -WindowStyle Hidden -PassThru
+    # Started from inside a Claude Code session: the app does not keep that session's variables (names only, never a value).
+    $sessionVariables = @(Get-ClaudeSessionVariables)
+    if ($sessionVariables.Count) { Write-Host "Started from inside a Claude Code session: these of its variables are not passed to the app: $($sessionVariables -join ', ')" }
+    $launched = Invoke-WithoutClaudeSession { Start-Process -FilePath $electronExecutable -ArgumentList @(('"' + $projectRoot + '"'), ('"--user-data-dir=' + $sourceProfile + '"')) -WorkingDirectory $projectRoot -WindowStyle Hidden -PassThru }
     Write-Host "Started the soft hearts next source app (PID $($launched.Id)) with the development profile $sourceProfile. Daily use belongs to the stable desktop shortcut, which keeps the real profile."
 }
 
 $previousPath = $env:PATH
 $previousCache = $env:npm_config_cache
+$previousNotifier = $env:npm_config_update_notifier
 $previousElectronCache = $env:electron_config_cache
 $previousElectronMode = $env:ELECTRON_RUN_AS_NODE
 $previousProcessPolicy = [Environment]::GetEnvironmentVariable('PSExecutionPolicyPreference', 'Process')
@@ -254,8 +317,10 @@ try {
         Write-Host "Claude Code: $($claude.Path)"
         $loggedIn = Test-ClaudeLogin $claude.Path
         if ($loggedIn -eq $true) { Write-Host 'Claude Code reports that you are signed in. Chat will use your own login; this does not prove a reply works yet.' }
-        elseif ($loggedIn -eq $false) { Write-Warning 'Claude Code is installed but not signed in. Run "claude" in a terminal once and finish the official sign-in, then chat will work.' }
+        elseif ($loggedIn -eq $false) { Write-Warning 'Claude Code is installed but not signed in. Sign in once: run "claude" in a terminal and finish the official sign-in (https://code.claude.com/docs/en/setup), then chat will work. The Claude desktop app''s own sign-in is not used.' }
         else { Write-Warning 'Could not read the Claude Code sign-in status. If chat fails, run "claude" in a terminal and sign in.' }
+    } elseif ($claude.Status -eq 'desktop-bundled') {
+        Write-Warning 'Only the Claude desktop app''s own copy of Claude Code was found. soft hearts cannot use it: it is not signed in on its own, and soft hearts never uses the desktop app''s connection or sign-in. Install the official Claude Code (https://code.claude.com/docs/en/setup) and sign in once by running "claude" in a terminal; then chat will work.'
     } elseif ($claude.Status -eq 'invalid-override') {
         Write-Warning 'CLAUDE_PATH points to a missing file. The app will not fall back to another executable; correct it before testing chat.'
     } else {
@@ -280,6 +345,9 @@ try {
     # These environment overrides apply only to this process and its children.
     $env:PATH = (Split-Path -Parent $node.Path) + [IO.Path]::PathSeparator + $previousPath
     $env:npm_config_cache = Join-Path $projectRoot '.local\npm-cache'
+    # No "new version available" notices from npm or pnpm: they go to stderr, and an assisting agent that captures stderr in Windows PowerShell 5.1
+    # sees them as red NativeCommandError lines that look like a failed install (found on a second computer, 2026-11-26).
+    $env:npm_config_update_notifier = 'false'
     # Keep the Electron download inside this folder too.
     $env:electron_config_cache = Join-Path $projectRoot '.local\electron-cache'
     Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue
@@ -312,6 +380,7 @@ try {
     if ($locationChanged) { Pop-Location }
     $env:PATH = $previousPath
     $env:npm_config_cache = $previousCache
+    $env:npm_config_update_notifier = $previousNotifier
     $env:electron_config_cache = $previousElectronCache
     $env:ELECTRON_RUN_AS_NODE = $previousElectronMode
     [Environment]::SetEnvironmentVariable('PSExecutionPolicyPreference', $previousProcessPolicy, 'Process')

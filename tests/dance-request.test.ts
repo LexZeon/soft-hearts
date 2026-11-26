@@ -1,7 +1,7 @@
 /** M1: the smallest "跳一个" recognition: a narrow, local scan of the user's own message. */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { scanDanceRequest } from '../shared/dance-request';
+import { scanDanceRequest } from '../shared/actions/dance-request';
 
 test('M1 request: asking her to dance is recognized', () => {
   for (const text of ['跳一个', '跳一个！', '跳个舞', '跳舞吧', '给我跳一支舞', '来跳个舞', '你跳个舞吧', '那你跳一下', '快跳起来', '可以跳个舞吗',

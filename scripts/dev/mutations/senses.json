@@ -1,0 +1,3364 @@
+[
+ {
+  "id": "cam-capture-local",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "if (!media.sharesCameraFrames()) return null; // local pose sensing",
+  "replace": "// local pose sensing",
+  "what": "摄像头抓帧：本地姿势识别时不出帧",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "cam-capture-held",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "if (media.state.cameraHeld) { miss?.('off'); return null; } // I-036",
+  "replace": "// I-036",
+  "what": "摄像头抓帧：用户说\"别看\"时不出帧",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "cam-sample-local",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "if (!media.sharesCameraFrames() || media.state.cameraHeld === true ||",
+  "replace": "if (media.state.cameraHeld === true ||",
+  "what": "publishCameraSample：本地姿势识别时拒收",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "cam-sample-owner",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "media.state.cameraHeld === true || media.state.cameraOwner !== ownerFor(sender)",
+  "replace": "media.state.cameraHeld === true",
+  "what": "publishCameraSample：只收摄像头所属窗口",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "cam-sample-visible",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "|| !owner || !onScreen(owner)) { cameraSamples.refuse(sender, id); return false; }",
+  "replace": "|| !owner) { cameraSamples.refuse(sender, id); return false; }",
+  "what": "publishCameraSample：所属窗口须在屏幕上（她在外面时藏着的桌宠窗口算在屏幕上，别的藏着的窗口不算）",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts",
+   "tests/unbound-camera-look.test.ts"
+  ]
+ },
+ {
+  "id": "cam-sample-held",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "|| media.state.cameraHeld === true || media.state.cameraOwner",
+  "replace": "|| media.state.cameraOwner",
+  "what": "publishCameraSample：拍的途中说了\"别看\"，画面不收（2026-11-21）",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts",
+   "tests/unbound-camera-look.test.ts"
+  ]
+ },
+ {
+  "id": "cam-sample-out-feature",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "|| !owner || !onScreen(owner))",
+  "replace": "|| !owner || !owner.isVisible() || owner.isMinimized())",
+  "what": "她在全屏外面时，桌宠窗口给的画面要收下（2026-11-21 的修复本身：改回旧规则，测试要报警）",
+  "tests": [
+   "tests/unbound-camera-look.test.ts",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "look-either-held",
+  "part": "senses",
+  "file": "shared/senses/look-at-you.ts",
+  "find": "(either && (!on.screen || on.cameraHeld !== true))",
+  "replace": "either",
+  "what": "\"这个\"在两样都开时两样都看，但摄像头被\"别看\"按住时不看摄像头（2026-11-21）",
+  "tests": [
+   "tests/unbound-camera-look.test.ts",
+   "tests/look-turns.test.ts",
+   "tests/i084-look-at-me.test.ts"
+  ]
+ },
+ {
+  "id": "camera-look-miss-closed",
+  "part": "senses",
+  "file": "shared/senses/journal-entries.ts",
+  "find": "if (v.miss != null && (!has(CAMERA_LOOK_MISSES, v.miss) || (v.why !== 'look-failed' && v.why !== 'no-frame'))) return null;",
+  "replace": "",
+  "what": "体验记录的摄像头行：没看成的原因只收固定词，只跟在没看成/没拿到画面后面（2026-11-21）",
+  "tests": [
+   "tests/unbound-camera-look.test.ts",
+   "tests/journal-behaviour.test.ts"
+  ]
+ },
+ {
+  "id": "cam-look-caller",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "if (media.sharesCameraFrames() && owner) return captureSharedCamera(owner.webContents.id, signal, miss);",
+  "replace": "if (owner) return captureSharedCamera(owner.webContents.id, signal, miss);",
+  "what": "看一眼取摄像头：先查共享",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "cam-proactive-caller",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "if (media.sharesCameraFrames() && owner) return captureSharedCamera(owner.webContents.id, s);",
+  "replace": "if (owner) return captureSharedCamera(owner.webContents.id, s);",
+  "what": "主动视觉取摄像头：先查共享",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "cam-router-caller",
+  "part": "senses",
+  "file": "electron/wiring/initiative-look-wiring.ts",
+  "find": "if (media.sharesCameraFrames() && owner) { const frame",
+  "replace": "if (owner) { const frame",
+  "what": "I-040 看一下取摄像头：先查共享",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "cam-selflook-caller",
+  "part": "senses",
+  "file": "electron/wiring/initiative-look-wiring.ts",
+  "find": "if (media.sharesCameraFrames() && owner) { try {",
+  "replace": "if (owner) { try {",
+  "what": "I-085 她自己看取摄像头：先查共享",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "screen-router-capture-refused",
+  "part": "senses",
+  "file": "electron/wiring/initiative-look-wiring.ts",
+  "find": "if (sense === 'screen') return media.state.screenSharing && !lookTurns.refusedIn(lookState()) ?",
+  "replace": "if (sense === 'screen') return media.state.screenSharing ?",
+  "what": "I-040 取屏幕：\"别看\"时不取",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "cam-sample-request-visible",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "if (!win || !onScreen(win)) throw new Error('Camera owner unavailable');",
+  "replace": "if (!win) throw new Error('Camera owner unavailable');",
+  "what": "向窗口要摄像头帧：窗口须在屏幕上",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "look-state-camera",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "camera: media.sharesCameraFrames() && !!media.state.cameraOwner, scope: lookScope()",
+  "replace": "camera: !!media.state.cameraOwner, scope: lookScope()",
+  "what": "看一眼的状态：本地姿势识别时不算摄像头",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "glance-maylook-refused",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "mayLook: () => media.state.screenSharing && !lookTurns.refusedIn(lookState()) && chatAvailability",
+  "replace": "mayLook: () => media.state.screenSharing && chatAvailability",
+  "what": "屏幕只读大概：\"别看\"时不看",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "watchalong-refused",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "refused: () => lookTurns.refusedIn(lookState()),",
+  "replace": "refused: () => false,",
+  "what": "跟着看：\"别看\"时停",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "rough-refused",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "const roughForTurn = () => media.state.screenSharing && !lookTurns.refusedIn(lookState()) ?",
+  "replace": "const roughForTurn = () => media.state.screenSharing ?",
+  "what": "这一轮的大概：\"别看\"时不说",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "rough-only-watching",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "watchingTogether: () => media.state.screenSharing === true && !!listenTogether && listenWordsOn(audioReading?.getView()),",
+  "replace": "watchingTogether: () => media.state.screenSharing === true,",
+  "what": "屏幕只读大概：普通消息不带图（只有一起看才带）",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "presence-screen-refused",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "screen: { on: () => media.state.screenSharing === true && !lookTurns.refusedIn(lookState()) && chatAvailability",
+  "replace": "screen: { on: () => media.state.screenSharing === true && chatAvailability",
+  "what": "I-066 你现在方便吗：\"别看\"时不看屏幕",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "glance-thumb-off",
+  "part": "senses",
+  "file": "electron/senses/screen-capture.ts",
+  "find": "if (!media.state.screenSharing || !win || !ports.onScreen(win)) return null;",
+  "replace": "if (!win || !ports.onScreen(win)) return null;",
+  "what": "大概的缩略图：共享关着不读屏",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "glance-thumb-stale",
+  "part": "senses",
+  "file": "electron/senses/screen-capture.ts",
+  "find": "if (opening !== media.openings.screen || !media.state.screenSharing) return null;",
+  "replace": "if (false) return null;",
+  "what": "大概的缩略图：读屏途中关了共享就丢",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "screen-capture-off",
+  "part": "senses",
+  "file": "electron/senses/screen-capture.ts",
+  "find": "if (!media.state.screenSharing) throw new Error('Screen sharing off');",
+  "replace": "",
+  "what": "屏幕抓帧：共享关着先拒绝",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "screen-capture-stale",
+  "part": "senses",
+  "file": "electron/senses/screen-capture.ts",
+  "find": "if (opening !== media.openings.screen || !media.state.screenSharing) throw new Error('Sharing changed');",
+  "replace": "",
+  "what": "屏幕抓帧：途中关了共享就作废",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "media-off-clears-screen",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "(previous.screenSharing && !next.screenSharing) ||",
+  "replace": "false ||",
+  "what": "关屏幕共享：清视觉上下文、中止聊天",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "media-off-clears-camera",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "cameraImagesRevoked(previous, next)\n    ) {",
+  "replace": "false\n    ) {",
+  "what": "关「发图片」：清视觉上下文",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "media-off-snapshots",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "if (!next.screenSharing && screenSnapshots.state.enabled) try {",
+  "replace": "if (false) try {",
+  "what": "关屏幕共享：停后台截图",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "media-off-glance",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "screenGlance.setSharing(next.screenSharing);",
+  "replace": "screenGlance.setSharing(true);",
+  "what": "关屏幕共享：大概随之停",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "media-pose-sync",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "poseSensing?.syncCamera(next);",
+  "replace": "void next;",
+  "what": "开关变化：姿势识别跟着同步摄像头",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "media-face-stop",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "faceCheck?.host.cameraChanged(); // I-135",
+  "replace": "// I-135",
+  "what": "关摄像头：立刻停认脸",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "media-glance-reset",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "if (!next.cameraImages) cameraGlance.reset();",
+  "replace": "",
+  "what": "关「发图片」：丢掉小图",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "media-tray-eye",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "cameraEye.images(media.sharesCameraFrames());",
+  "replace": "cameraEye.images(true);",
+  "what": "托盘眼睛跟开关",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "media-selflook",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "selfLook.mediaChanged(); // I-085",
+  "replace": "// I-085",
+  "what": "开关变化：她自己看的丢掉",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "media-voice-revoke",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "if (!next.voiceInput || previous.voiceOwner !== next.voiceOwner) revokeVoice('voice-off');",
+  "replace": "",
+  "what": "关麦克风：语音输入撤销",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "media-asr-abort",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "if (!next.voiceInput || previous.voiceOwner !== next.voiceOwner)\n      asrTask?.controller.abort();",
+  "replace": "if (!next.voiceInput || previous.voiceOwner !== next.voiceOwner)\n      void 0;",
+  "what": "关麦克风：正在识别的中止",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "media-local-asr",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "localAsr?.setWanted(next.voiceInput && voiceRoute.engine === 'local');",
+  "replace": "localAsr?.setWanted(voiceRoute.engine === 'local');",
+  "what": "关麦克风：本机识别模型不留着",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "reading-visible-pet",
+  "part": "senses",
+  "file": "electron/wiring/senses-listen-wiring.ts",
+  "find": "if (intent.enabled && (sender !== pet?.webContents.id || !onScreen(pet)))",
+  "replace": "if (false)",
+  "what": "读取音频：只有可见桌宠能开",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "reading-asr-blocked",
+  "part": "senses",
+  "file": "electron/wiring/senses-listen-wiring.ts",
+  "find": "const refused = intent.enabled ? ambientAsr.blocked('pet') : null;",
+  "replace": "const refused = null;",
+  "what": "读取音频：识别方式不是本机时只开律动",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "ambient-display-streams",
+  "part": "senses",
+  "file": "electron/wiring/senses-listen-wiring.ts",
+  "find": "if (!systemAudio.displayStreams(sender, true, true)) throw new Error('系统声音采集尚未授权。');",
+  "replace": "",
+  "what": "系统声音采集：须先有授权",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "ambient-canstart-pet",
+  "part": "senses",
+  "file": "electron/wiring/senses-listen-wiring.ts",
+  "find": "&& onScreen(pet) /* 2026-11-21: hidden only because she is out in Unbound still counts (stage-cleanup keeps the sound running then) */",
+  "replace": "",
+  "what": "旧版声音理解：只从可见桌宠开始",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "ambient-cantranscribe-off",
+  "part": "senses",
+  "file": "electron/wiring/senses-listen-wiring.ts",
+  "find": "canTranscribe: () => !asrTask && !foregroundAsr.busy && systemAudio.state.active,",
+  "replace": "canTranscribe: () => !asrTask && !foregroundAsr.busy,",
+  "what": "旧版声音理解：系统声音关着不转写",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "sysaudio-pet-only",
+  "part": "senses",
+  "file": "electron/wiring/senses-listen-wiring.ts",
+  "find": "if (sender !== pet?.webContents.id) throw new Error(\"只有桌宠窗口可以开启系统音频共享。\");",
+  "replace": "",
+  "what": "系统声音共享：只有桌宠窗口能开",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "sysaudio-visible",
+  "part": "senses",
+  "file": "electron/wiring/senses-listen-wiring.ts",
+  "find": "if (enabled === true && !onScreen(pet)) throw new Error(\"请先显示桌宠再开启系统音频共享。\");",
+  "replace": "",
+  "what": "系统声音共享：桌宠须在屏幕上",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "capture-available-visible",
+  "part": "senses",
+  "file": "electron/wiring/senses-listen-wiring.ts",
+  "find": "const win = owner === 'pet' ? pet : controls; return !!win && onScreen(win); },",
+  "replace": "return true; },",
+  "what": "音频采集：只给在屏幕上的窗口",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "voice-open-owner",
+  "part": "senses",
+  "file": "electron/wiring/senses-voice-input-wiring.ts",
+  "find": "if (!media.state.voiceInput || media.state.voiceOwner !== ownerFor(sender)) throw",
+  "replace": "if (false) throw",
+  "what": "语音输入：只有开启它的窗口能开采集",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "voice-transcribe-owner",
+  "part": "senses",
+  "file": "electron/wiring/senses-voice-input-wiring.ts",
+  "find": "if (!media.state.voiceInput || media.state.voiceOwner !== owner) throw",
+  "replace": "if (false) throw",
+  "what": "语音识别：只有开启它的窗口能请求",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "voice-transcribe-current",
+  "part": "senses",
+  "file": "electron/wiring/senses-voice-input-wiring.ts",
+  "find": "() => media.state.voiceInput && media.state.voiceOwner === owner && !voiceHost.capture);",
+  "replace": "() => true);",
+  "what": "语音识别：关掉后进行中的作废",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "voice-pcm-sender",
+  "part": "senses",
+  "file": "electron/wiring/senses-voice-input-wiring.ts",
+  "find": "if (!capture || capture.sender !== sender || !voiceCurrent(capture)) throw",
+  "replace": "if (!capture) throw",
+  "what": "语音片段：只收采集所属窗口的",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "dance-source-pet",
+  "part": "senses",
+  "file": "electron/wiring/senses-listen-wiring.ts",
+  "find": "if (sender !== pet?.webContents.id) throw Error('请在桌宠中明确选择音频律动来源。');",
+  "replace": "",
+  "what": "音频律动来源：只有桌宠能选",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "dance-sample-visible",
+  "part": "senses",
+  "file": "electron/wiring/senses-listen-wiring.ts",
+  "find": "if (!frame || !pet || pet.isDestroyed() || !pet.isVisible() || pet.isMinimized()) return false;",
+  "replace": "if (!frame || !pet) return false;",
+  "what": "音频律动样本：只送给可见桌宠",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "reading-pcm-owner",
+  "part": "senses",
+  "file": "electron/wiring/senses-listen-wiring.ts",
+  "find": "if (!descriptor || descriptor.owner !== ownerFor(sender) || descriptor.id",
+  "replace": "if (!descriptor || descriptor.id",
+  "what": "读取音频片段：只收所属窗口的",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "decline-pet-only",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "(sender, id: unknown) => sender === pet?.webContents.id && lookTurns.decline(id, lookState())",
+  "replace": "(sender, id: unknown) => lookTurns.decline(id, lookState())",
+  "what": "\"不用\"：只收桌宠的",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "look-hold-camera",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "holdCamera: held => { const previous = { ...media.state }; if (media.holdCamera(held)) mediaChanged(previous); },",
+  "replace": "holdCamera: held => { media.holdCamera(held); },",
+  "what": "\"别看\"：走 holdCamera 并通知开关变化",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "visualself-camera-local",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "const cameraOwner = media.sharesCameraFrames() && media.state.cameraOwner",
+  "replace": "const cameraOwner = media.state.cameraOwner",
+  "what": "她的视觉身份：本地姿势识别时不列摄像头",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "vision-eligible-sharing",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "&& proactiveVisionEnabled && (media.state.screenSharing || media.sharesCameraFrames())",
+  "replace": "&& proactiveVisionEnabled",
+  "what": "R10 主动画面话题：屏幕或摄像头共享开着才行",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "capture-screen-selection",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "!sourceSelection.ids.has(id) ||",
+  "replace": "",
+  "what": "「截取画面」：只截刚选的",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "capture-screen-expiry",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "Date.now() - sourceSelection.at > 60000",
+  "replace": "false",
+  "what": "「截取画面」：一分钟内有效",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "gaze-pet-only",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "pet && !pet.isDestroyed() && sender === pet.webContents.id ? pet.getBounds() : null",
+  "replace": "pet && !pet.isDestroyed() ? pet.getBounds() : null",
+  "what": "I-081 你在哪：只给桌宠窗口",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "owned-media-video",
+  "part": "senses",
+  "file": "electron/wiring/senses-listen-wiring.ts",
+  "find": "if (kind === 'video') return media.allowsMedia(owner, kind, manualCamera);",
+  "replace": "if (kind === 'video') return true;",
+  "what": "窗口取摄像头：走 media 的所属检查",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "owned-media-audio",
+  "part": "senses",
+  "file": "electron/wiring/senses-listen-wiring.ts",
+  "find": "return !!capture && capture.owner === owner && (capture.chat || capture.dance || capture.ambient !== null);",
+  "replace": "return true;",
+  "what": "窗口取麦克风：只给采集所属窗口",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "session-camera-permission",
+  "part": "senses",
+  "file": "electron/main.ts",
+  "find": "allowsOwnedMedia }, () => cameraEnabled);",
+  "replace": "allowsOwnedMedia }, () => true);",
+  "what": "会话的摄像头权限：读控制窗口的开关",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "part": "senses",
+  "id": "hidden-window-camera",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "camera = media.state.cameraSharing && media.state.cameraOwner === owner;",
+  "replace": "camera = false;",
+  "what": "窗口离开屏幕（最小化、藏起来）时不再释放它的摄像头",
+  "tests": [
+   "tests/i174-clear-after-reply.test.ts"
+  ]
+ },
+ {
+  "id": "face-pose-local",
+  "part": "senses",
+  "file": "electron/wiring/senses-wiring.ts",
+  "find": "frames: { poseOn: () => media.state.cameraLocal === true && poseSensing?.cameraMode() === 'local',",
+  "replace": "frames: { poseOn: () => true,",
+  "what": "I-135 认脸：只在本地姿势识别拥有摄像头时取姿势帧",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "cam-router-on-held",
+  "part": "senses",
+  "file": "electron/wiring/initiative-look-wiring.ts",
+  "find": "needs.media.state.cameraOwner && needs.media.state.cameraHeld !== true, screen:",
+  "replace": "needs.media.state.cameraOwner, screen:",
+  "what": "I-040 判断摄像头可用：“别看”时不可用",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "cam-router-on-local",
+  "part": "senses",
+  "file": "electron/wiring/initiative-look-wiring.ts",
+  "find": "camera: needs.media.sharesCameraFrames() && !!needs.media.state.cameraOwner && needs.media.state.cameraHeld",
+  "replace": "camera: !!needs.media.state.cameraOwner && needs.media.state.cameraHeld",
+  "what": "I-040 判断摄像头可用：本地姿势识别时不可用",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "screen-router-on-refused",
+  "part": "senses",
+  "file": "electron/wiring/initiative-look-wiring.ts",
+  "find": "screen: needs.media.state.screenSharing === true && !needs.lookTurns.refusedIn(lookState()), transcript",
+  "replace": "screen: needs.media.state.screenSharing === true, transcript",
+  "what": "I-040 判断屏幕可用：用户说过“别看”时不可用",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "cam-selflook-held",
+  "part": "senses",
+  "file": "electron/wiring/initiative-look-wiring.ts",
+  "find": "held: needs.media.state.cameraHeld === true }),",
+  "replace": "held: false }),",
+  "what": "I-085 她自己看：“别看”状态传成没按",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "cam-selflook-frames",
+  "part": "senses",
+  "file": "electron/wiring/initiative-look-wiring.ts",
+  "find": "camera: () => ({ frames: needs.media.sharesCameraFrames() && !!needs.media.state.cameraOwner,",
+  "replace": "camera: () => ({ frames: !!needs.media.state.cameraOwner,",
+  "what": "I-085 她自己看：本地姿势识别时也当有画面",
+  "tests": [
+   "tests/pose-privacy.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "S5-listen-kind-any-window",
+  "part": "senses",
+  "file": "electron/wiring/senses-handlers-wiring.ts",
+  "find": "sender === pet?.webContents.id ? listenKind.panelLine() : ''",
+  "replace": "listenKind.panelLine()",
+  "what": "控制窗口也能读到听到的是什么（开发者那一行只给桌宠窗口）",
+  "tests": [
+   "tests/step5-handlers.test.ts",
+   "tests/app-identity.test.ts",
+   "tests/app-session.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/brain-gates.test.ts",
+   "tests/bundle-inputs.test.mjs",
+   "tests/camera-two-switches.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/clipboard-permission.test.ts",
+   "tests/companion-breath.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/companion-framing.test.ts",
+   "tests/desktop-entry-chain.test.ts",
+   "tests/i084-look-at-me.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/layer-check.test.mjs",
+   "tests/listen-late-window.test.ts",
+   "tests/look-stale-frame.test.ts",
+   "tests/media-input.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/model-physics-wiring.test.ts",
+   "tests/mood-gates.test.ts",
+   "tests/motion-track-coverage.test.ts",
+   "tests/motion-weights-ipc.test.ts",
+   "tests/music-settings-wiring.test.ts",
+   "tests/part-table.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/pet-always-on-top-host.test.ts",
+   "tests/pose-privacy.test.ts",
+   "tests/public-snapshot.test.mjs",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r20-proactive-offer-ui.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/reply-speech-native-receipt.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/senses-privacy-gates.test.ts",
+   "tests/size-check.test.mjs",
+   "tests/sleep-entry-ready.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/structure-inventory.test.mjs",
+   "tests/surprise-preview-wiring.test.ts",
+   "tests/test-affected.test.mjs",
+   "tests/test-command-wiring.test.ts",
+   "tests/test-parts.test.mjs",
+   "tests/text-invitation-archive.test.ts",
+   "tests/text-memorial-question-binding.test.ts",
+   "tests/ui-language-entry.test.ts",
+   "tests/unbound-read-aloud.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/user-profile-host-wiring.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts",
+   "tests/wiring-skeleton.test.ts"
+  ]
+ },
+ {
+  "id": "S5-song-clear-from-pet",
+  "part": "senses",
+  "file": "electron/wiring/senses-handlers-wiring.ts",
+  "find": "controls && sender === controls.webContents.id && field(request, 'op') === 'clear'",
+  "replace": "field(request, 'op') === 'clear'",
+  "what": "桌宠窗口也能清空认得的歌",
+  "tests": [
+   "tests/step5-handlers.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/app-identity.test.ts",
+   "tests/app-session.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/brain-gates.test.ts",
+   "tests/bundle-inputs.test.mjs",
+   "tests/camera-two-switches.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/clipboard-permission.test.ts",
+   "tests/companion-breath.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/companion-framing.test.ts",
+   "tests/desktop-entry-chain.test.ts",
+   "tests/i084-look-at-me.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/layer-check.test.mjs",
+   "tests/listen-late-window.test.ts",
+   "tests/look-stale-frame.test.ts",
+   "tests/media-input.test.ts",
+   "tests/model-physics-wiring.test.ts",
+   "tests/mood-gates.test.ts",
+   "tests/motion-track-coverage.test.ts",
+   "tests/motion-weights-ipc.test.ts",
+   "tests/music-settings-wiring.test.ts",
+   "tests/part-table.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/pet-always-on-top-host.test.ts",
+   "tests/pose-privacy.test.ts",
+   "tests/public-snapshot.test.mjs",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r20-proactive-offer-ui.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/reply-speech-native-receipt.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/senses-privacy-gates.test.ts",
+   "tests/size-check.test.mjs",
+   "tests/sleep-entry-ready.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/structure-inventory.test.mjs",
+   "tests/surprise-preview-wiring.test.ts",
+   "tests/test-affected.test.mjs",
+   "tests/test-command-wiring.test.ts",
+   "tests/test-parts.test.mjs",
+   "tests/text-invitation-archive.test.ts",
+   "tests/text-memorial-question-binding.test.ts",
+   "tests/ui-language-entry.test.ts",
+   "tests/unbound-read-aloud.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/user-profile-host-wiring.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts",
+   "tests/wiring-skeleton.test.ts"
+  ]
+ },
+ {
+  "id": "S5-music-either-window",
+  "part": "senses",
+  "file": "electron/wiring/senses-music-wiring.ts",
+  "find": "    return accepted;\n  });",
+  "replace": "    return accepted;\n  }, false);",
+  "what": "桌宠窗口也能改音乐设置",
+  "tests": [
+   "tests/music-settings-wiring.test.ts",
+   "tests/app-identity.test.ts",
+   "tests/app-session.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/brain-gates.test.ts",
+   "tests/bundle-inputs.test.mjs",
+   "tests/camera-two-switches.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/clipboard-permission.test.ts",
+   "tests/companion-breath.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/companion-framing.test.ts",
+   "tests/desktop-entry-chain.test.ts",
+   "tests/i084-look-at-me.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/layer-check.test.mjs",
+   "tests/listen-late-window.test.ts",
+   "tests/look-stale-frame.test.ts",
+   "tests/media-input.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/model-physics-wiring.test.ts",
+   "tests/mood-gates.test.ts",
+   "tests/motion-track-coverage.test.ts",
+   "tests/motion-weights-ipc.test.ts",
+   "tests/part-table.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/pet-always-on-top-host.test.ts",
+   "tests/pose-privacy.test.ts",
+   "tests/public-snapshot.test.mjs",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r20-proactive-offer-ui.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/reply-speech-native-receipt.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/senses-privacy-gates.test.ts",
+   "tests/size-check.test.mjs",
+   "tests/sleep-entry-ready.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/structure-inventory.test.mjs",
+   "tests/surprise-preview-wiring.test.ts",
+   "tests/test-affected.test.mjs",
+   "tests/test-command-wiring.test.ts",
+   "tests/test-parts.test.mjs",
+   "tests/text-invitation-archive.test.ts",
+   "tests/text-memorial-question-binding.test.ts",
+   "tests/ui-language-entry.test.ts",
+   "tests/unbound-read-aloud.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/user-profile-host-wiring.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts",
+   "tests/wiring-skeleton.test.ts"
+  ]
+ },
+ {
+  "id": "S5-asr-voice-stays-on",
+  "part": "senses",
+  "file": "electron/wiring/senses-handlers-wiring.ts",
+  "find": "media.update({ voiceInput: false }, media.state.voiceOwner ?? 'controls'); mediaChanged(previous);",
+  "replace": "mediaChanged(previous);",
+  "what": "去掉本机识别组件时语音输入不关",
+  "tests": [
+   "tests/step5-handlers.test.ts",
+   "tests/app-identity.test.ts",
+   "tests/app-session.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/brain-gates.test.ts",
+   "tests/bundle-inputs.test.mjs",
+   "tests/camera-two-switches.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/clipboard-permission.test.ts",
+   "tests/companion-breath.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/companion-framing.test.ts",
+   "tests/desktop-entry-chain.test.ts",
+   "tests/i084-look-at-me.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/layer-check.test.mjs",
+   "tests/listen-late-window.test.ts",
+   "tests/look-stale-frame.test.ts",
+   "tests/media-input.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/model-physics-wiring.test.ts",
+   "tests/mood-gates.test.ts",
+   "tests/motion-track-coverage.test.ts",
+   "tests/motion-weights-ipc.test.ts",
+   "tests/music-settings-wiring.test.ts",
+   "tests/part-table.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/pet-always-on-top-host.test.ts",
+   "tests/pose-privacy.test.ts",
+   "tests/public-snapshot.test.mjs",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r20-proactive-offer-ui.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/reply-speech-native-receipt.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/senses-privacy-gates.test.ts",
+   "tests/size-check.test.mjs",
+   "tests/sleep-entry-ready.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/structure-inventory.test.mjs",
+   "tests/surprise-preview-wiring.test.ts",
+   "tests/test-affected.test.mjs",
+   "tests/test-command-wiring.test.ts",
+   "tests/test-parts.test.mjs",
+   "tests/text-invitation-archive.test.ts",
+   "tests/text-memorial-question-binding.test.ts",
+   "tests/ui-language-entry.test.ts",
+   "tests/unbound-read-aloud.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/user-profile-host-wiring.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts",
+   "tests/wiring-skeleton.test.ts"
+  ]
+ },
+ {
+  "id": "S5-idle-counts-as-user",
+  "part": "senses",
+  "file": "electron/wiring/senses-publish-wiring.ts",
+  "find": "if (view.snapshot.phase !== 'idle') noteVisionUserActivity();",
+  "replace": "noteVisionUserActivity();",
+  "what": "她闲着时的心情发布也算用户在旁边",
+  "tests": [
+   "tests/wiring-golden.test.mjs",
+   "tests/app-identity.test.ts",
+   "tests/app-session.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/brain-gates.test.ts",
+   "tests/bundle-inputs.test.mjs",
+   "tests/camera-two-switches.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/clipboard-permission.test.ts",
+   "tests/companion-breath.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/companion-framing.test.ts",
+   "tests/desktop-entry-chain.test.ts",
+   "tests/i084-look-at-me.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/layer-check.test.mjs",
+   "tests/listen-late-window.test.ts",
+   "tests/look-stale-frame.test.ts",
+   "tests/media-input.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/model-physics-wiring.test.ts",
+   "tests/mood-gates.test.ts",
+   "tests/motion-track-coverage.test.ts",
+   "tests/motion-weights-ipc.test.ts",
+   "tests/music-settings-wiring.test.ts",
+   "tests/part-table.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/pet-always-on-top-host.test.ts",
+   "tests/pose-privacy.test.ts",
+   "tests/public-snapshot.test.mjs",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r20-proactive-offer-ui.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/reply-speech-native-receipt.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/senses-privacy-gates.test.ts",
+   "tests/size-check.test.mjs",
+   "tests/sleep-entry-ready.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/structure-inventory.test.mjs",
+   "tests/surprise-preview-wiring.test.ts",
+   "tests/test-affected.test.mjs",
+   "tests/test-command-wiring.test.ts",
+   "tests/test-parts.test.mjs",
+   "tests/text-invitation-archive.test.ts",
+   "tests/text-memorial-question-binding.test.ts",
+   "tests/ui-language-entry.test.ts",
+   "tests/unbound-read-aloud.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/user-profile-host-wiring.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/wiring-skeleton.test.ts"
+  ]
+ },
+ {
+  "id": "S-U3-check-off",
+  "part": "senses",
+  "file": "electron/senses/voiceprint/host.ts",
+  "find": "get active(): boolean { return this.on && !!this.print && this.installed && !this.job; }",
+  "replace": "get active(): boolean { return !!this.print && this.installed; }",
+  "what": "Unbound 第 3 步：开关关着也在用声纹判断（默认关失效）",
+  "tests": [
+   "tests/voiceprint.test.ts"
+  ]
+ },
+ {
+  "id": "S-U3-check-gate",
+  "part": "senses",
+  "file": "electron/senses/voiceprint/host.ts",
+  "find": "    if (!this.active || !print) return null;",
+  "replace": "    if (!print) return null;",
+  "what": "Unbound 第 3 步：开关关着、模型不在也判断",
+  "tests": [
+   "tests/voiceprint.test.ts"
+  ]
+ },
+ {
+  "id": "S-U3-screen-drop",
+  "part": "senses",
+  "file": "electron/senses/voiceprint/gate.ts",
+  "find": "  return result && !counted(result.check) ? 'drop' : 'pass';",
+  "replace": "  return 'pass';",
+  "what": "Unbound 第 3 步：明显不是你的声音也被转成文字给她",
+  "tests": [
+   "tests/voiceprint.test.ts"
+  ]
+ },
+ {
+  "id": "S-U3-lenient",
+  "part": "senses",
+  "file": "shared/senses/voiceprint.ts",
+  "find": "export const counted = (check: VoiceCheck | null): boolean => check !== 'not-you';",
+  "replace": "export const counted = (check: VoiceCheck | null): boolean => check === 'you';",
+  "what": "Unbound 第 3 步：拿不准、太短、太吵也被当成不是你（违反\"拿不准当是你\"）",
+  "tests": [
+   "tests/voiceprint.test.ts"
+  ]
+ },
+ {
+  "id": "S-U3-no-runtime-download",
+  "part": "senses",
+  "file": "electron/senses/voiceprint/host.ts",
+  "find": "    if (!shared) { this.notice = 'needs-runtime'; this.publish(); return this.view(); }",
+  "replace": "",
+  "what": "Unbound 第 3 步：没有可复制的运行库时也开始安装（会去下载没批准的运行库）",
+  "tests": [
+   "tests/voiceprint.test.ts"
+  ]
+ },
+ {
+  "id": "S-U3-approved-fetch",
+  "part": "senses",
+  "file": "electron/senses/voiceprint/manifest.ts",
+  "find": "String(url) === VOICEPRINT_MODEL_PIN.url ?",
+  "replace": "true ?",
+  "what": "Unbound 第 3 步：声纹组件能下载批准的模型以外的东西",
+  "tests": [
+   "tests/voiceprint.test.ts"
+  ]
+ },
+ {
+  "id": "S-U3-encryption",
+  "part": "senses",
+  "file": "electron/senses/voiceprint/store.ts",
+  "find": "      if (!this.encryptionAvailable) throw new VoiceprintEncryptionUnavailable();\n",
+  "replace": "",
+  "what": "Unbound 第 3 步：没有系统加密时声纹也存下来",
+  "tests": [
+   "tests/voiceprint.test.ts"
+  ]
+ },
+ {
+  "id": "S-U3-delete-file",
+  "part": "senses",
+  "file": "electron/senses/voiceprint/host.ts",
+  "find": "    await this.deps.data.deleteAll();",
+  "replace": "    ;",
+  "what": "Unbound 第 3 步：删除声纹后文件还在",
+  "tests": [
+   "tests/voiceprint.test.ts"
+  ]
+ },
+ {
+  "id": "S-U3-delete-race",
+  "part": "senses",
+  "file": "electron/senses/voiceprint/host.ts",
+  "find": "    if (generation !== this.generation || this.print !== print) return null; // deleted or switched off meanwhile: nothing is judged",
+  "replace": "",
+  "what": "Unbound 第 3 步：删掉声纹时正在判断的那一句还会用旧声纹判断",
+  "tests": [
+   "tests/voiceprint.test.ts"
+  ]
+ },
+ {
+  "id": "S-U3-enrol-not-chat",
+  "part": "senses",
+  "file": "electron/senses/voiceprint/gate.ts",
+  "find": "  if (host.enrolling) return await host.take(samples) ? 'taken' : 'pass';",
+  "replace": "",
+  "what": "Unbound 第 3 步：录声纹时说的那几句也进了她的聊天",
+  "tests": [
+   "tests/voiceprint.test.ts"
+  ]
+ },
+ {
+  "id": "S-U3-wake-name",
+  "part": "senses",
+  "file": "electron/senses/voiceprint/gate.ts",
+  "find": "  if (!name) { try { ports.talkedNotToHer?.(); } catch { /* a notice only */ } return false; }",
+  "replace": "",
+  "what": "Unbound 第 3 步：没叫她名字的话也开始通话、发给她",
+  "tests": [
+   "tests/voiceprint.test.ts"
+  ]
+ },
+ {
+  "id": "S-U3-wake-voiceprint",
+  "part": "senses",
+  "file": "electron/senses/voiceprint/gate.ts",
+  "find": "  return state.out && state.voiceInput === true && state.voiceOwner === owner && state.voiceprintActive && state.localRecognition && !state.asleep;",
+  "replace": "  return state.out && state.voiceInput === true && state.voiceOwner === owner && state.localRecognition && !state.asleep;",
+  "what": "Unbound 第 3 步：没录声纹也一直听她的名字（用户选的是\"名字+你的声音\"）",
+  "tests": [
+   "tests/voiceprint.test.ts"
+  ]
+ },
+ {
+  "id": "S-U3-wake-out",
+  "part": "senses",
+  "file": "electron/senses/voiceprint/gate.ts",
+  "find": "  return state.out && state.voiceInput === true && state.voiceOwner === owner && state.voiceprintActive && state.localRecognition && !state.asleep;",
+  "replace": "  return state.voiceInput === true && state.voiceOwner === owner && state.voiceprintActive && state.localRecognition && !state.asleep;",
+  "what": "Unbound 第 3 步：在桌宠里（没出去）也一直听她的名字",
+  "tests": [
+   "tests/voiceprint.test.ts"
+  ]
+ },
+ {
+  "id": "S-U3-wake-local",
+  "part": "senses",
+  "file": "electron/senses/voiceprint/gate.ts",
+  "find": "  return state.out && state.voiceInput === true && state.voiceOwner === owner && state.voiceprintActive && state.localRecognition && !state.asleep;",
+  "replace": "  return state.out && state.voiceInput === true && state.voiceOwner === owner && state.voiceprintActive && !state.asleep;",
+  "what": "Unbound 第 3 步：语音识别不在本机时也一直听她的名字（每段话都会发到外面去转文字）",
+  "tests": [
+   "tests/voiceprint.test.ts"
+  ]
+ },
+ {
+  "id": "S-pose-conf-clamp",
+  "part": "senses",
+  "file": "shared/senses/pose-signals.ts",
+  "find": "    const read = unit(raw);\n    if (!member(POSE_EVENTS, name)",
+  "replace": "    const read = typeof raw === 'number' ? raw : null;\n    if (!member(POSE_EVENTS, name)",
+  "what": "姿势信号的事件至信度：不限到 0..1、不拒绝非有限数",
+  "tests": [
+   "tests/pose-confidence.test.ts"
+  ]
+ },
+ {
+  "id": "S-pose-conf-unknown",
+  "part": "senses",
+  "file": "electron/senses/pose/confidence.ts",
+  "find": "if (!votes.length || winner === 'unknown') return 0;",
+  "replace": "if (!votes.length) return 0;",
+  "what": "姿势朝向/坐姿的至信度：'unknown' 不再是 0",
+  "tests": [
+   "tests/pose-confidence.test.ts"
+  ]
+ },
+ {
+  "id": "S-pose-conf-unknown-tracker",
+  "part": "senses",
+  "file": "electron/senses/pose/features.ts",
+  "find": "facingConfidence: voteConfidence(this.facings, facing)",
+  "replace": "facingConfidence: 0.9",
+  "what": "姿势信号：朝向至信度不再来自帧的投票（unknown 也报高）",
+  "tests": [
+   "tests/pose-confidence.test.ts"
+  ]
+ },
+ {
+  "id": "i161-look-decided-no",
+  "part": "senses",
+  "file": "electron/senses/look-attachments.ts",
+  "find": "      if (look.screen) {",
+  "replace": "      if (look.screen || state.screen) {",
+  "what": "I-161 语音段：决定为\"不看\"也截屏幕（把\"像视频通话\"误当成共享开着就一直截）",
+  "tests": [
+   "tests/i161-call-frames.test.ts",
+   "tests/look-stale-frame.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "i161-source-off",
+  "part": "senses",
+  "file": "shared/senses/look-at-you.ts",
+  "find": "screen: on.screen && (asked === 'screen' || either)",
+  "replace": "screen: (asked === 'screen' || either)",
+  "what": "I-161 语音段：屏幕共享没开，\"看我屏幕\"也去截屏幕",
+  "tests": [
+   "tests/i161-call-frames.test.ts",
+   "tests/look-turns.test.ts",
+   "tests/unbound-camera-look.test.ts"
+  ]
+ },
+ {
+  "id": "i161-held-glance",
+  "part": "senses",
+  "file": "electron/senses/look-attachments.ts",
+  "find": "? state.screen : this.ports.sharesCameraFrames() && state.camera && state.cameraHeld !== true;",
+  "replace": "? state.screen : this.ports.sharesCameraFrames() && state.camera;",
+  "what": "I-161 \"别看\"挡住小画面：已取的小摄像头画面在\"别看\"之后照样发出",
+  "tests": [
+   "tests/i161-call-frames.test.ts",
+   "tests/look-stale-frame.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "i161-admit-bypass",
+  "part": "senses",
+  "file": "electron/senses/voice-look.ts",
+  "find": "(dropped || !frames ? [] : frames.current())",
+  "replace": "(dropped || !frames ? [] : taken)",
+  "what": "I-161 语音段：发送前不再问 admit（关掉共享后旧帧照样发出）",
+  "tests": [
+   "tests/i161-call-frames.test.ts"
+  ]
+ },
+ {
+  "id": "i161-misheard-no",
+  "part": "senses",
+  "file": "shared/senses/call-look.ts",
+  "find": "text.replace(MISHEARD_NO, '别')",
+  "replace": "text",
+  "what": "I-161 识别把\"别看\"听成\"憋看\"时当成请她看",
+  "tests": [
+   "tests/i161-spoken-look.test.ts"
+  ]
+ },
+ {
+  "id": "I161A-turn-glance-only",
+  "part": "senses",
+  "file": "electron/senses/look-attachments.ts",
+  "find": "    return this.items.length > 0 && this.items.every(item => (item.glance === true || this.keepClear) && item.live !== null);",
+  "replace": "    return this.items.length > 0;",
+  "what": "I-161 A 叫她看的清楚画面、手动附的快照也算\"只有小画面\"",
+  "tests": [
+   "tests/i161-call-glance-held.test.ts"
+  ]
+ },
+ {
+  "id": "I161A-turn-glance-still",
+  "part": "senses",
+  "file": "electron/senses/look-attachments.ts",
+  "find": "    return () => checks.length > 0 && checks.every(check => check !== null && check());",
+  "replace": "    return () => true;",
+  "what": "I-161 A 留着的小画面不再问来源开没开、换没换次、说没说\"别看\"",
+  "tests": [
+   "tests/i161-call-glance-held.test.ts"
+  ]
+ },
+ {
+  "id": "I161A-revoked-held",
+  "part": "senses",
+  "file": "electron/senses/media-runtime.ts",
+  "find": "    || cameraImagesRevoked(previous, next) || (previous.cameraHeld !== true && next.cameraHeld === true);",
+  "replace": "    || cameraImagesRevoked(previous, next);",
+  "what": "I-161 A 说\"别看\"不触发扔掉通话里的小画面",
+  "tests": [
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "I161A-media-forget",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "if (callGlancesRevoked(previous, next)) { forgetCallFrames(); see.smallScreens.forget(); }",
+  "replace": "if (callGlancesRevoked(previous, next)) { see.smallScreens.forget(); }",
+  "what": "I-161 A 开关变化（\"别看\"、关摄像头/屏幕）不通知聊天进程扔小画面",
+  "tests": [
+   "tests/senses-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "I161A-clear-forget",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "    forgetCallFrames(); // I-161 A: a call's small frames go with the context",
+  "replace": "",
+  "what": "I-161 A 清视觉上下文不扔通话里的小画面",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "i161-can-see-hook",
+  "part": "senses",
+  "file": "shared/senses/look-request.ts",
+  "find": "  if (asksCanSeeScreen(clause)) return 'screen';",
+  "replace": "  if (false as boolean) return 'screen';",
+  "what": "I-161 bug: \"这会儿能看到我的桌面吗\" 不当成请她看屏幕",
+  "tests": [
+   "tests/i161-can-see-screen.test.ts",
+   "tests/look-request.test.ts"
+  ]
+ },
+ {
+  "id": "i161-can-see-subject",
+  "part": "senses",
+  "file": "shared/senses/look-can-see.ts",
+  "find": "const CAN_SEE_SCREEN = new RegExp(`^${LEAD}",
+  "replace": "const CAN_SEE_SCREEN = new RegExp(`${LEAD}",
+  "what": "I-161 bug: \"我这会儿能看到我的桌面吗\"（用户自己）也当成请她看屏幕",
+  "tests": [
+   "tests/i161-can-see-screen.test.ts"
+  ]
+ },
+ {
+  "id": "i161s-call-carry",
+  "part": "senses",
+  "file": "electron/senses/sense-router/voice.ts",
+  "find": "const join = call ? 'carry' : 'line';",
+  "replace": "const join = 'line' as 'carry' | 'line';",
+  "what": "I-161 语义看：通话里也另起第二句（叠在通话回复上）",
+  "tests": [
+   "tests/i161-call-semantic-look.test.ts"
+  ]
+ },
+ {
+  "id": "i161s-own-judge-knob",
+  "part": "senses",
+  "file": "electron/senses/sense-router/voice.ts",
+  "find": "ownJudge: flag(ports.ownJudge, CALL_LOOK.semanticOwnJudge)",
+  "replace": "ownJudge: true",
+  "what": "I-161 语义看：反应判定没问时，不经用户同意就每段多一次 haiku",
+  "tests": [
+   "tests/i161-call-semantic-look.test.ts"
+  ]
+ },
+ {
+  "id": "i161s-spoken-words",
+  "part": "senses",
+  "file": "electron/senses/sense-router/voice.ts",
+  "find": "host.userTurn(input.groupId, words,",
+  "replace": "host.userTurn(input.groupId, input.text,",
+  "what": "I-161 语义看：识别成\"憋看\"时不当\"别看\"",
+  "tests": [
+   "tests/i161-call-semantic-look.test.ts"
+  ]
+ },
+ {
+  "id": "i161s-router-no-own",
+  "part": "senses",
+  "file": "electron/senses/sense-router/host.ts",
+  "find": "    if (!options.merged && options.ownJudge === false) return false;\n",
+  "replace": "",
+  "what": "I-161 语义看：不许自己判断时仍接下这一段（之后多一次 haiku）",
+  "tests": [
+   "tests/i161-call-semantic-look.test.ts"
+  ]
+ },
+ {
+  "id": "i161s-router-own-gate",
+  "part": "senses",
+  "file": "electron/senses/sense-router/host.ts",
+  "find": "if (!turn.ownJudge || !SENSE_IDS.some",
+  "replace": "if (!SENSE_IDS.some",
+  "what": "I-161 语义看：反应调用没带上问题时，不许的自己判断照样发出",
+  "tests": [
+   "tests/i161-call-semantic-look.test.ts"
+  ]
+ },
+ {
+  "id": "i161s-carry-sense-on",
+  "part": "senses",
+  "file": "electron/senses/sense-router/host.ts",
+  "find": "note.kind === 'seen' ? now[note.sense] === true && !(held",
+  "replace": "note.kind === 'seen' ? !(held",
+  "what": "I-161 语义看：关掉屏幕/摄像头后，看到的事实照样放进她下一段话",
+  "tests": [
+   "tests/i161-call-semantic-look.test.ts"
+  ]
+ },
+ {
+  "id": "i161s-carry-withheld",
+  "part": "senses",
+  "file": "electron/senses/sense-router/host.ts",
+  "find": "!(held && note.sense !== 'transcript')",
+  "replace": "true",
+  "what": "I-161 语义看：下一段说\"别看\"，看到的事实照样放进去",
+  "tests": [
+   "tests/i161-call-semantic-look.test.ts"
+  ]
+ },
+ {
+  "id": "i161s-carry-scope",
+  "part": "senses",
+  "file": "electron/senses/sense-router/carry-store.ts",
+  "find": "|| this.meta.scope !== scope) return none;",
+  "replace": ") return none;",
+  "what": "I-161 语义看：上一通电话（另一次收音）看到的事实进了这一通",
+  "tests": [
+   "tests/i161-call-semantic-look.test.ts"
+  ]
+ },
+ {
+  "id": "i161s-carry-once",
+  "part": "senses",
+  "file": "electron/senses/sense-router/carry-store.ts",
+  "find": "const mine = this.entries.filter(entry => entry.claim === null || entry.claim === claim);",
+  "replace": "const mine = this.entries.slice();",
+  "what": "I-161 语义看：同一份事实进了好几段",
+  "tests": [
+   "tests/i161-call-semantic-look.test.ts"
+  ]
+ },
+ {
+  "id": "i161s-hangup-forget",
+  "part": "senses",
+  "file": "electron/voice/voice-chat-host.ts",
+  "find": "      this.ports.senses?.end(capture.binding.captureSessionId); // I-161: its look and carried facts go with it\n",
+  "replace": "",
+  "what": "I-161 语义看：挂电话后看到的事实还留在内存里",
+  "tests": [
+   "tests/i161-call-semantic-look.test.ts"
+  ]
+ },
+ {
+  "id": "i161s-segment-forget",
+  "part": "senses",
+  "file": "electron/voice/voice-chat-host.ts",
+  "find": "      this.ports.senses?.done({ groupId: leg.groupId, replyId: leg.replyId, status: ended, text: group?.text ?? '' }); // and its carried facts\n",
+  "replace": "",
+  "what": "I-161 语义看：用过事实的那段结束后，事实还留在内存里",
+  "tests": [
+   "tests/i161-call-semantic-look.test.ts"
+  ]
+ },
+ {
+  "id": "i161l-linger",
+  "part": "senses",
+  "file": "electron/senses/sense-router/host.ts",
+  "find": "if (keepScope !== null && turn.join === 'carry' && turn.scope === keepScope && turn.judged !== 'waiting' && this.stillValid(turn)) {",
+  "replace": "if (false) {",
+  "what": "I-161 看完：新一段一来，上一段没看完的看一眼又被扔掉",
+  "tests": [
+   "tests/i161-call-look-carry-over.test.ts"
+  ]
+ },
+ {
+  "id": "i161l-linger-scope",
+  "part": "senses",
+  "file": "electron/senses/sense-router/host.ts",
+  "find": "turn.join === 'carry' && turn.scope === keepScope && turn.judged",
+  "replace": "turn.join === 'carry' && turn.judged",
+  "what": "I-161 看完：换了一次通话（另一段录音）的看一眼也接着看，事实串到别的通话里",
+  "tests": [
+   "tests/i161-call-look-carry-over.test.ts"
+  ]
+ },
+ {
+  "id": "i161l-end-by-newer",
+  "part": "senses",
+  "file": "electron/senses/sense-router/host.ts",
+  "find": "    for (const old of [...this.lingering]) if (keepScope === null || old.scope !== keepScope) this.end(old, 'superseded');\n",
+  "replace": "",
+  "what": "I-161 看完：打字、清视觉上下文、换通话后，没看完的看一眼还在继续",
+  "tests": [
+   "tests/i161-call-look-carry-over.test.ts"
+  ]
+ },
+ {
+  "id": "i161l-end-scope",
+  "part": "senses",
+  "file": "electron/senses/sense-router/host.ts",
+  "find": "    for (const turn of [...this.lingering]) if (turn.scope === scope) this.end(turn, 'superseded');\n",
+  "replace": "",
+  "what": "I-161 看完：挂电话后没看完的看一眼还在继续",
+  "tests": [
+   "tests/i161-call-look-carry-over.test.ts"
+  ]
+ },
+ {
+  "id": "i161l-cap",
+  "part": "senses",
+  "file": "electron/senses/sense-router/host.ts",
+  "find": "while (this.lingering.size > MAX_LINGERING)",
+  "replace": "while (false)",
+  "what": "I-161 看完：同时接着看的数量没有上限",
+  "tests": [
+   "tests/i161-call-look-carry-over.test.ts"
+  ]
+ },
+ {
+  "id": "i161l-deadline",
+  "part": "senses",
+  "file": "electron/senses/sense-router/carry-store.ts",
+  "find": "now - entry.at <= deadlineMs && keep(entry.note)",
+  "replace": "keep(entry.note)",
+  "what": "I-161 看完：超过时限的事实仍放进她的话",
+  "tests": [
+   "tests/i161-call-look-carry-over.test.ts"
+  ]
+ },
+ {
+  "id": "i161l-valid",
+  "part": "senses",
+  "file": "electron/senses/sense-router/carry-store.ts",
+  "find": "if (!valid(this.meta)) { this.clear(); return none; }\n",
+  "replace": "",
+  "what": "I-161 看完：换了角色、模型或对话后，旧事实仍放进她的话",
+  "tests": [
+   "tests/i161-call-look-carry-over.test.ts"
+  ]
+ },
+ {
+  "id": "i161l-ago",
+  "part": "senses",
+  "file": "electron/senses/sense-router/carry-store.ts",
+  "find": "agoMs: Math.max(0, now - entry.seenAt)",
+  "replace": "agoMs: 0",
+  "what": "I-161 看完：私下说明不告诉她那是多久以前看到的",
+  "tests": [
+   "tests/i161-call-look-carry-over.test.ts"
+  ]
+ },
+ {
+  "id": "i161l-merge",
+  "part": "senses",
+  "file": "electron/senses/sense-router/carry-store.ts",
+  "find": "if (!same) this.entries = [];",
+  "replace": "this.entries = [];",
+  "what": "I-161 看完：两次看到的事实没有合在同一条里，后一次盖掉前一次",
+  "tests": [
+   "tests/i161-call-look-carry-over.test.ts"
+  ]
+ },
+ {
+  "id": "i161l-not-an-order",
+  "part": "senses",
+  "file": "shared/senses/sense-carry.ts",
+  "find": "这是你知道的事。要不要提、什么时候提，由你决定，没有要求你一定说出来，不提也行。",
+  "replace": "这些你下一句请告诉用户。",
+  "what": "I-161 看完：私下说明变成要她下一句一定说出来的命令",
+  "tests": [
+   "tests/i161-call-look-carry-over.test.ts"
+  ]
+ },
+ {
+  "id": "i161l-not-an-order-en",
+  "part": "senses",
+  "file": "shared/senses/sense-carry.ts",
+  "find": "This is something you know. Whether to bring it up, and when, is up to you; you are not asked to say it, and it is fine to leave it.",
+  "replace": "Tell the user what you saw in your next reply.",
+  "what": "I-161 看完：英文说明变成命令",
+  "tests": [
+   "tests/i161-call-look-carry-over.test.ts"
+  ]
+ },
+ {
+  "id": "i161c-midcall-router-on",
+  "part": "senses",
+  "file": "electron/senses/sense-router/host.ts",
+  "find": "const now = this.safe(() => this.ports.on(), NONE_ON);\n    const on: SenseOn = {",
+  "replace": "const now = NONE_ON;\n    const on: SenseOn = {",
+  "what": "I-161 通话里中途打开的屏幕/摄像头：语义判断用的是旧的「都没开」快照，下一句不去看",
+  "tests": [
+   "tests/i161-call-screen-look.test.ts"
+  ]
+ },
+ {
+  "id": "i161c-midcall-rules-screen",
+  "part": "senses",
+  "file": "shared/senses/look-at-you.ts",
+  "find": "screen: on.screen && (asked === 'screen' || either)",
+  "replace": "screen: false && (asked === 'screen' || either)",
+  "what": "I-161 通话里中途打开屏幕后，句式规则明明叫她看屏幕却不取画面",
+  "tests": [
+   "tests/i161-call-screen-look.test.ts",
+   "tests/unbound-camera-look.test.ts"
+  ]
+ },
+ {
+  "id": "i161c-journal-turn-end",
+  "part": "senses",
+  "file": "electron/senses/sense-router/voice.ts",
+  "find": "onEnd: end => note(callLookFromTurn({ call, rules: input.covered, end })) });",
+  "replace": "onEnd: () => {} });",
+  "what": "I-161 通话里考虑过要不要看的这一句不写体验记录行（下次又说不清为什么没看）",
+  "tests": [
+   "tests/i161-call-screen-look.test.ts"
+  ]
+ },
+ {
+  "id": "i161c-journal-not-taken",
+  "part": "senses",
+  "file": "electron/senses/sense-router/voice.ts",
+  "find": "if (!took) { notTaken(); return; }",
+  "replace": "if (!took) return;",
+  "what": "I-161 没被判断的那句（没开任何感知、也没搭上反应判定）不写体验记录行",
+  "tests": [
+   "tests/i161-call-screen-look.test.ts"
+  ]
+ },
+ {
+  "id": "lang-feed-prompt",
+  "part": "senses",
+  "file": "electron/senses/feed-recognition/host.ts",
+  "find": "withSpeechLanguage(feedLinePrompt(",
+  "replace": "(feedLinePrompt(",
+  "what": "吃东西的反应不按角色卡语言写",
+  "tests": [
+   "tests/proactive-language.test.ts"
+  ]
+ },
+ {
+  "id": "lang-feed-length",
+  "part": "senses",
+  "file": "shared/senses/feed-recognition.ts",
+  "find": "length > spokenLineMax(text, FEED_LINE_TEXT_MAX)",
+  "replace": "length > FEED_LINE_TEXT_MAX",
+  "what": "吃东西的英文反应按中文字数卡长度",
+  "tests": [
+   "tests/proactive-language.test.ts"
+  ]
+ },
+ {
+  "id": "lang-sense-prompt",
+  "part": "senses",
+  "file": "electron/senses/sense-router/host.ts",
+  "find": "withSpeechLanguage(senseLinePrompt(",
+  "replace": "(senseLinePrompt(",
+  "what": "看到听到之后补的一句不按角色卡语言写",
+  "tests": [
+   "tests/proactive-language.test.ts"
+  ]
+ },
+ {
+  "id": "lang-sense-length",
+  "part": "senses",
+  "file": "shared/senses/sense-router.ts",
+  "find": "length > spokenLineMax(text, SENSE_LINE_TEXT_MAX)",
+  "replace": "length > SENSE_LINE_TEXT_MAX",
+  "what": "看到听到的英文补充按中文字数卡长度",
+  "tests": [
+   "tests/proactive-language.test.ts"
+  ]
+ },
+ {
+  "id": "lang-sense-wiring",
+  "part": "senses",
+  "file": "electron/wiring/initiative-look-wiring.ts",
+  "find": "speech: cardLanguageOf(card) }; }",
+  "replace": "}; }",
+  "what": "看到听到的接线不再传角色卡语言",
+  "tests": [
+   "tests/proactive-language.test.ts"
+  ]
+ },
+ {
+  "id": "lang-ambient-prompt",
+  "part": "senses",
+  "file": "electron/senses/ambient-comments.ts",
+  "find": "withSpeechLanguage(ambientCommentPrompt(",
+  "replace": "(ambientCommentPrompt(",
+  "what": "外部声音评论不按角色卡语言写",
+  "tests": [
+   "tests/proactive-language.test.ts"
+  ]
+ },
+ {
+  "id": "lang-ambient-wiring",
+  "part": "senses",
+  "file": "electron/wiring/senses-listen-wiring.ts",
+  "find": "speechLanguage: () => cardLanguageOf(characterCards.getActive()), moodText:",
+  "replace": "moodText:",
+  "what": "外部声音评论和一起听的接线不再传角色卡语言",
+  "tests": [
+   "tests/proactive-language.test.ts"
+  ]
+ },
+ {
+  "id": "lang-listen-prompt",
+  "part": "senses",
+  "file": "electron/senses/listen-together/proactive.ts",
+  "find": "withSpeechLanguage(listenSpeakPrompt(",
+  "replace": "(listenSpeakPrompt(",
+  "what": "一起听时她主动说的话不按角色卡语言写",
+  "tests": [
+   "tests/proactive-language.test.ts"
+  ]
+ },
+ {
+  "id": "lang-screen-topic",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "return withSpeechLanguage(`${settings.persona}",
+  "replace": "return (`${settings.persona}",
+  "what": "她自己发起的屏幕话题不按角色卡语言写",
+  "tests": [
+   "tests/proactive-language.test.ts"
+  ]
+ },
+ {
+  "id": "out-line-free",
+  "part": "senses",
+  "file": "electron/wiring/initiative-look-wiring.ts",
+  "find": "senseLineFree({ herOnScreen: herOnScreen(),",
+  "replace": "senseLineFree({ herOnScreen: false,",
+  "what": "看完之后补的那句：她在全屏外面时算不算有空，要看她看得到（herOnScreen），不能只看桌宠窗口",
+  "tests": [
+   "tests/unbound-out-look-line.test.ts"
+  ]
+ },
+ {
+  "id": "out-line-free-busy",
+  "part": "senses",
+  "file": "electron/senses/sense-router/free.ts",
+  "find": "&& !facts.proactiveBusy && !facts.chatPending",
+  "replace": "&& !facts.chatPending",
+  "what": "看完之后补的那句：别的主动话占着时不插进去",
+  "tests": [
+   "tests/unbound-out-look-line.test.ts",
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "out-line-hold",
+  "part": "senses",
+  "file": "electron/senses/sense-router/free.ts",
+  "find": "  if (!route.hold(message.id, message.text)) return false;\n",
+  "replace": "  route.hold(message.id, message.text);\n",
+  "what": "看完之后补的那句：她在外面时，气泡没接住就不算说了",
+  "tests": [
+   "tests/unbound-out-look-line.test.ts"
+  ]
+ },
+ {
+  "id": "out-line-dup",
+  "part": "senses",
+  "file": "electron/senses/sense-router/free.ts",
+  "find": "route.sendCompanion(message, true);",
+  "replace": "route.sendCompanion(message, false);",
+  "what": "看完之后补的那句：她在外面时桌宠窗口只记住和念，不再显示一份（不重复）",
+  "tests": [
+   "tests/unbound-out-look-line.test.ts"
+  ]
+ },
+ {
+  "id": "out-line-held-show",
+  "part": "senses",
+  "file": "src/brain/held-lines.ts",
+  "find": "(value as { held?: unknown }).held !== true) return false;",
+  "replace": "(value as { held?: unknown }).held !== true) return true;",
+  "what": "看完之后补的那句：不是「外面」那份的，仍交给桌宠窗口自己显示",
+  "tests": [
+   "tests/unbound-out-look-line.test.ts"
+  ]
+ },
+ {
+  "id": "out-line-present",
+  "part": "senses",
+  "file": "electron/wiring/initiative-look-wiring.ts",
+  "find": "needs.herOnScreen() && chatAvailability.isAvailable() /* 2026-11-21",
+  "replace": "false && chatAvailability.isAvailable() /* 2026-11-21",
+  "what": "她自己看你一眼：她在全屏外面时也算在场",
+  "tests": [
+   "tests/unbound-out-look-line.test.ts"
+  ]
+ },
+ {
+  "id": "out-judge-shown",
+  "part": "senses",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "needs.herOnScreen() /* 2026-11-21: she is seen in the companion window or out in Unbound; the judge",
+  "replace": "false /* 2026-11-21: she is seen in the companion window or out in Unbound; the judge",
+  "what": "心情调整员：她在全屏外面时也算在场",
+  "tests": [
+   "tests/unbound-out-look-line.test.ts"
+  ]
+ },
+ {
+  "id": "out-listen-start",
+  "part": "senses",
+  "file": "electron/wiring/senses-listen-wiring.ts",
+  "find": "onScreen(pet) /* 2026-11-21: hidden only",
+  "replace": "false /* 2026-11-21: hidden only",
+  "what": "一起听：窗口只是因为她在全屏外面才藏着时，仍能开始听电脑声音",
+  "tests": [
+   "tests/unbound-out-look-line.test.ts"
+  ]
+ },
+ {
+  "id": "out-line-ceiling",
+  "part": "senses",
+  "file": "shared/senses/sense-router.ts",
+  "find": "export const SENSE_LINE_TEXT_MAX = 400;",
+  "replace": "export const SENSE_LINE_TEXT_MAX = 4000;",
+  "what": "看完之后补的话：只留一个防失控的长度上限",
+  "tests": [
+   "tests/proactive-language.test.ts"
+  ]
+ },
+ {
+  "id": "gaze-head-needs-face",
+  "part": "senses",
+  "file": "shared/senses/pose-signals.ts",
+  "find": "    if (!face) return null;\n    head = readHead(record.head);",
+  "replace": "    head = readHead(record.head);",
+  "what": "I-167 头朝向和距离：只在有脸的位置时才收（没有人时不带任何头的读数）",
+  "tests": [
+   "tests/pose-signals.test.ts"
+  ]
+ },
+ {
+  "id": "gaze-head-exact-shape",
+  "part": "senses",
+  "file": "shared/senses/pose-signals.ts",
+  "find": "  if (Object.keys(v).length !== 3 || !['yaw', 'pitch', 'distance'].every(key => Object.hasOwn(v, key))) return null;",
+  "replace": "",
+  "what": "I-167 头的读数形状固定（只有 yaw、pitch、distance 三个数，多一个键整条拒收）",
+  "tests": [
+   "tests/pose-signals.test.ts"
+  ]
+ },
+ {
+  "id": "gaze-eye-contact-turn",
+  "part": "senses",
+  "file": "electron/senses/user-gaze.ts",
+  "find": "    return !(toward && toward.ok === false && now - toward.at >= 0 && now - toward.at <= this.knobs.freshMs);",
+  "replace": "    return true;",
+  "what": "I-167 对视进心情：你的头朝着屏幕别处时不算（窗口编不出来）",
+  "tests": [
+   "tests/gaze-at-user.test.ts"
+  ]
+ },
+ {
+  "id": "gaze-off-forgets-turn",
+  "part": "senses",
+  "file": "electron/senses/user-gaze.ts",
+  "find": "  sensing(on: boolean): void { if (!on) { this.seen = null; this.toward = null; } }",
+  "replace": "  sensing(on: boolean): void { if (!on) { this.seen = null; } }",
+  "what": "I-167 姿势识别一关（\"别看\"），连你的头朝哪也马上忘掉",
+  "tests": [
+   "tests/gaze-at-user.test.ts"
+  ]
+ },
+ {
+  "id": "gaze-turn-needs-point",
+  "part": "senses",
+  "file": "shared/behaviors/gaze-attention/interface.ts",
+  "find": "    if (!point || typeof t !== 'object'",
+  "replace": "    if (typeof t !== 'object'",
+  "what": "I-167 读数里头朝向只跟着位置一起来，格式不对整条不收",
+  "tests": [
+   "tests/gaze-at-user.test.ts"
+  ]
+ },
+ {
+  "id": "gaze-contact-needs-looking",
+  "part": "senses",
+  "file": "shared/behaviors/gaze-attention/choose.ts",
+  "find": " && user!.looking !== false",
+  "replace": "",
+  "what": "I-167 对视和害羞躲开：你的头朝着屏幕别处时不算",
+  "tests": [
+   "tests/gaze-at-user.test.ts"
+  ]
+ },
+ {
+  "id": "I166-small-screen-on",
+  "part": "senses",
+  "file": "electron/senses/look-attachments.ts",
+  "find": "const screen = seeing && !look.screen && state.screen && !this.turns.refusedIn(state)",
+  "replace": "const screen = seeing && !look.screen && !this.turns.refusedIn(state)",
+  "what": "I-166 每轮小图：屏幕共享没开时也去拿屏幕小图",
+  "tests": [
+   "tests/i166-see-and-say.test.ts"
+  ]
+ },
+ {
+  "id": "I166-small-screen-held",
+  "part": "senses",
+  "file": "electron/senses/look-attachments.ts",
+  "find": "&& state.screen && !this.turns.refusedIn(state) && text !== undefined",
+  "replace": "&& state.screen && text !== undefined",
+  "what": "I-166 每轮小图：说了\"别看我屏幕\"之后照样带屏幕小图",
+  "tests": [
+   "tests/i166-see-and-say.test.ts"
+  ]
+ },
+ {
+  "id": "I166-closer-allowed",
+  "part": "senses",
+  "file": "electron/senses/look-attachments.ts",
+  "find": "      if (!allowed()) return end(tries ? 'held' : 'off'); // every try asks the switch and \"别看\" first: a retry never captures after either",
+  "replace": "",
+  "what": "I-166 凑近看：感知没开或说了\"别看\"时照样拍清楚的",
+  "tests": [
+   "tests/i166-see-and-say.test.ts",
+   "tests/closer-no-frame.test.ts"
+  ]
+ },
+ {
+  "id": "I166-closer-live",
+  "part": "senses",
+  "file": "electron/senses/look-attachments.ts",
+  "find": "return { dataUrls: () => (still() ? [data] : []), still };",
+  "replace": "return { dataUrls: () => [data], still };",
+  "what": "I-166 凑近看：拍完之后说\"别看\"或关掉，那张清楚的照样送出",
+  "tests": [
+   "tests/i166-see-and-say.test.ts"
+  ]
+ },
+ {
+  "id": "I166-haiku-sight",
+  "part": "senses",
+  "file": "electron/wiring/initiative-look-wiring.ts",
+  "find": "    on: () => judgedSenses({ camera:",
+  "replace": "    on: () => ({ camera:",
+  "what": "I-166 不需要haiku：haiku 又开始判断要不要看摄像头和屏幕",
+  "tests": [
+   "tests/i166-see-and-say.test.ts"
+  ]
+ },
+ {
+  "id": "I166-voice-continuation",
+  "part": "senses",
+  "file": "electron/wiring/senses-voice-input-wiring.ts",
+  "find": "(seeAndSay ? seeAndSay.stream(claudeChat)(task, signal, emit, control) : claudeChat.stream(task, signal, emit, control))",
+  "replace": "claudeChat.stream(task, signal, emit, control)",
+  "what": "I-166 语音输入和通话不再经过凑近看（记号只靠边说边演的过滤去掉，她想看也看不了）",
+  "tests": [
+   "tests/i166-see-and-say.test.ts"
+  ]
+ },
+ {
+  "id": "WARM-seeing-speech",
+  "part": "senses",
+  "file": "electron/senses/vision-context.ts",
+  "find": "JSON.stringify([[parts.speech, parts.visible,",
+  "replace": "JSON.stringify([[parts.visible,",
+  "what": "视觉上下文：换对话/换角色不再算\"看的东西变了\"（旧画面和热进程里的小图留下来）",
+  "tests": [
+   "tests/warm-small-frames.test.ts"
+  ]
+ },
+ {
+  "id": "WARM-wiring-seeing-clear",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "if (change === 'seeing') clearVisionContext(); else if (change === 'off') sightOff(); else if (change === 'mood') clearMoodScope();",
+  "replace": "if (change === 'mood') clearMoodScope();",
+  "what": "视觉上下文：看的东西变了（换对话、关开关、换窗口）时接线不再清空",
+  "tests": [
+   "tests/warm-small-frames.test.ts"
+  ]
+ },
+ {
+  "id": "WARM-mood-only-kept",
+  "part": "senses",
+  "file": "electron/senses/vision-context.ts",
+  "find": "if (next && seeingOf(previous) === seeingOf(next)) return 'mood';",
+  "replace": "return 'seeing';",
+  "what": "热进程：只是心情令牌换了（进全屏 Unbound、心情 5 秒没走）也清空视觉上下文，小图换进程（回到修之前）",
+  "tests": [
+   "tests/warm-small-frames.test.ts"
+  ]
+ },
+ {
+  "id": "I168-app-holds",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "{ holds: SEE_AND_SAY.holdOnNo }",
+  "replace": "{ holds: true }",
+  "what": "I-168：应用里的 LookTurns 又让\"别看\"挡住小图和凑近看",
+  "tests": [
+   "tests/i168-she-decides-to-look.test.ts",
+   "tests/screen-rough-only.test.ts"
+  ]
+ },
+ {
+  "id": "I168-keep-clear-port",
+  "part": "senses",
+  "file": "electron/wiring/see-and-say-wiring.ts",
+  "find": "      keepClearFrames: () => SEE_AND_SAY.keepClearFrames, // I-168: clear frames stay in her warm process like small ones\n",
+  "replace": "",
+  "what": "I-168：接线不再把\"清楚画面留在热进程\"交给 LookAttachments",
+  "tests": [
+   "tests/i168-she-decides-to-look.test.ts"
+  ]
+ },
+ {
+  "id": "I168-kept-clear-check",
+  "part": "senses",
+  "file": "electron/senses/look-attachments.ts",
+  "find": "const checks = this.items.filter(item => item.glance === true || this.keepClear).map(item => item.live);",
+  "replace": "const checks = this.items.filter(item => item.glance === true).map(item => item.live);",
+  "what": "I-168 隐私：留在热进程里的清楚画面没有自己的检查，关掉那个开关后旧画面还留在进程里",
+  "tests": [
+   "tests/i168-she-decides-to-look.test.ts"
+  ]
+ },
+ {
+  "id": "I168-turns-camera-hold",
+  "part": "senses",
+  "file": "electron/senses/look-turns.ts",
+  "find": "withheld === 'refused' && this.holds ? true : wasHeld",
+  "replace": "withheld === 'refused' ? true : wasHeld",
+  "what": "I-168：\"别看\"又按住摄像头小图",
+  "tests": [
+   "tests/i168-she-decides-to-look.test.ts"
+  ]
+ },
+ {
+  "id": "I168-turns-screen-hold",
+  "part": "senses",
+  "file": "electron/senses/look-turns.ts",
+  "find": "if (refused && REFUSAL_HOLDS && this.holds) this.refused",
+  "replace": "if (refused && REFUSAL_HOLDS) this.refused",
+  "what": "I-168：\"别看我屏幕\"又按住屏幕",
+  "tests": [
+   "tests/i168-she-decides-to-look.test.ts"
+  ]
+ },
+ {
+  "id": "I168-small-screen-no",
+  "part": "senses",
+  "file": "electron/senses/look-attachments.ts",
+  "find": "(!this.turns.holds || !SMALL_SCREEN_NO.has(",
+  "replace": "(!SMALL_SCREEN_NO.has(",
+  "what": "I-168：说\"别看\"的那一句又不带屏幕小图",
+  "tests": [
+   "tests/i168-she-decides-to-look.test.ts"
+  ]
+ },
+ {
+  "id": "gaze-debug-off-creates-nothing",
+  "part": "senses",
+  "file": "src/senses/gaze-debug-view.ts",
+  "find": "if (!on) { if (had) { had.dispose(); views.delete(owner); } return null; }",
+  "replace": "if (!on) { if (had) { had.dispose(); views.delete(owner); } }",
+  "what": "I-169 开发者模式关着时不画她在看哪里：关着也建了节点",
+  "tests": [
+   "tests/gaze-debug.test.ts"
+  ]
+ },
+ {
+  "id": "gaze-debug-off-removes",
+  "part": "senses",
+  "file": "src/senses/gaze-debug-view.ts",
+  "find": "if (had) { had.dispose(); views.delete(owner); }",
+  "replace": "if (had) { views.delete(owner); }",
+  "what": "I-169 关掉开发者模式时，标签和小点要拿掉",
+  "tests": [
+   "tests/gaze-debug.test.ts"
+  ]
+ },
+ {
+  "id": "I174-step-away-keeps-reply",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "&& (!away || camera)) clearVisionContext(away);",
+  "replace": "&& (!away || camera)) clearVisionContext(false);",
+  "what": "开着摄像头最小化或关控制窗口时，主机让页面马上开新对话，她正在说的回复被停",
+  "tests": [
+   "tests/i174-clear-after-reply.test.ts"
+  ]
+ },
+ {
+  "id": "music-clip-boundary-no-reset",
+  "part": "senses",
+  "file": "src/senses/music-hearing.ts",
+  "find": "enabled(active: boolean): void { if (active) hearing.frame(); else hearing.lapse(); },",
+  "replace": "enabled(active: boolean): void { if (active) hearing.frame(); else hearing.stop(); },",
+  "what": "2026-11-22 片段边界、一起看截图、采集状态换版本（帧晚到一下）不能让她的音乐判断重来：接收端说“没帧了”只是停顿，不是采集停了",
+  "tests": [
+   "tests/music-cut-every-10s.test.ts"
+  ]
+ },
+ {
+  "id": "music-stall-grace",
+  "part": "senses",
+  "file": "src/senses/music-hearing.ts",
+  "find": "if (this.stopped || !(now - this.heardAt <= this.graceMs)) return false;",
+  "replace": "if (this.stopped || !(now - this.heardAt <= 250)) return false;",
+  "what": "2026-11-22 帧停不到 2 秒（主机忙一下）她照样在听，不按 250 毫秒算采集停了",
+  "tests": [
+   "tests/music-cut-every-10s.test.ts",
+   "tests/unbound-full-senses.test.ts"
+  ]
+ },
+ {
+  "id": "music-switch-off-ends-hearing",
+  "part": "senses",
+  "file": "src/senses/music-hearing.ts",
+  "find": "try { return this.ports.consented?.() ?? true; } catch { return false; }",
+  "replace": "try { return true; } catch { return false; }",
+  "what": "2026-11-22 「和她一起听」关了或采集没了，她马上不再听（停顿宽限不能拖住关掉的开关）",
+  "tests": [
+   "tests/music-cut-every-10s.test.ts"
+  ]
+ },
+ {
+  "id": "music-host-stop-ends-hearing",
+  "part": "senses",
+  "file": "src/senses/music-hearing.ts",
+  "find": "stop(): void { if (this.disposed) return; this.stopped = true; this.settle(); }",
+  "replace": "stop(): void { if (this.disposed) return; this.settle(); }",
+  "what": "2026-11-22 主机说律动关了（全屏页收到 null），她马上不再听",
+  "tests": [
+   "tests/music-cut-every-10s.test.ts",
+   "tests/unbound-full-senses.test.ts"
+  ]
+ },
+ {
+  "id": "CNF-closer-retry-gate",
+  "part": "senses",
+  "file": "electron/senses/look-attachments.ts",
+  "find": "      if (!allowed()) return end(tries ? 'held' : 'off'); // every try asks the switch and \"别看\" first: a retry never captures after either",
+  "replace": "      if (!tries && !allowed()) return end('off');",
+  "what": "2026-11-22 凑近看重试：第一次没拍到之后关了屏幕共享或说了\"别看\"，第二次照样拍",
+  "tests": [
+   "tests/closer-no-frame.test.ts"
+  ]
+ },
+ {
+  "id": "CNF-unrelated-revision",
+  "part": "senses",
+  "file": "electron/senses/look-attachments.ts",
+  "find": "const key = () => `${this.ports.generation()}|${this.ports.opening(source)}|${this.context}`;",
+  "replace": "const key = () => `${this.ports.generation()}|${this.ports.opening(source)}|${this.context}|${this.ports.revision()}`;",
+  "what": "2026-11-22 凑近看：拍的时候换了别的开关（语音输入、摄像头），清楚的那张就被扔掉（\"16:43没访问高清图\"）",
+  "tests": [
+   "tests/closer-no-frame.test.ts"
+  ]
+ },
+ {
+  "id": "CNF-shared-read-waiters",
+  "part": "senses",
+  "file": "electron/senses/screen-snapshots.ts",
+  "find": "if (mine && !this.options.enabled && capture.waiting === 0) capture.controller.abort();",
+  "replace": "if (mine && !this.options.enabled) capture.controller.abort();",
+  "what": "2026-11-22 屏幕取帧：别的读者不等了，就把凑近看正在等的那次一起停掉",
+  "tests": [
+   "tests/closer-no-frame.test.ts",
+   "tests/screen-snapshots.test.ts"
+  ]
+ },
+ {
+  "id": "CNF-stale-slot-wait",
+  "part": "senses",
+  "file": "electron/senses/screen-snapshots.ts",
+  "find": "      await this.leave(stale, signal);\n",
+  "replace": "      return null;\n",
+  "what": "2026-11-22 屏幕取帧：上一次被停掉的读取还占着位置时，凑近看马上什么都拿不到",
+  "tests": [
+   "tests/closer-no-frame.test.ts",
+   "tests/screen-snapshots.test.ts"
+  ]
+ },
+ {
+  "id": "I187-off-stops-dialogue",
+  "part": "senses",
+  "file": "shared/senses/watch-together-state.ts",
+  "find": "dialogue: facts.dialogue !== target ? target : null };",
+  "replace": "dialogue: facts.dialogue !== target && target ? target : null };",
+  "what": "I-187 和她一起看（一个开关）：关掉时台词照样在听（关一起看必须同时停掉它的听台词）",
+  "tests": [
+   "tests/i187-watch-together.test.ts"
+  ]
+ },
+ {
+  "id": "I187-off-dialogue-first",
+  "part": "senses",
+  "file": "shared/senses/watch-together-switch.ts",
+  "find": "if (plan.target) { await screen(); await dialogue(); } else { await dialogue(); await screen(); }",
+  "replace": "await screen(); await dialogue();",
+  "what": "I-187 和她一起看：关的时候先关屏幕、后停台词（关一起看要先停台词，屏幕那边出什么事都不会让她继续听）",
+  "tests": [
+   "tests/i187-watch-together.test.ts"
+  ]
+ },
+ {
+  "id": "I187-no-microphone",
+  "part": "senses",
+  "file": "shared/senses/watch-together-switch.ts",
+  "find": "await api.setAudioReadingIntent({ source: 'system-audio', purpose: 'movie', enabled: plan.dialogue });",
+  "replace": "await api.setAudioReadingIntent({ source: 'microphone', purpose: 'movie', enabled: plan.dialogue });",
+  "what": "I-187 和她一起看：点一下开的是麦克风而不是电脑的声音（一起看永远不开麦克风）",
+  "tests": [
+   "tests/i187-watch-together.test.ts"
+  ]
+ },
+ {
+  "id": "I187-no-camera",
+  "part": "senses",
+  "file": "shared/senses/watch-together-switch.ts",
+  "find": "await api.setRuntimeState({ screenSharing: plan.screen })",
+  "replace": "await api.setRuntimeState({ screenSharing: plan.screen, cameraSharing: plan.screen, voiceInput: plan.screen })",
+  "what": "I-187 和她一起看：点一下顺带开了摄像头和语音输入（一起看只开屏幕共享）",
+  "tests": [
+   "tests/i187-watch-together.test.ts"
+  ]
+ },
+ {
+  "id": "I187-not-heard-shown",
+  "part": "senses",
+  "file": "shared/senses/watch-together-state.ts",
+  "find": "const notHeard = seeing && hearing !== 'hearing';",
+  "replace": "const notHeard = on && hearing === 'error';",
+  "what": "I-187 和她一起看：在看画面但台词没在听时，眼睛按钮不再标出来",
+  "tests": [
+   "tests/i187-watch-together.test.ts",
+   "tests/pet-toolbar-collapse.test.ts"
+  ]
+ },
+ {
+  "id": "I187-not-heard-mark",
+  "part": "senses",
+  "file": "src/stage/watch-together-button.ts",
+  "find": "button.dataset.notHeard = String(this.last.notHeard);",
+  "replace": "button.dataset.notHeard = 'false';",
+  "what": "I-187 和她一起看：没在听台词的小圆点不画到按钮上",
+  "tests": [
+   "tests/i187-watch-together.test.ts",
+   "tests/pet-toolbar-collapse.test.ts"
+  ]
+ },
+ {
+  "id": "i188-screen-event-watching",
+  "part": "senses",
+  "file": "electron/senses/watch-notes/session.ts",
+  "find": "    if (this.disposed || !characterId || !this.knobs.session.enabled || !this.look() || characterId !== this.character) return null;\n    const last = this.lastEvent;",
+  "replace": "    if (this.disposed || !characterId) return null;\n    const last = this.lastEvent;",
+  "what": "一起看关了（或换了角色）还把屏幕上出的事交给她认出的时刻",
+  "tests": [
+   "tests/i188-screen-events.test.ts"
+  ]
+ },
+ {
+  "id": "I190-never-on",
+  "part": "senses",
+  "file": "shared/senses/source-choices.ts",
+  "find": "      screen: source => api.chooseScreenSource(source),",
+  "replace": "      screen: source => api.chooseScreenSource(source).then(() => (api as { setRuntimeState?(patch: unknown): unknown }).setRuntimeState?.({ screenSharing: true })),",
+  "what": "I-190 选来源：选了屏幕就顺手把屏幕共享打开（选来源从不开关感知）",
+  "tests": [
+   "tests/i190-source-pickers.test.ts"
+  ]
+ },
+ {
+  "id": "I190-names-stay",
+  "part": "senses",
+  "file": "shared/senses/source-picker.ts",
+  "find": "  const name = id === FOLLOW_DEFAULT ? null : deviceNameOf(id);",
+  "replace": "  await ports.screen(id); const name = id === FOLLOW_DEFAULT ? null : deviceNameOf(id);",
+  "what": "I-190 选来源：麦克风、摄像头的设备名也发给了主机（设备名只留在窗口里，主机只收屏幕的不透明编号）",
+  "tests": [
+   "tests/i190-source-pickers.test.ts"
+  ]
+ },
+ {
+  "id": "I190-host-id-only",
+  "part": "senses",
+  "file": "electron/senses/screen-source.ts",
+  "find": "    const id = parseScreenSourceId(value);",
+  "replace": "    const id = typeof value === 'string' ? value : null;",
+  "what": "I-190 选来源：主机收任何字符串当来源（只收列表里给过的不透明编号）",
+  "tests": [
+   "tests/i190-source-pickers.test.ts"
+  ]
+ },
+ {
+  "id": "I190-own-windows",
+  "part": "senses",
+  "file": "electron/senses/screen-source.ts",
+  "find": "      if (!id || own.has(id) || entries.length >= MAX_ENTRIES) continue;",
+  "replace": "      if (!id || entries.length >= MAX_ENTRIES) continue;",
+  "what": "I-190 选来源：屏幕列表里出现 soft hearts 自己的窗口",
+  "tests": [
+   "tests/i190-source-pickers.test.ts"
+  ]
+ },
+ {
+  "id": "I190-no-widening",
+  "part": "senses",
+  "file": "electron/senses/screen-source.ts",
+  "find": "      if (hit && this.choice === chosen) return hit;",
+  "replace": "      if (hit && this.choice === chosen && !hit.thumbnail.isEmpty()) return hit;",
+  "what": "I-190 选来源：选的窗口最小化拍不到时，改拍整块屏幕（用户把她看的范围缩小了，不能悄悄放大）",
+  "tests": [
+   "tests/i190-source-pickers.test.ts"
+  ]
+ },
+ {
+  "id": "I190-panel-never-on",
+  "part": "senses",
+  "file": "src/unbound/input-senses.ts",
+  "find": "    host.replaceChildren(renderSourceList(this.doc, model, id => { void this.choices.choose(kind, id).catch(() => {}); }));",
+  "replace": "    host.replaceChildren(renderSourceList(this.doc, model, id => { void this.choices.choose(kind, id).catch(() => {}); void (this.api as { setRuntimeState?(patch: unknown): unknown }).setRuntimeState?.({ voiceInput: true }); }));",
+  "what": "I-190 全屏的感知面板：选来源时顺手打开了麦克风",
+  "tests": [
+   "tests/i190-source-pickers.test.ts"
+  ]
+ },
+ {
+  "id": "I190-toolbar-pick-only",
+  "part": "senses",
+  "file": "src/stage/toolbar-sources.ts",
+  "find": "    try { await this.ports?.choose(kind, id); } catch (error) { this.hooks.error(String(error)); }",
+  "replace": "    try { await this.ports?.choose(kind, id); (globalThis as { document?: Document }).document?.getElementById(kind === 'microphone' ? 'pet-voice-input' : 'pet-camera-sharing')?.click(); } catch (error) { this.hooks.error(String(error)); } // no-pet-ok: existing element ids",
+  "what": "I-190 工具栏的 ▾：选完来源顺手点了旁边的开关",
+  "tests": [
+   "tests/i190-toolbar.test.ts"
+  ]
+ },
+ {
+  "id": "i189-low-confidence-never-pauses",
+  "part": "senses",
+  "file": "shared/behaviors/pose-uses/attention.ts",
+  "find": "const state = attentionOf(signal, this.knobs), run = this.run;",
+  "replace": "const state = ((s: UserAttentionState) => s === 'unsure' && signal.present ? 'turned' : s)(attentionOf(signal, this.knobs)), run = this.run;",
+  "what": "一帧（或一阵）拿不准的朝向也当成\"转开了\"，她的朗读会因此停下（a single low-confidence frame never pauses her reading）",
+  "tests": [
+   "tests/i189-read-pause.test.ts",
+   "tests/i189-pose-uses.test.ts"
+  ]
+ },
+ {
+  "id": "i189-one-sure-frame",
+  "part": "senses",
+  "file": "shared/behaviors/pose-uses/attention.ts",
+  "find": "    if (run.state === 'turned' && run.frames < this.knobs.minFrames) return { state: 'unsure', forMs: 0 };\n",
+  "replace": "",
+  "what": "只看清一帧转开就算\"转开了\"（要连续几帧）",
+  "tests": [
+   "tests/i189-pose-uses.test.ts"
+  ]
+ },
+ {
+  "id": "i189-turned-needs-confidence",
+  "part": "senses",
+  "file": "shared/behaviors/pose-uses/attention.ts",
+  "find": "if ((signal.facing === 'side' || signal.facing === 'away') && signal.facingConfidence >= knobs.sureConfidence) return 'turned';",
+  "replace": "if ((signal.facing === 'side' || signal.facing === 'away') && signal.facingConfidence >= 0) return 'turned';",
+  "what": "朝向把握不高时侧脸也算\"转开\"，通话里开口就不算插话了（a face turned away counts as not barge-in only when confidence is high）",
+  "tests": [
+   "tests/i189-pose-uses.test.ts",
+   "tests/i189-read-pause.test.ts"
+  ]
+ },
+ {
+  "id": "i189-nod-window",
+  "part": "senses",
+  "file": "electron/senses/pose-uses/host.ts",
+  "find": "    return now - Math.max(line.at, this.quietSince) <= this.knobs.nod.windowSeconds * 1000;",
+  "replace": "    return true;",
+  "what": "她问完是不是的问题过了很久，点头摇头还被当成回答发出去（a nod is only an answer within the window after her yes/no question）",
+  "tests": [
+   "tests/i189-pose-uses.test.ts"
+  ]
+ },
+ {
+  "id": "i189-nod-needs-yes-no",
+  "part": "senses",
+  "file": "electron/senses/pose-uses/host.ts",
+  "find": "    if (!line || !line.yesNo || this.answered.has(line.at) || now < line.at) return false;",
+  "replace": "    if (!line || this.answered.has(line.at) || now < line.at) return false;",
+  "what": "她问的不是\"要不要/好不好\"这类问题，点头也被当成回答",
+  "tests": [
+   "tests/i189-pose-uses.test.ts"
+  ]
+ },
+ {
+  "id": "i189-two-people-fixed-note",
+  "part": "senses",
+  "file": "electron/senses/pose-uses/host.ts",
+  "find": "    if (this.fresh(now) && this.people.take()) { lines.push(twoPeopleNote(language));",
+  "replace": "    if (this.fresh(now) && this.people.take()) { lines.push(twoPeopleNote(language) + JSON.stringify(this.lastSignal));",
+  "what": "\"画面里好像还有一个人\"那句带上了画面里的东西（two-people note never carries an image or a description）",
+  "tests": [
+   "tests/i189-pose-uses.test.ts"
+  ]
+ },
+ {
+  "id": "POSE-self-end-sigkill",
+  "part": "senses",
+  "file": "electron/senses/pose/worker.ts",
+  "find": "  process.kill(process.pid, 'SIGKILL');",
+  "replace": "  process.exit(0);",
+  "what": "姿势识别进程收到停止后走正常退出（会卡住），而不是立刻结束自己",
+  "tests": [
+   "tests/pose-worker-self-end.test.ts"
+  ]
+ },
+ {
+  "id": "POSE-stop-ends",
+  "part": "senses",
+  "file": "electron/senses/pose/worker.ts",
+  "find": ".then(() => end(reason));",
+  "replace": ".then(() => undefined);",
+  "what": "姿势识别进程收到停止后不结束",
+  "tests": [
+   "tests/pose-worker-self-end.test.ts"
+  ]
+ },
+ {
+  "id": "WATCH-screen-follows-companion",
+  "part": "senses",
+  "file": "electron/senses/media-runtime.ts",
+  "find": "if (this.state.screenSharing && owner === SCREEN_OWNER) {",
+  "replace": "if (this.state.screenSharing) {",
+  "what": "一起看：别的窗口（设置窗口、Unbound 输入框）走掉不能把屏幕共享关掉，只有伴侣窗口没了才关",
+  "tests": [
+   "tests/watch-turns-off.test.ts"
+  ]
+ },
+ {
+  "id": "WATCH-off-row-user-wins",
+  "part": "senses",
+  "file": "electron/senses/watch-off-notice.ts",
+  "find": "if (noted && now - noted.at < WATCH_OFF_CAUSE_MS && why !== 'user') return;",
+  "replace": "if (noted && now - noted.at < WATCH_OFF_CAUSE_MS) return;",
+  "what": "一起看关了的记录：用户自己关的那一下必须盖过别的原因",
+  "tests": [
+   "tests/watch-turns-off.test.ts"
+  ]
+ },
+ {
+  "id": "WATCH-off-row-written",
+  "part": "senses",
+  "file": "electron/senses/watch-off-notice.ts",
+  "find": "if (this.was && !on) {",
+  "replace": "if (false && this.was && !on) {",
+  "what": "一起看从开到关，必须写一行记录说明原因",
+  "tests": [
+   "tests/watch-turns-off.test.ts"
+  ]
+ },
+ {
+  "id": "WATCH-off-user-noted",
+  "part": "senses",
+  "file": "electron/senses/media-runtime.ts",
+  "find": "if (this.state.screenSharing && !next.screenSharing && !this.dropping) noteWatchOffCause(\"user\");",
+  "replace": "",
+  "what": "用户自己关屏幕共享，记录里必须写\"你关的\"",
+  "tests": [
+   "tests/watch-turns-off.test.ts"
+  ]
+ },
+ {
+  "id": "i189-nod-not-while-she-speaks",
+  "part": "senses",
+  "file": "electron/senses/pose-uses/host.ts",
+  "find": "    if (this.busy) return false; // she is still talking or reading: a nod now is listening, not an answer",
+  "replace": "    if (this.busy) return true;",
+  "what": "她还在说、还在念时点头也被当成回答（2026-11-24：只在她说完那一小会儿里认）",
+  "tests": [
+   "tests/i189-nod-deliberate.test.ts"
+  ]
+ },
+ {
+  "id": "i189-nod-not-while-typing",
+  "part": "senses",
+  "file": "electron/senses/pose-uses/host.ts",
+  "find": "    return now - this.blockedAt >= this.knobs.nod.quietAfterMs;",
+  "replace": "    return true;",
+  "what": "刚打完字、刚结束通话的一瞬间，头部的动作也被当成点头回答",
+  "tests": [
+   "tests/i189-nod-deliberate.test.ts"
+  ]
+ },
+ {
+  "id": "i189-nod-body-move",
+  "part": "senses",
+  "file": "shared/behaviors/pose-uses/nod.ts",
+  "find": "    if (bodyMove(this.samples) > k.maxBodyMove) return null;",
+  "replace": "",
+  "what": "整个人在椅子上挪、往前凑的时候，也被当成点头",
+  "tests": [
+   "tests/i189-nod-deliberate.test.ts"
+  ]
+ },
+ {
+  "id": "i189-nod-facing",
+  "part": "senses",
+  "file": "electron/senses/pose-uses/host.ts",
+  "find": "signal.facingConfidence < this.knobs.nod.facingConfidence)",
+  "replace": "signal.facingConfidence < 0)",
+  "what": "朝向把握不高（斜着脸、低头看键盘）时点头也算回答",
+  "tests": [
+   "tests/i189-nod-deliberate.test.ts"
+  ]
+ },
+ {
+  "id": "WATCH-resume-respects-user-off",
+  "part": "senses",
+  "file": "electron/senses/watch-continuity/continuity.ts",
+  "find": "const stays: WatchNotResumedWhy | null = pause.userOff ? 'turned-off'",
+  "replace": "const stays: WatchNotResumedWhy | null = false ? 'turned-off'",
+  "what": "窗口最小化后回来，一起看只在用户没关过的时候才自己接着开（用户在这期间关了，就不能替他再开）",
+  "tests": [
+   "tests/watch-continuity.test.ts"
+  ]
+ },
+ {
+  "id": "WATCH-lost-one-turn",
+  "part": "senses",
+  "file": "electron/senses/watch-continuity/continuity.ts",
+  "find": "if (this.lossOpen) return; // one loss, one turn",
+  "replace": "if (false) return; // one loss, one turn",
+  "what": "屏幕共享断了，一次断只给她一轮即时的话（一次断开两轮会重复打扰，也多花用户的 Claude 用量）",
+  "tests": [
+   "tests/watch-continuity.test.ts"
+  ]
+ },
+ {
+  "id": "WATCH-lost-facts-no-wording",
+  "part": "senses",
+  "file": "electron/senses/watch-continuity/facts.ts",
+  "find": "断了，原因：${LOST_WORDS[loss.cause]}。${lasted}`.trim();",
+  "replace": "断了，原因：${LOST_WORDS[loss.cause]}。${lasted}你可以告诉他一声。`.trim();",
+  "what": "屏幕共享断了给她的只有事实，不能带建议怎么说或该做什么（提示不是锁）",
+  "tests": [
+   "tests/watch-continuity.test.ts"
+  ]
+ },
+ {
+  "id": "WATCH-lost-skip-user-off",
+  "part": "senses",
+  "file": "electron/senses/watch-continuity/continuity.ts",
+  "find": "if (this.paused || why !== 'other') return;",
+  "replace": "if (this.paused) return;",
+  "what": "用户自己关一起看（或她的窗口自己的步骤）不算屏幕共享断了，不给她即时的话",
+  "tests": [
+   "tests/watch-continuity.test.ts"
+  ]
+ },
+ {
+  "id": "WATCH-window-switch-not-user",
+  "part": "senses",
+  "file": "src/voice/AudioReadingClient.ts",
+  "find": "if (!hostVisible) await this.stop(); }",
+  "replace": "await this.stop(); }",
+  "what": "窗口切换（页面被藏起来、全屏、被盖住）把一起看关了，还记成用户关的：页面隐藏时只有宿主说她离开了屏幕才停",
+  "tests": [
+   "tests/watch-off-reasons.test.ts"
+  ]
+ },
+ {
+  "id": "WATCH-intent-off-window-not-user",
+  "part": "senses",
+  "file": "electron/senses/watch-off-notice.ts",
+  "find": "return companionOnScreen ? 'user' : 'window-hidden';",
+  "replace": "return 'user';",
+  "what": "她的窗口不在屏幕上时页面发来的“关”不是用户的手，要记 window-hidden，不能记成用户关的",
+  "tests": [
+   "tests/watch-off-reasons.test.ts"
+  ]
+ },
+ {
+  "id": "WATCH-intent-off-mic-not-watch",
+  "part": "senses",
+  "file": "electron/senses/watch-off-notice.ts",
+  "find": "if (intent.enabled || intent.source !== 'system-audio') return null;",
+  "replace": "if (intent.enabled) return null;",
+  "what": "麦克风那几格的“关”（语音一轮轮开关）与一起看无关，不能被记成用户关了一起看",
+  "tests": [
+   "tests/watch-off-reasons.test.ts"
+  ]
+ },
+ {
+  "id": "WATCH-unbound-exit-not-user",
+  "part": "senses",
+  "file": "electron/senses/watch-off-notice.ts",
+  "find": "if (why === 'user' && notUsers.length) {",
+  "replace": "if (why === 'user' && notUsers.length < 0) {",
+  "what": "从全屏回小窗时把开关放回原样关掉的一起看，不能记成用户关的，也不能通知“用户关过”的监听者",
+  "tests": [
+   "tests/watch-off-reasons.test.ts"
+  ]
+ },
+ {
+  "id": "face-restart-selfheal",
+  "part": "senses",
+  "file": "electron/senses/face/host.ts",
+  "find": "if (!this.scheduler.isActive && this.installed && !this.gaveUp) this.sync();",
+  "replace": "",
+  "what": "认出是不是你：重启后摄像头开了但没人通知时，每秒的巡查不会把检查重新开起来",
+  "tests": [
+   "tests/face-check-restart.test.ts"
+  ]
+ },
+ {
+  "id": "face-idle-silent",
+  "part": "senses",
+  "file": "electron/senses/face/host.ts",
+  "find": "try { this.deps.record?.({ type: 'face-score', event: 'idle', why, seconds: quiet }); } catch { /* keeping a record never blocks her */ }",
+  "replace": "",
+  "what": "认出是不是你：该检查却一分钟没检查时，体验记录里不写原因",
+  "tests": [
+   "tests/face-check-restart.test.ts"
+  ]
+ },
+ {
+  "id": "face-grey-band",
+  "part": "senses",
+  "file": "electron/senses/face/decision.ts",
+  "find": "return similarity < knobs.match.clearlyNotCosine ? 'clear-not' : 'weak-not';",
+  "replace": "return similarity < knobs.match.clearlyNotCosine ? 'clear-not' : 'unsure';",
+  "what": "认出是不是你：0.363 以下的灰区分数被当成\"拿不准当成你\"，别人能一直混过去",
+  "tests": [
+   "tests/face-check-core.test.ts",
+   "tests/face-check-real-models.test.ts"
+  ]
+ },
+ {
+  "id": "face-score-row-extras",
+  "part": "senses",
+  "file": "shared/senses/face-journal.ts",
+  "find": "return { type: 'face-score', characterId, event: 'check', outcome: v.outcome, similarity, which, clear: v.clear, frontal, det };",
+  "replace": "return { type: 'face-score', characterId, event: 'check', outcome: v.outcome, similarity, which, clear: v.clear, frontal, det, ...v } as never;",
+  "what": "认出是不是你：分数行带上了别的字段（脸的数字、图片）",
+  "tests": [
+   "tests/face-check-restart.test.ts"
+  ]
+ },
+ {
+  "id": "face-enrol-preview-open",
+  "part": "senses",
+  "file": "electron/senses/face/host.ts",
+  "find": "this.showEnrolPreview(null, null, 'starting', 0, true); this.sync();",
+  "replace": "this.sync();",
+  "what": "认出是不是你：登记结束后摄像头画面不关",
+  "tests": [
+   "tests/face-check-restart.test.ts"
+  ]
+ },
+ {
+  "id": "face-enrol-preview-size",
+  "part": "senses",
+  "file": "shared/senses/face-check.ts",
+  "find": "v.image.length > FACE_ENROL_IMAGE_MAX || ",
+  "replace": "",
+  "what": "认出是不是你：登记画面不限大小",
+  "tests": [
+   "tests/face-check-restart.test.ts"
+  ]
+ },
+ {
+  "id": "face-enrol-preview-target",
+  "part": "senses",
+  "file": "electron/senses/face/frames.ts",
+  "find": "open.find(win => win !== companion) ?? null",
+  "replace": "open[0] ?? null",
+  "what": "认出是不是你：登记画面可能发给桌宠窗口",
+  "tests": [
+   "tests/face-check-restart.test.ts"
+  ]
+ },
+ {
+  "id": "I221-sight-off-keeps-kept-frame",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "    media.clearCamera();\n    screenSnapshots.configure({ sharing: false, visible: false, sourceId: null, scope: '' });\n    broadcast('desk:vision-context-cleared'",
+  "replace": "    screenSnapshots.configure({ sharing: false, visible: false, sourceId: null, scope: '' });\n    broadcast('desk:vision-context-cleared'",
+  "what": "隐私：关掉发图片后留着的那张摄像头画面不再立刻丢掉（她说着话也一样要丢）",
+  "tests": [
+   "tests/off-switch-interrupts.test.ts"
+  ]
+ },
+ {
+  "id": "I221-sight-off-keeps-look-going",
+  "part": "senses",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "    lookAttachments.abort();\n    forgetCallFrames(); // I-161 A",
+  "replace": "    forgetCallFrames(); // I-161 A",
+  "what": "隐私：关掉看的来源时正在取的那一帧不再中止（关掉之后还可能取到新画面）",
+  "tests": [
+   "tests/off-switch-interrupts.test.ts"
+  ]
+ }
+]

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { VoiceOutput, type VoiceOutputEvent } from '../src/ui/VoiceOutput';
-import { DEFAULT_TTS_CONFIG } from '../shared/tts';
+import { VoiceOutput, type VoiceOutputEvent } from '../src/voice/VoiceOutput';
+import { DEFAULT_TTS_CONFIG } from '../shared/voice/tts';
 
 const flush = async () => { for (let i=0;i<60;i++) await Promise.resolve(); };
 function deferred<T=void>() { let resolve!: (value:T)=>void,reject!: (error:Error)=>void; const promise=new Promise<T>((r,j)=>{resolve=r;reject=j;}); void promise.catch(()=>{}); return {promise,resolve,reject}; }

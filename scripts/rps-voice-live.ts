@@ -1,4 +1,4 @@
-// G1 猜拳: her words at a moment of the game (shared/rps-voice.ts, electron/rps/voice.ts) on the real Claude Code, for three
+// G1 猜拳: her words at a moment of the game (shared/initiative/rps-voice.ts, electron/initiative/rps/voice.ts) on the real Claude Code, for three
 // synthetic cards (no user card or private data). Uses your quota: the small model, one call per moment.
 //
 //   node node_modules/tsx/dist/cli.mjs scripts/rps-voice-live.ts [--per-card 5] [--label x]     real calls
@@ -10,10 +10,10 @@
 // whether it was refused (null), quiet ('') or shows signs of a working note.
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { compileCharacterPersona } from '../shared/character-cards';
-import { DEFAULT_MOOD_PARAMETERS, type MoodParameters } from '../shared/mood';
-import { quickLineWithClaude } from '../electron/inner-loop/model';
-import { RPS_VOICE_SYSTEM_PROMPT, parseRpsVoice, rpsVoicePrompt, type RpsMoment } from '../shared/rps-voice';
+import { compileCharacterPersona } from '../shared/cards/character-cards';
+import { DEFAULT_MOOD_PARAMETERS, type MoodParameters } from '../shared/foundation/mood';
+import { quickLineWithClaude } from '../electron/initiative/inner-loop/model';
+import { RPS_VOICE_SYSTEM_PROMPT, parseRpsVoice, rpsVoicePrompt, type RpsMoment } from '../shared/initiative/rps-voice';
 import { draftSigns } from './lib/draft-leak-probe';
 
 const TASK_CAP = 80;

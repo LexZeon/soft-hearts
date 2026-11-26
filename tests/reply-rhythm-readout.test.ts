@@ -1,12 +1,12 @@
-// F7 说话节奏 in the paced readout (src/ui/reply-presentation.ts).
+// F7 说话节奏 in the paced readout (src/brain/reply-presentation.ts).
 // Kept as the base for "停停说说": the first bubble never waits, a bubble's hold starts once, every timer dies with its
 // reply (cancel, clear, a new reply, hiding), a feed pause resumes where it was, and the shown pieces add up to the original.
 // By default the pacing is exactly R27's. The mood multiplier, visible-character hold, 4 s budget, "……" stop and afterthought pause
 // are a fallback, 兜底（待定）, off by default; the tests marked so exercise its mechanics only, not a final behaviour.
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { ReplyPresentationState, type ReadoutClock } from '../src/ui/reply-presentation';
-import { REPLY_RHYTHM_BUDGET_MS, REPLY_RHYTHM_FALLBACK_ENABLED } from '../shared/reply-rhythm';
+import { ReplyPresentationState, type ReadoutClock } from '../src/brain/reply-presentation';
+import { REPLY_RHYTHM_BUDGET_MS, REPLY_RHYTHM_FALLBACK_ENABLED } from '../shared/brain/reply-rhythm';
 
 function fakeClock() {
   let now = 0, next = 0; const timers = new Map<number, { at: number; fn: () => void }>();

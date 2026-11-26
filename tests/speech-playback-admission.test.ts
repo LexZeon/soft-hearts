@@ -4,32 +4,25 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import ts from 'typescript';
 import { transformSync } from 'esbuild';
-import { CompletedReplySpeech } from '../electron/completed-reply-speech';
-import { SpeechPlaybackActivity } from '../electron/speech-playback-activity';
-import { CompletedReplySpeechQueue } from '../src/ui/completed-reply-speech-queue';
-import { VoiceOutput } from '../src/ui/VoiceOutput';
-import { DEFAULT_TTS_CONFIG } from '../shared/tts';
-import { formatReplyBubbles } from '../shared/reply-segments';
+import { CompletedReplySpeech } from '../electron/voice/completed-reply-speech';
+import { SpeechPlaybackActivity } from '../electron/voice/speech-playback-activity';
+import { CompletedReplySpeechQueue } from '../src/voice/completed-reply-speech-queue';
+import { VoiceOutput } from '../src/voice/VoiceOutput';
+import { DEFAULT_TTS_CONFIG } from '../shared/voice/tts';
+import { formatReplyBubbles } from '../shared/voice/reply-segments';
+import { WIRING_PRELUDE, wiringFunction, wiringHandler } from './helpers/wiring-source';
+import { rendererSource as readRendererSource } from './helpers/renderer-source'; // overhaul step 5: src/main.ts and src/wiring/*.ts
+// Reads as text (test-affected selects this test when they change): 'electron/main.ts', 'electron/wiring/voice-wiring.ts'.
 
 const parse = (text: string) => ts.createSourceFile('main.ts', text, ts.ScriptTarget.Latest, true);
-const host = parse(await readFile(new URL('../electron/main.ts', import.meta.url), 'utf8'));
-const renderer = parse(await readFile(new URL('../src/main.ts', import.meta.url), 'utf8'));
-function declaration(name: string): string {
-  const found = host.statements.filter(n => ts.isFunctionDeclaration(n) && n.name?.text === name);
-  assert.equal(found.length, 1); return found[0].getText(host);
-}
-function callback(name: string): string {
-  const found: ts.Node[] = [];
-  function visit(node: ts.Node): void {
-    if (ts.isCallExpression(node) && node.expression.getText(host) === 'scopedHost'
-      && ts.isStringLiteral(node.arguments[0]) && node.arguments[0].text === name) found.push(node.arguments[1]);
-    ts.forEachChild(node, visit);
-  }
-  visit(host); assert.equal(found.length, 1); return found[0].getText(host);
-}
+const renderer = parse(readRendererSource());
+// Wiring rewrite step 4: the playback lease's checks and handlers are 声音's (electron/wiring/voice-wiring.ts); each is still exactly one
+// in the wiring (main.ts and electron/wiring/*.ts), and what the moved lines read through the part's needs comes from ctx (WIRING_PRELUDE).
+function declaration(name: string): string { return wiringFunction(name); }
+function callback(name: string): string { return wiringHandler(name); }
 const rendererSpeech = renderer.statements.flatMap(n => ts.isVariableStatement(n) ? [...n.declarationList.declarations] : [])
   .find(n => n.name.getText(renderer) === 'speech')!.initializer!.getText(renderer);
-const extracted = [declaration('canBeginSpeechPlaybackActivity'),
+const extracted = [WIRING_PRELUDE, declaration('canBeginSpeechPlaybackActivity'), declaration('replySurface'), declaration('herOnScreen'), declaration('heldLineSpeakable'),
   `var begin=${callback('beginSpeechPlaybackActivity')};`, `var end=${callback('endSpeechPlaybackActivity')};`,
   `var cancel=${callback('cancelReplySpeech')};`].join('\n');
 function deferred<T>() { let resolve!: (value: T) => void; const promise = new Promise<T>(done => { resolve = done; }); return { promise, resolve }; }
@@ -45,7 +38,7 @@ function fixture() {
   const controls = { webContents: { id: owner }, isVisible: () => visible, isMinimized: () => minimized };
   const pet = { webContents: { id: 8 }, isVisible: () => petVisible, isMinimized: () => petMinimized, isDestroyed: () => petDestroyed };
   const settings = { get enabled() { return voiceEnabled; }, voiceURI: '', rate: 1, volume: 0 };
-  const ctx: Record<string, any> = { controls, pet, windows: () => [controls, pet],
+  const ctx: Record<string, any> = { controls, pet, unbound: null, windows: () => [controls, pet],
     store: { current: { voice: settings } }, completedReplySpeech: plan, speechPlaybackActivity: leases,
     speechScope: () => scope, formatReplyBubbles,
     petReply: { isPresentationCurrent: (text: string) => text === bubble },
@@ -117,7 +110,7 @@ test('actual renderer preview wrappers cancel the ordinary plan before a hidden-
     const f = fixture(), playing = deferred<void>(); let preparations = 0;
     const queue = new CompletedReplySpeechQueue(f.api, () => playing.promise, () => true);
     const js = transformSync(`var speech=${rendererSpeech};`, { loader: 'ts', target: 'es2022' }).code;
-    const ctx: Record<string, any> = { speechOutput: f.output, replySpeechQueue: queue }; vm.createContext(ctx); vm.runInContext(js, ctx);
+    const ctx: Record<string, any> = { speechOutput: f.output, replySpeechQueue: queue, awayReadPause: null }; vm.createContext(ctx); vm.runInContext(js, ctx); // I-189: the away pause (none here)
     try {
       f.record(); const ordinary = queue.speak('reply-a'); await until(() => !!f.plan.approvedCurrentSegment(f.owner, 'scope-a'));
       const preview = mode === 'preview' ? ctx.speech.preview('公开预览。')

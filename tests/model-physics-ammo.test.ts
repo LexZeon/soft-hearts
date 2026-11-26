@@ -4,7 +4,7 @@ import test from "node:test";
 import { MeshBasicMaterial, Quaternion, type SkinnedMesh } from "three";
 import { MMDPhysics } from "three/examples/jsm/animation/MMDPhysics.js";
 import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader.js";
-import { normalizeModelPhysicsSettings } from "../shared/model-physics";
+import { normalizeModelPhysicsSettings } from "../shared/stage/model-physics";
 import { LocalModelPhysics } from "../src/stage/model-physics";
 import { buildPhysicsRigPlan } from "../src/stage/physics-rig";
 import { loadAmmoForTests } from "./helpers/ammo-node";
@@ -121,9 +121,11 @@ test("real Gene hair retains gravity response and settles under upright and tilt
       // visibility still requires the real window. The simultaneous vendor
       // sample proves high-frequency attenuation across all output bones.
       assert.ok(quietWorldPeak < 0.005, `held pose world chatter is bounded (${tilt}: ${quietWorldPeak})`);
-      assert.ok(rawQuietAnglePeak > 0.01, 'the fixture actually exercises persistent raw solver motion');
-      assert.ok(quietAnglePeak < rawQuietAnglePeak * 0.4,
+      // R01 (2026-11-17): with Bullet's step dividing the solve quantum, the raw solver no longer chatters at rest on Gene (its
+      // per-solve peak was above 0.01 rad with the 1/65 s step). Where raw chatter remains, the display filter still attenuates it.
+      if (rawQuietAnglePeak > 0.01) assert.ok(quietAnglePeak < rawQuietAnglePeak * 0.4,
         `all output bones attenuate raw chatter (${tilt}: ${quietAnglePeak} versus ${rawQuietAnglePeak})`);
+      else assert.ok(quietAnglePeak < 0.004, `held pose output is still (${tilt}: ${quietAnglePeak}, raw ${rawQuietAnglePeak})`);
       assert.ok(gravityDrop > 0.001 && response > 0.01, 'a quiet result must retain an actual gravity response');
     } finally {
       physics.dispose();
@@ -203,7 +205,9 @@ test("real solver iteration budgets differ at the same 30 FPS without dropping s
   assert.deepEqual(results.map(result => result.iterations), [4, 10, 20]);
   // The low scheduler can finish one interval later; it must not slow the world
   // by capping away a significant fraction of two seconds of simulation.
-  assert.ok(results[0].steps >= results[1].steps - 5);
-  assert.equal(results[1].steps, results[2].steps);
+  // R01: each quality's Bullet step divides its solve quantum (low 1/80 s, standard 1/90 s, high 1/120 s), so compare seconds.
+  const seconds = results.map((result, i) => result.steps / [80, 90, 120][i]);
+  assert.ok(seconds[0] >= seconds[1] - 5 / 65);
+  assert.ok(Math.abs(seconds[1] - seconds[2]) < 1 / 30 + 1e-6);
   assert.ok(results[0].work < results[1].work && results[1].work < results[2].work);
 });

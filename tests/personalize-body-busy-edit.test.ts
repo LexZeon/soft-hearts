@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {PersonalizeBodyControls} from '../src/ui/PersonalizeBodyControls';
-import {BODY_AUTHORING_PURPOSE,BODY_TWEAK_BINDING,BODY_TWEAK_TARGET,type BodyPosePreview,type BodyVisualState} from '../shared/personalize-body';
+import {PersonalizeBodyControls} from '../src/stage/PersonalizeBodyControls';
+import {BODY_AUTHORING_PURPOSE,BODY_TWEAK_BINDING,BODY_TWEAK_TARGET,type BodyPosePreview,type BodyVisualState} from '../shared/stage/personalize-body';
 class Element {children:Element[]=[];textContent='';private v='';disabled=false;hidden=false;open=false;className='';src='';dataset:Record<string,string>={};
  onclick:(()=>void)|null=null;oninput:(()=>void)|null=null;ontoggle:(()=>void)|null=null;constructor(readonly tagName:string){}
  get value(){return this.v;}set value(value:string){this.v=this.tagName==='select'&&!this.children.some(x=>x.value===value)?'':value;}

@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { Attachment } from '../shared/contracts';
-import { ScreenSnapshots, type ScreenSnapshotContext } from '../electron/screen-snapshots';
-import { DEFAULT_SCREEN_SNAPSHOT_OPTIONS, validateScreenSnapshotOptions } from '../shared/screen-snapshots';
+import type { Attachment } from '../shared/foundation/chat';
+import { ScreenSnapshots, type ScreenSnapshotContext } from '../electron/senses/screen-snapshots';
+import { DEFAULT_SCREEN_SNAPSHOT_OPTIONS, validateScreenSnapshotOptions } from '../shared/senses/screen-snapshots';
 
 const frame = (text = 'YQ=='): Attachment => ({ source: 'screen', dataUrl: `data:image/jpeg;base64,${text}` });
 const shared: ScreenSnapshotContext = { sharing: true, visible: true, sourceId: 'screen:2:0', scope: 'character-provider-model' };
@@ -103,8 +103,9 @@ test('changing source cancels old generation without overlap and never falls bac
   h.snapshots.configure(shared); h.snapshots.setOptions({ enabled: true, intervalSeconds: 2 }); await h.advance(0);
   h.snapshots.configure({ ...shared, sourceId: 'screen:7:0' });
   assert.equal(signals[0].aborted, true);
-  assert.equal(await h.snapshots.sampleOnce(), null);
-  await h.advance(20_000); assert.equal(sources.length, 1);
+  // 2026-11-22: a sample asked while the old capture still holds the slot waits for it (bounded), never overlapping it; still stuck: nothing.
+  const misses: string[] = [], sample = h.snapshots.sampleOnce(undefined, why => misses.push(why));
+  await h.advance(20_000); assert.equal(await sample, null); assert.deepEqual(misses, ['interrupted']); assert.equal(sources.length, 1);
   late.resolve(frame()); await flush(); assert.equal(h.snapshots.currentAttachment(), null);
   await h.advance(2_000);
   assert.deepEqual(sources, ['screen:2:0', 'screen:7:0']);

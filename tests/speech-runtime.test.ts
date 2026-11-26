@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { SpeechRuntime, type SpeechSynthesizer } from "../electron/speech-runtime";
-import { TtsError } from "../electron/tts";
-import { DEFAULT_TTS_CONFIG, type SpeechWireEvent, type TtsConfig, type TtsStreamEvent } from "../shared/tts";
+import { SpeechRuntime, type SpeechSynthesizer } from "../electron/voice/speech-runtime";
+import { TtsError } from "../electron/voice/tts";
+import { DEFAULT_TTS_CONFIG, type SpeechWireEvent, type TtsConfig, type TtsStreamEvent } from "../shared/voice/tts";
 
 const audio: TtsStreamEvent = { type: "audio", data: "AAAFAA==", format: "pcm_s16le", sampleRate: 24000, channels: 1, firstAudioMs: 20 };
 const done: TtsStreamEvent = { type: "done", firstAudioMs: 20, audioBytes: 4 };

@@ -1,4 +1,4 @@
-// Browser layout test for the control window's chat column (src/ui/layout.ts renderControls, src/style.css, src/mood.css).
+// Browser layout test for the control window's chat column (src/settings/layout.ts renderControls, src/settings/style.css, src/mood/mood.css).
 // With developer mode on, the tall mood observer (MoodCompanion's .mood-controls-observer in .content-card) used to
 // squeeze the chat list (#messages) to about 20 px (found by the test-commands work, docs/claude/2026-11-03-test-commands.md).
 // The real markup and CSS are bundled with esbuild and laid out in headless Edge (Playwright channel "msedge"), or
@@ -26,7 +26,7 @@ const skip = browser ? false : 'neither Edge nor Playwright Chromium could start
 /** The control window's own markup and the stylesheets that lay it out, as the app bundles them. */
 async function bundle() {
   const result = await build({
-    stdin: { contents: "import '../src/style.css'; import '../src/mood.css'; import { renderControls } from '../src/ui/layout'; window.renderControls = renderControls;",
+    stdin: { contents: "import '../src/settings/style.css'; import '../src/mood/mood.css'; import { renderControls } from '../src/settings/layout'; window.renderControls = renderControls;",
       resolveDir: tests, loader: 'ts', sourcefile: 'control-layout-entry.ts' },
     bundle: true, write: false, format: 'iife', platform: 'browser', outdir: path.join(os.tmpdir(), 'soft-control-layout'), logLevel: 'silent',
     loader: { '.svg': 'text', '.png': 'dataurl' },
@@ -47,7 +47,7 @@ async function measure(code, { width, height, developer, history = false }) {
       if (history) document.getElementById('messages').innerHTML = Array.from({ length: 80 }, (_, i) =>
         `<div class="message ${i % 2 ? 'assistant' : 'user'}"><div class="bubble">第 ${i + 1} 条消息，说得稍微长一点，好让它换行。</div></div>`).join('');
       const host = document.querySelector('.content-card');
-      // MoodCompanion (src/ui/MoodCompanion.ts): an <aside class="mood-companion"> with a heading and a body holding the
+      // MoodCompanion (src/mood/MoodCompanion.ts): an <aside class="mood-companion"> with a heading and a body holding the
       // developer panel, given .mood-controls-observer and prepended to .content-card (which becomes .mood-observer-host).
       const observer = document.createElement('aside');
       observer.className = 'mood-companion mood-controls-observer'; observer.hidden = !developer;

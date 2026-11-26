@@ -1,9 +1,9 @@
-// 2026-11-08 (stable build, the user: "还是把思考链条读出来了"): a numbered plan item went to the bubble and was read aloud,
+// 2026-11-08 (stable build): a numbered plan item went to the bubble and was read aloud,
 // "1" + "回复" + a note about the user, then a blank line, then her reply. The first chunk was the digit alone, so the guard
 // let the head go at once. Every text below is synthetic (the shape of the leak, not its words); none is a recorded reply.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ReplyDraftGuard } from '../electron/reply-draft-guard';
+import { ReplyDraftGuard } from '../electron/brain/reply-draft-guard';
 
 function chunkings(text: string): string[][] {
   const pieces = (sizes: (i: number) => number) => { const out: string[] = []; for (let i = 0, n = 0; i < text.length; n++) { const size = Math.max(1, sizes(n)); out.push(text.slice(i, i + size)); i += size; } return out; };

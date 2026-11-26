@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { currentUiLanguage, parseUiLanguagePreference, registerUiMessages, resolveUiLanguage, setUiLanguage, t } from '../shared/ui-language';
-import { uiHtml } from '../src/ui/ui-language';
-import { conciseFailure } from '../src/notice-policy';
+import { currentUiLanguage, parseUiLanguagePreference, registerUiMessages, resolveUiLanguage, setUiLanguage, t } from '../shared/foundation/ui-language';
+import { uiHtml } from '../src/foundation/ui-language';
+import { conciseFailure } from '../src/settings/notice-policy';
 
 test('system locale resolves Chinese families and otherwise English without changing preference', () => {
   for (const locale of ['zh', 'zh-CN', 'zh_TW', 'ZH-Hans-SG']) assert.equal(resolveUiLanguage('system', locale), 'zh-CN');

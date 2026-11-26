@@ -4,10 +4,10 @@ import { randomUUID } from 'node:crypto';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { PersonalizeBodyAuthoring } from '../electron/personalize-body-authoring';
-import { PersonalizeBodyStore } from '../electron/personalize-body-store';
-import { BODY_VISUAL_PURPOSE, type BodyPoseBinding } from '../shared/personalize-body';
-import type { SelectedVisualImage } from '../electron/selected-visual-image';
+import { PersonalizeBodyAuthoring } from '../electron/stage/personalize-body-authoring';
+import { PersonalizeBodyStore } from '../electron/stage/personalize-body-store';
+import { BODY_VISUAL_PURPOSE, type BodyPoseBinding } from '../shared/stage/personalize-body';
+import type { SelectedVisualImage } from '../electron/senses/selected-visual-image';
 
 const target = 'a'.repeat(64), source = 'b'.repeat(64);
 const binding: BodyPoseBinding = { id: 'body.synthetic', label: '合成姿态', targetModelSha: target, sourceSha: source,

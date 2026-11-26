@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: mmd-asset:; connect-src 'self' mmd-asset:; media-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <title>soft hearts · showcase</title>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; user-select: none; }
+      #stage { position: fixed; inset: 0; }
+      #stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 700ms ease; }
+    </style>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <script type="module" src="./page.ts"></script>
+  </body>
+</html>

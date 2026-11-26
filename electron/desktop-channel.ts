@@ -1,6 +1,6 @@
 // Fixed local product entry. No renderer authority, script host or process control.
 import { createHash } from 'node:crypto';
-import { lstatSync, readFileSync, realpathSync, statSync } from 'node:fs';
+import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { assertNotCodexProfile, isOwnExecutable } from '../scripts/lib/app-identity.mjs';
 
@@ -35,6 +35,22 @@ function noLinks(root: string, file: string): void {
 function json(file: string): Record<string, unknown> {
   if (!statSync(file).isFile() || statSync(file).size > 16384) throw Error('Invalid desktop reference size.');
   return JSON.parse(readFileSync(file, 'utf8')) as Record<string, unknown>;
+}
+/**
+ * 2026-11-15: the development channel may create its own empty profile folder on its first start. Deploys run from a Claude
+ * shell, whose AppData is virtualised, so the folder they made never existed on the real disk and every dev launch exited
+ * ("Desktop profile directory is unavailable"). Only that exact pinned folder, only when its parent is a real directory,
+ * never the stable profile or anything inside or around it. The stable channel still fails closed.
+ */
+function ensureDevelopmentProfile(workspaceRoot: string, stableProfile: string): void {
+  const file = path.join(workspaceRoot, 'release', 'desktop-development-profile.json');
+  noLinks(workspaceRoot, file); const ref = json(file);
+  if (ref.version !== 1) return;
+  const directory = assertNotCodexProfile(safeAbsolute(ref.directory));
+  if (existsSync(directory) || same(directory, stableProfile) || inside(directory, stableProfile) || inside(stableProfile, directory)) return;
+  const parent = path.dirname(directory);
+  if (!statSync(parent).isDirectory() || lstatSync(parent).isSymbolicLink()) return;
+  mkdirSync(directory);
 }
 function configuredProfile(workspaceRoot: string, channel: DesktopChannel): string {
   const file = path.join(workspaceRoot, 'release', channel === 'stable' ? 'desktop-profile.json' : 'desktop-development-profile.json');
@@ -73,6 +89,7 @@ export function resolveInstalledDesktopChannel(input: {
   const asar = path.join(bundleRoot, 'resources', 'app.asar'); noLinks(workspaceRoot, asar);
   if (hash(readFileSync(executable)) !== manifest.exeSha256 || hash((input.readRawArchive ?? readFileSync)(asar)) !== manifest.asarSha256) throw Error('Immutable desktop program bytes changed.');
   const stableProfile = configuredProfile(workspaceRoot, 'stable');
+  if (channel === 'development') ensureDevelopmentProfile(workspaceRoot, stableProfile);
   const profile = channel === 'stable' ? stableProfile : configuredProfile(workspaceRoot, 'development');
   if (channel === 'development' && (same(profile, stableProfile) || inside(profile, stableProfile) || inside(stableProfile, profile))) throw Error('Development and stable profiles overlap.');
   if (input.explicitProfile && !same(realpathSync(safeAbsolute(input.explicitProfile)), profile)) throw Error('The supplied profile conflicts with this installed channel.');

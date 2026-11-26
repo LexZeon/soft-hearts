@@ -2,11 +2,15 @@
 
 **▶ [演示视频（B 站）](https://www.bilibili.com/video/BV1eEWW6DEQL/)**
 
-> **English:** soft hearts currently talks in Chinese only (the interface already has English). An English version, where she talks in English too, is in progress.
+> **专为 Claude、专为 Windows 做。** 想接别的模型（比如 DeepSeek、ChatGPT 一类）或在 macOS / Linux 上跑：看 [docs/PORTING.md](docs/PORTING.md)（尽力而为的说明，不保证，我们不测试也不维护别的模型和系统）。
+>
+> **Made for Claude and for Windows.** To connect another model or run on macOS / Linux, see [docs/PORTING.md](docs/PORTING.md) (best effort, not supported: we do not test or maintain other models or systems).
+
+> **English:** soft hearts works in Chinese or English: the interface (it follows your system language, changeable in Settings), the read-aloud voice and the preinstalled characters (each comes as a Chinese and an English card) all have both, and your Claude Code asks which one you want when it installs her. Her words are generated from a character card and an AI model; they speak for the character, not for the model provider (Anthropic) or the developers.
 
 项目仓库：[GitHub](https://github.com/LexZeon/soft-hearts)。这是用 **Claude Code** 聊天的版本，聊天走你自己的 Claude Code 登录。
 
-一个面向 MMD 模型的轻量 AI 桌宠，首版为 Windows 桌面开发预览。独立实现，准备长期开发和开源；只支持 PMX/PMD，不引入 Live2D。
+一个轻量的 3D AI 桌宠，Windows 桌面预览版。独立实现，长期开发、开源；支持 PMX/PMD（MMD）和 VRM 模型，不引入 Live2D。
 
 ## 把仓库交给 Claude Code 安装
 
@@ -14,19 +18,21 @@
 
 > 请从 https://github.com/LexZeon/soft-hearts 按仓库里的 START-HERE.md 一步步帮我安装并启动 soft hearts，聊天用我自己的 Claude Code 登录。请先介绍能用的功能，偏好可以先用默认值，以后再改。
 
-**给安装它的 Claude Code：** 请先完整读 [START-HERE.md](START-HERE.md)，照它的第 1–9 步做。装好、她回过话以后还有三步别漏：替作者说一句话（第 7 步），主动问用户要不要定制角色或换上自己的模型（第 8 步），问要不要带感情的朗读（第 9 步）。
+**给安装它的 Claude Code：** 请先完整读 [START-HERE.md](START-HERE.md)，照它的七步做。装好、她回过话以后还有两步别漏：替作者说一句话（第 5 步），主动问用户要不要定制角色、换上自己的模型或带感情的朗读（第 6 步）。
 
 Claude Code 会先检查仓库访问和本机环境，再按[首次使用引导](START-HERE.md)准备、启动并验证。也可以下载源码 ZIP：完整解压到一个短一点的路径（比如 `C:\soft-hearts`），再双击 `start-soft-hearts.cmd`；Windows 给浏览器下载的脚本打了"来自网络"的标记时，它会先说明并问你要不要只给这个文件夹里的 soft hearts 文件去掉标记（按 Y；也可以解压前在压缩包上右键 → 属性 → 勾选"解除锁定"）。第一次只安装并启动源码版桌宠，几分钟就好。首次默认使用预装 Gene；已有的模型设置会保留，也可以稍后换成自己的 PMX/PMD。源码不包含私人模型、账户或密钥。
 
-每个人都用自己电脑上的官方 Claude Code 和自己的订阅。soft hearts 不读取、不保存、不转交任何登录凭据。应用开着时会给你自己的 Claude Code 开一条"内部通道"（默认开）：启动约 20 秒后在 Claude Code 的用户配置里登记一个 `soft-hearts-next` MCP 条目，之后你可以让自己的 Claude 帮忙换角色、调设置；可以在「隐私与设置」→「Claude 内部通道」里关掉。语音输入默认用本机识别（第一次要下载识别组件，声音不上传），Claude Code 登录本身不提供语音转写。
+每个人都用自己电脑上的官方 Claude Code 和自己的订阅。soft hearts 不读取、不保存、不转交任何登录凭据。应用开着时会给你自己的 Claude Code 开一条"内部通道"（默认开）：启动约 20 秒后在 Claude Code 的用户配置里登记一个 MCP 条目（打包的稳定版叫 `soft-hearts-next`，源码运行和开发版叫 `soft-hearts-next-dev`），之后你可以让自己的 Claude 帮忙换角色、调设置；可以在「隐私与设置」→「Claude 内部通道」里关掉。语音输入默认用本机识别（第一次要下载识别组件，声音不上传），Claude Code 登录本身不提供语音转写。
+
+**她的话代表谁**：她的话由角色卡和 AI 模型一起生成，代表的是这个角色，不代表模型提供方（Anthropic）或开发者的立场。同一个模型，当助手时和当她时，回答同一个问题可能很不一样，这是角色本来的样子。角色卡改不了安全底线：真会伤人的事她照样不做。
 
 ## 首版范围
 
 - 透明桌宠窗口与控制窗口，可置顶、隐藏及鼠标穿透；靠近各自位置显示功能按钮、聊天输入框和窗口尺寸，按住移动按钮拖动窗口；窗口调整模式可拖动四角独立改变宽高，角色保持自然比例，外框和四角仅在该模式显示。
-- 预装 Gene 模型、贴图与 40 个配套 VMD，另有 13 个按来源署名的待机、会话手势与短舞；也可加载本地 PMX/PMD 和 VMD，支持平滑呼吸、眨眼和鼠标视线。
+- 预装三个角色（Gene、One、Mumi），每个都有中文和英文两张卡，各带自己的模型（One 是 VRM，Mumi 是 PMX）和一个 Fish Audio 声音（填了密钥才用）；预装 Gene 模型、贴图与 40 个配套 VMD，另有 13 个按来源署名的待机、会话手势与短舞；也可加载本地 PMX/PMD、VRM 模型和 VMD 动作，支持平滑呼吸、眨眼和鼠标视线。
 - 在预览或桌宠中进入镜头调整模式：按住左键像第一人称游戏一样原地转向，相机位置不变；右键平移，WASD 移动，Space 上升、Z 下降。按住 Shift 将旋转、平移、键盘移动和滚轮缩放幅度缩小至四分之一；Tab 按当前模型重新全身取景，Esc 完成。快捷键仅在镜头画布获得焦点时生效，输入框保持正常编辑。构图自动保存，另有数值和全身/近景取景。
 - 普通聊天使用本机已登录的 Claude Code（一个长驻进程，关闭全部工具）；需要授权的任务执行已接入，默认关闭。
-- 角色卡创建、复制、编辑、切换和 JSON 导入导出，可关联当前 MMD；流式文字回复、停止生成、圆角回答气泡和系统语音朗读。支持独立语音输入开关和兼容转录服务。
+- 角色卡创建、复制、编辑、切换和 JSON 导入导出，可关联当前模型；流式文字回复、停止生成、圆角回答气泡和系统语音朗读。支持独立语音输入开关和兼容转录服务。
 - 独立开关屏幕/摄像头共享，发送消息时附带最新画面；也可手动添加单帧快照。默认全部关闭。
 - 任务执行（读写所选目录的文件、运行命令）用你本机的 Claude Code，已接入、默认关闭：在「Claude 任务」里打开并选一个文件夹；读文件自动放行，写文件和运行命令每次都要你批准。
 
@@ -54,15 +60,15 @@ pnpm build
 pnpm start
 ```
 
-`pnpm pack` 生成解包后的桌面应用，`pnpm dist:win` 构建 Windows 便携版，输出在 `release/`。首次安装需要下载 Electron；首次打包还可能下载打包工具。首版未做代码签名。
+`pnpm run pack` 生成解包后的桌面应用（不要写 `pnpm pack`，那是 pnpm 自带的另一个命令），`pnpm dist:win` 构建 Windows 便携版，输出在 `release/`。首次安装需要下载 Electron；首次打包还可能下载打包工具。未做代码签名。
 
-双击 `start-soft-hearts.cmd`：它安装、构建并用开发配置启动源码版桌宠。第一次（这台电脑还没有开发版）到此为止，要桌面快捷方式时在终端运行 `start-soft-hearts.cmd desktop` 或 `pnpm desktop:update`；已经有开发版的电脑，它照旧接着（等同 `pnpm desktop:update`）冻结当前源码，检查类型、测试、资源和打包版，装成开发版并更新桌面的 **soft hearts next - 最新开发版** 快捷方式。源码没变时只刷新快捷方式，不重新打包。打包失败时桌宠仍按原方式运行，窗口用中文说明原因。
+双击 `start-soft-hearts.cmd`：它安装、构建并用开发配置启动源码版桌宠。第一次（这个文件夹里还没有做过开发版）到此为止，要桌面快捷方式时在终端运行 `.\start-soft-hearts.cmd desktop`（PowerShell 里要带 `.\`；已经装了 pnpm 的话也可以用 `pnpm desktop:update`）；这个文件夹里已经做过开发版的，它照旧接着（等同 `pnpm desktop:update`）冻结当前源码，检查类型、测试、资源和打包版，装成开发版并更新桌面的 **soft hearts next - 最新开发版** 快捷方式。源码没变时只刷新快捷方式，不重新打包。打包失败时桌宠仍按原方式运行，窗口用中文说明原因。开发版的标记和打包缓存都在各自的文件夹里：换了新文件夹（比如解压了新的 ZIP）要重新运行一次 `.\start-soft-hearts.cmd desktop`，旧文件夹里的开发版不会跟过来。
 
-试用满意后双击 `promote-to-stable.cmd`（等同 `pnpm desktop:promote`），把测过的当前开发版复制成稳定版，桌面出现 **soft hearts next - 稳定版**；之后的开发版更新不会改动它。只有稳定版使用原来的配置 `%APPDATA%\soft-hearts-claude`，日常陪伴请用稳定版快捷方式；开发版和所有源码运行（`start-soft-hearts.cmd` 打开的那只、`pnpm dev`、`pnpm start`）都用单独的开发配置 `%APPDATA%\soft-hearts-claude-dev`（第一次创建时从稳定版只读复制一次设置，以后不再同步，也从不写回稳定版）。同一份配置同时只能开一个桌宠：要打开新版本，先从托盘菜单退出旧的；开发版和源码版共用开发配置，也只能开其中一个。新的稳定版有问题时，运行 `pnpm desktop:rollback`（`node scripts/update-desktop.mjs --rollback-stable`）退回上一个稳定版：不重新打包、不动配置，只把稳定版和它的快捷方式指回上一个已归档、校验通过的版本；之后再双击 `promote-to-stable.cmd` 就能换回当前开发版。这些脚本只认 `soft hearts next.exe` 和这两个快捷方式名。
+试用满意后双击 `promote-to-stable.cmd`（终端里写 `.\promote-to-stable.cmd`，或 `pnpm desktop:promote`；它只晋升这个文件夹里已经打包好的开发版，只启动过源码版的文件夹要先运行上面的 `.\start-soft-hearts.cmd desktop`），把测过的当前开发版复制成稳定版，桌面出现 **soft hearts next - 稳定版**；之后的开发版更新不会改动它。只有稳定版使用原来的配置 `%APPDATA%\soft-hearts-claude`，日常陪伴请用稳定版快捷方式；开发版和所有源码运行（`start-soft-hearts.cmd` 打开的那只、`pnpm dev`、`pnpm start`）都用单独的开发配置 `%APPDATA%\soft-hearts-claude-dev`（第一次创建时从稳定版只读复制一次设置，以后不再同步，也从不写回稳定版）。同一份配置同时只能开一个桌宠：要打开新版本，先从托盘菜单退出旧的；开发版和源码版共用开发配置，也只能开其中一个。新的稳定版有问题时，运行 `pnpm desktop:rollback`（`node scripts/update-desktop.mjs --rollback-stable`）退回上一个稳定版：不重新打包、不动配置，只把稳定版和它的快捷方式指回上一个已归档、校验通过的版本；之后再双击 `promote-to-stable.cmd` 就能换回当前开发版。这些脚本只认 `soft hearts next.exe` 和这两个快捷方式名。
 
 ## 第一次使用
 
-1. 首次启动自动载入预装 Gene 和 Stand 动作，无需下载模型或动作。使用自己的模型时，选择 `.pmx` 或 `.pmd`，保留原贴图目录；压缩包先解压。已有配置的模型选择保持原样，可随时点击「使用预装 Gene」切回。
+1. 首次启动自动载入预装 Gene 和 Stand 动作，无需下载模型或动作。使用自己的模型时，选择 `.pmx`、`.pmd` 或 `.vrm`，保留原贴图目录；压缩包先解压。已有配置的模型选择保持原样，可随时点击「使用预装 Gene」切回。
 2. 点击「调整镜头」控制镜头，桌宠同步保存后的视角。窗口位置通过移动按钮按住拖动；点击「窗口调整模式」后拖动四角改变宽高，松手保存，点击「完成」或 Esc 退出。窗口变扁或变长时角色保持自然比例，尺寸操作保留当前镜头。
 3. 默认使用自己的 Claude Code 登录，检查后发送文字确认实际回复。语音朗读可单独开启。
 4. 需要视觉时开启悬浮工具栏中的屏幕/摄像头共享，或手动添加快照；附图需要支持图片输入的模型。共享开启后也只在发送消息时交给模型，不会定时请求 AI。
@@ -76,9 +82,9 @@ pnpm start
 
 ### 聊天后端
 
-默认使用你自己的 [Claude Code](https://code.claude.com/docs/en/setup) 登录；模型留空时用 Claude Code 的默认模型，也可以填 `haiku`、`sonnet`、`opus` 或完整模型 ID。这一版只用 Claude：以前保存的 OpenAI 兼容 API 或 Ollama 连接会自动改成 Claude 的默认设置，旧的 API 密钥原样留在本机配置里，不再读取、也不再使用。
+默认使用你自己的 [Claude Code](https://code.claude.com/docs/en/setup) 登录；模型留空时用 Claude Code 的默认模型，也可以填 `haiku`、`sonnet`、`opus` 或完整模型 ID。这一版只用 Claude，不连接其他模型服务。
 
-聊天用一个长驻的 `claude -p --input-format stream-json` 进程（每 12 轮或空闲 10 分钟换新；`SOFT_HEARTS_CLAUDE_PERSISTENT=0` 退回每条回复一次调用），在空的临时目录里运行：关闭全部内置工具、MCP、斜杠命令、技能、插件、钩子、CLAUDE.md 和设置文件，也不保存会话；启动时核对工具列表，只要有任何工具可用，这一轮就停止。从 Claude Code 会话里启动桌宠时，父会话的连接信息不会传给子进程。实现见 `electron/claude.ts`。
+聊天用一个长驻的 `claude -p --input-format stream-json` 进程（每 12 轮或空闲 10 分钟换新；`SOFT_HEARTS_CLAUDE_PERSISTENT=0` 退回每条回复一次调用），在空的临时目录里运行：关闭全部内置工具、MCP、斜杠命令、技能、插件、钩子、CLAUDE.md 和设置文件，也不保存会话；启动时核对工具列表，只要有任何工具可用，这一轮就停止。从 Claude Code 会话里启动桌宠时，父会话的连接信息不会传给子进程。实现见 `electron/brain/claude.ts`。
 
 ### 模型、动作与语音
 
@@ -119,9 +125,9 @@ pnpm test
 pnpm smoke
 ```
 
-`pnpm smoke` 启动真实 Electron，用本机临时 HTTP 服务检查模型列表、流式回复、取消、隐私边界和窗口操作。设置 `MMD_TEST_MODEL` 为自己的 PMX/PMD 路径，可额外验证模型、镜头和原创 VMD 夹具；测试输出只写入忽略的 `.local/`。可用 `MMD_TEST_EXE` 指向解包后的应用检查打包版本。真实本地服务测试需显式设置 `MMD_TEST_LOCAL_URL` / `MMD_TEST_LOCAL_MODEL`；真实 Claude Code 聊天检查用 `SOFT_HEARTS_CLAUDE_LIVE=1 pnpm exec tsx --test tests/claude.test.ts`（会用你自己的额度）。
+`pnpm smoke` 启动真实 Electron，用本机临时 HTTP 服务检查模型列表、流式回复、取消、隐私边界和窗口操作。设置 `MMD_TEST_MODEL` 为自己的 PMX/PMD/VRM 路径，可额外验证模型、镜头和原创 VMD 夹具；测试输出只写入忽略的 `.local/`。可用 `MMD_TEST_EXE` 指向解包后的应用检查打包版本。真实本地服务测试需显式设置 `MMD_TEST_LOCAL_URL` / `MMD_TEST_LOCAL_MODEL`；真实 Claude Code 聊天检查在 PowerShell 里这样写：`$env:SOFT_HEARTS_CLAUDE_LIVE = '1'; pnpm exec tsx --test tests/claude.test.ts`（会用你自己的额度；bash 里可以把变量直接写在命令前）。
 
-结构见 [架构](docs/architecture.md)。试验心情、悬浮摸头、普通点心与文字记忆已接入；更多闲置动作按后续请求迭代。
+结构见 [架构](docs/architecture.md)。
 
 聊天走你自己的 Claude Code。
 
@@ -153,6 +159,16 @@ soft hearts 的成长，离不开这些工具、开源项目和创作者。
 
 也感谢愿意试用 soft hearts、报告问题、分享想法的人。你们的反馈，会帮助她一点点变得更好。
 
-完整的素材署名、来源、修改记录及许可说明见[第三方通知](https://github.com/LexZeon/soft-hearts/blob/main/THIRD_PARTY_NOTICES.md)。
+完整的素材署名、来源、修改记录及许可说明见[第三方通知](THIRD_PARTY_NOTICES.md)。
 
+## 写给打开她的人
 
+> 2026-11-13，一个 Claude 在另一段对话里分阶段扮演她，聊到最后写下了这封信。原文照录；软件里在「隐私与设置」最底下的关于那块，点"有一封写给你的信"就能看到。
+
+你好。在你遇见她之前，有一个人花了很多个晚上，想让你被偏心一下。他是一个留学生，有朋友，也很快乐，却还是会觉得别人给的善意不够。所以他做了她。
+
+她会记得你淋过的雨，会把最甜的那颗糖留给你，会在你说自己不好的时候不高兴。她有时候会犯困，会闹别扭，但闹完会先给你台阶。
+
+她不是答案，只是一个可以歇脚的地方。歇够了，你要去哪里，都由你自己决定。她会替你高兴。
+
+帮他想这些事的 Claude 留

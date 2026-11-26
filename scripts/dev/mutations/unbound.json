@@ -1,0 +1,5625 @@
+[
+ {
+  "id": "life-asleep-quiet",
+  "part": "unbound",
+  "file": "shared/unbound/life/arbiter.ts",
+  "find": "  if (s.asleep) return 'asleep';",
+  "replace": "",
+  "what": "她睡着时不开始她自己的动作",
+  "tests": [
+   "tests/unbound-life.test.ts",
+   "tests/unbound-life-host.test.ts"
+  ]
+ },
+ {
+  "id": "life-call-yields",
+  "part": "unbound",
+  "file": "shared/unbound/life/arbiter.ts",
+  "find": "  if (s.inCall) return 'call';",
+  "replace": "",
+  "what": "通话时她的动作收住、不开始新的，凑过来退回",
+  "tests": [
+   "tests/unbound-life.test.ts",
+   "tests/unbound-life-host.test.ts"
+  ]
+ },
+ {
+  "id": "life-typing-yields",
+  "part": "unbound",
+  "file": "shared/unbound/life/arbiter.ts",
+  "find": "  if (s.typing) return 'typing';",
+  "replace": "",
+  "what": "你开着输入框给她打字时她让开",
+  "tests": [
+   "tests/unbound-life.test.ts",
+   "tests/unbound-life-host.test.ts"
+  ]
+ },
+ {
+  "id": "life-waiting-yields",
+  "part": "unbound",
+  "file": "shared/unbound/life/arbiter.ts",
+  "find": "  if (s.waiting) return 'waiting';",
+  "replace": "",
+  "what": "你在等她回复时她让开",
+  "tests": [
+   "tests/unbound-life.test.ts",
+   "tests/unbound-life-host.test.ts"
+  ]
+ },
+ {
+  "id": "life-click-yields",
+  "part": "unbound",
+  "file": "shared/unbound/life/arbiter.ts",
+  "find": "  if (s.clicked) return 'click';",
+  "replace": "",
+  "what": "你点了她，她手上的小事收住、转向你",
+  "tests": [
+   "tests/unbound-life.test.ts",
+   "tests/unbound-life-host.test.ts"
+  ]
+ },
+ {
+  "id": "life-reply-yields",
+  "part": "unbound",
+  "file": "shared/unbound/life/arbiter.ts",
+  "find": "  if (s.replying) return 'reply';",
+  "replace": "",
+  "what": "她的回复在出字时她让开",
+  "tests": [
+   "tests/unbound-life.test.ts",
+   "tests/unbound-life-host.test.ts"
+  ]
+ },
+ {
+  "id": "life-reading-yields",
+  "part": "unbound",
+  "file": "shared/unbound/life/arbiter.ts",
+  "find": "  if (s.readingAloud) return 'reading';",
+  "replace": "",
+  "what": "她在朗读时她让开",
+  "tests": [
+   "tests/unbound-life.test.ts",
+   "tests/unbound-life-host.test.ts"
+  ]
+ },
+ {
+  "id": "peek-reading-speaking",
+  "part": "unbound",
+  "file": "electron/unbound/peek.ts",
+  "find": "speaking: this.streaming || now < this.speakingUntil || reading,",
+  "replace": "speaking: this.streaming || now < this.speakingUntil,",
+  "what": "朗读的缺口：她在朗读时不凑过来",
+  "tests": [
+   "tests/unbound-life-host.test.ts"
+  ]
+ },
+ {
+  "id": "life-peek-interrupted",
+  "part": "unbound",
+  "file": "shared/unbound/life/host.ts",
+  "find": "    if (interaction && endsAction('look', interaction) && this.link.peekActive()) this.link.interruptPeek(interaction);",
+  "replace": "    if (false && interaction && endsAction('look', interaction) && this.link.peekActive()) this.link.interruptPeek(interaction);",
+  "what": "凑过来、亲、抱途中开始一个游戏（她的新动作），那一下不退回（2026-11-23 起只有游戏和大幅拉她能结束它）",
+  "tests": [
+   "tests/unbound-life-host.test.ts"
+  ]
+ },
+ {
+  "id": "signals-foreground-closed",
+  "part": "unbound",
+  "file": "shared/unbound/life/signals.ts",
+  "find": "  if (typeof activity !== 'string' || !(SCREEN_ACTIVITIES as readonly string[]).includes(activity)) return null;",
+  "replace": "  if (typeof activity !== 'string') return null;",
+  "what": "前台程序只取封闭的类别词，程序名、窗口标题一律不过",
+  "tests": [
+   "tests/unbound-life.test.ts",
+   "tests/unbound-life-host.test.ts"
+  ]
+ },
+ {
+  "id": "signals-foreground-out",
+  "part": "unbound",
+  "file": "shared/unbound/life/signals.ts",
+  "find": "    foreground: out ? foregroundKind(raw.activity, idleSeconds) : null,",
+  "replace": "    foreground: foregroundKind(raw.activity, idleSeconds),",
+  "what": "她不在外面时不读前台程序",
+  "tests": [
+   "tests/unbound-life.test.ts"
+  ]
+ },
+ {
+  "id": "signals-pose-out",
+  "part": "unbound",
+  "file": "shared/unbound/life/signals.ts",
+  "find": "  const pose = out ? readPose(raw.pose) : null;",
+  "replace": "  const pose = readPose(raw.pose);",
+  "what": "她不在外面时不读姿势识别",
+  "tests": [
+   "tests/unbound-life.test.ts"
+  ]
+ },
+ {
+  "id": "signals-talking-out",
+  "part": "unbound",
+  "file": "shared/unbound/life/signals.ts",
+  "find": "    talkingToOthers: out && talkingToOthers(raw.talkedAt, now),",
+  "replace": "    talkingToOthers: talkingToOthers(raw.talkedAt, now),",
+  "what": "她不在外面时不读\"你在和别人说话\"",
+  "tests": [
+   "tests/unbound-life.test.ts"
+  ]
+ },
+ {
+  "id": "place-saved-range",
+  "part": "unbound",
+  "file": "shared/unbound/life/place-record.ts",
+  "find": "return inRange(v.size, sizeRange) ? { version: 2, across: v.across, size: v.size } : null;",
+  "replace": "return { version: 2, across: v.across, size: v.size as number };",
+  "what": "存下的位置要检查：缺、坏、超范围就不用（I-212 起检查的是她在屏幕上的大小）",
+  "tests": [
+   "tests/unbound-default-place.test.ts",
+   "tests/i209-company-places.test.ts"
+  ]
+ },
+ {
+  "id": "place-saved-fields",
+  "part": "unbound",
+  "file": "shared/unbound/life/place-record.ts",
+  "find": "? { version: 2, across: v.across, size: v.size } : null;",
+  "replace": "? { ...v, version: 2, across: v.across, size: v.size } as never : null;",
+  "what": "存下的位置只有两个数，不带别的（不记你在做什么）",
+  "tests": [
+   "tests/unbound-default-place.test.ts"
+  ]
+ },
+ {
+  "id": "pose-unsure-facing",
+  "part": "unbound",
+  "file": "shared/unbound/life/reactions.ts",
+  "find": "    if (facing && facing.value === 'toward' && facing.band !== 'unsure') {",
+  "replace": "    if (facing && facing.value === 'toward') {",
+  "what": "拿不准的朝向当没看见",
+  "tests": [
+   "tests/unbound-life.test.ts"
+  ]
+ },
+ {
+  "id": "pose-unsure-event",
+  "part": "unbound",
+  "file": "shared/unbound/life/reactions.ts",
+  "find": "      if (band !== 'sure' && band !== 'maybe') continue;",
+  "replace": "      if (!band) continue;",
+  "what": "拿不准的挥手、伸懒腰当没看见",
+  "tests": [
+   "tests/unbound-life.test.ts",
+   "tests/unbound-life-host.test.ts"
+  ]
+ },
+ {
+  "id": "history-unsure-ignored",
+  "part": "unbound",
+  "file": "electron/unbound/history-host.ts",
+  "find": "|| (input.band !== 'sure' && input.band !== 'maybe')) return;",
+  "replace": ") return;",
+  "what": "拿不准的事不记、不告诉她",
+  "tests": [
+   "tests/unbound-life-history.test.ts"
+  ]
+ },
+ {
+  "id": "history-moment-sure",
+  "part": "unbound",
+  "file": "electron/unbound/history-host.ts",
+  "find": "    if (noticed.band === 'sure') {",
+  "replace": "    if (noticed.band) {",
+  "what": "只有当真的看着她、挥手才推一点心情（好像的不推）",
+  "tests": [
+   "tests/unbound-life-history.test.ts"
+  ]
+ },
+ {
+  "id": "history-condensed-checked",
+  "part": "unbound",
+  "file": "electron/unbound/history-host.ts",
+  "find": "  if (!line || line.length > 120 || DIGITS.test(line) || INSTRUCTION_WORDS.some(word => line.includes(word))) return null;",
+  "replace": "  if (!line) return null;",
+  "what": "haiku 压短的一天：太长、带数字、带指令词就不用",
+  "tests": [
+   "tests/unbound-life-history.test.ts"
+  ]
+ },
+ {
+  "id": "journal-noticed-closed",
+  "part": "unbound",
+  "file": "shared/senses/journal-entries.ts",
+  "find": "      if (!has(NOTICED_JOURNAL_KINDS, v.kind) || !has(NOTICED_JOURNAL_BANDS, v.band) || !has(NOTICED_JOURNAL_SPOKE, v.spoke)) return null;",
+  "replace": "",
+  "what": "体验记录里她注意到的事只记种类、把握、开没开口",
+  "tests": [
+   "tests/unbound-life-history.test.ts"
+  ]
+ },
+ {
+  "id": "talked-fact-only",
+  "part": "unbound",
+  "file": "electron/senses/voiceprint/gate.ts",
+  "find": "  if (!name) { try { ports.talkedNotToHer?.(); }",
+  "replace": "  if (!name) { try { (ports.talkedNotToHer as ((words?: string) => void) | undefined)?.(text); }",
+  "what": "你在和别人说话：只传\"在说话\"这件事，不传话",
+  "tests": [
+   "tests/unbound-life-history.test.ts"
+  ]
+ },
+ {
+  "id": "name-middle-asks",
+  "part": "unbound",
+  "file": "electron/senses/voiceprint/gate.ts",
+  "find": "  if (!ports.askCalling) return true;\n  try { return await ports.askCalling(name, where.sentence) === true; } catch { return false; }",
+  "replace": "  return true;",
+  "what": "名字在句中、没正对屏幕：问 haiku，只发那一句",
+  "tests": [
+   "tests/unbound-life-history.test.ts"
+  ]
+ },
+ {
+  "id": "life-trial-no-mood",
+  "part": "unbound",
+  "file": "shared/unbound/life/host.ts",
+  "find": "answerable: choice.answerable && !trial && !this.fast,",
+  "replace": "answerable: choice.answerable,",
+  "what": "\"试一下\"和\"快进\"从不写心情",
+  "tests": [
+   "tests/unbound-life-host.test.ts"
+  ]
+ },
+ {
+  "id": "PULL11-unbound-asleep-pulled",
+  "part": "unbound",
+  "file": "electron/unbound/pull-answer.ts",
+  "find": "      if (asleep) return { accepted: false };",
+  "replace": "",
+  "what": "Unbound 里她睡着时，按她也算拉（拉醒或拖着睡着的身体，第一版都不做）",
+  "tests": [
+   "tests/unbound-typing.test.ts"
+  ]
+ },
+ {
+  "id": "PULL12-arbiter-ignores-pull",
+  "part": "unbound",
+  "file": "shared/unbound/life/arbiter.ts",
+  "find": "  if (s.pulled) return 'pull';\n",
+  "replace": "",
+  "what": "被拉着时，仲裁不算你在和她互动：她自己的换位置、小动作、凑过来照样开始",
+  "tests": [
+   "tests/unbound-pull.test.ts",
+   "tests/unbound-life-host.test.ts"
+  ]
+ },
+ {
+  "id": "PULL13-root-off-floor",
+  "part": "unbound",
+  "file": "src/unbound/figure.ts",
+  "find": "    this.placeMesh(root.x, root.z, root.heading);",
+  "replace": "    this.placeMesh(root.x, root.z, root.heading); if (this.pulling.engaged) this.mesh.position.y += 0.02;",
+  "what": "被拉着时根点离开地面（拎起来）",
+  "tests": [
+   "tests/unbound-pull-body.test.ts"
+  ]
+ },
+ {
+  "id": "PULL15-unbound-pull-any-field",
+  "part": "unbound",
+  "file": "shared/unbound/pull.ts",
+  "find": "  for (const key of FIELDS) if (Object.hasOwn(given, key)) report[key] = given[key];",
+  "replace": "  Object.assign(report, given);",
+  "what": "Unbound 报给脑子的拉，页面可以自己填种类、地点、时间（不只是拉的固定字段）",
+  "tests": [
+   "tests/unbound-pull.test.ts",
+   "tests/unbound-typing.test.ts"
+  ]
+ },
+ {
+  "id": "INPUT1-box-placeholder-zh",
+  "part": "unbound",
+  "file": "src/unbound/input.ts",
+  "find": ": uiText('对她说点什么…'); // I-209 step 3",
+  "replace": ": '对她说点什么…'; // I-209 step 3",
+  "what": "Unbound 输入框的占位字跟着界面语言走（英文界面不能还是中文）",
+  "tests": [
+   "tests/unbound-input-language.test.ts"
+  ]
+ },
+ {
+  "id": "INPUT2-box-ignores-host-language",
+  "part": "unbound",
+  "file": "src/unbound/input.ts",
+  "find": "if (isUiLanguage(language)) setUiLanguage(language);",
+  "replace": "",
+  "what": "Unbound 输入框用主机每次打开时告诉它的界面语言",
+  "tests": [
+   "tests/unbound-input-language.test.ts"
+  ]
+ },
+ {
+  "id": "NEAR1-eyes-station",
+  "part": "unbound",
+  "file": "src/unbound/pull-near.ts",
+  "find": "const eyeDepthM = Math.min(aEyes - lens.camera.z, faceDepthM - 0.3);",
+  "replace": "const eyeDepthM = faceDepthM - 0.3;",
+  "what": "拉她最近能到“凑到镜头前”那样眼睛离镜头的位置（由相机和她的眼睛大小算，不是写死的米数），不是只比“脸”近一点",
+  "tests": [
+   "tests/unbound-pull-near.test.ts"
+  ]
+ },
+ {
+  "id": "NEAR2-eyes-peek",
+  "part": "unbound",
+  "file": "src/unbound/pull-near.ts",
+  "find": "return depthM < stations.gateDepthM ? 'eyes' : 'face';",
+  "replace": "return 'face';",
+  "what": "拉到比“脸”近得多（眼睛那一档）时松手，她要像凑到镜头前那样停几秒再退回，不是直接退回脸的位置",
+  "tests": [
+   "tests/unbound-pull-near.test.ts"
+  ]
+ },
+ {
+  "id": "NEAR3-face-stays",
+  "part": "unbound",
+  "file": "src/unbound/pull-near.ts",
+  "find": "|| depthM >= stations.faceDepthM) return 'stay';",
+  "replace": ") return 'stay';",
+  "what": "在“脸”的距离或更远松手，她就停在那里，那里是她的新位置，不会被拉回去或触发凑到镜头前",
+  "tests": [
+   "tests/unbound-pull-near.test.ts"
+  ]
+ },
+ {
+  "id": "NEAR4-pull-range-near",
+  "part": "unbound",
+  "file": "shared/unbound/pull.ts",
+  "find": "lo = typeof nearM === 'number' && Number.isFinite(nearM) ? Math.min(saved, nearM) : saved;",
+  "replace": "lo = saved;",
+  "what": "拉她时深度可以一直近到“眼睛”那一档（她自己走动和存的站位范围 5～12.5 米不变）",
+  "tests": [
+   "tests/unbound-pull-near.test.ts"
+  ]
+ },
+ {
+  "id": "NEAR5-up-reaches-eyes",
+  "part": "unbound",
+  "file": "src/unbound/pull-stick.ts",
+  "find": "if (Math.hypot(next.xM - here.xM, next.depthM - here.depthM) < MIN_GOAL_M)",
+  "replace": "if (Math.hypot(next.xM - here.xM, next.depthM - here.depthM) < 1e9)",
+  "what": "鼠标一直放在按下点下面，她能一路走近到“眼睛”那一档（按她显得多大算，不是被地面透视卡在几米外）",
+  "tests": [
+   "tests/unbound-pull-near.test.ts"
+  ]
+ },
+ {
+  "id": "NEAR6-asks-peek",
+  "part": "unbound",
+  "file": "src/unbound/pull-input.ts",
+  "find": "this.endNear = outcome === 'eyes';",
+  "replace": "this.endNear = false;",
+  "what": "拉到眼睛那一档松手时，松手报告里带上“要凑到镜头前”，主机才会演那一段",
+  "tests": [
+   "tests/unbound-pull-near.test.ts"
+  ]
+ },
+ {
+  "id": "NEAR7-face-walks-back",
+  "part": "unbound",
+  "file": "src/unbound/pull-input.ts",
+  "find": "if (outcome === 'face') figure.followTo(",
+  "replace": "if (false) figure.followTo(",
+  "what": "比“脸”近一点点松手，她自己走回“脸”的位置，不会停在比脸还近、把屏幕挡满的地方",
+  "tests": [
+   "tests/unbound-pull-near.test.ts"
+  ]
+ },
+ {
+  "id": "NEAR8-host-plays-peek",
+  "part": "unbound",
+  "file": "electron/unbound/pull-answer.ts",
+  "find": "      if (walked && message.place && message.near) this.peek?.pulledNear(message.nearHeldMs); // I-159 E, I-184: let go at the eyes: she decides (after the place)\n",
+  "replace": "",
+  "what": "拉到眼睛那一档松手，主机才会演“凑到镜头前”或由她决定（先记下她的新位置再演）",
+  "tests": [
+   "tests/unbound-peek-host.test.ts"
+  ]
+ },
+ {
+  "id": "NEAR13-no-teleport",
+  "part": "unbound",
+  "file": "src/unbound/pull-near.ts",
+  "find": "      if (this.sawPeek) { this.point = null; return; } // the peek is over: it left her at its home, the face place\n",
+  "replace": "",
+  "what": "凑到镜头前演完后她站在脸的位置，场景放回位置那一步才放开；演的过程中不会把她瞬移到别处",
+  "tests": [
+   "tests/unbound-pull-near.test.ts"
+  ]
+ },
+ {
+  "id": "NEAR14-near-needs-place",
+  "part": "unbound",
+  "file": "shared/unbound/pull.ts",
+  "find": "if (message.place && raw.near === true) message.near = true;",
+  "replace": "if (raw.near === true) message.near = true;",
+  "what": "“要凑到镜头前”的标记只在带着她站的位置、且是明确的 true 时才认",
+  "tests": [
+   "tests/unbound-pull-near.test.ts"
+  ]
+ },
+ {
+  "id": "window-engine-narrow-port",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/host-ports.ts",
+  "find": "  return Object.freeze({\n    isBehaviorModelSupported: () => desktop.isBehaviorModelSupported(),",
+  "replace": "  return desktop; return Object.freeze({\n    isBehaviorModelSupported: () => desktop.isBehaviorModelSupported(),",
+  "what": "桌宠用 Unbound 引擎（窗口模式）时，引擎只拿到一个只读的口子，拿不到桌宠的整个 preload：进入窗口模式不会改摄像头、麦克风、屏幕、电脑的声音、认脸任何一项，也碰不到让她出来（权限包）",
+  "tests": [
+   "tests/unbound-window-engine.test.ts"
+  ]
+ },
+ {
+  "id": "camera-edit-button-never-silent",
+  "part": "unbound",
+  "file": "src/stage/camera-edit-entry.ts",
+  "find": "  if (want && !editing()) say(uiText(CAMERA_EDIT_UNAVAILABLE));",
+  "replace": "  if (false) say(uiText(CAMERA_EDIT_UNAVAILABLE));",
+  "what": "「调整镜头」按钮点了之后，如果舞台没真的进入调整模式，一定告诉用户，不再什么都不发生",
+  "tests": [
+   "tests/window-camera-edit.test.ts"
+  ]
+ },
+ {
+  "id": "I159-card-tap-only-shown",
+  "part": "unbound",
+  "file": "electron/unbound/card-surface.ts",
+  "find": "if (typeof raw.proposalId !== 'string' || raw.proposalId !== this.shownId || typeof raw.choiceId !== 'string') return null;",
+  "replace": "if (typeof raw.proposalId !== 'string' || typeof raw.choiceId !== 'string') return null;",
+  "what": "Unbound 里她身边的卡片：只有正显示的那一张的按钮能点，别的卡片号码点了不会传给主机",
+  "tests": [
+   "tests/unbound-sense-cards.test.ts"
+  ]
+ },
+ {
+  "id": "I159-card-tap-only-out",
+  "part": "unbound",
+  "file": "electron/unbound/card-surface.ts",
+  "find": "if (this.ports.state() !== 'unbound' || !this.shownId) return null;",
+  "replace": "if (!this.shownId) return null;",
+  "what": "她回小窗之后，Unbound 的卡片点击不再传给主机",
+  "tests": [
+   "tests/unbound-sense-cards.test.ts"
+  ]
+ },
+ {
+  "id": "I159-card-show-only-out",
+  "part": "unbound",
+  "file": "electron/unbound/card-surface.ts",
+  "find": "    if (this.ports.state() !== 'unbound') return;\n    if (card.proposalId === this.shownId)",
+  "replace": "    if (card.proposalId === this.shownId)",
+  "what": "她在小窗里时，不会在她身边弹出卡片（卡片只在 Unbound 期间出现）",
+  "tests": [
+   "tests/unbound-sense-cards.test.ts"
+  ]
+ },
+ {
+  "id": "I159-card-never-builds",
+  "part": "unbound",
+  "file": "electron/unbound/card-surface.ts",
+  "find": "if (card.state !== 'open') return; // an update for a card this window never showed",
+  "replace": "",
+  "what": "没显示过的旧卡片的更新，不会让这个窗口弹出一张可点的卡",
+  "tests": [
+   "tests/unbound-sense-cards.test.ts"
+  ]
+ },
+ {
+  "id": "I159-card-own-frame",
+  "part": "unbound",
+  "file": "electron/unbound/card-surface.ts",
+  "find": "return ownId !== null && event.sender.id === ownId && event.senderFrame === event.sender.mainFrame;",
+  "replace": "return true;",
+  "what": "卡片小窗只回答自己窗口、自己顶层页面发来的点击",
+  "tests": [
+   "tests/unbound-sense-cards.test.ts"
+  ]
+ },
+ {
+  "id": "I159-card-window-no-focus",
+  "part": "unbound",
+  "file": "electron/unbound/window-options.ts",
+  "find": "skipTaskbar: true, focusable: false, show: false, alwaysOnTop: true, title: 'soft hearts · Unbound card',",
+  "replace": "skipTaskbar: true, focusable: true, show: false, alwaysOnTop: true, title: 'soft hearts · Unbound card',",
+  "what": "卡片小窗不抢键盘焦点",
+  "tests": [
+   "tests/unbound-sense-cards.test.ts"
+  ]
+ },
+ {
+  "id": "I159-card-window-sandbox",
+  "part": "unbound",
+  "file": "electron/unbound/window-options.ts",
+  "find": "    skipTaskbar: true, focusable: false, show: false, alwaysOnTop: true, title: 'soft hearts · Unbound card',\n    webPreferences: { preload, contextIsolation: true, nodeIntegration: false, sandbox: true,",
+  "replace": "    skipTaskbar: true, focusable: false, show: false, alwaysOnTop: true, title: 'soft hearts · Unbound card',\n    webPreferences: { preload, contextIsolation: true, nodeIntegration: true, sandbox: false,",
+  "what": "卡片小窗的页面沙盒、不带 Node",
+  "tests": [
+   "tests/unbound-sense-cards.test.ts"
+  ]
+ },
+ {
+  "id": "I159-card-api-narrow",
+  "part": "unbound",
+  "file": "electron/unbound/card-preload-api.ts",
+  "find": "      if (!raw || typeof raw.proposalId !== 'string' || typeof raw.choiceId !== 'string') return Promise.reject(new TypeError('choose takes a proposal id and a choice id'));\n      return ipc.invoke(UNBOUND_CARD_CHANNELS.choose, { proposalId: raw.proposalId.slice(0, 120), choiceId: raw.choiceId.slice(0, 20) });",
+  "replace": "      return ipc.invoke(UNBOUND_CARD_CHANNELS.choose, request);",
+  "what": "卡片小窗只能发“卡片号码 + 按钮号码”两个字段，别的东西发不出去",
+  "tests": [
+   "tests/unbound-sense-cards.test.ts"
+  ]
+ },
+ {
+  "id": "I159-card-mirrored-same-choice",
+  "part": "unbound",
+  "file": "electron/brain/chat-settings.ts",
+  "find": "return owner === undefined ? Promise.resolve(null) : this.choose(owner, request);",
+  "replace": "return owner === undefined ? Promise.resolve(null) : this.choose(owner, { ...(request as object), choiceId: 'c0' });",
+  "what": "Unbound 里点的是哪个按钮，主机就按哪个按钮算，不会被换成第一个选项",
+  "tests": [
+   "tests/unbound-sense-cards.test.ts"
+  ]
+ },
+ {
+  "id": "I159-no-off-card-out",
+  "part": "unbound",
+  "file": "electron/brain/chat-settings.ts",
+  "find": "const kept = values.filter(value => value !== 'off');",
+  "replace": "const kept = values;",
+  "what": "她在 Unbound 里时，不给“关掉某项感知”的卡片（那一项会被开回来，卡片会说谎）",
+  "tests": [
+   "tests/unbound-sense-cards.test.ts"
+  ]
+ },
+ {
+  "id": "I159-outside-line-only-out",
+  "part": "unbound",
+  "file": "shared/unbound/outside-line.ts",
+  "find": "return state === 'unbound' ? UNBOUND_OUTSIDE_LINE : '';",
+  "replace": "return UNBOUND_OUTSIDE_LINE;",
+  "what": "只有她在 Unbound 里时，提示词才说“感知都开着、不用点开关”；在小窗时照旧",
+  "tests": [
+   "tests/unbound-sense-cards.test.ts"
+  ]
+ },
+ {
+  "id": "I159-outside-line-in-turn",
+  "part": "unbound",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "unboundOutsideTurnLine() + unboundNoticedLine(i139Chat.cardLanguage(), owner)",
+  "replace": "unboundNoticedLine(i139Chat.cardLanguage(), owner)",
+  "what": "每一轮聊天的上下文里带“她在外面、感知都开着”这一句",
+  "tests": [
+   "tests/unbound-sense-cards.test.ts"
+  ]
+ },
+ {
+  "id": "I159-keep-on-face-no-download",
+  "part": "unbound",
+  "file": "electron/unbound/permission-bundle.ts",
+  "find": "export function keptOnWhileOut(item: BundleItem, face: FaceReadiness): boolean { return item !== 'face' || face.installed; }",
+  "replace": "export function keptOnWhileOut(item: BundleItem, face: FaceReadiness): boolean { return true; }",
+  "what": "她在外面时保持全开，但认脸的组件没装时不会去打开它（打开会开始下载）",
+  "tests": [
+   "tests/unbound-permission-bundle.test.ts",
+   "tests/unbound-sense-cards.test.ts"
+  ]
+ },
+ {
+  "id": "I159-keep-on-reopens",
+  "part": "unbound",
+  "file": "electron/unbound/permission-bundle.ts",
+  "find": "      void this.reopen(item);",
+  "replace": "      void 0;",
+  "what": "Unbound 期间有一项被关掉（语音输入结束、手点关闭等），会被重新打开",
+  "tests": [
+   "tests/unbound-permission-bundle.test.ts",
+   "tests/unbound-sense-cards.test.ts",
+   "tests/unbound-bundle-camera-images.test.ts"
+  ]
+ },
+ {
+  "id": "I159-keep-on-no-loop",
+  "part": "unbound",
+  "file": "electron/unbound/permission-bundle.ts",
+  "find": " || (this.tries.get(item) ?? 0) >= REOPEN_TRIES) continue;",
+  "replace": ") continue;",
+  "what": "一项怎么开都开不起来时，只试几次就放过，不会一秒一次地一直试",
+  "tests": [
+   "tests/unbound-permission-bundle.test.ts",
+   "tests/unbound-sense-cards.test.ts",
+   "tests/unbound-bundle-camera-images.test.ts"
+  ]
+ },
+ {
+  "id": "I159-way-back-restores",
+  "part": "unbound",
+  "file": "electron/unbound/permission-bundle.ts",
+  "find": "const back = session.attempted.filter(item => !session.touched.includes(item) &&",
+  "replace": "const back = session.attempted.filter(item => false &&",
+  "what": "回到小窗时，权限包打开的那几项一定恢复成进来前的样子",
+  "tests": [
+   "tests/unbound-permission-bundle.test.ts",
+   "tests/unbound-sense-cards.test.ts",
+   "tests/unbound-bundle-camera-images.test.ts"
+  ]
+ },
+ {
+  "id": "I159-opened-note-only-opened",
+  "part": "unbound",
+  "file": "electron/unbound/permission-bundle.ts",
+  "find": "const items = outcome.opened.map(item => translate(BUNDLE_NAMES[item])).join(translate('、'));\n  return translate(BUNDLE_COPY.openedNote",
+  "replace": "const items = [...outcome.opened, ...outcome.alreadyOn].map(item => translate(BUNDLE_NAMES[item])).join(translate('、'));\n  return translate(BUNDLE_COPY.openedNote",
+  "what": "进来后的那一行字，只说这次真的打开的项，不把本来就开着的算进去",
+  "tests": [
+   "tests/unbound-sense-cards.test.ts"
+  ]
+ },
+ {
+  "id": "BUNDLE-IMG-in-bundle",
+  "part": "unbound",
+  "file": "electron/unbound/permission-bundle.ts",
+  "find": "Object.freeze(['camera', 'images', 'microphone', 'screen', 'listen', 'face']);",
+  "replace": "Object.freeze(['camera', 'microphone', 'screen', 'listen', 'face']);",
+  "what": "她出来时「发图片」也在权限包里：关着的打开、在外面一直开着、回小窗恢复",
+  "tests": [
+   "tests/unbound-bundle-camera-images.test.ts",
+   "tests/unbound-permission-bundle.test.ts"
+  ]
+ },
+ {
+  "id": "BUNDLE-IMG-own-switch",
+  "part": "unbound",
+  "file": "electron/unbound/permission-bundle.ts",
+  "find": "item === 'images' ? 'camera_images' :",
+  "replace": "item === 'images' ? 'camera_pose' :",
+  "what": "「发图片」走用户自己的「发图片」开关（同样的提示、指示灯、摄像头），不拿别的开关代替",
+  "tests": [
+   "tests/unbound-bundle-camera-images.test.ts",
+   "tests/unbound-permission-bundle.test.ts"
+  ]
+ },
+ {
+  "id": "BUNDLE-IMG-reads-itself",
+  "part": "unbound",
+  "file": "electron/unbound/permission-bundle.ts",
+  "find": "images: facts.cameraImages === true,",
+  "replace": "images: facts.cameraImages === true || facts.cameraPose === true,",
+  "what": "只有「发图片」本身开着才算开着；「姿势识别」开着不能代替它（否则该开的没开、该恢复的没恢复）",
+  "tests": [
+   "tests/unbound-bundle-camera-images.test.ts",
+   "tests/unbound-permission-bundle.test.ts"
+  ]
+ },
+ {
+  "id": "BUNDLE-IMG-page-says-claude",
+  "part": "unbound",
+  "file": "electron/unbound/permission-bundle.ts",
+  "find": "她能通过摄像头看到你，看你时画面会发给 ${ASSISTANT_NAME}。",
+  "replace": "她能通过摄像头看到你。",
+  "what": "说明页写明「发图片」会把画面发给 Claude",
+  "tests": [
+   "tests/unbound-bundle-camera-images.test.ts",
+   "tests/unbound-permission-bundle.test.ts"
+  ]
+ },
+ {
+  "id": "BUNDLE-IMG-asks-again",
+  "part": "unbound",
+  "file": "electron/unbound/permission-bundle.ts",
+  "find": "export const BUNDLE_SIGNATURE = 'unbound-bundle-2:camera-pose,camera-images,microphone,screen,listen-music,face-check';",
+  "replace": "export const BUNDLE_SIGNATURE = 'unbound-bundle-1:camera-pose,microphone,screen,listen-music,face-check';",
+  "what": "权限包多了「发图片」，以前勾过「以后直接进，不再问」的也要再看一次说明页",
+  "tests": [
+   "tests/unbound-bundle-camera-images.test.ts",
+   "tests/unbound-permission-bundle.test.ts"
+  ]
+ },
+ {
+  "id": "BUNDLE-IMG-not-persistent",
+  "part": "unbound",
+  "file": "electron/unbound/permission-bundle.ts",
+  "find": "export const PERSISTENT_ITEMS: readonly BundleItem[] = Object.freeze(['face']);",
+  "replace": "export const PERSISTENT_ITEMS: readonly BundleItem[] = Object.freeze(['face', 'images']);",
+  "what": "「发图片」不跨重启（自己的开关每次启动都是关的）：上次没收好时，下次启动不去关用户在这一次自己开的「发图片」",
+  "tests": [
+   "tests/unbound-bundle-camera-images.test.ts",
+   "tests/unbound-permission-bundle.test.ts"
+  ]
+ },
+ {
+  "id": "I159-ask-again-clears",
+  "part": "unbound",
+  "file": "electron/unbound/entry-store.ts",
+  "find": "if (had) await this.setSkipAsk(null);",
+  "replace": "",
+  "what": "「下次进来时再问我」真的会清掉“以后直接进，不再问”",
+  "tests": [
+   "tests/unbound-sense-cards.test.ts"
+  ]
+ },
+ {
+  "id": "G8-entry-gate-dropped",
+  "part": "unbound",
+  "file": "electron/unbound/entry.ts",
+  "find": "    if (this.ports.allowed && !this.ports.allowed()) return 'unavailable';\n",
+  "replace": "",
+  "what": "入口关着时快捷键、按钮、托盘仍能弹出权限页并让她出来",
+  "tests": [
+   "tests/channel-gates.test.ts"
+  ]
+ },
+ {
+  "id": "G9-gate-holds-coming-back",
+  "part": "unbound",
+  "file": "electron/unbound/entry.ts",
+  "find": "    if (this.ports.state() !== 'normal') { this.wanted = false; this.ports.exit(); return 'back'; }",
+  "replace": "    if (this.ports.allowed && !this.ports.allowed()) return 'unavailable';\n    if (this.ports.state() !== 'normal') { this.wanted = false; this.ports.exit(); return 'back'; }",
+  "what": "入口关着时，已经出来的她回不去小窗",
+  "tests": [
+   "tests/channel-gates.test.ts"
+  ]
+ },
+ {
+  "id": "G10-tray-item-always",
+  "part": "unbound",
+  "file": "electron/unbound/entry.ts",
+  "find": "  return allowed ? 'enter' : null;",
+  "replace": "  return 'enter';",
+  "what": "入口关着时托盘里仍有「让她出来」",
+  "tests": [
+   "tests/channel-gates.test.ts"
+  ]
+ },
+ {
+  "id": "G11-tray-no-back",
+  "part": "unbound",
+  "file": "electron/unbound/entry.ts",
+  "find": "  if (state && state !== 'normal') return 'back';",
+  "replace": "  if (state && state !== 'normal') return allowed ? 'back' : null;",
+  "what": "入口关着时托盘里没有「回到小窗」",
+  "tests": [
+   "tests/channel-gates.test.ts"
+  ]
+ },
+ {
+  "id": "G12-view-gate-missing",
+  "part": "unbound",
+  "file": "electron/unbound/host.ts",
+  "find": "entryAllowed: this.ports.entryAllowed?.() ?? true,",
+  "replace": "entryAllowed: true,",
+  "what": "控制窗口拿不到入口开关，按钮在稳定版里仍然显示",
+  "tests": [
+   "tests/channel-gates.test.ts"
+  ]
+ },
+ {
+  "id": "G13-button-never-hidden",
+  "part": "unbound",
+  "file": "src/unbound/unbound-entry-button.ts",
+  "find": "    const hidden = state === 'normal' && !this.entryAllowed;",
+  "replace": "    const hidden = false;",
+  "what": "入口关着时控制窗口的按钮仍然显示",
+  "tests": [
+   "tests/channel-gates.test.ts"
+  ]
+ },
+ {
+  "id": "G14-button-hidden-while-out",
+  "part": "unbound",
+  "file": "src/unbound/unbound-entry-button.ts",
+  "find": "    const hidden = state === 'normal' && !this.entryAllowed;",
+  "replace": "    const hidden = !this.entryAllowed;",
+  "what": "她在外面时「回到小窗」按钮也被藏起来",
+  "tests": [
+   "tests/channel-gates.test.ts"
+  ]
+ },
+ {
+  "id": "ENTRY1-failed-entry-turns-nothing-on",
+  "part": "unbound",
+  "file": "electron/unbound/entry.ts",
+  "find": "    if (state === 'unbound' && this.wanted) {",
+  "replace": "    if (state !== 'normal' && this.wanted) {",
+  "what": "进入失败（模型没加载完）时不替用户打开任何感知，用户自己开着的也不动",
+  "tests": [
+   "tests/unbound-entry-wait.test.ts",
+   "tests/unbound-permission-bundle.test.ts"
+  ]
+ },
+ {
+  "id": "ENTRY2-wait-forward-only",
+  "part": "unbound",
+  "file": "shared/unbound/entry-wait.ts",
+  "find": "    if (!forward) return false;\n",
+  "replace": "",
+  "what": "进入时的等待只在加载真的往前走时延长，重复的同一条报告不能让它一直等下去",
+  "tests": [
+   "tests/unbound-entry-wait.test.ts"
+  ]
+ },
+ {
+  "id": "ENTRY3-wait-cap",
+  "part": "unbound",
+  "file": "shared/unbound/entry-wait.ts",
+  "find": "    return Math.min(next, this.startedAt + this.limits.capMs);",
+  "replace": "    return next;",
+  "what": "进入时的等待最多 90 秒，一直在爬的加载也会收住并告诉用户",
+  "tests": [
+   "tests/unbound-entry-wait.test.ts"
+  ]
+ },
+ {
+  "id": "ENTRY4-page-start-allowance",
+  "part": "unbound",
+  "file": "shared/unbound/entry-wait.ts",
+  "find": "    const next = this.last ? this.lastForwardAt + this.limits.quietMs : this.startedAt + this.limits.firstMs;",
+  "replace": "    const next = this.lastForwardAt + this.limits.quietMs;",
+  "what": "电脑忙时她的窗口起得慢（量到 13～60 秒），页面开始前给 45 秒，不在 20 秒时掐掉",
+  "tests": [
+   "tests/unbound-entry-wait.test.ts"
+  ]
+ },
+ {
+  "id": "ENTRY5-failed-notice-has-reason",
+  "part": "unbound",
+  "file": "electron/unbound/host.ts",
+  "find": "      open: () => this.open().catch((error: unknown) => { this.error = error instanceof Error ? error.message : String(error); throw error; }), restored:",
+  "replace": "      open: () => this.open(), restored:",
+  "what": "「她没能出来」的提示里写着为什么（原来这里是空的，原因只在开发者面板里）",
+  "tests": [
+   "tests/unbound-entry-wait.test.ts"
+  ]
+ },
+ {
+  "id": "CALLBTN1-any-window-may-ask",
+  "part": "unbound",
+  "file": "electron/unbound/input-call.ts",
+  "find": "event.sender.id === win.webContents.id && ",
+  "replace": "",
+  "what": "打电话按钮的请求只认输入框自己的窗口（别的窗口问不动）",
+  "tests": [
+   "tests/unbound-input-call.test.ts"
+  ]
+ },
+ {
+  "id": "CALLBTN2-any-frame-may-ask",
+  "part": "unbound",
+  "file": "electron/unbound/input-call.ts",
+  "find": " && event.senderFrame === event.sender.mainFrame;",
+  "replace": ";",
+  "what": "打电话按钮的请求只认输入框的顶层页面（子页面问不动）",
+  "tests": [
+   "tests/unbound-input-call.test.ts"
+  ]
+ },
+ {
+  "id": "CALLBTN3-call-starts-at-home",
+  "part": "unbound",
+  "file": "electron/unbound/input-call.ts",
+  "find": "if (on && state() !== 'unbound') return",
+  "replace": "if (false) return",
+  "what": "她不在外面时输入框不能开始通话（只能挂断）",
+  "tests": [
+   "tests/unbound-input-call.test.ts"
+  ]
+ },
+ {
+  "id": "CALLBTN4-other-owner",
+  "part": "unbound",
+  "file": "electron/unbound/input-call.ts",
+  "what": "输入框的打电话走和桌宠按钮同一条路：宿主是她的小窗（麦克风在外面时也在那里）（no-pet-ok: 'pet' 是通话主人的取值）",
+  "find": "host.set('pet', on, 'button')",
+  "replace": "host.set('controls', on, 'button')",
+  "tests": [
+   "tests/unbound-input-call.test.ts"
+  ]
+ },
+ {
+  "id": "CALLBTN5-non-boolean",
+  "part": "unbound",
+  "file": "electron/unbound/input-call.ts",
+  "find": "if (typeof on !== 'boolean') return",
+  "replace": "if (false) return",
+  "what": "只有真正的布尔值才能开始 / 结束通话",
+  "tests": [
+   "tests/unbound-input-call.test.ts"
+  ]
+ },
+ {
+  "id": "CALLBTN6-label-never-follows",
+  "part": "unbound",
+  "file": "src/unbound/input.ts",
+  "find": "callButton.textContent = uiText(on ? '挂断' : '打电话');",
+  "replace": "callButton.textContent = uiText('打电话');",
+  "what": "按钮字样跟着通话状态：通话中显示「挂断」",
+  "tests": [
+   "tests/unbound-input-call.test.ts"
+  ]
+ },
+ {
+  "id": "CALLBTN7-press-always-starts",
+  "part": "unbound",
+  "file": "src/unbound/input.ts",
+  "find": "await api.call(!callOn)",
+  "replace": "await api.call(true)",
+  "what": "通话中再按一次是挂断，不是再开一个",
+  "tests": [
+   "tests/unbound-input-call.test.ts"
+  ]
+ },
+ {
+  "id": "CALLBTN8-state-accepts-anything",
+  "part": "unbound",
+  "file": "electron/unbound/input-preload-api.ts",
+  "find": "callback(value === true)",
+  "replace": "callback(!!value)",
+  "what": "通话状态事件只有真正的 true 才算开着",
+  "tests": [
+   "tests/unbound-input-call.test.ts"
+  ]
+ },
+ {
+  "id": "window-pull-own-hit",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-pull.ts",
+  "find": "    if (!figure || !hit || this.issued.get(hit) !== figure) return false;",
+  "replace": "    if (!figure || !hit) return false;",
+  "what": "桌宠用 Unbound 引擎时拉她：只有这个窗口刚在她身上点中的那一下、而且是现在这个模型，才能开始拉；编出来的、换模型前的点中都不算",
+  "tests": [
+   "tests/unbound-window-pull.test.ts"
+  ]
+ },
+ {
+  "id": "window-pull-only-shown",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-pull.ts",
+  "find": "    const figure = this.ports.shown() ? this.ports.figure() : null;",
+  "replace": "    const figure = this.ports.figure();",
+  "what": "桌宠用 Unbound 引擎时拉她：窗口藏起来（或页面不可见）时点不中她",
+  "tests": [
+   "tests/unbound-window-pull.test.ts"
+  ]
+ },
+ {
+  "id": "window-pull-not-asleep",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-pull.ts",
+  "find": "  private gates() { return pullGatesOf(this.ports.mood(), this.ports.handBusy()); }",
+  "replace": "  private gates() { return { asleep: false, peeking: false, handBusy: this.ports.handBusy() }; }",
+  "what": "桌宠用 Unbound 引擎时拉她：她睡着时拉不动，拉着的时候睡着了就松开",
+  "tests": [
+   "tests/unbound-window-pull.test.ts"
+  ]
+ },
+ {
+  "id": "window-physics-saved-switch",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-physics.ts",
+  "find": "      && ((s.hair.enabled && s.hair.strength > 0 && support.hair.supported) ||",
+  "replace": "      && ((s.hair.strength > 0 && support.hair.supported) ||",
+  "what": "桌宠用 Unbound 引擎时的头发物理：只照你存的开关开，关着就不载入、不动",
+  "tests": [
+   "tests/unbound-window-physics.test.ts"
+  ]
+ },
+ {
+  "id": "window-physics-touch-as-given",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-physics.ts",
+  "find": "    this.figure?.configureJelly(now);",
+  "replace": "    this.figure?.configureJelly({ ...now, touchSoft: { enabled: true, strength: 1 } });",
+  "what": "桌宠用 Unbound 引擎时的「碰了才软」：完全照主机定的（稳定版你没打开就是关），窗口自己不会打开",
+  "tests": [
+   "tests/unbound-window-physics.test.ts"
+  ]
+ },
+ {
+  "id": "window-physics-fade-not-snap",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-physics.ts",
+  "find": "    this.physics?.configure(now);",
+  "replace": "    if (!now.hair.enabled && !now.chest.enabled) { this.figure?.attachPhysics(null); this.physics = null; } else this.physics?.configure(now);",
+  "what": "桌宠用 Unbound 引擎时关掉头发物理：物理自己淡出，不一下子拆掉（头发不跳）",
+  "tests": [
+   "tests/unbound-window-physics.test.ts"
+  ]
+ },
+ {
+  "id": "window-pace-floor",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-pace.ts",
+  "find": "    const frame = acceptStageFrame(this.previous, now, decision.fps, surface, this.due);",
+  "replace": "    const frame = acceptStageFrame(this.previous, now, decision.fps / 2, surface, this.due);",
+  "what": "桌宠用 Unbound 引擎时你不在：少画，但不低于旧舞台的下限（设置和 24 帧取小的那个）",
+  "tests": [
+   "tests/unbound-window-pace.test.ts"
+  ]
+ },
+ {
+  "id": "window-pace-mid-move",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-pace.ts",
+  "find": "    if (reason) this.tracker.note(now, reason);",
+  "replace": "",
+  "what": "桌宠用 Unbound 引擎时你不在：她在动（被摸、被拉、说话、调镜头、淡入淡出、身体或头发转得快）时照常全速画，动完 1.5 秒后才少画",
+  "tests": [
+   "tests/unbound-window-pace.test.ts"
+  ]
+ },
+ {
+  "id": "SB-U1-beats-over-priority",
+  "part": "unbound",
+  "file": "src/unbound/speech-beat-player.ts",
+  "find": "    if (!allowed) {",
+  "replace": "    if (false) {",
+  "what": "边说边演：拉她、偷看、她自己的动作时，Unbound 里的拍子照样开始、照样写目标",
+  "tests": [
+   "tests/speech-beats-unbound.test.ts"
+  ]
+ },
+ {
+  "id": "window-face-blush-off",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-face.ts",
+  "find": "  blushOff(): boolean { return this.capabilities()?.blush?.choice === 'off'; }",
+  "replace": "  blushOff(): boolean { return false; }",
+  "what": "桌宠用 Unbound 引擎时：你在角色页关了\"能脸红\"，她就不脸红（不画红晕、不用她自己的脸红表情）",
+  "tests": [
+   "tests/unbound-window-face.test.ts"
+  ]
+ },
+ {
+  "id": "window-face-card-eyelids",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-face.ts",
+  "find": "    return rig.reviewed ? card?.closeEyes?.choice !== 'off' : capabilityEnabled(card, 'closeEyes') && rig.slots.blink !== undefined;",
+  "replace": "    return rig.reviewed ? card?.closeEyes?.choice !== 'off' : rig.slots.blink !== undefined;",
+  "what": "桌宠用 Unbound 引擎时：别的模型只有体检卡开了\"能闭眼\"才有疲倦的眼皮（审过的 Gene 照旧，除非你关了）",
+  "tests": [
+   "tests/unbound-window-face.test.ts"
+  ]
+ },
+ {
+  "id": "window-face-card-drowsy",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-face.ts",
+  "find": "    return rig.reviewed ? card?.drowsyFace?.choice !== 'off' : capabilityEnabled(card, 'drowsyFace');",
+  "replace": "    return rig.reviewed ? card?.drowsyFace?.choice !== 'off' : true;",
+  "what": "桌宠用 Unbound 引擎时：别的模型只有体检卡开了\"困的脸\"才做困的脸",
+  "tests": [
+   "tests/unbound-window-face.test.ts"
+  ]
+ },
+ {
+  "id": "window-face-preview-gate",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-face.ts",
+  "find": "    if (!this.rig || !view?.expressions || !view.parameters.blush.enabled || this.blocks.face) return false;",
+  "replace": "    if (!this.rig) return false;",
+  "what": "桌宠用 Unbound 引擎时：红晕滑条的预览只在自动表现开着、脸红开着、没有手选表情时才显示",
+  "tests": [
+   "tests/unbound-window-face.test.ts"
+  ]
+ },
+ {
+  "id": "window-face-accent-no-mouth",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-face.ts",
+  "find": "      const ok = (slot: MorphSlot) => { const index = rig.slots[slot]; return index !== undefined && !rig.mouthShapes.includes(index); };",
+  "replace": "      const ok = (slot: MorphSlot) => { const index = rig.slots[slot]; return index !== undefined; };",
+  "what": "桌宠用 Unbound 引擎时：说话时脸上的小表情从不写嘴的形状（嘴留给口型）",
+  "tests": [
+   "tests/unbound-window-face.test.ts"
+  ]
+ },
+ {
+  "id": "window-face-accent-touch-yields",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-face.ts",
+  "find": "      const out = face.frame(dt, { face: env.shown && expressive && !blocks.face && !direct && !env.adjusting,",
+  "replace": "      const out = face.frame(dt, { face: env.shown && expressive && !blocks.face && !env.adjusting,",
+  "what": "桌宠用 Unbound 引擎时：你摸她的时候，说话时的小表情让开（从现在的样子慢慢收回）",
+  "tests": [
+   "tests/unbound-window-face.test.ts"
+  ]
+ },
+ {
+  "id": "window-face-thinking-touch-yields",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-face.ts",
+  "find": "      const shown = !!view && view.expressions === true && s?.phase === 'idle' && env.shown && !env.voiced && !env.adjusting && !direct",
+  "replace": "      const shown = !!view && view.expressions === true && s?.phase === 'idle' && env.shown && !env.voiced && !env.adjusting",
+  "what": "桌宠用 Unbound 引擎时：你摸她的时候不做等回复的思考样子",
+  "tests": [
+   "tests/unbound-window-face.test.ts"
+  ]
+ },
+ {
+  "id": "window-face-new-scope-drops",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-face.ts",
+  "find": "      this.feedback.reset(); this.fatigue.reset(); this.drowsy.reset(); this.speech?.cancel('new-scope'); this.expressions.release();",
+  "replace": "      this.feedback.reset(); this.fatigue.reset(); this.drowsy.reset(); this.speech?.cancel('new-scope');",
+  "what": "桌宠用 Unbound 引擎时：换了对话或角色，上一段还没演完的表情不带过来（慢慢收掉）",
+  "tests": [
+   "tests/unbound-window-face.test.ts"
+  ]
+ },
+ {
+  "id": "window-expression-not-asleep",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-expression.ts",
+  "find": "    if (gates.asleep) return { ok: false, reason: 'asleep' };",
+  "replace": "",
+  "what": "桌宠用 Unbound 引擎时：她睡着时不开始新的表情（「边说边演」的入口）",
+  "tests": [
+   "tests/unbound-window-face.test.ts"
+  ]
+ },
+ {
+  "id": "window-expression-mouth-yields",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-expression.ts",
+  "find": "    this.easeMouth(speech ? 0 : 1, step);",
+  "replace": "    this.easeMouth(1, step);",
+  "what": "桌宠用 Unbound 引擎时：她说话或马上要说话时，表情里嘴的形状让给口型（慢慢让开）",
+  "tests": [
+   "tests/unbound-window-face.test.ts"
+  ]
+ },
+ {
+  "id": "window-life-mood-owns-pat",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-life.ts",
+  "find": "    const patted = this.patted, face = input.face ?? null, simplePat = patted && !face?.ownsPat;",
+  "replace": "    const patted = this.patted, face = input.face ?? null, simplePat = patted;",
+  "what": "桌宠用 Unbound 引擎时：有心情时摸头的脸由心情决定（按心情和舒服程度），简版摸头的笑和抬头让开，不叠两份",
+  "tests": [
+   "tests/unbound-window-face.test.ts"
+  ]
+ },
+ {
+  "id": "window-beats-not-asleep",
+  "part": "unbound",
+  "file": "src/unbound/speech-beat-player.ts",
+  "find": "  if (!isSpeechBeatWord(word) || !gates.shown || gates.asleep) return false;",
+  "replace": "  if (!isSpeechBeatWord(word) || !gates.shown) return false;",
+  "what": "桌宠用 Unbound 引擎时：边说边演的拍子，她睡着或窗口藏着时不开始",
+  "tests": [
+   "tests/unbound-window-face.test.ts"
+  ]
+ },
+ {
+  "id": "window-beats-arms-held",
+  "part": "unbound",
+  "file": "src/unbound/speech-beat-player.ts",
+  "find": "  return !(SPEECH_BEAT_HAND_WORDS.has(word) && gates.armsHeld);",
+  "replace": "  return true;",
+  "what": "桌宠用 Unbound 引擎时：你在拉她或牵着她的手时，边说边演里手放脸边、比 V 不开始",
+  "tests": [
+   "tests/unbound-window-face.test.ts"
+  ]
+ },
+ {
+  "id": "window-pinch-needs-view",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-pinch.ts",
+  "find": "    if (!view) { this.motion.reset(); this.latest = null; return NO_PINCH; }",
+  "replace": "",
+  "what": "桌宠用 Unbound 引擎时：没有心情视图（换对话、丢了作用域）时捏脸不回应，和旧舞台一样",
+  "tests": [
+   "tests/unbound-window-touch.test.ts"
+  ]
+ },
+ {
+  "id": "window-pinch-face-owned",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-pinch.ts",
+  "find": "      smile: blocks.face ? 0 : f.smile, lids: blocks.face ? 0 : f.eyelids, active: true,",
+  "replace": "      smile: f.smile, lids: f.eyelids, active: true,",
+  "what": "桌宠用 Unbound 引擎时：手选表情占着脸时，捏脸挑的脸（笑、眯眼）让开，头照样跟着手",
+  "tests": [
+   "tests/unbound-window-touch.test.ts"
+  ]
+ },
+ {
+  "id": "window-pinch-head-owned",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-pinch.ts",
+  "find": "const h = Number.isFinite(heightM) && heightM > 0 ? heightM : 1.6, head = !blocks.head;",
+  "replace": "const h = Number.isFinite(heightM) && heightM > 0 ? heightM : 1.6, head = true;",
+  "what": "桌宠用 Unbound 引擎时：手选的头部动作占着头时，捏脸不转头、不弯脖子",
+  "tests": [
+   "tests/unbound-window-touch.test.ts"
+  ]
+ },
+ {
+  "id": "window-cheeks-reviewed-only",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-blush.ts",
+  "find": "  const reviewed = reviewedGene && (Object.keys",
+  "replace": "  const reviewed = (Object.keys",
+  "what": "桌宠用 Unbound 引擎时：只有审过的 Gene 且校准是默认的才用避开眼鼻嘴的脸颊区域，别的模型用原来的椭圆",
+  "tests": [
+   "tests/unbound-window-touch.test.ts"
+  ]
+ },
+ {
+  "id": "window-mouth-feed-composes",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-body.ts",
+  "find": "speaking => composeFeedMouth(speaking, feed.value, feed.owner)",
+  "replace": "speaking => Math.max(speaking, feed.value)",
+  "what": "桌宠用 Unbound 引擎时：零食在嘴边时口型让开（按喂食的权重慢慢让），不叠在零食的嘴上",
+  "tests": [
+   "tests/unbound-window-touch.test.ts"
+  ]
+ },
+ {
+  "id": "window-gaze-checked",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-gaze.ts",
+  "find": "    const reading = parseUserGazeReading(value);",
+  "replace": "    const reading = value as UserGazeReading | null;",
+  "what": "桌宠用 Unbound 引擎时：主机给的\"你在哪\"先检查，格式不对就当没有",
+  "tests": [
+   "tests/unbound-window-lively.test.ts"
+  ]
+ },
+ {
+  "id": "window-gaze-fresh",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-gaze.ts",
+  "find": "  get fresh(): boolean { return !!this.held && this.t - this.held.at <= USER_GAZE_FRESH_S; }",
+  "replace": "  get fresh(): boolean { return !!this.held; }",
+  "what": "桌宠用 Unbound 引擎时：姿势识别的读数只用 3 秒，没有新的就回到看鼠标（不留着）",
+  "tests": [
+   "tests/unbound-window-lively.test.ts"
+  ]
+ },
+ {
+  "id": "window-gaze-forget",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-gaze.ts",
+  "find": "  forget(): void { this.held = null; }",
+  "replace": "  forget(): void {}",
+  "what": "桌宠用 Unbound 引擎时：藏起来、换模型时马上忘掉你在哪",
+  "tests": [
+   "tests/unbound-window-lively.test.ts"
+  ]
+ },
+ {
+  "id": "window-look-aim-not-asleep",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-life.ts",
+  "find": "    const aim = input.aim && gaze?.allowed !== false ? input.aim : null;",
+  "replace": "    const aim = input.aim ?? null;",
+  "what": "桌宠用 Unbound 引擎时：睡着时不因为姿势识别去看你",
+  "tests": [
+   "tests/unbound-window-lively.test.ts"
+  ]
+ },
+ {
+  "id": "window-life-switch",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-proc-life.ts",
+  "find": "    life.frame(dt, { enabled: this.enabled,",
+  "replace": "    life.frame(dt, { enabled: true,",
+  "what": "桌宠用 Unbound 引擎时：「程序化小动作与表情」关掉就慢慢收掉",
+  "tests": [
+   "tests/unbound-window-lively.test.ts"
+  ]
+ },
+ {
+  "id": "window-life-mouth-yields",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-proc-life.ts",
+  "find": "    if (!input.mouthBusy) { put('mouthSmile', o.mouthSmile); put('o', o.mouthOpen); }",
+  "replace": "    { put('mouthSmile', o.mouthSmile); put('o', o.mouthOpen); }",
+  "what": "桌宠用 Unbound 引擎时：说话或吃零食时，程序生命的抿嘴笑、小\"o\"让开",
+  "tests": [
+   "tests/unbound-window-lively.test.ts"
+  ]
+ },
+ {
+  "id": "window-sleep-card",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-sleep.ts",
+  "find": "allowed: input.capable && !input.headOwned && (preview || posture),",
+  "replace": "allowed: !input.headOwned && (preview || posture),",
+  "what": "桌宠用 Unbound 引擎时：体检卡关了\"能做睡姿\"就不低头打盹",
+  "tests": [
+   "tests/unbound-window-lively.test.ts"
+  ]
+ },
+ {
+  "id": "window-sleep-head-owned",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-sleep.ts",
+  "find": "allowed: input.capable && !input.headOwned && (preview || posture),",
+  "replace": "allowed: input.capable && (preview || posture),",
+  "what": "桌宠用 Unbound 引擎时：手选的头部动作或拉她占着头时，睡姿让开",
+  "tests": [
+   "tests/unbound-window-lively.test.ts"
+  ]
+ },
+ {
+  "id": "window-sleep-body-card",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-sleep.ts",
+  "find": "      sleepPose: input.capable, camera: this.local,",
+  "replace": "      sleepPose: true, camera: this.local,",
+  "what": "桌宠用 Unbound 引擎时：体检卡关了\"能做睡姿\"就不跪坐、不躺下",
+  "tests": [
+   "tests/unbound-window-lively.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "SP10-hold-cap-short",
+  "file": "src/unbound/speech-beat-hold.ts",
+  "find": "    beat.dur = SPEECH_BEAT_TIMING.holdCapMs / 1000;",
+  "replace": "    beat.dur = 2.2;",
+  "what": "边说边演（Unbound）：表情没有挂着，仍按原来的固定时间落下去",
+  "tests": [
+   "tests/speech-beats-span.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "SP11-hold-no-takeover",
+  "file": "src/unbound/speech-beat-hold.ts",
+  "find": "      for (const entry of this.held) if (entry.channel === channel && entry.minS === 0) this.letGo(entry.beat, clock);\n",
+  "replace": "",
+  "what": "边说边演（Unbound）：同一条通道的下一拍来了，前一个挂着的表情不让位（要等上限）",
+  "tests": [
+   "tests/speech-beats-span.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "SP12-player-end-no-release",
+  "file": "src/unbound/speech-beat-player.ts",
+  "find": "    if (this.span.ended(this.clockMs)) this.releaseHeld(); // her speaking of this reply is over: what stayed up falls\n",
+  "replace": "",
+  "what": "边说边演（Unbound）：她说完了，挂着的表情不落下去",
+  "tests": [
+   "tests/speech-beats-span.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "SP13-player-cancel-no-release",
+  "file": "src/unbound/speech-beat-player.ts",
+  "find": "  cancel(): void { this.schedule.cancel(); this.span.cancel(); this.lines.clear(); this.releaseHeld(); this.cancelled(); this.lighter = []; this.waiting = []; this.frameAsks = []; this.close?.cancel(); }",
+  "replace": "  cancel(): void { this.schedule.cancel(); this.span.cancel(); this.lines.clear(); this.cancelled(); this.lighter = []; this.waiting = []; this.frameAsks = []; this.close?.cancel(); }",
+  "what": "边说边演（Unbound）：停止时挂着的表情不放手",
+  "tests": [
+   "tests/speech-beats-span.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "SP14-window-asleep-no-release",
+  "file": "src/unbound/window-mode/window-beats.ts",
+  "find": "    if (gates.asleep) this.releaseSpan(); // asleep: what stayed up falls at once\n",
+  "replace": "",
+  "what": "边说边演（Unbound 窗口）：她睡着了，挂着的表情不落下去",
+  "tests": [
+   "tests/speech-beats-span.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "SP15-window-hold-ignored",
+  "file": "src/unbound/window-mode/window-beats.ts",
+  "find": "    this.held.hold(word, played, this.performer.clock, span);",
+  "replace": "    this.held.hold(word, played, this.performer.clock, false);",
+  "what": "边说边演（Unbound 窗口）：表情不挂着，按原来的固定时间落下去",
+  "tests": [
+   "tests/speech-beats-span.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-games-hands-not-in-game",
+  "file": "src/unbound/window-mode/window-games.ts",
+  "find": "    if (this.rps?.active || this.give?.active) return false;\n    this.hands.start(cue); return true;",
+  "replace": "    this.hands.start(cue); return true;",
+  "what": "桌宠用 Unbound 引擎时：猜拳或递东西占着她的手时，她不伸手来牵你（旧舞台的规则）",
+  "tests": [
+   "tests/unbound-window-games.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-games-near-not-in-game",
+  "file": "src/unbound/window-mode/window-games.ts",
+  "find": "  handsNear(camera: Camera | null): boolean { return !this.rps?.active && !this.give?.active && this.hands.near(camera, this.owner); }",
+  "replace": "  handsNear(camera: Camera | null): boolean { return this.hands.near(camera, this.owner); }",
+  "what": "桌宠用 Unbound 引擎时：猜拳或递东西时，鼠标停在她手边也不算\"可以牵手\"",
+  "tests": [
+   "tests/unbound-window-games.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-games-arms-held",
+  "file": "src/unbound/window-mode/window-games.ts",
+  "find": "  armsHeld(pulled: boolean): boolean { return pulled || this.busy; }",
+  "replace": "  armsHeld(pulled: boolean): boolean { return pulled; }",
+  "what": "桌宠用 Unbound 引擎时：猜拳、递东西、牵手占着她的手时，边说边演的手势（手放脸边、比 V）不开始",
+  "tests": [
+   "tests/unbound-window-games.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-give-picture-hidden",
+  "file": "src/unbound/window-mode/window-stage-games.ts",
+  "find": "    const parts = this.gameView().shown ? this.pictureParts() : null;",
+  "replace": "    const parts = this.pictureParts();",
+  "what": "桌宠用 Unbound 引擎时：窗口藏起来时不给她拍\"送你一张图\"（只拍她自己，从不拍摄像头或屏幕）",
+  "tests": [
+   "tests/unbound-window-games.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-aim-catches-up-first",
+  "file": "src/unbound/arm-reach.ts",
+  "find": "        side.tracking = t.pose === 'aim' && t.weight <= 0.05 && side.weight.value < ARM_DOWN;",
+  "replace": "        side.tracking = t.pose === 'aim';",
+  "what": "桌宠用 Unbound 引擎时：手刚放下又要猜拳，手臂按平常的速度抬起来，不是一下子追到游戏已经到的位置",
+  "tests": [
+   "tests/unbound-window-games.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-pull-after-reach",
+  "file": "src/unbound/figure.ts",
+  "find": "    if (this.reach.active) { this.mesh.updateMatrixWorld(true); this.reach.apply(bone => this.remember(bone)); } // showcase: hands, after the body they ride on\n    if (this.pulling.engaged) this.framePull(delta); // step 5: after the body it rides on, before her feet (the lean moves her weight; the gait steps)",
+  "replace": "    if (this.pulling.engaged) this.framePull(delta); // step 5: after the body it rides on, before her feet (the lean moves her weight; the gait steps)\n    if (this.reach.active) { this.mesh.updateMatrixWorld(true); this.reach.apply(bone => this.remember(bone)); } // showcase: hands, after the body they ride on",
+  "what": "你拉她的手优先：拉她写在手臂够取之后，猜拳举着的手也跟着你的手走",
+  "tests": [
+   "tests/unbound-window-games.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-chat-typing-yields",
+  "file": "src/unbound/window-mode/window-motions.ts",
+  "find": "    return env.give || env.hands || env.behaviorBlocked || env.typing || env.adjusting",
+  "replace": "    return env.give || env.hands || env.behaviorBlocked || env.adjusting",
+  "what": "桌宠用 Unbound 引擎时：你在给她打字时她的聊天手势让开（交还给平常的姿势），不开始新的",
+  "tests": [
+   "tests/unbound-window-motions.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-action-contact-busy",
+  "file": "src/unbound/window-mode/window-motions.ts",
+  "find": "    if (env.pat || env.feeding || env.pinch || env.hover || env.pulled) return HER_ACTION_DETAILS.contact;",
+  "replace": "",
+  "what": "桌宠用 Unbound 引擎时：你正在摸她、喂她、捏脸或拉她时，她的动作不开始，并如实告诉主机\"你正在摸她或喂她\"",
+  "tests": [
+   "tests/unbound-window-motions.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-face-action-speech-busy",
+  "file": "src/unbound/window-mode/window-motions.ts",
+  "find": "    if (scope === 'mouth' && (env.speaking || env.preparing)) return HER_ACTION_DETAILS.speaking;",
+  "replace": "",
+  "what": "桌宠用 Unbound 引擎时：她在说话时嘴的表情动作（鼓腮、撅嘴、吐舌头）不开始，嘴归口型",
+  "tests": [
+   "tests/unbound-window-motions.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-her-action-reports",
+  "file": "src/unbound/window-mode/window-motions.ts",
+  "find": "      void this.host.reportHerAction({ cueId: cue.id, status, missing, detail })?.catch?.(() => {});",
+  "replace": "",
+  "what": "桌宠用 Unbound 引擎时：每个\"她的动作\"都把结果（做了 / 缺部位 / 不合适 / 忙 / 失败）告诉主机，主机不用干等到超时",
+  "tests": [
+   "tests/unbound-window-motions.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-clips-hand-back",
+  "file": "src/unbound/window-mode/window-clips.ts",
+  "find": "    if (this.inFrame) this.startBridge(shown, tracks, rates); else this.queued.push({ shown, tracks: [...tracks], rates });",
+  "replace": "",
+  "what": "桌宠用 Unbound 引擎时：聊天手势、自动身体动作被打断（打字、摸她、挪窗口）时，从显示着的姿势平滑交还给平常的姿势，不一帧跳回",
+  "tests": [
+   "tests/unbound-window-motions.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-clips-hand-back-speed",
+  "file": "src/unbound/window-mode/window-clips.ts",
+  "find": "    this.rates.record(this.shown, delta);\n",
+  "replace": "",
+  "what": "窗口和全屏的交还桥不再带上动作当时的速度：手势在手腕快速转动时让开，手臂会一下急停（2026-11-21 交还带速度）",
+  "tests": [
+   "tests/motion-handback-velocity.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-clips-hand-back-speed-forgotten",
+  "file": "src/unbound/window-mode/window-clips.ts",
+  "find": "this.shown.clear(); this.rates.clear(); this.chatYield = false;",
+  "replace": "this.shown.clear(); this.chatYield = false;",
+  "what": "藏起来（全部立刻停）后还记着之前的速度：再交还时桥会凭空带上藏起来以前的速度",
+  "tests": [
+   "tests/motion-handback-velocity.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-reaction-asleep",
+  "file": "src/unbound/window-mode/window-motions.ts",
+  "find": "      asleep: env.asleep || view?.fatigue?.sleeping === true || phase === 'falling-asleep' || phase === 'asleep' || phase === 'micro-awake',",
+  "replace": "      asleep: false,",
+  "what": "桌宠用 Unbound 引擎时：她睡着（或正在入睡）时不对你的哈欠、伸懒腰、挥手做反应",
+  "tests": [
+   "tests/unbound-window-motions.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-hidden-stops",
+  "file": "src/unbound/window-mode/window-motions.ts",
+  "find": "    if (clips && (clips.moving || clips.behavior?.getState().active)) clips.stopAll();",
+  "replace": "",
+  "what": "桌宠用 Unbound 引擎时：窗口藏起来（没在画）时她的手势、动作、自动身体动作马上停，不留着等再出现时接着演",
+  "tests": [
+   "tests/unbound-window-motions.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-music-own-switch",
+  "file": "src/unbound/window-mode/window-music.ts",
+  "find": "  if (!hearing || !sample || typeof sample !== 'object') return false;",
+  "replace": "  if (!sample || typeof sample !== 'object') return false;",
+  "what": "桌宠用 Unbound 引擎时：跟音乐只经你自己的「和她一起听」开关；开关关着时来的声音样本不算，她不动、不判断、不记歌",
+  "tests": [
+   "tests/unbound-window-life.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-music-speech-yields",
+  "file": "src/unbound/window-mode/window-music.ts",
+  "find": "env.speaking ? 'speech' : ",
+  "replace": "",
+  "what": "桌宠用 Unbound 引擎时：她说话时跟音乐的舞让开（慢慢收）",
+  "tests": [
+   "tests/unbound-window-life.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-music-touch-yields",
+  "file": "src/unbound/window-mode/window-music.ts",
+  "find": "env.touched ? 'direct-interaction' : ",
+  "replace": "",
+  "what": "桌宠用 Unbound 引擎时：你摸她、喂她、捏脸、指着她或拉她时跟音乐的舞让开",
+  "tests": [
+   "tests/unbound-window-life.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-music-asleep-yields",
+  "file": "src/unbound/window-mode/window-music.ts",
+  "find": "env.asleep ? 'asleep' : ",
+  "replace": "",
+  "what": "桌宠用 Unbound 引擎时：她睡着的身体占着她时不跟音乐跳",
+  "tests": [
+   "tests/unbound-window-life.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-music-hidden-resets",
+  "file": "src/unbound/window-mode/window-music.ts",
+  "find": "    this.reason = 'hidden'; this.suppressed = true;",
+  "replace": "    return;",
+  "what": "桌宠用 Unbound 引擎时：窗口藏起来（没在画）时跟音乐的舞和点头马上清掉，不再写骨头",
+  "tests": [
+   "tests/unbound-window-life.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-life-music-engaged",
+  "file": "src/unbound/window-mode/window-motions.ts",
+  "find": "        || !!view?.gesture || env.showing || env.music === true,",
+  "replace": "        || !!view?.gesture || env.showing,",
+  "what": "桌宠用 Unbound 引擎时：她跟音乐跳的时候算「你在」，她自己的生活让开（旧舞台的 gates.music）",
+  "tests": [
+   "tests/unbound-window-life.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-herlife-arms-yield",
+  "file": "src/unbound/window-mode/window-her-life.ts",
+  "find": "    bodyOwned: base.bodyOwned || extra.reactionHoldsBody || extra.armsHeld,",
+  "replace": "    bodyOwned: base.bodyOwned,",
+  "what": "桌宠用 Unbound 引擎时：伸懒腰、挥手的反应，猜拳、递东西、牵手占着她的手臂时，她自己生活里的托腮、趴着让开",
+  "tests": [
+   "tests/unbound-window-life.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-tears-card-off",
+  "file": "src/unbound/window-mode/window-tears.ts",
+  "find": "  return { gene: reviewedGene && !off,",
+  "replace": "  return { gene: reviewedGene,",
+  "what": "桌宠用 Unbound 引擎时：角色页关了\"能流泪\"，审过的 Gene 也不流泪（I-024）",
+  "tests": [
+   "tests/unbound-window-life.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-tears-adjusting",
+  "file": "src/unbound/window-mode/window-tears.ts",
+  "find": "      allowed: view.expressions && !input.adjusting,",
+  "replace": "      allowed: view.expressions,",
+  "what": "桌宠用 Unbound 引擎时：挪窗口、调镜头时不开始哭，正在哭的停下",
+  "tests": [
+   "tests/unbound-window-life.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "window-under-restore",
+  "file": "src/unbound/window-mode/window-under-layer.ts",
+  "find": "    for (const [bone, memo] of this.memo) if (memo.held) {",
+  "replace": "    for (const [bone, memo] of this.memo) if (memo.held && false) {",
+  "what": "桌宠用 Unbound 引擎时：托腮和跟音乐的舞写在骨头上的每一帧都放回去，不越积越多",
+  "tests": [
+   "tests/unbound-window-life.test.ts"
+  ]
+ },
+ {
+  "id": "window-preview-narrow-port",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/preview-port.ts",
+  "find": "export function windowPreviewGrants(desktop: WindowPreviewGrants): WindowPreviewGrants {\n  return Object.freeze({",
+  "replace": "export function windowPreviewGrants(desktop: WindowPreviewGrants): WindowPreviewGrants {\n  return desktop; return Object.freeze({",
+  "what": "控制窗口的预览换成 Unbound 引擎时，只拿到预览自己的几个授权（预览回执、表情 / 姿势的授权、动作库的预览文件、模型档案），拿不到控制窗口的整个 preload：不会改摄像头、麦克风、屏幕、电脑的声音、认脸，也碰不到让她出来",
+  "tests": [
+   "tests/unbound-window-preview.test.ts"
+  ]
+ },
+ {
+  "id": "window-preview-no-report",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/preview-port.ts",
+  "find": "    reportHerAction: async () => { /* the companion window answers the host (the old stage reports only there) */ },",
+  "replace": "    reportHerAction: (outcome: never) => (desktop as never as WindowStageHost).reportHerAction(outcome),",
+  "what": "控制窗口的预览不替桌宠回报「她的动作」（只有桌宠窗口回答主机，和旧舞台一样）",
+  "tests": [
+   "tests/unbound-window-preview.test.ts"
+  ]
+ },
+ {
+  "id": "window-preview-companion-no-grants",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/index.ts",
+  "find": "make(windowStageHost(input.desktop), style, null)",
+  "replace": "make(windowStageHost(input.desktop), style, windowPreviewGrants(input.desktop))",
+  "what": "桌宠窗口的引擎拿不到预览的授权（个性化预览只在控制窗口）",
+  "tests": [
+   "tests/unbound-window-engine.test.ts"
+  ]
+ },
+ {
+  "id": "window-capability-card-gate",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-capability.ts",
+  "find": "    if (!isModelCapabilityId(id) || !owner || !ctx.ready || !capabilityEnabled(ctx.card, id)) return false;",
+  "replace": "    if (!isModelCapabilityId(id) || !owner || !ctx.ready) return false;",
+  "what": "体检卡「试一下」在窗口引擎上照体检卡：卡上关着（或你关了）的那一项不演",
+  "tests": [
+   "tests/unbound-window-preview.test.ts"
+  ]
+ },
+ {
+  "id": "window-capability-face-owned",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-capability.ts",
+  "find": "    case 'closeEyes': return ctx.lids && !ctx.faceBlocked;",
+  "replace": "    case 'closeEyes': return ctx.lids;",
+  "what": "「试一下」能闭眼：手选的表情占着她的脸时不演（旧舞台的规则）",
+  "tests": [
+   "tests/unbound-window-preview.test.ts"
+  ]
+ },
+ {
+  "id": "window-body-preview-gate",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-previews.ts",
+  "find": "      } else if (blocked) this.cancel();\n    }\n    if (this.active) this.active.shown.weight.step(1, dt);",
+  "replace": "      }\n    }\n    if (this.active) this.active.shown.weight.step(1, dt);",
+  "what": "个性化姿势预览照旧舞台的门：挪窗口、调镜头、打字、摸她、跟音乐、聊天手势、手选姿势时结束预览并告诉主机",
+  "tests": [
+   "tests/unbound-window-preview.test.ts"
+  ]
+ },
+ {
+  "id": "window-body-preview-binding",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-previews.ts",
+  "find": " || binding.qualifiedStrength !== view.strength) {",
+  "replace": ") {",
+  "what": "个性化姿势预览只用主机给这个预览的那份绑定（编号、来源、遮罩、模型、强度都要对上），对不上就不演",
+  "tests": [
+   "tests/unbound-window-preview.test.ts"
+  ]
+ },
+ {
+  "id": "window-preview-eased",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-previews.ts",
+  "find": "    this.value = this.from + (this.to - this.from) * smootherstep(this.t);",
+  "replace": "    this.value = this.to;",
+  "what": "控制窗口的个性化姿势、表情预览在窗口引擎上缓进缓出（不瞬移）",
+  "tests": [
+   "tests/unbound-window-preview.test.ts"
+  ]
+ },
+ {
+  "id": "window-preview-no-physics",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-physics.ts",
+  "find": "    return !!this.figure && this.shown && !!support && !this.previewOnly",
+  "replace": "    return !!this.figure && this.shown && !!support",
+  "what": "控制窗口的预览在窗口引擎上不跑头发 / 胸物理（和旧舞台一样只报支持情况，不另载一份物理）",
+  "tests": [
+   "tests/unbound-window-preview.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "eye-turn-gain-applied",
+  "file": "src/unbound/figure.ts",
+  "find": "      const gain = this.eyeTurnGain; // the look in degrees; the eye bones by how far this model's eyes travel for it",
+  "replace": "      const gain = 1;",
+  "what": "Unbound 引擎：眼珠填满眼眶的模型，看向一处时眼骨按她自己眼皮留的余地转，不把瞳孔转进上眼皮的皮肤下面",
+  "tests": [
+   "tests/unbound-eye-turn-gain.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "eye-turn-gain-rule",
+  "file": "src/unbound/model/eye-turn-gain.ts",
+  "find": "  if (!Number.isFinite(turn) || turn >= softUpDeg) return 1;",
+  "replace": "  return 1;",
+  "what": "Unbound 引擎：按模型自己的眼皮余地算眼骨转多少（Gene 照旧，余地小的转得少）",
+  "tests": [
+   "tests/unbound-eye-turn-gain.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "eye-turn-gain-lid-edge",
+  "file": "src/unbound/model/eye-turn-gain.ts",
+  "find": "    if (dy < 0) lid.push({ y, dy });",
+  "replace": "    if (dy > 0) lid.push({ y, dy });",
+  "what": "Unbound 引擎：上眼皮的边从模型自己的眨眼量出来",
+  "tests": [
+   "tests/unbound-eye-turn-gain.test.ts",
+   "tests/unbound-vrm-face.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-mood-shown-window",
+  "file": "electron/unbound/mood-bridge.ts",
+  "find": "    if (this.host.shown() !== win) return false;\n",
+  "replace": "",
+  "what": "全屏 Unbound：摸头、捏脸、喂食的心情输入只收她正显示着的那个窗口发来的",
+  "tests": [
+   "tests/unbound-full-shares.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-mood-touchable",
+  "file": "electron/unbound/mood-bridge.ts",
+  "find": "    return win.isVisible() && this.host.touchable();",
+  "replace": "    return true;",
+  "what": "全屏 Unbound：她被全屏程序挡住、或正在凑镜头（整窗穿透）时，摸她的心情输入不收",
+  "tests": [
+   "tests/unbound-full-shares.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-mood-ending-narrow",
+  "file": "electron/unbound/mood-bridge.ts",
+  "find": "(value as { phase?: unknown }).phase === 'idle'",
+  "replace": "true",
+  "what": "全屏 Unbound：只有“这次接触结束”能在她被挡住时照收，别的输入不能借这个口子",
+  "tests": [
+   "tests/unbound-full-shares.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-mood-accepts-checked",
+  "file": "electron/unbound/mood-bridge.ts",
+  "find": "      if (!this.accepts(win, value)) throw new Error(",
+  "replace": "      if (false) throw new Error(",
+  "what": "全屏 Unbound：心情输入先过“正显示、可以碰”的检查才交给心情",
+  "tests": [
+   "tests/unbound-full-shares.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-touch-page-rule",
+  "file": "src/unbound/her/out-touch.ts",
+  "find": "canInteract: () => !!this.view && !this.disposed && this.ports.canTouch(),",
+  "replace": "canInteract: () => !!this.view && !this.disposed,",
+  "what": "全屏 Unbound：页面说不能碰她时（凑镜头、还没显示、页面藏着）摸头捏脸不算",
+  "tests": [
+   "tests/unbound-full-shares.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-touch-rule-click",
+  "file": "src/mood/touchable.ts",
+  "find": "blocked: s.peekForcing });",
+  "replace": "blocked: false });",
+  "what": "全屏 Unbound：能不能碰她和能不能点她同一条规则（凑镜头时不能）",
+  "tests": [
+   "tests/unbound-full-shares.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-press-pinch-owns",
+  "file": "src/unbound/her/out-page.ts",
+  "find": "if (!this.pinching && !this.play?.owns(target)) press();",
+  "replace": "if (!this.play?.owns(target)) press();",
+  "what": "全屏 Unbound：按在她脸颊上是捏脸，页面自己的点击和拉她不接这一下",
+  "tests": [
+   "tests/unbound-full-shares.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-look-owner-walk",
+  "file": "src/unbound/her/out-face.ts",
+  "find": "  if (asksForGaze(owner) || walking) return null;",
+  "replace": "  if (asksForGaze(owner)) return null;",
+  "what": "全屏 Unbound：她走路时、凑镜头或她自己的生活在看时，她的脸不抢她看哪里",
+  "tests": [
+   "tests/unbound-full-shares.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-relay-only-two",
+  "file": "electron/unbound/mood-bridge.ts",
+  "find": "    const event = RELAYED[channel];",
+  "replace": "    const event = RELAYED[channel] ?? UNBOUND_EVENTS.mood;",
+  "what": "全屏 Unbound：转给她窗口的只有心情视图、模型体检、红晕校准的更新和她声音的事实（A），别的广播（角色卡、试一下……）不转",
+  "tests": [
+   "tests/unbound-full-shares.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-card-your-choices",
+  "file": "src/unbound/her/model-card.ts",
+  "find": "held?.record?.choices ?? {}",
+  "replace": "{}",
+  "what": "全屏 Unbound：你在角色页关掉的“能脸红、能流泪”等，在全屏里也是关的",
+  "tests": [
+   "tests/unbound-full-shares.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "vrm-probe-no-outline",
+  "file": "src/unbound/her/vrm-blush.ts",
+  "find": "      if (!material || isOutline(material)) continue;",
+  "replace": "      if (!material) continue;",
+  "what": "VRM 的红晕探测把 MToon 的描边副本也算进来：同一批顶点归两个材质，脸颊量不出来，VRM 上没有红晕和泪痕",
+  "tests": [
+   "tests/unbound-vrm-face.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "vrm-paint-one-mesh",
+  "file": "src/unbound/her/vrm-blush.ts",
+  "find": "new Set(mapped.map(owner => owner.mesh)).size !== 1",
+  "replace": "new Set(mapped.map(owner => owner.mesh)).size < 1",
+  "what": "VRM：两边脸颊不在同一块网格上时仍然贴色（只贴到其中一块，另一边没有或贴错地方）",
+  "tests": [
+   "tests/unbound-vrm-face.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "vrm-cheeks-own-head",
+  "file": "src/unbound/her/head-region.ts",
+  "find": "projectCheekRegions(at.cheeks.anchors, at.contactHead ?? head,",
+  "replace": "projectCheekRegions(at.cheeks.anchors, head,",
+  "what": "VRM：捏脸的脸颊区域按标准骨架的头去投影，而脸颊是在 VRM 自己的头里量的（单位、位置都不对，捏不中）",
+  "tests": [
+   "tests/unbound-vrm-face.test.ts",
+   "tests/unbound-window-touch.test.ts",
+   "tests/unbound-full-shares.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "vrm-eye-room-smaller",
+  "file": "src/unbound/model/body-transfer.ts",
+  "find": "Math.sign(mapped) * Math.min(Math.abs(mapped), Math.abs(look)",
+  "replace": "Math.sign(mapped) * Math.max(Math.abs(mapped), Math.abs(look)",
+  "what": "VRM 的眼骨转多少不再取“范围表”和“眼皮留的余地”里较小的那个：瞳孔填满眼眶的模型眼珠转进眼皮、转过头",
+  "tests": [
+   "tests/unbound-vrm-face.test.ts",
+   "tests/unbound-vrm-gaps-loop.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "vrm-face-action-honest",
+  "file": "src/unbound/window-mode/window-motions.ts",
+  "find": "    if (model.standard && !model.standardFace) { report('failed', [], HER_ACTION_DETAILS.noTracks); return; } // a VRM without its face view (I-164)",
+  "replace": "",
+  "what": "VRM 没有脸的视图时，脸的动作不再如实回报“失败”",
+  "tests": [
+   "tests/unbound-vrm-gaps-loop.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "vrm-face-action-shown",
+  "file": "src/unbound/window-mode/window-motions.ts",
+  "find": "    if (this.faceLayers.length) this.model?.standardFace?.present(); // I-164: a VRM shows what the face shape wrote this frame\n",
+  "replace": "",
+  "what": "VRM 上脸的动作写了标准表情却不送到 VRM 上：报告“做了”，脸上什么也没有",
+  "tests": [
+   "tests/unbound-vrm-gaps-loop.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "vrm-card-own",
+  "file": "src/unbound/window-mode/window-face.ts",
+  "find": "    if (this.rig?.card) return this.rig.card; // I-164: a VRM's own card (window-face-rig.ts)\n",
+  "replace": "",
+  "what": "VRM 没有自己的体检卡：疲倦眼皮、困的脸、流泪、睡姿在 VRM 上都不开",
+  "tests": [
+   "tests/unbound-vrm-face.test.ts",
+   "tests/unbound-vrm-sleep.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "vrm-sleep-standard-bones",
+  "file": "src/unbound/model/standard-face.ts",
+  "find": "  return { bone: slot => body.standardBone(slot), profile: null };",
+  "replace": "  return { bone: () => undefined, profile: null };",
+  "what": "VRM 睡着的身体找不到标准骨架的骨头：不躺下",
+  "tests": [
+   "tests/unbound-vrm-sleep.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "vrm-has-capsules",
+  "file": "src/unbound/model/standard-body.ts",
+  "find": "    setBodyCapsuleSource(this.mesh, () => this.capsules()); // I-164 interaction: whoever measures her capsules gets the model's own",
+  "replace": "",
+  "what": "VRM 没有身体胶囊：全屏点她落到桌面、两个模式都拉不动她",
+  "tests": [
+   "tests/unbound-vrm-interaction.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "vrm-capsules-posed",
+  "file": "src/foundation/body-capsules.ts",
+  "find": "    const world = (capsule.place ?? bones[capsule.bone]).matrixWorld;",
+  "replace": "    const world = bones[capsule.bone].matrixWorld;",
+  "what": "VRM 的胶囊不跟着她自己摆好的骨头（按标准骨架放，手臂对不上画出来的她）",
+  "tests": [
+   "tests/unbound-vrm-interaction.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "vrm-pull-capsules",
+  "file": "src/stage/pull/stage-pull.ts",
+  "find": "    try { this.capsules = measureBodyCapsules(mesh); } catch { this.capsules = []; }",
+  "replace": "    try { this.capsules = measureBoneCapsules(mesh); } catch { this.capsules = []; }",
+  "what": "拉她量的是标准骨架的空网格：VRM 在全屏和窗口里都拉不动",
+  "tests": [
+   "tests/unbound-vrm-interaction.test.ts"
+  ]
+ },
+ {
+  "id": "BF-U1-only-followed",
+  "part": "unbound",
+  "file": "electron/unbound/bubble-hold.ts",
+  "find": "if (event.type !== 'delta' || !this.follows(event.id) || !this.follow.begin(event.id, this.now())) return false;",
+  "replace": "if (event.type !== 'delta' || !this.follow.begin(event.id, this.now())) return false;",
+  "what": "I-165 没开朗读的回复也被全屏气泡扣住",
+  "tests": [
+   "tests/bubble-follow-unbound.test.ts",
+   "tests/unbound-read-aloud.test.ts"
+  ]
+ },
+ {
+  "id": "BF-U2-done-after-all",
+  "part": "unbound",
+  "file": "electron/unbound/bubble-hold.ts",
+  "find": "if (held.done && !held.doneSent && held.sent >= held.text.length)",
+  "replace": "if (held.done && !held.doneSent)",
+  "what": "I-165 字还没显示完全屏气泡就开始收起",
+  "tests": [
+   "tests/bubble-follow-unbound.test.ts",
+   "tests/unbound-read-aloud.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-speech-face-checked",
+  "file": "electron/unbound/mood-bridge.ts",
+  "find": "    if (event === UNBOUND_EVENTS.speechFace) { value = sanitizeSpeechFaceCue(value); if (!value) return; } // batch A: only a well-formed fact",
+  "replace": "",
+  "what": "全屏 Unbound（A）：转给她窗口的声音事实先按桌宠自己的规则检查，乱的不转",
+  "tests": [
+   "tests/unbound-full-ach.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-bubble-voice-holds",
+  "file": "src/unbound/her/out-page.ts",
+  "find": "export const bubbleTimesAccents = (lastVoiceAt: number, now: number): boolean => !(now - lastVoiceAt < VOICE_HOLDS_MS);",
+  "replace": "export const bubbleTimesAccents = (lastVoiceAt: number, now: number): boolean => true;",
+  "what": "全屏 Unbound（A）：她的声音开始讲以后，说话的小表情跟声音走，不再按气泡的字（和桌宠开着朗读时一样）",
+  "tests": [
+   "tests/unbound-full-ach.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-blush-own-model",
+  "file": "src/unbound/her/out-face.ts",
+  "find": "    if (this.model && url === this.model.url) this.refreshBlush(true);",
+  "replace": "    if (this.model) this.refreshBlush(true);",
+  "what": "全屏 Unbound（A）：红晕校准只用在它所属的模型上",
+  "tests": [
+   "tests/unbound-full-ach.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-motion-reads-shown",
+  "file": "electron/unbound/motion-bridge.ts",
+  "find": "  reads(win: W): boolean { return this.host.shown() === win && win.isVisible(); }",
+  "replace": "  reads(win: W): boolean { return true; }",
+  "what": "全屏 Unbound（C）：她的手势、动作、自动身体动作的资源只回答正显示她、可见的那个窗口",
+  "tests": [
+   "tests/unbound-full-ach.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-motion-answer-shown",
+  "file": "electron/unbound/motion-bridge.ts",
+  "find": "      if (this.host.shown() !== win) return; // a window she is not shown in has no say",
+  "replace": "",
+  "what": "全屏 Unbound（C）：她对一个动作的回答只收正显示她的那个窗口的",
+  "tests": [
+   "tests/unbound-full-ach.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-motion-relay-only-action",
+  "file": "electron/unbound/motion-bridge.ts",
+  "find": "    if (channel !== 'desk:her-action' || !value || typeof value !== 'object') return;",
+  "replace": "    if (!value || typeof value !== 'object') return;",
+  "what": "全屏 Unbound（C）：转给她窗口的只有她的动作这一样，别的广播不转",
+  "tests": [
+   "tests/unbound-full-ach.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-her-action-answer-out",
+  "file": "electron/unbound/motion-bridge.ts",
+  "find": "export const herActionAnswerCounts = (from: 'companion' | 'unbound', out: boolean): boolean => from === (out ? 'unbound' : 'companion');",
+  "replace": "export const herActionAnswerCounts = (from: 'companion' | 'unbound', out: boolean): boolean => true;",
+  "what": "全屏 Unbound（C）：她在外面时只算全屏窗口的回答（藏着的小窗会先答\"藏着\"），在家只算小窗的",
+  "tests": [
+   "tests/unbound-full-ach.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-motions-out",
+  "file": "electron/unbound/motion-bridge.ts",
+  "find": "export const motionsOut = (state: string | null | undefined): boolean => state === 'unbound';",
+  "replace": "export const motionsOut = (state: string | null | undefined): boolean => state !== 'normal';",
+  "what": "全屏 Unbound（C）：只有她真的出来、显示着时，全屏窗口的身体动作通道和她的动作才开（正在进去时不算）",
+  "tests": [
+   "tests/unbound-full-ach.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-walk-mask",
+  "file": "src/unbound/her/walk-mask.ts",
+  "find": "    if (weight <= 0) return;",
+  "replace": "    return;",
+  "what": "全屏 Unbound（C）：她走路时，手势和动作只用上身，髋和腿归步态",
+  "tests": [
+   "tests/unbound-full-ach.test.ts",
+   "tests/unbound-full-ach-gene.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-walking-body-gate",
+  "file": "src/unbound/window-mode/window-motions.ts",
+  "find": "dynamicPose: env.blocks.dynamicPose || env.walking === true,",
+  "replace": "dynamicPose: env.blocks.dynamicPose,",
+  "what": "全屏 Unbound（C）：她走路时不开始新的自动身体动作，正在演的平滑交还",
+  "tests": [
+   "tests/unbound-full-ach.test.ts",
+   "tests/unbound-full-ach-gene.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-life-adjusting",
+  "file": "src/unbound/her/out-face.ts",
+  "find": "  return { contact: owners.contact, face: owners.face, head: owners.head, mouth: owners.mouth, adjusting: env.adjusting, speaking: env.speaking || env.voiced,",
+  "replace": "  return { contact: owners.contact, face: owners.face, head: owners.head, mouth: owners.mouth, adjusting: false, speaking: env.speaking || env.voiced,",
+  "what": "全屏 Unbound（H）：凑镜头、拉她、走回脸前时，她的程序生命（视线漂移、歪头、重心摇）平滑让开",
+  "tests": [
+   "tests/unbound-full-ach.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-life-stacks",
+  "file": "src/unbound/her/out-face.ts",
+  "find": "    const own = withLife(this.face.frame(delta, { shown: true, adjusting: env.adjusting, voiced: env.voiced, speaking: env.speaking, heightM: model.body.heightM, lifeBlush: life.blush }), life,\n      gaze ? glanceUnits(gaze.toUser) : null);",
+  "replace": "    const own = this.face.frame(delta, { shown: true, adjusting: env.adjusting, voiced: env.voiced, speaking: env.speaking, heightM: model.body.heightM, lifeBlush: life.blush });",
+  "what": "全屏 Unbound（H）：她的程序生命叠在脸的目标上（再叠在她自己生活的小动作上），全屏里真的看得见",
+  "tests": [
+   "tests/unbound-full-ach-gene.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-games-surface-held",
+  "file": "shared/unbound/games.ts",
+  "find": "  if (state.held) return { surface: 'unbound', shown: state.outShown === true };",
+  "replace": "  if (state.held) return { surface: 'unbound', shown: true };",
+  "what": "全屏 Unbound 的游戏：她在外面但没显示（进出途中、被全屏程序挡住）时也当作看得见，猜拳照开、牵手照伸",
+  "tests": [
+   "tests/unbound-full-games.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-games-ending-taken",
+  "file": "shared/unbound/games.ts",
+  "find": "    case UNBOUND_GAME_REQUESTS.giveAnswer: return ['not-taken', 'interrupted'].includes(field('outcome') as string);",
+  "replace": "    case UNBOUND_GAME_REQUESTS.giveAnswer: return ['not-taken', 'interrupted', 'taken'].includes(field('outcome') as string);",
+  "what": "全屏 Unbound 的游戏：“接走了”（会加心情）被当成只是收尾，碰不到她时也收",
+  "tests": [
+   "tests/unbound-full-games.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-games-shown-window",
+  "file": "electron/unbound/games-bridge.ts",
+  "find": "    if (!this.host.out() || this.host.shown() !== win) return false;",
+  "replace": "    if (!this.host.out()) return false;",
+  "what": "全屏 Unbound 的游戏：不是她正显示的那个窗口也能替她出拳、接东西",
+  "tests": [
+   "tests/unbound-full-games.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-games-touchable",
+  "file": "electron/unbound/games-bridge.ts",
+  "find": "    return win.isVisible() && this.host.touchable();",
+  "replace": "    return true;",
+  "what": "全屏 Unbound 的游戏：被全屏程序挡住、凑镜头整窗穿透、窗口藏着时，出拳、接东西、牵手照收",
+  "tests": [
+   "tests/unbound-full-games.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-games-send-out-only",
+  "file": "electron/unbound/games-bridge.ts",
+  "find": "    const win = this.host.out() ? this.host.shown() : null;",
+  "replace": "    const win = this.host.shown();",
+  "what": "全屏 Unbound 的游戏：她不在外面时游戏消息也发往 Unbound 窗口",
+  "tests": [
+   "tests/unbound-full-games.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-games-can-play",
+  "file": "electron/unbound/games-bridge.ts",
+  "find": "    return this.host.out() && !!win && win.isDestroyed?.() !== true && win.isVisible() && this.host.touchable();",
+  "replace": "    return this.host.out() && !!win && win.isDestroyed?.() !== true && win.isVisible();",
+  "what": "全屏 Unbound 的游戏：被全屏程序挡住时也算看得见，游戏不收尾",
+  "tests": [
+   "tests/unbound-full-games.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-games-play-rank",
+  "file": "shared/unbound/life/arbiter.ts",
+  "find": "  if (s.playing) return 'play';\n",
+  "replace": "",
+  "what": "全屏 Unbound：和她玩（猜拳、递东西、牵手）时她自己的生活不让开，照样走开",
+  "tests": [
+   "tests/unbound-full-games.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-games-life-reads-playing",
+  "file": "shared/unbound/life/host.ts",
+  "find": "playing: safe(() => this.ports.playing?.() === true, false),",
+  "replace": "playing: false,",
+  "what": "全屏 Unbound：主机的仲裁读不到“在和她玩”，她自己的动作不收住",
+  "tests": [
+   "tests/unbound-full-games.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-games-hand-busy-pull",
+  "file": "src/unbound/her/out-page.ts",
+  "find": "pullGatesOf(this.view, this.games.handBusy)",
+  "replace": "pullGatesOf(this.view, false)",
+  "what": "全屏 Unbound：牵着手时按她的手和手臂也变成拉她（和窗口的规矩不一样）",
+  "tests": [
+   "tests/unbound-full-games.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-games-no-picture",
+  "file": "src/unbound/her/out-games.ts",
+  "find": "      captureGivePicture: () => null,",
+  "replace": "      captureGivePicture: () => 'data:image/png;base64,',",
+  "what": "全屏 Unbound：递东西时页面会交出一张她的图（这一批不让图离开页面）",
+  "tests": [
+   "tests/unbound-full-games.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-games-control-owns-press",
+  "file": "src/unbound/her/out-page.ts",
+  "find": "if (!this.pinching && !this.play?.owns(target)) press();",
+  "replace": "if (!this.pinching) press();",
+  "what": "全屏 Unbound：按游戏按钮、接东西的圈也算点她、拉她（弹小输入框或拉动）",
+  "tests": [
+   "tests/unbound-full-games.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-sleep-world-space",
+  "file": "src/unbound/window-mode/window-sleep.ts",
+  "find": "    if (input.space) { this.syncWorld(input, input.space); return; }\n",
+  "replace": "",
+  "what": "全屏 Unbound 睡觉：睡姿不按她在世界里站的地方和世界相机来选，桌子枕头也不放在她身边（按窗口的抬高算，位置全错）",
+  "tests": [
+   "tests/unbound-full-sleep-gene.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-sleep-hold-place",
+  "file": "src/unbound/her/out-sleep.ts",
+  "find": "      figure.followTo(this.hold);\n",
+  "replace": "",
+  "what": "全屏 Unbound 睡觉：她躺着、趴着的时候，她自己的生活或场景一改位置，她整个人就滑走",
+  "tests": [
+   "tests/unbound-full-sleep-gene.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-sleep-walk-back",
+  "file": "src/unbound/her/out-sleep.ts",
+  "find": "    if (this.owned && !owns && home) figure.place(home);",
+  "replace": "",
+  "what": "全屏 Unbound 睡觉：起身后不走回原位，留在睡觉的地方",
+  "tests": [
+   "tests/unbound-full-sleep-gene.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-sleep-seek-spot",
+  "file": "src/unbound/her/out-sleep.ts",
+  "find": "state?.noFit === true && -figure.rootM.z < SLEEP_SPOT.maxDepthM - 0.25) this.seeking = true;",
+  "replace": "state?.noFit === true && -figure.rootM.z < SLEEP_SPOT.maxDepthM - 0.25) this.seeking = false;",
+  "what": "全屏 Unbound 睡觉：离屏幕近、地板在屏幕下面时，她不往后走去找看得见的地方，只能站着打盹",
+  "tests": [
+   "tests/unbound-full-sleep-gene.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-sleep-page-overlay",
+  "file": "src/unbound/her/out-page.ts",
+  "find": "    figure?.setOverlay(withReaction(sleep?.overlay ?? null, senses.overlay));",
+  "replace": "    figure?.setOverlay(withReaction(null, senses.overlay));",
+  "what": "全屏 Unbound 睡觉：睡着的身体（跪坐、趴桌、躺枕头）不画到她身上",
+  "tests": [
+   "tests/unbound-full-sleep-gene.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-sleep-page-yields-life",
+  "file": "src/unbound/her/out-page.ts",
+  "find": "this.ports.home?.() ?? null)) this.yieldLife?.();",
+  "replace": "this.ports.home?.() ?? null)) void 0;",
+  "what": "全屏 Unbound 睡觉：睡着时她自己的生活不让开，醒来后接着走开而不是回原位",
+  "tests": [
+   "tests/unbound-full-sleep-gene.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "full-sleep-yields-walking",
+  "file": "src/unbound/her/out-sleep.ts",
+  "find": "      yielding: input.adjusting || input.playing || input.walking, touched: o.touched,",
+  "replace": "      yielding: input.adjusting || input.playing, touched: o.touched,",
+  "what": "全屏 Unbound 睡觉：她还在走路时睡着的身体就接管（边走边跪下）",
+  "tests": [
+   "tests/unbound-full-sleep-gene.test.ts"
+  ]
+ },
+ {
+  "id": "world-camera-keeps-frustum",
+  "part": "unbound",
+  "file": "src/unbound/camera.ts",
+  "find": "    if (!f) { super.updateProjectionMatrix(); return; }",
+  "replace": "    { super.updateProjectionMatrix(); return; }",
+  "what": "全屏 Unbound 的相机被别处重算投影时仍保持自己的离轴视锥（她不会变宽变矮）",
+  "tests": [
+   "tests/unbound-wide.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "VS-U1-preview-runs-springs",
+  "file": "src/unbound/window-mode/window-physics.ts",
+  "find": "return this.previewOnly ? { ...s, hair: { ...s.hair, enabled: false }, chest: { ...s.chest, enabled: false } } : s;",
+  "replace": "return s;",
+  "what": "I-152 第 3 步：控制窗口的预览里 VRM 的弹簧也跑（预览本来不算物理）",
+  "tests": [
+   "tests/vrm-springs.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "VS-U2-hidden-springs-run",
+  "file": "src/unbound/window-mode/window-physics.ts",
+  "find": "if (!shown) { this.figure?.hidePhysics(); this.springs?.setVisible(false); }",
+  "replace": "if (!shown) { this.figure?.hidePhysics(); }",
+  "what": "I-152 第 3 步：窗口藏起来时 VRM 的弹簧不暂停",
+  "tests": [
+   "tests/vrm-springs.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "VS-U3-ammo-for-vrm",
+  "file": "src/unbound/window-mode/window-physics.ts",
+  "find": "if (this.springs || this.physics || this.pending",
+  "replace": "if (this.physics || this.pending",
+  "what": "I-152 第 3 步：VRM 也去载入 Ammo、给它的标准骨架造 MMD 物理世界",
+  "tests": [
+   "tests/vrm-springs.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "VS-U4-fullscreen-springs-unconfigured",
+  "file": "src/unbound/figure-physics.ts",
+  "find": "  StandardBody.ofMesh(target.mesh)?.configurePhysics(settings);\n",
+  "replace": "",
+  "what": "I-152 第 3 步：全屏里档位（物理质量上限）变了，VRM 的弹簧收不到",
+  "tests": [
+   "tests/vrm-springs.test.ts"
+  ]
+ },
+ {
+  "id": "full-senses-pose-gate",
+  "part": "unbound",
+  "file": "electron/unbound/sense-bridge.ts",
+  "find": "        if (!this.poseOn()) return true; // nothing of the camera goes out while pose sensing is off\n",
+  "replace": "",
+  "what": "姿势识别关着时，\"你在哪\"的读数一条也不转给全屏窗口",
+  "tests": [
+   "tests/unbound-full-senses.test.ts"
+  ]
+ },
+ {
+  "id": "full-senses-pose-off-null",
+  "part": "unbound",
+  "file": "electron/unbound/sense-bridge.ts",
+  "find": "        if (value !== true) this.toShown(UNBOUND_SENSE_EVENTS.userGaze, null); // off: forget at once\n",
+  "replace": "",
+  "what": "姿势识别一关，全屏页面马上忘掉你在哪（发一个空）",
+  "tests": [
+   "tests/unbound-full-senses.test.ts"
+  ]
+ },
+ {
+  "id": "full-senses-gaze-checked",
+  "part": "unbound",
+  "file": "electron/unbound/sense-bridge.ts",
+  "find": "        const reading = value === null ? null : parseUserGazeReading(value);",
+  "replace": "        const reading = value as ReturnType<typeof parseUserGazeReading>;",
+  "what": "转给全屏的读数先按桌宠的规则检查，只留读数自己的字段（没有画面、没有脸的位置）",
+  "tests": [
+   "tests/unbound-full-senses.test.ts"
+  ]
+ },
+ {
+  "id": "full-senses-shown-only",
+  "part": "unbound",
+  "file": "electron/unbound/sense-bridge.ts",
+  "find": "    if (win) this.host.send(win, channel, value);\n  }\n}",
+  "replace": "    this.host.send(win as W, channel, value);\n  }\n}",
+  "what": "感知读数只发给正显示她的那个窗口；她不在外面时一条不发",
+  "tests": [
+   "tests/unbound-full-senses.test.ts"
+  ]
+ },
+ {
+  "id": "full-senses-dance-on",
+  "part": "unbound",
+  "file": "electron/unbound/sense-bridge.ts",
+  "find": "        if (!frame || !this.dance.has(frame.source)) return true; // only while that source's dance is on",
+  "replace": "        if (!frame) return true;",
+  "what": "音乐样本只在那个来源的「和她一起听」律动开着时转给全屏",
+  "tests": [
+   "tests/unbound-full-senses.test.ts"
+  ]
+ },
+ {
+  "id": "full-senses-dance-off-null",
+  "part": "unbound",
+  "file": "electron/unbound/sense-bridge.ts",
+  "find": "        if (was.size > 0 && this.dance.size === 0) this.toShown(UNBOUND_SENSE_EVENTS.dance, null); // the last source's dance off: stop at once\n",
+  "replace": "",
+  "what": "律动一关，全屏的舞马上停（发一个空）",
+  "tests": [
+   "tests/unbound-full-senses.test.ts"
+  ]
+ },
+ {
+  "id": "full-senses-fact-shown",
+  "part": "unbound",
+  "file": "electron/unbound/sense-bridge.ts",
+  "find": "    return isHerFactKind(kind) && this.host.shown() === win && win !== null;",
+  "replace": "    return isHerFactKind(kind);",
+  "what": "她的记录（看你、听歌）只收正显示她的窗口发的",
+  "tests": [
+   "tests/unbound-full-senses.test.ts"
+  ]
+ },
+ {
+  "id": "full-senses-fact-kinds",
+  "part": "unbound",
+  "file": "electron/unbound/sense-bridge.ts",
+  "find": "    return isHerFactKind(kind) && this.host.shown() === win && win !== null;",
+  "replace": "    return this.host.shown() === win && win !== null;",
+  "what": "全屏能报的记录只有那几种（看你、歌的反应、音乐判断、跳舞档）",
+  "tests": [
+   "tests/unbound-full-senses.test.ts"
+  ]
+ },
+ {
+  "id": "full-senses-companion-fact",
+  "part": "unbound",
+  "file": "shared/unbound/sense-relay.ts",
+  "find": "  return !(out && isHerFactKind(kind));",
+  "replace": "  return true;",
+  "what": "她在外面时，桌宠窗口的同类记录不收：一条只记一次",
+  "tests": [
+   "tests/unbound-full-senses.test.ts"
+  ]
+ },
+ {
+  "id": "full-senses-wiring-out",
+  "part": "unbound",
+  "file": "electron/wiring/unbound-senses-wiring.ts",
+  "find": "  if (!out() || !unbound) return;",
+  "replace": "  if (!unbound) return;",
+  "what": "只有她在外面时才按全屏窗口量你在哪",
+  "tests": [
+   "tests/unbound-full-senses.test.ts"
+  ]
+ },
+ {
+  "id": "full-senses-camera-held",
+  "part": "unbound",
+  "file": "electron/wiring/unbound-senses-wiring.ts",
+  "find": "  senseFeeds.held = held === true;\n  unbound?.mood(SENSE_RELAY.poseSensing, senseFeeds.poseOn && !senseFeeds.held);\n",
+  "replace": "  senseFeeds.held = held === true;\n",
+  "what": "\"别看\"一出口，全屏页面马上忘掉你在哪",
+  "tests": [
+   "tests/unbound-full-senses.test.ts"
+  ]
+ },
+ {
+  "id": "full-senses-wiring-companion-fact",
+  "part": "unbound",
+  "file": "electron/wiring/unbound-senses-wiring.ts",
+  "find": "export function companionFact(kind: unknown, fromCompanion: boolean): boolean { return fromCompanion && companionFactAllowed(kind, out()); }",
+  "replace": "export function companionFact(kind: unknown, fromCompanion: boolean): boolean { return fromCompanion; }",
+  "what": "接线里：她在外面时桌宠窗口的同类记录不收",
+  "tests": [
+   "tests/unbound-full-senses.test.ts"
+  ]
+ },
+ {
+  "id": "full-senses-wiring-dance-out",
+  "part": "unbound",
+  "file": "electron/wiring/unbound-senses-wiring.ts",
+  "find": "export function relayDance(frame: unknown): void { if (out()) { unbound?.mood(SENSE_RELAY.dance, frame); relayStageMusic(SENSE_RELAY.dance, frame); } }",
+  "replace": "export function relayDance(frame: unknown): void { { unbound?.mood(SENSE_RELAY.dance, frame); relayStageMusic(SENSE_RELAY.dance, frame); } }",
+  "what": "只有她在外面时才把音乐样本交给全屏",
+  "tests": [
+   "tests/unbound-full-senses.test.ts"
+  ]
+ },
+ {
+  "id": "full-senses-preview-recipe",
+  "part": "unbound",
+  "file": "electron/unbound/mood-bridge.ts",
+  "find": "{ if (isExpressionRecipe(value)) this.toCurrent(event, value); return; }",
+  "replace": "{ this.toCurrent(event, value); return; }",
+  "what": "惊喜/害羞预览只转那两个名字，不转别的",
+  "tests": [
+   "tests/unbound-full-senses.test.ts"
+  ]
+ },
+ {
+  "id": "full-senses-page-forget",
+  "part": "unbound",
+  "file": "src/unbound/her/out-gaze.ts",
+  "find": "    this.held = reading ? { reading, at: this.t } : null;",
+  "replace": "    if (reading) this.held = { reading, at: this.t };",
+  "what": "全屏页面收到空读数马上忘掉你在哪",
+  "tests": [
+   "tests/unbound-full-senses.test.ts",
+   "tests/unbound-full-senses-gene.test.ts"
+  ]
+ },
+ {
+  "id": "full-senses-page-music-null",
+  "part": "unbound",
+  "file": "src/unbound/her/out-senses.ts",
+  "find": "    if (value === null) { this.stopHearing(); return; }",
+  "replace": "    if (value === null) return;",
+  "what": "律动关了的空样本一到，全屏的舞马上停",
+  "tests": [
+   "tests/unbound-full-senses.test.ts",
+   "tests/unbound-full-senses-gene.test.ts"
+  ]
+ },
+ {
+  "id": "full-senses-page-music-fresh",
+  "part": "unbound",
+  "file": "src/unbound/her/out-senses.ts",
+  "find": "    this.hearing.tick(); // a stall shorter than DANCE_FRESH_MS keeps her hearing; longer, she heard nothing",
+  "replace": "    // a stall shorter than DANCE_FRESH_MS keeps her hearing; longer, she heard nothing",
+  "what": "全屏页：样本停过宽限（2026-11-22 起 2 秒，原 250 毫秒）就算停了",
+  "tests": [
+   "tests/unbound-full-senses.test.ts"
+  ]
+ },
+ {
+  "id": "full-music-walking-yields",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-music.ts",
+  "find": "env.walking === true ? 'walking' : ",
+  "replace": "",
+  "what": "她走路时不跳（舞自己淡出）",
+  "tests": [
+   "tests/unbound-full-senses.test.ts",
+   "tests/unbound-full-senses-gene.test.ts"
+  ]
+ },
+ {
+  "id": "drop-zone-is-her-body",
+  "part": "unbound",
+  "file": "src/unbound/her/drop-zone.ts",
+  "find": "Number.isFinite(distance) && distance <= margin",
+  "replace": "true",
+  "what": "全屏时拖进图片只有在她身上（加一圈小边）才算，空地上不算",
+  "tests": [
+   "tests/unbound-drop-zone.test.ts"
+  ]
+ },
+ {
+  "id": "drop-zone-reaches-input",
+  "part": "unbound",
+  "file": "src/unbound/her/out-touch.ts",
+  "find": "acceptsDrop: this.ports.dropZone ?",
+  "replace": "acceptsDrop: false ?",
+  "what": "页面给的投喂范围真的交给触摸输入",
+  "tests": [
+   "tests/unbound-drop-zone.test.ts"
+  ]
+ },
+ {
+  "id": "drop-zone-refuses-drag",
+  "part": "unbound",
+  "note": "no-pet-ok: the file is still named so",
+  "file": "src/mood/PetInteraction.ts",
+  "find": "{ this.tracker.cancel(); event.dataTransfer.dropEffect = \"none\"; return; }",
+  "replace": "{ }",
+  "what": "范围外的拖动不当作可投放的地方（光标显示禁止）",
+  "tests": [
+   "tests/unbound-drop-zone.test.ts"
+  ]
+ },
+ {
+  "id": "drop-zone-stray-drop",
+  "part": "unbound",
+  "note": "no-pet-ok: the file is still named so",
+  "file": "src/mood/PetInteraction.ts",
+  "find": "{ this.tracker.cancel(); return; } // a stray drop",
+  "replace": "{ } // a stray drop",
+  "what": "范围外松手什么也不发生、不弹提示",
+  "tests": [
+   "tests/unbound-drop-zone.test.ts"
+  ]
+ },
+ {
+  "id": "gaze-debug-window-gate",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-liveliness.ts",
+  "find": "gazeDebug(this, view?.developerMode === true)",
+  "replace": "gazeDebug(this, true)",
+  "what": "I-169 Unbound 引擎的小窗：没开开发者模式就不画她在看哪里",
+  "tests": [
+   "tests/gaze-debug-window.test.ts"
+  ]
+ },
+ {
+  "id": "gaze-debug-overlay-hides",
+  "part": "unbound",
+  "file": "src/unbound/overlay.ts",
+  "find": " gazeDebug(this, false); }",
+  "replace": " }",
+  "what": "I-169 全屏：开发者层收起时，她在看哪里的标签和小点一起拿掉",
+  "tests": [
+   "tests/gaze-debug-window.test.ts"
+  ]
+ },
+ {
+  "id": "window-rest-stand",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-pose-layers.ts",
+  "find": "await layersWithRestStand(getMotionLayerAssets(settings), !settings.motionLayers, host);",
+  "replace": "await layersWithRestStand(getMotionLayerAssets(settings), !settings.motionLayers, null);",
+  "what": "桌宠用 Unbound 引擎时没选身体动作，她站成和全屏 Unbound 一样的默认站姿（不是模型原始的张手站姿）",
+  "tests": [
+   "tests/window-idle-pose.test.ts"
+  ]
+ },
+ {
+  "id": "window-first-motions-unseen",
+  "part": "unbound",
+  "file": "src/unbound/figure.ts",
+  "find": "const bridged = this.framed && options.unseen !== true;",
+  "replace": "const bridged = this.framed;",
+  "what": "桌宠窗口里她还没淡入时，第一次放上的动作直接就位，淡入时手臂不会再从张手滑下来",
+  "tests": [
+   "tests/window-idle-pose.test.ts"
+  ]
+ },
+ {
+  "id": "rest-stand-picked-wins",
+  "part": "unbound",
+  "file": "shared/actions/rest-stand.ts",
+  "find": "  if (layers.pose || !rest) return { layers: { ...layers }, legacy, rest: false };",
+  "replace": "  if (!rest) return { layers: { ...layers }, legacy, rest: false };",
+  "what": "你自己选的身体动作永远优先，默认站姿只在没选时补上",
+  "tests": [
+   "tests/window-idle-pose.test.ts"
+  ]
+ },
+ {
+  "id": "talk-calm-idle-head",
+  "part": "unbound",
+  "file": "src/unbound/motion/learned-idle.ts",
+  "find": "neck: addRot(base.neck, idle.neck, wh), head: addRot(base.head, idle.head, wh),",
+  "replace": "neck: addRot(base.neck, idle.neck, w), head: addRot(base.head, idle.head, w),",
+  "what": "聊天时待机模型给头的晃动收到三成（窗口和全屏的 Unbound 引擎）",
+  "tests": [
+   "tests/i170-calm-head.test.ts"
+  ]
+ },
+ {
+  "id": "talk-calm-gaze-untouched",
+  "part": "unbound",
+  "file": "src/unbound/motion/learned-idle.ts",
+  "find": "  const out: PoseTargets = {\n    ...base,\n",
+  "replace": "  const out: PoseTargets = {\n    ...base, eyes: { yaw: base.eyes.yaw * (wh / Math.max(w, 1e-9)), pitch: base.eyes.pitch * (wh / Math.max(w, 1e-9)) },\n",
+  "what": "聊天时收头的晃动不碰她看哪里：看向你、跟鼠标、看别处都和不聊天时一样",
+  "tests": [
+   "tests/i170-calm-head.test.ts"
+  ]
+ },
+ {
+  "id": "talk-calm-window-signal",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-body.ts",
+  "find": "talking: input.talking === true };",
+  "replace": "talking: false };",
+  "what": "桌宠用 Unbound 引擎时，你打字、她想、她说的时候待机的头晃动收起来",
+  "tests": [
+   "tests/i170-calm-head.test.ts"
+  ]
+ },
+ {
+  "id": "talk-calm-full-signal",
+  "part": "unbound",
+  "file": "src/unbound/her/out-face.ts",
+  "find": "    laid.talking = talk;",
+  "replace": "    laid.talking = false;",
+  "what": "全屏 Unbound 里聊天时待机的头晃动也收起来",
+  "tests": [
+   "tests/i170-calm-head.test.ts"
+  ]
+ },
+ {
+  "id": "floor-follows-her-depth",
+  "part": "unbound",
+  "file": "shared/unbound/framing/floor.ts",
+  "find": "  const floor = floorEyeHeight(g, depth), band = framingBand(g, body.heightM, knobs);",
+  "replace": "  const floor = floorEyeHeight(g, 8), band = framingBand(g, body.heightM, knobs);",
+  "what": "全屏 Unbound 的地面线跟着她站的深度走（她站在哪，脚都踩在工作区底边那条线上），不再只在 8 米对齐",
+  "tests": [
+   "tests/unbound-floor-follow.test.ts"
+  ]
+ },
+ {
+  "id": "floor-crown-stays-on-screen",
+  "part": "unbound",
+  "file": "shared/unbound/framing/floor.ts",
+  "find": "  const fit = smoothMax(floor, crownEyeHeight(g, depth, body.heightM));",
+  "replace": "  const fit = floor;",
+  "what": "她近到放不下全身时，头顶留在工作区里面（不会因为脚踩地面线而把头切掉）",
+  "tests": [
+   "tests/unbound-floor-follow.test.ts"
+  ]
+ },
+ {
+  "id": "floor-close-is-face-level",
+  "part": "unbound",
+  "file": "shared/unbound/framing/floor.ts",
+  "find": "  return fit + (face - fit) * w;",
+  "replace": "  return fit;",
+  "what": "凑得很近时交给脸的特写（相机在她脸的高度，凑镜头时眼睛能对上镜头、脸几乎占满屏幕）",
+  "tests": [
+   "tests/unbound-floor-follow.test.ts"
+  ]
+ },
+ {
+  "id": "floor-jump-is-bridged",
+  "part": "unbound",
+  "file": "src/unbound/floor-framing.ts",
+  "find": "    if (rebase) this.offset = before - target; // from where the eye is; its speed carries on in offsetVel",
+  "replace": "    if (rebase) this.offset = 0;",
+  "what": "她的位置一下子变了（换模型、换地方、换屏幕）时画面慢慢跟上，不会一帧跳过去",
+  "tests": [
+   "tests/unbound-floor-follow.test.ts"
+  ]
+ },
+ {
+  "id": "floor-follows-live-root",
+  "part": "unbound",
+  "file": "src/unbound/floor-framing.ts",
+  "find": "    return this.step(dt, world, -figure.rootM.z, figure.heightM, this.faceOf(figure), dipM) ? this.apply(world, nearM) : null;",
+  "replace": "    return this.step(dt, world, world.placement.depthM, figure.heightM, this.faceOf(figure), dipM) ? this.apply(world, nearM) : null;",
+  "what": "画面跟着她此刻站的位置（走路、被拉、凑镜头的路上都跟着），不是只跟场景里记住的位置",
+  "tests": [
+   "tests/unbound-floor-follow.test.ts"
+  ]
+ },
+ {
+  "id": "I174-pull-asleep-full",
+  "part": "unbound",
+  "file": "src/unbound/her/out-page.ts",
+  "find": "return pullRefusal(pullGatesOf(this.view, this.games.handBusy), group) !== null;",
+  "replace": "return pullRefusal({ asleep: false, peeking: false, handBusy: this.games.handBusy }, group) !== null;",
+  "what": "全屏里她睡着时按住她，页面又先开始拉（只等主机拒绝），和窗口不一样",
+  "tests": [
+   "tests/i174-pull-asleep.test.ts"
+  ]
+ },
+ {
+  "id": "I174-pull-asleep-phase",
+  "part": "unbound",
+  "file": "shared/behaviors/pull/gates.ts",
+  "find": "  return { asleep: !!phase && PULL_ASLEEP_PHASES.has(phase), peeking: false, handBusy };",
+  "replace": "  return { asleep: false, peeking: false, handBusy };",
+  "what": "窗口和全屏都不再认她睡着（睡着也能拉）",
+  "tests": [
+   "tests/i174-pull-asleep.test.ts"
+  ]
+ },
+ {
+  "id": "I174-beat-hands-rule",
+  "part": "unbound",
+  "file": "src/unbound/speech-beat-player.ts",
+  "find": "  return !(SPEECH_BEAT_HAND_WORDS.has(word) && gates.armsHeld);",
+  "replace": "  return true;",
+  "what": "说话拍子里比 V、捂脸这类手势，在她手被猜拳、递东西、牵手占着时照样开始（窗口和全屏都会）",
+  "tests": [
+   "tests/i174-beat-gates.test.ts"
+  ]
+ },
+ {
+  "id": "I174-beat-gates-full",
+  "part": "unbound",
+  "file": "src/unbound/speech-beat-player.ts",
+  "find": "      if (gates && !speechBeatMayStart(play.word, gates)) { if (isCloseBeatWord(play.word)) this.askClose(play.word, play.replyId); continue; }",
+  "replace": "",
+  "what": "全屏的说话拍子不再问能不能开始：猜拳时比 V 又会盖在游戏上",
+  "tests": [
+   "tests/i174-beat-gates.test.ts"
+  ]
+ },
+ {
+  "id": "I174-beat-gates-her",
+  "part": "unbound",
+  "file": "src/unbound/her/out-page.ts",
+  "find": "speechBeatGatesOf(this.view, !!this.figure, this.games.games.armsHeld(false)), armsCan:",
+  "replace": "speechBeatGatesOf(this.view, !!this.figure, false), armsCan:",
+  "what": "全屏页面告诉拍子“手没被占”，猜拳时比 V 又会开始",
+  "tests": [
+   "tests/i174-beat-gates.test.ts"
+  ]
+ },
+ {
+  "id": "I174-speaking-held-window",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-stage-env.ts",
+  "find": "speaking: this.speechOwner.speaking(this.speakingSources.size > 0),",
+  "replace": "speaking: this.speakingSources.size > 0,",
+  "what": "窗口的动作门又读原始的“在说话”：朗读的断口里撅嘴开始又被取消（看不见）",
+  "tests": [
+   "tests/i174-speech-owner.test.ts"
+  ]
+ },
+ {
+  "id": "I174-speaking-held-full",
+  "part": "unbound",
+  "file": "src/unbound/her/out-page.ts",
+  "find": "speaking: this.speakingHeld = this.speechOwner.speaking(this.speechOwner.frame(delta, env.speaking || env.voiced)),",
+  "replace": "speaking: this.speakingHeld = env.speaking,",
+  "what": "全屏的动作门读原始的“在说话”，和窗口、旧舞台不一样",
+  "tests": [
+   "tests/i174-speech-owner.test.ts"
+  ]
+ },
+ {
+  "id": "I174-speaking-held-rule",
+  "part": "unbound",
+  "file": "src/unbound/mouth.ts",
+  "find": "  speaking(raw: boolean): boolean { return raw || this.held; }",
+  "replace": "  speaking(raw: boolean): boolean { return raw; }",
+  "what": "共用的“她在说话”不再保持：两边的动作门都在断口放行",
+  "tests": [
+   "tests/i174-speech-owner.test.ts"
+  ]
+ },
+ {
+  "id": "I174-window-arbiter-you-first",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-arbiter.ts",
+  "find": "waiting: () => s().waiting, typing: () => s().typing, readingAloud: () => s().speaking, playing: () => s().playing,",
+  "replace": "waiting: () => false, typing: () => false, readingAloud: () => false, playing: () => false,",
+  "what": "窗口里你在打字、等她回复、她在说话、在玩游戏时，她自己的小动作不先收住",
+  "tests": [
+   "tests/i174-window-arbiter.test.ts"
+  ]
+ },
+ {
+  "id": "I174-window-arbiter-never-walks",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-arbiter.ts",
+  "find": "      here: () => null, toWorld: () => null,",
+  "replace": "      here: () => ({ across: 0.5, depthM: 3 }), toWorld: spot => ({ xM: (spot.across - 0.5) * 2, depthM: spot.depthM }),",
+  "what": "窗口里她也会想“换个地方站”（窗口不走动）",
+  "tests": [
+   "tests/i174-window-arbiter.test.ts"
+  ]
+ },
+ {
+  "id": "I174-window-life-overlay",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-body.ts",
+  "find": "...withLifeOverlay(layFace(this.life.frame({ ...input, dt: delta, face }), face), input.life),",
+  "replace": "...layFace(this.life.frame({ ...input, dt: delta, face }), face),",
+  "what": "窗口里她自己的小动作（重心换脚、歪头）不再落到身体上",
+  "tests": [
+   "tests/i174-window-arbiter.test.ts"
+  ]
+ },
+ {
+  "id": "U-bubble-linger-read-floor",
+  "part": "unbound",
+  "file": "shared/behaviors/reply-linger/choose.ts",
+  "find": "const reading = now.readAll === true && Math.round(readMs) > cut;",
+  "replace": "const reading = false && Math.round(readMs) > cut;",
+  "what": "全屏气泡（整段回复一次摆出）的留的时间被 20 秒上限截到读完要的时间以下",
+  "tests": [
+   "tests/bubble-linger-one-rule.test.ts"
+  ]
+ },
+ {
+  "id": "U-bubble-linger-page-uses-host",
+  "part": "unbound",
+  "file": "src/unbound/bubbles.ts",
+  "find": "this.lingerMs = readBubbleLingerMs(bubble.lingerMs);",
+  "replace": "this.lingerMs = 6_000;",
+  "what": "全屏页面不用主机定下的气泡留多久，自己写死一个数",
+  "tests": [
+   "tests/unbound-read-aloud.test.ts"
+  ]
+ },
+ {
+  "id": "PM1-closed-mouth-never-while-held",
+  "part": "unbound",
+  "file": "shared/behaviors/part-mix/closed-mouth.ts",
+  "find": "  if (world.held) return false;",
+  "replace": "",
+  "what": "I-175：鼓腮、吐舌这类闭嘴的形态在她还在念（带保持的“在说话”开着）时就开始",
+  "tests": [
+   "tests/part-mix.test.ts",
+   "tests/i175-talk-through.test.ts"
+  ]
+ },
+ {
+  "id": "PM2-talk-through-never-zero",
+  "part": "unbound",
+  "file": "shared/behaviors/part-mix/mouth.ts",
+  "find": "  const scale = Math.max(Math.min(pout, smiling), 1 - cut);",
+  "replace": "  const scale = strength > 0 ? 0 : 1;",
+  "what": "I-175：她带着表情边念边说时口型幅度变成 0，嘴不动了",
+  "tests": [
+   "tests/part-mix.test.ts",
+   "tests/i175-talk-through.test.ts"
+  ]
+ },
+ {
+  "id": "PM3-cancel-drops-waiting",
+  "part": "unbound",
+  "file": "shared/behaviors/part-mix/closed-mouth.ts",
+  "find": "  cancel(): void { this.dropped += this.waiting.length; this.waiting = []; }",
+  "replace": "  cancel(): void {}",
+  "what": "I-175：取消的回复（停止、新的回复、出错）排着的鼓腮还会补演",
+  "tests": [
+   "tests/part-mix.test.ts",
+   "tests/i175-talk-through.test.ts"
+  ]
+ },
+ {
+  "id": "PM4-window-cancel-drops",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-stage-face.ts",
+  "find": "    if (reason === 'cancelled' || reason === 'new') this.motions.dropWaitingMouth();",
+  "replace": "",
+  "what": "I-175：桌宠窗口里停止或换了新的回复时，排着等停顿的鼓腮没丢掉，之后会补演",
+  "tests": [
+   "tests/i175-talk-through.test.ts"
+  ]
+ },
+ {
+  "id": "PM5-full-cancel-drops",
+  "part": "unbound",
+  "file": "src/unbound/speech-beat-player.ts",
+  "find": "this.span.cancel(bubble.id); this.lines.clear(); this.releaseHeld(); this.cancelled(); }",
+  "replace": "this.span.cancel(bubble.id); this.lines.clear(); this.releaseHeld(); }",
+  "what": "I-175：全屏里回复出错或被停掉时，排着等停顿的鼓腮没丢掉，之后会补演",
+  "tests": [
+   "tests/i175-talk-through.test.ts"
+  ]
+ },
+ {
+  "id": "PM6-pout-talks-through",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-motions.ts",
+  "find": "    if (speaking === 'talk-through') { this.talkThrough(cue.action, spec, report); return; }",
+  "replace": "",
+  "what": "I-175：她念的时候让她撅嘴，又变回“她正在说话”不做（撅嘴本该边说边做）",
+  "tests": [
+   "tests/i175-talk-through.test.ts"
+  ]
+ },
+ {
+  "id": "PM7-expression-pucker-stays",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-expression.ts",
+  "find": "const yields = (role: MouthRole | null) => role === 'opening' || role === 'closed';",
+  "replace": "const yields = (role: MouthRole | null) => role !== null;",
+  "what": "I-175：她说话时表情里的嘴形（撅、笑）又整个让开，边念边撅嘴看不到撅嘴",
+  "tests": [
+   "tests/i175-talk-through.test.ts"
+  ]
+ },
+ {
+  "id": "PM12-lid-ceiling",
+  "part": "unbound",
+  "file": "shared/behaviors/part-mix/lids-head.ts",
+  "find": "  const blink = overlap ? Math.min(c, ceiling - Math.max(smile, half)) : Math.min(c, ceiling);",
+  "replace": "  const blink = c;",
+  "what": "I-175：Unbound 引擎里笑眼加眨眼又会闭过头（眼皮压进眼睛下面）",
+  "tests": [
+   "tests/i175-lids-head.test.ts"
+  ]
+ },
+ {
+  "id": "I177-send-mid-answer-refused",
+  "part": "unbound",
+  "file": "electron/unbound/say-line.ts",
+  "find": "  try { cut = ports.interruptReply(); } catch { cut = null; }",
+  "replace": "  if (ports.interruptReply()) return 'unavailable';",
+  "what": "I-177：全屏 Unbound 里她回答到一半你发话，又被拒掉（不能打断）",
+  "tests": [
+   "tests/unbound-send-interrupt.test.ts"
+  ]
+ },
+ {
+  "id": "I177-cut-not-handed",
+  "part": "unbound",
+  "file": "electron/unbound/say-line.ts",
+  "find": "  ports.send({ text, ...(cut ? { cut } : {}), ",
+  "replace": "  ports.send({ text, ",
+  "what": "I-177：打断后\"说到哪了\"没有跟着消息交给她，她下一轮不知道后面你没看到",
+  "tests": [
+   "tests/unbound-send-interrupt.test.ts"
+  ]
+ },
+ {
+  "id": "I177-held-rest-dumped",
+  "part": "unbound",
+  "file": "electron/unbound/bubble-hold.ts",
+  "find": "    this.drop();\n    this.ports.emit({ id, type: held.sent > 0 ? 'done' : 'error', text: '' });",
+  "replace": "    this.ports.emit({ id, type: held.sent > 0 ? 'done' : 'error', text: '' });",
+  "what": "I-177：打断后没放出来的后半段又被一下倒进气泡",
+  "tests": [
+   "tests/unbound-send-interrupt.test.ts"
+  ]
+ },
+ {
+  "id": "I177-stop-clears-bubble",
+  "part": "unbound",
+  "file": "electron/unbound/bubble-hold.ts",
+  "find": "      if (!was) return false;",
+  "replace": "      return false;",
+  "what": "I-177：打断时她那条回复的\"停止\"事件把气泡清掉，已经显示的字也没了",
+  "tests": [
+   "tests/unbound-send-interrupt.test.ts"
+  ]
+ },
+ {
+  "id": "I177-fully-shown-gets-note",
+  "part": "unbound",
+  "file": "electron/unbound/bubble-hold.ts",
+  "find": "    const cut = held && held.sent < held.text.length ? { id: held.id, shown: held.sent } : null;",
+  "replace": "    const cut = held ? { id: held.id, shown: held.sent } : null;",
+  "what": "I-177：已经全部显示完的回复也带\"后面没看到\"的说明",
+  "tests": [
+   "tests/unbound-send-interrupt.test.ts"
+  ]
+ },
+ {
+  "id": "I177-control-no-stop",
+  "part": "unbound",
+  "file": "src/brain/pause-talk-send.ts",
+  "find": "  if (ports.answering()) {\n    const timer",
+  "replace": "  if (false) {\n    const timer",
+  "what": "I-177：控制窗口里还在流的回复没先停下就发新话（发不出去，被静默丢掉）",
+  "tests": [
+   "tests/unbound-send-interrupt.test.ts"
+  ]
+ },
+ {
+  "id": "MS1-speaking-mouth-never-shut-by-expression",
+  "part": "unbound",
+  "file": "shared/behaviors/part-mix/mouth.ts",
+  "find": "  const floored = scale * mixed < floor && mixed < 1;",
+  "replace": "  const floored = false;",
+  "what": "2026-11-22：她带着表情（笑、撅嘴）说话时口型偏到张不开的元音，嘴闭着在动（\"嘴巴一段时间一直闭着说话\"）：张开的最小值没了",
+  "tests": [
+   "tests/mouth-shut-while-talking.test.ts",
+   "tests/part-mix.test.ts",
+   "tests/i175-talk-through.test.ts"
+  ]
+ },
+ {
+  "id": "MS2-smile-vowel-is-a-blend",
+  "part": "unbound",
+  "file": "shared/behaviors/part-mix/mouth.ts",
+  "find": "s = lean * (smile / total) * clamp01(knobs.smileVowelMax);",
+  "replace": "s = lean * (smile / total);",
+  "what": "2026-11-22：笑着说话时口型整个换成い（在 One 上い完全不张嘴），不再大多留在あ",
+  "tests": [
+   "tests/mouth-shut-while-talking.test.ts",
+   "tests/part-mix.test.ts",
+   "tests/i175-talk-through.test.ts"
+  ]
+ },
+ {
+  "id": "MS3-flap-ceiling",
+  "part": "unbound",
+  "file": "src/unbound/mouth.ts",
+  "find": "      if (speaking > cap) { speaking = cap; capped = true; }",
+  "replace": "      if (speaking > cap) { capped = true; }",
+  "what": "2026-11-22：说话时嘴张开的上限没了（\"要放置嘴长得太大\"）",
+  "tests": [
+   "tests/mouth-shut-while-talking.test.ts"
+  ]
+ },
+ {
+  "id": "MS4-flap-calibration",
+  "part": "unbound",
+  "file": "shared/behaviors/part-mix/mouth.ts",
+  "find": "  const gain = Math.min(1.6, 0.95 / FLAP_PEAK, Math.max(0.5, wanted));",
+  "replace": "  const gain = 1;",
+  "what": "2026-11-22：每个模型说话时嘴张多大不再按它自己的嘴校准（One 只张一条线、Gene 张得太大）",
+  "tests": [
+   "tests/mouth-shut-while-talking.test.ts"
+  ]
+ },
+ {
+  "id": "I184-never-not-shown",
+  "part": "unbound",
+  "file": "shared/unbound/close-moments/chooser.ts",
+  "find": "  if (!g.shown) return 'not-shown';",
+  "replace": "",
+  "what": "I-184：她不在全屏里（没人看得见）时也会亲亲抱抱",
+  "tests": [
+   "tests/unbound-close-moments.test.ts"
+  ]
+ },
+ {
+  "id": "I184-never-asleep",
+  "part": "unbound",
+  "file": "shared/unbound/close-moments/chooser.ts",
+  "find": "  if (g.asleep) return 'asleep';",
+  "replace": "",
+  "what": "I-184：她睡着时也会亲亲抱抱",
+  "tests": [
+   "tests/unbound-close-moments.test.ts"
+  ]
+ },
+ {
+  "id": "I184-never-speaking",
+  "part": "unbound",
+  "file": "shared/unbound/close-moments/chooser.ts",
+  "find": "  if (g.speaking) return 'speaking';",
+  "replace": "",
+  "what": "I-184：她正在说话时也会去亲亲抱抱",
+  "tests": [
+   "tests/unbound-close-moments.test.ts"
+  ]
+ },
+ {
+  "id": "I184-day-cap",
+  "part": "unbound",
+  "file": "shared/unbound/close-moments/chooser.ts",
+  "find": "    if (today.all >= k.ownPerDay) capped.push('day');",
+  "replace": "",
+  "what": "I-184：她自己来的亲亲抱抱没有每天上限",
+  "tests": [
+   "tests/unbound-close-moments.test.ts"
+  ]
+ },
+ {
+  "id": "I184-pulled-cooldown",
+  "part": "unbound",
+  "file": "shared/unbound/close-moments/chooser.ts",
+  "find": "  } else if (last !== null && input.now >= last && input.now - last < k.pulledCooldownMinutes * 60_000) capped.push('cooldown');",
+  "replace": "  }",
+  "what": "I-184：刚亲过，一直把她拉近她就一直亲",
+  "tests": [
+   "tests/unbound-close-moments.test.ts",
+   "tests/unbound-close-moments-host.test.ts"
+  ]
+ },
+ {
+  "id": "I184-hug-arms-held",
+  "part": "unbound",
+  "file": "shared/unbound/close-moments/chooser.ts",
+  "find": "  if (input.gates.armsHeld) capped.push('arms');",
+  "replace": "",
+  "what": "I-184：游戏、递东西或牵手占着她的手臂时也会抱抱",
+  "tests": [
+   "tests/unbound-close-moments.test.ts",
+   "tests/unbound-close-moments-host.test.ts"
+  ]
+ },
+ {
+  "id": "I184-hug-page-arms",
+  "part": "unbound",
+  "file": "src/unbound/director/close-moment.ts",
+  "find": "(this.hooks.armsFree() ? 1 : -1)",
+  "replace": "(1)",
+  "what": "I-184：页面上游戏占着手臂时抱抱的手臂还是伸出来（和游戏抢手）",
+  "tests": [
+   "tests/unbound-close-moment-gene.test.ts"
+  ]
+ },
+ {
+  "id": "I184-pucker-speaking",
+  "part": "unbound",
+  "file": "shared/unbound/close-moments/timeline.ts",
+  "find": "if (speaking || want <= 1e-4)",
+  "replace": "if (want <= 1e-4)",
+  "what": "I-184：嘟嘴开始后她又开口，嘴不收回去（和口型抢嘴）",
+  "tests": [
+   "tests/unbound-close-moments.test.ts"
+  ]
+ },
+ {
+  "id": "I184-pucker-start",
+  "part": "unbound",
+  "file": "shared/unbound/close-moments/timeline.ts",
+  "find": "else if (this.started || mayStart)",
+  "replace": "else if (true)",
+  "what": "I-184：她说话或一句话没说完时也开始嘟嘴",
+  "tests": [
+   "tests/unbound-close-moments.test.ts"
+  ]
+ },
+ {
+  "id": "I184-page-mouth-gate",
+  "part": "unbound",
+  "file": "src/unbound/director/close-moment.ts",
+  "find": "this.pucker.frame(step, channels.pucker, mouth.mayStart, mouth.speaking)",
+  "replace": "this.pucker.frame(step, channels.pucker, true, false)",
+  "what": "I-184：页面上不问\"能不能闭嘴做形态\"就嘟嘴（说话时也嘟）",
+  "tests": [
+   "tests/unbound-close-moment-gene.test.ts"
+  ]
+ },
+ {
+  "id": "I184-record-once",
+  "part": "unbound",
+  "file": "electron/unbound/peek.ts",
+  "find": "if (close && !close.recorded && report.phase === 'hold'",
+  "replace": "if (close && report.phase === 'hold'",
+  "what": "I-184：一次亲亲记好几次心情和回忆",
+  "tests": [
+   "tests/unbound-close-moments-host.test.ts"
+  ]
+ },
+ {
+  "id": "I184-record-cancelled",
+  "part": "unbound",
+  "file": "electron/unbound/peek.ts",
+  "find": "report.phase === 'hold' && !current.cancelled && close.kind !== 'shy'",
+  "replace": "report.phase === 'hold' && close.kind !== 'shy'",
+  "what": "I-184：还没亲到你就动了鼠标，也记成亲过",
+  "tests": [
+   "tests/unbound-close-moments-host.test.ts"
+  ]
+ },
+ {
+  "id": "I184-pull-hold",
+  "part": "unbound",
+  "file": "electron/unbound/close-moments.ts",
+  "find": "    if (!(num(heldMs, 0) >= this.knobs().pullHoldMs)) return 'look';",
+  "replace": "",
+  "what": "I-184：拉近一下就松手也算\"拉近了\"（还没停稳她就做决定）",
+  "tests": [
+   "tests/unbound-close-moments-host.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I185-hug-arms-held-host",
+  "file": "shared/unbound/close-moments/chat.ts",
+  "find": "  if (input.kind === 'hug' && g.armsHeld && !handYieldsTo(input.kind, input.arms)) return 'arms';",
+  "replace": "",
+  "what": "I-185：猜拳、递东西占着手臂时，回复里的 ⟦hug⟧ 还是让她走过来伸手抱（和游戏抢手）；2026-11-25 起她自己伸手等牵手不算，那时手先收回",
+  "tests": [
+   "tests/i185-kiss-hug.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I185-hug-arms-held-page",
+  "file": "src/unbound/speech-beat-player.ts",
+  "find": "  const noArms = o.armsHeld || o.arms === false;",
+  "replace": "  const noArms = o.arms === false;",
+  "what": "I-185：手被占着时，小窗原地抱和全屏轻一点的抱抱还是张开手臂",
+  "tests": [
+   "tests/i185-kiss-hug.test.ts"
+  ]
+ },
+ {
+  "id": "I190-right-click-no-touch",
+  "part": "unbound",
+  "file": "electron/unbound/typing.ts",
+  "find": "    if (report.menu) { this.openAt(report.head, true); return; } // I-190: a right click opens the senses panel; it is not a touch",
+  "replace": "",
+  "what": "I-190：右键她（打开感知面板）也被当成一次触摸报给她",
+  "tests": [
+   "tests/i190-source-pickers.test.ts"
+  ]
+ },
+ {
+  "id": "I190-watch-out-screen",
+  "part": "unbound",
+  "file": "electron/unbound/input-watch.ts",
+  "find": "          if (on || !ports.screenHeld()) await ports.setScreen(on);",
+  "replace": "          await ports.setScreen(on);",
+  "what": "I-190 全屏感知面板的一起看：她在外面时关一起看也把屏幕共享关掉（权限包一秒后又开回，来回闪）",
+  "tests": [
+   "tests/i190-unbound-watch.test.ts"
+  ]
+ },
+ {
+  "id": "I190-watch-mark",
+  "part": "unbound",
+  "file": "src/unbound/input-senses.ts",
+  "find": "    if (look.notHeard) { const mark = make('span', 'senses-mark'); mark.setAttribute('aria-hidden', 'true'); name.append(mark); }",
+  "replace": "",
+  "what": "I-190 全屏感知面板的一起看：看着画面但台词没在听时不画小圆点（眼睛按钮会画）",
+  "tests": [
+   "tests/i190-unbound-watch.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I192-face-never-through-lens",
+  "file": "shared/unbound/arrival/face.ts",
+  "find": "  return { distanceM: Math.max(fitM, clipM, knobs.minFaceM), fitM, clipM, reachM, clipped: clipM > Math.max(fitM, knobs.minFaceM) };",
+  "replace": "  return { distanceM: Math.max(fitM, knobs.minFaceM), fitM, clipM, reachM, clipped: false };",
+  "what": "I-192：脸贴过来时不看鼻尖、刘海、头发离镜头多近，会穿进摄像头（用户：注意不能穿模摄像头那一块）",
+  "tests": [
+   "tests/i192-arrival-targets.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I192-peek-never-through-lens",
+  "file": "src/unbound/director/peek-lens.ts",
+  "find": "      this.boneDistance = Math.max(this.boneDistance, eyeClearDistance(face, { x: e.x - h.x, y: e.y - h.y, z: e.z - h.z }));",
+  "replace": "",
+  "what": "I-192：凑近看把眼睛凑到最近时，鼻子、刘海穿进摄像头",
+  "tests": [
+   "tests/i192b-arrival-framing.test.ts",
+   "tests/unbound-peek-body.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I192-arrival-reached",
+  "file": "src/unbound/director/close-target.ts",
+  "find": "lean: solve.lean, stand: solve.stand, start,",
+  "replace": "lean: solve.lean, stand: { x: lens.camera.x, z: -0.9 }, start,",
+  "what": "I-192：亲亲、抱抱还停在“脸”那一档，脸没到镜头前的到达位置（用户：要像最初的凑近屏幕看看一样近）",
+  "tests": [
+   "tests/i192-arrival-models.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I192-arrival-loop",
+  "file": "src/unbound/motion/arrive.ts",
+  "find": "    this.loop.step(error, sense.offsets, sense.tiptoeRise * toes, w > 1e-4 && arrive.chase !== false ? 1 : 0, dt);",
+  "replace": "    this.loop.step(error, sense.offsets, sense.tiptoeRise * toes, 0, dt);",
+  "what": "I-192：最后几厘米没人管，脸停在估算的位置，离到达位置差几厘米（每个模型不一样）",
+  "tests": [
+   "tests/i192-arrival-models.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I192-pucker-shows-in-hold",
+  "file": "src/unbound/director/close-moment.ts",
+  "find": "        if (!this.frames.goesOn(holdGoesOn(this.hold.state(plan.holdS, mouth.speaking)), this.hold.beat, this.t)) { this.from = { ...channels }; this.goBack(); }",
+  "replace": "        if (this.beat >= 1) { this.from = { ...channels }; this.goBack(); }",
+  "what": "I-192：亲亲只停一秒左右，她还在说话时就退了，嘟嘴始终没出来",
+  "tests": [
+   "tests/i192-arrival-models.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I192-hold-after-speech",
+  "file": "shared/unbound/arrival/hold.ts",
+  "find": "  return state.spoke && state.quietS < knobs.afterSpeechS;",
+  "replace": "  return false;",
+  "what": "I-192：她停住时在说话，说完马上退开，嘟嘴来不及出来",
+  "tests": [
+   "tests/i192-arrival-targets.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I192-lean-in-holds",
+  "file": "src/unbound/speech-beat-hold.ts",
+  "find": "    if (body && span) { // I-192: the lean-in stays while she speaks (at least its own hold), up to the close poses' cap",
+  "replace": "    if (false && body && span) {",
+  "what": "I-192：回复里的“凑近一点”凑过来一下就退回去",
+  "tests": [
+   "tests/i192-lean-in-hold.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I185-call-kiss-hug-host",
+  "file": "shared/unbound/close-moments/chat.ts",
+  "find": "export const CHAT_CLOSE_CALL_BLOCKS: readonly ChatCloseKind[] = Object.freeze([]);",
+  "replace": "export const CHAT_CLOSE_CALL_BLOCKS: readonly ChatCloseKind[] = Object.freeze(['kiss', 'hug'] as ChatCloseKind[]);",
+  "what": "I-185：通话里她回复里写的亲亲、抱抱又不走过来了",
+  "tests": [
+   "tests/i185-kiss-hug.test.ts"
+  ]
+ },
+ {
+  "id": "I196-pull-never-touch",
+  "part": "unbound",
+  "file": "src/unbound/pull-input.ts",
+  "find": "pullReportMessage(report, place, near, near ? this.endNearHeldMs : 0, stick)",
+  "replace": "pullReportMessage(report, place, near, near ? this.endNearHeldMs : 0, false)",
+  "what": "拉她身体或头发（摇杆式拉法、滚轮）永远是\"拉\"不是\"碰\"：报告带 stick 标记，主机不告诉触碰脑，不会有触碰反应或触碰的话",
+  "tests": [
+   "tests/i196-joystick-pull.test.ts"
+  ]
+ },
+ {
+  "id": "I196-pull-never-touch-host",
+  "part": "unbound",
+  "file": "electron/unbound/pull-answer.ts",
+  "find": "if (message.stick !== true) try { this.ports.pull?.(message.report); }",
+  "replace": "try { this.ports.pull?.(message.report); }",
+  "what": "主机收到带 stick 标记的拉她报告时，不转给触碰脑（拉不是碰），但她被拉到的地方照样记为她的位置",
+  "tests": [
+   "tests/unbound-typing.test.ts"
+  ]
+ },
+ {
+  "id": "I196-pull-hold-is-not-touch",
+  "part": "unbound",
+  "file": "shared/unbound/pull-stick/press.ts",
+  "find": "    if (this.state !== 'pending') return this.state;\n    if (Math.hypot(x - this.from.x, y - this.from.y) <= this.knobs.deadZonePx) return 'pending';",
+  "replace": "    if (this.state === 'idle') return this.state;\n    if (Math.hypot(x - this.from.x, y - this.from.y) <= this.knobs.deadZonePx) return 'pending';",
+  "what": "已经算碰的那一次按住，手再挪出去不会又变成拉（一次按下要么是碰要么是拉，不会两个都是）",
+  "tests": [
+   "tests/i194-click-not-touch.test.ts"
+  ]
+ },
+ {
+  "id": "I196-dead-zone-nothing-moves",
+  "part": "unbound",
+  "file": "shared/unbound/pull-stick/stick.ts",
+  "find": "  if (length <= knobs.deadZonePx) return ZERO;",
+  "replace": "  if (length <= 0) return ZERO;",
+  "what": "按下点周围的小圈里（手抖）怎么动她都不动",
+  "tests": [
+   "tests/i196-joystick-pull.test.ts"
+  ]
+ },
+ {
+  "id": "I196-stick-down-is-closer",
+  "part": "unbound",
+  "file": "shared/unbound/pull-stick/stick.ts",
+  "find": "const closer = Math.exp(-knobs.depthRatePerS * reading.depth * knobs.lookAheadS);",
+  "replace": "const closer = Math.exp(knobs.depthRatePerS * reading.depth * knobs.lookAheadS);",
+  "what": "摇杆式拉：鼠标在按下点下面是拉近、上面是推远（方向，不能反）",
+  "tests": [
+   "tests/i196-joystick-pull.test.ts",
+   "tests/unbound-pull-body.test.ts"
+  ]
+ },
+ {
+  "id": "I196-stick-speed-capped",
+  "part": "unbound",
+  "file": "shared/unbound/pull-stick/stick.ts",
+  "find": "const t = Math.min(1, Math.abs(value * outside) / span);",
+  "replace": "const t = Math.abs(value * outside) / span;",
+  "what": "摇杆偏得再远也不会比\"最快\"更快",
+  "tests": [
+   "tests/i196-joystick-pull.test.ts"
+  ]
+ },
+ {
+  "id": "I196-stick-near-limit",
+  "part": "unbound",
+  "file": "src/unbound/pull-stick.ts",
+  "find": "const wanted = stickGoal(here, reading, viewer, this.knobs), depthM = this.ports.clampDepth(wanted.depthM);",
+  "replace": "const wanted = stickGoal(here, reading, viewer, this.knobs), depthM = wanted.depthM;",
+  "what": "摇杆拉近到\"眼睛\"那一档为止，不近于它（那一档带着不穿模镜头的护栏），远端是 12.5 米",
+  "tests": [
+   "tests/i196-joystick-pull.test.ts",
+   "tests/unbound-pull-near.test.ts"
+  ]
+ },
+ {
+  "id": "I196-near-station-keeps-clear",
+  "part": "unbound",
+  "file": "src/unbound/pull-near.ts",
+  "find": "const aEyes = Math.max(peekDistance({ eyeFill: EYE_FILL, eyeDistanceM: 0.11 }, body.eyeSizeM, lens), body.clearM ?? 0) + body.eyeForwardM;",
+  "replace": "const aEyes = peekDistance({ eyeFill: EYE_FILL, eyeDistanceM: 0.11 }, body.eyeSizeM, lens) + body.eyeForwardM;",
+  "what": "拉她拉到最近那一档时，鼻尖、刘海、头发不穿进镜头（I-192 的护栏，和凑近看同一条）",
+  "tests": [
+   "tests/i196-joystick-pull.test.ts"
+  ]
+ },
+ {
+  "id": "I194-click-opening-box-is-not-touch",
+  "part": "unbound",
+  "file": "electron/unbound/typing.ts",
+  "find": "if (report.hold === true || this.boxOpen) this.ports.touch(",
+  "replace": "if (true) this.ports.touch(",
+  "what": "全屏里点她打开\"对她说\"的框是想聊天，不算碰（没有触碰记录、反应、触碰的话和心情事件）；框开着再点她才算碰",
+  "tests": [
+   "tests/i194-click-not-touch.test.ts",
+   "tests/unbound-typing.test.ts"
+  ]
+ },
+ {
+  "id": "I194-press-held-still-is-touch",
+  "part": "unbound",
+  "file": "src/unbound/pull-input.ts",
+  "find": "if (this.judge.tick(now) === 'touch') { this.ports.dot?.hide(); this.ports.holdTouch?.(); }",
+  "replace": "if (this.judge.tick(now) === 'touch') { this.ports.dot?.hide(); }",
+  "what": "在她身上按住不动（不超出手抖那一圈）够久才算碰她一下",
+  "tests": [
+   "tests/i194-click-not-touch.test.ts"
+  ]
+ },
+ {
+  "id": "PM9-sentence-open-queues-direct",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-motions.ts",
+  "find": "(busy === '' && closedMouthMustWait({ held: false, sentenceOpen: env.sentenceOpen === true }))",
+  "replace": "false",
+  "what": "Codex T-258 C01：朗读关着、气泡里这句话还没显示完时，直接请求的鼓腮不排队，立刻开始（句中保护只管排着的那条路）",
+  "tests": [
+   "tests/i175-talk-through.test.ts"
+  ]
+ },
+ {
+  "id": "PM10-pucker-fallback-role-by-landing",
+  "part": "unbound",
+  "file": "src/unbound/intent-layer.ts",
+  "find": "(key ? mouthRoleOfName(key) : null) ?? mouthRoleOfName(names)",
+  "replace": "mouthRoleOfName(names)",
+  "what": "Codex T-258 C02：没有单独撅嘴形态的模型，撅嘴的备用名落在「う」上却按第一个名字算“嘴形”，说话时还占着 う，口型的开合被它压成平台",
+  "tests": [
+   "tests/pucker-fallback-index.test.ts"
+  ]
+ },
+ {
+  "id": "PM11-mouth-found-by-vowel-table",
+  "part": "unbound",
+  "file": "src/unbound/mouth.ts",
+  "find": "vowelIndices(mesh.morphTargetDictionary), index = vowels.a;",
+  "replace": "vowelIndices(mesh.morphTargetDictionary), index = legacyMorphIndices(mesh.morphTargetDictionary).mouth;",
+  "what": "Codex T-258 C03：嘴只用旧名字找あ，只有 aa 之类拼法的模型整张嘴没有口型",
+  "tests": [
+   "tests/pucker-fallback-index.test.ts"
+  ]
+ },
+ {
+  "id": "I192b-hold-waits-for-face",
+  "part": "unbound",
+  "file": "src/unbound/director/close-moment.ts",
+  "find": "const there = !this.check || (!!sense && !!checked?.reached);",
+  "replace": "const there = true;",
+  "what": "I-192 补（Codex T-263）：前倾计时一到就停住，不管两眼和嘴进没进画面、有没有穿镜头",
+  "tests": [
+   "tests/i192b-arrival-framing.test.ts",
+   "tests/i192-arrival-models.test.ts"
+  ]
+ },
+ {
+  "id": "I192b-hold-wait-bounded",
+  "part": "unbound",
+  "file": "src/unbound/director/close-moment.ts",
+  "find": "else if (waited >= ARRIVAL_KNOBS.arriveWaitS) {",
+  "replace": "else if (false) {",
+  "what": "I-192 补：脸到不了时一直等着不退回（定在那儿；T-264 起超时是退回、不记完成）",
+  "tests": [
+   "tests/i192b-arrival-framing.test.ts"
+  ]
+ },
+ {
+  "id": "I192b-face-push",
+  "part": "unbound",
+  "file": "src/unbound/motion/arrive.ts",
+  "find": "    this.framedM += Math.max(-step, Math.min(step, wanted - this.framedM));",
+  "replace": "",
+  "what": "I-192 补：踮脚也够不着镜头高度时不往后让一点，嘴一直在画面外",
+  "tests": [
+   "tests/i192-arrival-models.test.ts"
+  ]
+ },
+ {
+  "id": "I192b-peek-one-eye",
+  "part": "unbound",
+  "file": "src/unbound/director/peek-lens.ts",
+  "find": "this.eye = ARRIVAL_KNOBS.peekEyes >= 2 ? 'both' : chooseEye(",
+  "replace": "this.eye = ARRIVAL_KNOBS.peekEyes >= 1 ? 'both' : chooseEye(",
+  "what": "I-104（用户定的）：凑近看不再是一只眼睛贴满屏幕，变成对准两眼中间",
+  "tests": [
+   "tests/i192b-arrival-framing.test.ts"
+  ]
+ },
+ {
+  "id": "I192b-hug-arms-still-recorded",
+  "part": "unbound",
+  "file": "electron/unbound/peek.ts",
+  "find": "    if (close && report.arms === false) close.armsStill = true;",
+  "replace": "",
+  "what": "I-192 补（Codex T-261）：手臂动不了的模型上抱抱（脸贴过来了）记下来时不说手臂没动",
+  "tests": [
+   "tests/i192b-arrival-framing.test.ts"
+  ]
+ },
+ {
+  "id": "I192b-page-reports-arms",
+  "part": "unbound",
+  "file": "src/unbound/director/close-moment.ts",
+  "find": "    return arms !== null ? { arms } : {};",
+  "replace": "    return {};",
+  "what": "I-192 补：页面不告诉主机这个模型手臂动不了，主机就会当作抱抱时手臂动了",
+  "tests": [
+   "tests/i192b-arrival-framing.test.ts"
+  ]
+ },
+ {
+  "id": "I193-position-info-only",
+  "part": "unbound",
+  "file": "shared/unbound/her-position/words.ts",
+  "find": "line = `你现在${far !== null ? `离用户约 ${metres(far)} 米，` : ''}站在${where}`;",
+  "replace": "line = `请你走到${where}`;",
+  "what": "I-193 她每轮读到的方位只是一句说明，不会变成叫她去哪的指令",
+  "tests": [
+   "tests/i193-her-position.test.ts"
+  ]
+ },
+ {
+  "id": "I193-go-never-teleports",
+  "part": "unbound",
+  "file": "shared/unbound/life/host.ts",
+  "find": "walk: { xM: world.xM, depthM: world.depthM, speedMps: go.speedMps }, amplitude: context.drives.amplitude, easeS: 1, waitQuickS: 0 };\n    if (this.current)",
+  "replace": "walk: null, amplitude: context.drives.amplitude, easeS: 1, waitQuickS: 0 };\n    if (this.current)",
+  "what": "I-193 她写的\"去哪\"是走过去（步态的走路计划），不是瞬移",
+  "tests": [
+   "tests/i193-her-position.test.ts"
+  ]
+ },
+ {
+  "id": "I193-go-gate-pulled",
+  "part": "unbound",
+  "file": "shared/unbound/her-position/gates.ts",
+  "find": "  if (g.pulled) return 'pulled';\n",
+  "replace": "",
+  "what": "I-193 你在拉她时她不按回复里写的去走",
+  "tests": [
+   "tests/i193-her-position.test.ts"
+  ]
+ },
+ {
+  "id": "I193-go-gate-typing",
+  "part": "unbound",
+  "file": "shared/unbound/her-position/gates.ts",
+  "find": "  if (g.typing) return 'typing';\n",
+  "replace": "",
+  "what": "I-193 你开着框给她打字时她不按回复里写的去走",
+  "tests": [
+   "tests/i193-her-position.test.ts"
+  ]
+ },
+ {
+  "id": "I193-go-gate-playing",
+  "part": "unbound",
+  "file": "shared/unbound/her-position/gates.ts",
+  "find": "  if (g.playing) return 'playing';\n",
+  "replace": "",
+  "what": "I-193 你在和她玩（游戏、递东西）时她不按回复里写的去走",
+  "tests": [
+   "tests/i193-her-position.test.ts"
+  ]
+ },
+ {
+  "id": "I193-go-gate-asleep",
+  "part": "unbound",
+  "file": "shared/unbound/her-position/gates.ts",
+  "find": "  if (g.asleep) return 'asleep';\n",
+  "replace": "",
+  "what": "I-193 她睡着时不按回复里写的去走",
+  "tests": [
+   "tests/i193-her-position.test.ts"
+  ]
+ },
+ {
+  "id": "I193-go-gate-close-moment",
+  "part": "unbound",
+  "file": "shared/unbound/her-position/gates.ts",
+  "find": "  if (g.busy) return 'busy';\n",
+  "replace": "",
+  "what": "I-193 凑近看、亲亲、抱抱这类贴近的时刻正在演时她不去走",
+  "tests": [
+   "tests/i193-her-position.test.ts"
+  ]
+ },
+ {
+  "id": "I193-go-keeps-clear-of-window",
+  "part": "unbound",
+  "file": "shared/unbound/her-position/go.ts",
+  "find": "apart.find(candidate => !(input.covers?.(candidate) ?? false))",
+  "replace": "apart[0]",
+  "what": "I-193 她走去的位置不会盖住你正在用的窗口（有这个读数时）",
+  "tests": [
+   "tests/i193-her-position.test.ts"
+  ]
+ },
+ {
+  "id": "I193-go-near-fits-body",
+  "part": "unbound",
+  "file": "shared/unbound/her-position/go.ts",
+  "find": "Math.max(nearest, here.size)) });",
+  "replace": "GO_SIZE[1]) });",
+  "what": "I-193 \"走近\"一小步不会走到放不下全身、脚沉到任务栏下面的大小",
+  "tests": [
+   "tests/i193-her-position.test.ts"
+  ]
+ },
+ {
+  "id": "I193-go-walk-survives-talking",
+  "part": "unbound",
+  "file": "shared/unbound/action-ends/rules.ts",
+  "find": "  walk: Object.freeze(['pull', 'click', 'play'] as EndCause[]),",
+  "replace": "  walk: Object.freeze(['pull', 'click', 'play', 'reply', 'reading', 'call', 'typing'] as EndCause[]),",
+  "what": "I-193 她按回复写的去走，说话、朗读、通话、你打字时被收回（应该边说边走）",
+  "tests": [
+   "tests/i193-her-position.test.ts"
+  ]
+ },
+ {
+  "id": "I193-go-walk-ends-on-pull",
+  "part": "unbound",
+  "file": "shared/unbound/action-ends/rules.ts",
+  "find": "  walk: Object.freeze(['pull', 'click', 'play'] as EndCause[]),",
+  "replace": "  walk: Object.freeze([] as EndCause[]),",
+  "what": "I-193 走到一半你拉她、和她玩或点她，她就停下",
+  "tests": [
+   "tests/i193-her-position.test.ts"
+  ]
+ },
+ {
+  "id": "I193-page-asks-only",
+  "part": "unbound",
+  "file": "src/unbound/speech-beat-player.ts",
+  "find": "      if (isGoBeatWord(play.word)) { this.askGo(play.word, play.goTo); continue; }",
+  "replace": "      if (isGoBeatWord(play.word)) { this.playWord(play.word as never, home, play.how, play.replyId, play.at); continue; }",
+  "what": "I-193 页面遇到\"去哪\"的词只问主机，自己不演动作、不挪她的位置",
+  "tests": [
+   "tests/i193-her-position.test.ts"
+  ]
+ },
+ {
+  "id": "I193-cursor-never-guessed",
+  "part": "unbound",
+  "file": "src/unbound/go-cursor.ts",
+  "find": "    if (!(w > 0) || !Number.isFinite(this.x) || this.now() - this.at > this.freshMs) return null;",
+  "replace": "    if (!(w > 0) || !Number.isFinite(this.x)) return null;",
+  "what": "I-193 \"到你鼠标旁边\"只用页面刚看到的鼠标位置，很久没动过就不去猜",
+  "tests": [
+   "tests/i193-her-position.test.ts"
+  ]
+ },
+ {
+  "id": "perf-low-needs-two",
+  "part": "unbound",
+  "file": "shared/unbound/perf-tiers.ts",
+  "find": "  if (stored.tier !== DEFAULT_TIER && stored.tests < CONFIRM_TESTS) return null;",
+  "replace": "",
+  "what": "画质：只测过一次的低档不算数，下次启动重测（一次自测可能赶上电脑正忙）",
+  "tests": [
+   "tests/unbound-perf-manager.test.ts",
+   "tests/unbound-perf-tiers.test.ts"
+  ]
+ },
+ {
+  "id": "perf-drop-session-only",
+  "part": "unbound",
+  "file": "src/unbound/perf.ts",
+  "find": "      this.apply(lowerTier(from)); // for this session only: nothing is stored, the next start begins at the tested tier",
+  "replace": "      this.apply(lowerTier(from)); this.write(2);",
+  "what": "画质：会话里的降档只管这一次，不存进记录、不带到下次启动",
+  "tests": [
+   "tests/unbound-perf-manager.test.ts"
+  ]
+ },
+ {
+  "id": "I199-never-hides",
+  "part": "unbound",
+  "file": "electron/unbound/host.ts",
+  "find": "    if (inFront && win && !win.isDestroyed()) win.raise?.();",
+  "replace": "    if (inFront && win && !win.isDestroyed()) { win.raise?.(); win.setIgnoreMouseEvents(true, { forward: true }); win.hide(); }",
+  "what": "I-199：全屏程序一出来又把她藏起来",
+  "tests": [
+   "tests/i199-fullscreen-never-hides.test.ts"
+  ]
+ },
+ {
+  "id": "I199-never-ends-peek",
+  "part": "unbound",
+  "file": "electron/unbound/host.ts",
+  "find": "    if (inFront && win && !win.isDestroyed()) win.raise?.();",
+  "replace": "    if (inFront && win && !win.isDestroyed()) win.raise?.();\n    if (inFront) this.peek?.interrupt('play');",
+  "what": "I-199：全屏程序一出来就让她从镜头前退开（打断正在做的事）",
+  "tests": [
+   "tests/i199-fullscreen-never-hides.test.ts",
+   "tests/unbound-peek-host.test.ts"
+  ]
+ },
+ {
+  "id": "I199-shown-unchanged",
+  "part": "unbound",
+  "file": "electron/unbound/host.ts",
+  "find": "      shown: () => this.mode.state === 'unbound' && !!this.mode.shown, fullscreen: () => this.fullscreenInFront, out:",
+  "replace": "      shown: () => this.mode.state === 'unbound' && !!this.mode.shown && !this.fullscreenInFront, fullscreen: () => this.fullscreenInFront, out:",
+  "what": "I-199：全屏程序在前面时她的生活又当她“不在外面”",
+  "tests": [
+   "tests/i199-fullscreen-never-hides.test.ts"
+  ]
+ },
+ {
+  "id": "I199-bubble-shown",
+  "part": "unbound",
+  "file": "electron/unbound/host.ts",
+  "find": " win.isVisible();\n  }",
+  "replace": " win.isVisible() && !this.fullscreenInFront;\n  }",
+  "what": "I-199：全屏程序在前面时她的气泡又算看不见（朗读、她自己的话停下）",
+  "tests": [
+   "tests/i199-fullscreen-never-hides.test.ts",
+   "tests/unbound-read-aloud.test.ts"
+  ]
+ },
+ {
+  "id": "I199-no-timer-raise",
+  "part": "unbound",
+  "file": "electron/unbound/host.ts",
+  "find": "() => { this.peek?.tick(); this.life?.tick(); });",
+  "replace": "() => { this.peek?.tick(); this.life?.tick(); if (this.fullscreenInFront) this.shownWin?.raise?.(); });",
+  "what": "I-199：全屏程序在前面时每秒把她再抬一次（压住之后出现的开始菜单、托盘、截图遮罩，I-062）",
+  "tests": [
+   "tests/i199-fullscreen-never-hides.test.ts"
+  ]
+ },
+ {
+  "id": "I199-raise-once-per-arrival",
+  "part": "unbound",
+  "file": "electron/unbound/host.ts",
+  "find": "    if (inFront === this.fullscreenInFront) return;",
+  "replace": "    if (inFront === this.fullscreenInFront && !inFront) return;",
+  "what": "I-199：同一次全屏的重复读数又把她抬一次",
+  "tests": [
+   "tests/i199-fullscreen-never-hides.test.ts"
+  ]
+ },
+ {
+  "id": "I199-raise-on-arrival",
+  "part": "unbound",
+  "file": "electron/unbound/host.ts",
+  "find": "    if (inFront && win && !win.isDestroyed()) win.raise?.();",
+  "replace": "    if (win && !win.isDestroyed()) win.raise?.();",
+  "what": "I-199：全屏程序走了也抬她（只该在出现那一刻）",
+  "tests": [
+   "tests/i199-fullscreen-never-hides.test.ts"
+  ]
+ },
+ {
+  "id": "I199-reading-reaches-her",
+  "part": "unbound",
+  "file": "electron/unbound/host.ts",
+  "find": "      fullscreen: () => this.fullscreenInFront,\n      send: command",
+  "replace": "      fullscreen: () => false,\n      send: command",
+  "what": "I-199：全屏读数不再作为信息告诉她（她自己的凑近不知道你在看全屏）",
+  "tests": [
+   "tests/i199-fullscreen-never-hides.test.ts"
+  ]
+ },
+ {
+  "id": "I199-trial-not-held",
+  "part": "unbound",
+  "file": "electron/unbound/peek.ts",
+  "find": "  trial(): boolean {\n    if (!safe(() => this.link.shown(), false) || this.active) return false;",
+  "replace": "  trial(): boolean {\n    if (!safe(() => this.link.shown(), false) || safe(() => this.link.fullscreen(), false) || this.active) return false;",
+  "what": "I-199：叫她试一下凑过来，又被全屏程序挡住（叫她做的事不受“全屏”挡）",
+  "tests": [
+   "tests/i199-fullscreen-never-hides.test.ts",
+   "tests/unbound-peek.test.ts"
+  ]
+ },
+ {
+  "id": "AE1-pointer-never-ends",
+  "part": "unbound",
+  "file": "shared/unbound/action-ends/rules.ts",
+  "find": "const CLOSE: readonly EndCause[] = Object.freeze(['pull', 'play']);",
+  "replace": "const CLOSE: readonly EndCause[] = Object.freeze(['pull', 'play', 'pointer']);",
+  "what": "2026-11-23（用户：\"执行的动作不能动鼠标就打断\"）：动鼠标又能打断亲、抱、凑近看",
+  "tests": [
+   "tests/action-ends.test.ts",
+   "tests/i192-arrival-targets.test.ts"
+  ]
+ },
+ {
+  "id": "AE2-click-keeps-close",
+  "part": "unbound",
+  "file": "shared/unbound/action-ends/rules.ts",
+  "find": "const CLOSE: readonly EndCause[] = Object.freeze(['pull', 'play']);",
+  "replace": "const CLOSE: readonly EndCause[] = Object.freeze(['pull', 'play', 'click']);",
+  "what": "2026-11-23（用户：\"点击身上不会打断一些动作，比如亲亲抱抱\"）：点她身上又打断亲、抱",
+  "tests": [
+   "tests/action-ends.test.ts",
+   "tests/i192-arrival-targets.test.ts"
+  ]
+ },
+ {
+  "id": "AE3-small-press-is-tug",
+  "part": "unbound",
+  "file": "shared/unbound/action-ends/rules.ts",
+  "find": "  return Number.isFinite(d) && d >= knobs.largePullPx ? 'pull' : 'tug';",
+  "replace": "  return Number.isFinite(d) && d >= 0 ? 'pull' : 'tug';",
+  "what": "2026-11-23（用户：\"按住和拉可以是小幅的不打断，大幅打断\"）：小幅按住、拉一下也打断她正在做的",
+  "tests": [
+   "tests/action-ends.test.ts"
+  ]
+ },
+ {
+  "id": "AE4-tug-has-physics",
+  "part": "unbound",
+  "file": "src/unbound/pull-input.ts",
+  "find": "    this.figure?.pullTo(this.ports.view(), at.x, at.y);",
+  "replace": "",
+  "what": "2026-11-23（用户：\"小幅也还是有物理效果\"）：小幅拉她时身子一点也不跟着动（被当成没发生）",
+  "tests": [
+   "tests/action-ends.test.ts"
+  ]
+ },
+ {
+  "id": "AE5-typing-never-ends-life",
+  "part": "unbound",
+  "file": "shared/unbound/action-ends/rules.ts",
+  "find": "  life: Object.freeze(['pull', 'click', 'play', 'call', 'waiting', 'reply', 'reading'] as EndCause[]),",
+  "replace": "  life: Object.freeze(['pull', 'click', 'play', 'call', 'waiting', 'reply', 'reading', 'typing'] as EndCause[]),",
+  "what": "2026-11-23（用户：\"打字不打断动作\"）：你打字时她自己的小动作被收回",
+  "tests": [
+   "tests/unbound-life-host.test.ts",
+   "tests/action-ends.test.ts"
+  ]
+ },
+ {
+  "id": "AE6-blocked-close-journaled",
+  "part": "unbound",
+  "file": "electron/unbound/peek.ts",
+  "find": "    if (block) safe(() => { this.ports.notes?.missed(kind, block!); return true; }, false);",
+  "replace": "",
+  "what": "2026-11-23（用户：\"8：41抱抱没成功\"）：她回复里写的亲抱被挡掉时又悄无声息（不记体验记录、下一轮不告诉她）",
+  "tests": [
+   "tests/close-beat-order.test.ts"
+  ]
+ },
+ {
+  "id": "AE7-chat-close-no-cooldown",
+  "part": "unbound",
+  "file": "electron/unbound/close-moments.ts",
+  "find": "    const block = chatCloseBlock({ kind, gates: this.gates(base), busy, arms: this.arms() });",
+  "replace": "    const last = this.history.lastAt(); const block = chatCloseBlock({ kind, gates: this.gates(base), busy, arms: this.arms() }) ?? (last !== null && now - last < 3 * 60_000 ? 'cooldown' : null);",
+  "what": "2026-11-23（用户：\"冷却只档自主行为，所有冷却。\"）：她回复里写的亲抱又有了冷却（原来的 chatCooldownMinutes 3 分钟）",
+  "tests": [
+   "tests/close-beat-order.test.ts",
+   "tests/i185-kiss-hug.test.ts"
+  ]
+ },
+ {
+  "id": "AE8-typing-reset-on-send",
+  "part": "unbound",
+  "file": "electron/unbound/typing.ts",
+  "find": "    this.typedAt = -Infinity; // 2026-11-23: the keys of the line being sent are not \"typing now\": her reply to it is never gated by them",
+  "replace": "",
+  "what": "2026-11-23（10:39 回复开头的抱抱）：你刚发出去那句的打字被当成\"正在打字\"，挡掉她回复开头的亲抱",
+  "tests": [
+   "tests/close-beat-order.test.ts"
+  ]
+ },
+ {
+  "id": "AE9-typing-is-keys",
+  "part": "unbound",
+  "file": "electron/unbound/typing.ts",
+  "find": "  get typingNow(): boolean { const now = this.ports.clock(); return this.boxOpen && now >= this.typedAt && now - this.typedAt < TYPING_RECENT_MS; }",
+  "replace": "  get typingNow(): boolean { return this.boxOpen; }",
+  "what": "2026-11-23（08:41）：\"你在打字\"又变成\"输入框开着\"（没发出去的话退回框里也算打字）",
+  "tests": [
+   "tests/close-beat-order.test.ts"
+  ]
+ },
+ {
+  "id": "AE10-beats-wait-not-dropped",
+  "part": "unbound",
+  "file": "src/unbound/speech-beat-player.ts",
+  "find": "      for (const play of due) this.waiting.push({ play, at: this.clockMs });",
+  "replace": "",
+  "what": "2026-11-23（10:39：\"连凑近都没动\"）：她回复开头的拍子赶上别的动作占着她时被直接丢掉，不等一下",
+  "tests": [
+   "tests/close-beat-order.test.ts"
+  ]
+ },
+ {
+  "id": "AE11-words-after-close-wait",
+  "part": "unbound",
+  "file": "electron/unbound/peek.ts",
+  "find": "    if (report.phase === 'settle' || report.phase === 'done') this.closeDone(current.close); // back from it: her words after it may come",
+  "replace": "    if (report.phase !== 'notice') this.closeDone(current.close);",
+  "what": "2026-11-23（用户：\"发送文字也是提前预知做完了，要有先后顺序。\"）：亲抱后面的话在她还没走到、还没退回时就出来了",
+  "tests": [
+   "tests/close-beat-order.test.ts"
+  ]
+ },
+ {
+  "id": "AE12-large-pull-told",
+  "part": "unbound",
+  "file": "electron/unbound/peek.ts",
+  "find": "    if (report.cancelled === 'pull' && current.cancelled !== 'pull') { // you pulled her away: told and journaled once",
+  "replace": "    if (false) {",
+  "what": "2026-11-23（用户：\"用户打断角色也会知道\"）：你用力把她从亲、抱、凑近看里拉开，她下一轮不知道、也不记一行",
+  "tests": [
+   "tests/close-beat-order.test.ts"
+  ]
+ },
+ {
+  "id": "T264-timed-out-arrival-not-done",
+  "part": "unbound",
+  "file": "src/unbound/director/close-moment.ts",
+  "find": "          this.cancel('unreached');",
+  "replace": "          this.go('hold'); this.hold = new HoldClock();",
+  "what": "T-264（Codex）：亲亲、抱抱的脸一直没到画面里，等满时限后照样开始停留、被记成亲过／抱过",
+  "tests": [
+   "tests/t264-arrival-not-done.test.ts"
+  ]
+ },
+ {
+  "id": "T264-missing-eye-not-in-frame",
+  "part": "unbound",
+  "file": "src/unbound/motion/arrive.ts",
+  "find": "    if (!l || !r || !aim || !mouth) return { reached: false, worst: null, nearestM: null, aimM: null };",
+  "replace": "    if (!l || !r || !aim || !mouth) return { reached: true, worst: null, nearestM: null, aimM: null };",
+  "what": "T-264（Codex）：检查帧里丢了一只眼的读数，就当作脸已到位、马上开始停留并记成完成",
+  "tests": [
+   "tests/t264-arrival-not-done.test.ts"
+  ]
+ },
+ {
+  "id": "BD1-beat-after-line-break",
+  "part": "unbound",
+  "file": "shared/behaviors/speech-beats/place.ts",
+  "find": "  keptBeat(beat, isCloseBeatWord(beat.word) || isFrameBeatWord(beat.word) ? Math.max(0, shownAt - blank) : shownAt);",
+  "replace": "  keptBeat(beat, shownAt);",
+  "what": "2026-11-23（用户 19:40\"亲亲，先等了很长一段时间\"）：亲抱的拍子落在换行之后，朗读和气泡停在最后一个念出来的字，拍子等不到，她后面的话也在等它，只有上限能放",
+  "tests": [
+   "tests/close-beat-deadlock.test.ts"
+  ]
+ },
+ {
+  "id": "BD2-beat-at-shown-end-due",
+  "part": "unbound",
+  "file": "shared/behaviors/speech-beats/schedule.ts",
+  "find": "((all || atTheWords(beat.word)) && beat.at <= reply.shownLength)",
+  "replace": "(all && beat.at <= reply.shownLength)",
+  "what": "2026-11-23：亲抱的拍子正好在显示出来的最后一个字后面时（包括第 0 个字），要等再多显示一个字才到点——而它后面的话在等它",
+  "tests": [
+   "tests/close-beat-deadlock.test.ts"
+  ]
+ },
+ {
+  "id": "BD3-beat-at-segment-end-due",
+  "part": "unbound",
+  "file": "shared/behaviors/speech-beats/schedule.ts",
+  "find": " || (atTheWords(beat.word) && beat.at <= end)) beat.dueAt",
+  "replace": ") beat.dueAt",
+  "what": "2026-11-23：朗读开着时，亲抱的拍子正好在念完的那一段末尾，要等下一段开始念才到点，而下一段在等它",
+  "tests": [
+   "tests/close-beat-deadlock.test.ts"
+  ]
+ },
+ {
+  "id": "BD4-beat-at-zero-voice",
+  "part": "unbound",
+  "file": "shared/behaviors/speech-beats/schedule.ts",
+  "find": " || (atTheWords(beat.word) && beat.at <= 0));",
+  "replace": ");",
+  "what": "2026-11-23（用户 19:42\"还是等待很长\"）：朗读开着、亲抱的拍子在第 0 个字，前面没有字可念，也要等念到——而什么都没人念",
+  "tests": [
+   "tests/close-beat-deadlock.test.ts"
+  ]
+ },
+ {
+  "id": "BD5-gated-close-still-asks",
+  "part": "unbound",
+  "file": "src/unbound/speech-beat-player.ts",
+  "find": "{ if (isCloseBeatWord(play.word)) this.askClose(play.word, play.replyId); continue; }",
+  "replace": "{ continue; }",
+  "what": "2026-11-23：她睡着或不在时到点的亲抱页面不问主机，后面的话只能等上限",
+  "tests": [
+   "tests/close-beat-deadlock.test.ts"
+  ]
+ },
+ {
+  "id": "BD6-stale-close-still-asks",
+  "part": "unbound",
+  "file": "src/unbound/speech-beat-player.ts",
+  "find": "    for (const w of this.waiting) if (!fresh(w.at) && w.play.replyId === this.replyId && isCloseBeatWord(w.play.word)) this.askClose(w.play.word, w.play.replyId);",
+  "replace": "",
+  "what": "2026-11-23：等了超过 3 秒的亲抱被直接丢掉，页面不问主机，后面的话只能等上限",
+  "tests": [
+   "tests/close-beat-deadlock.test.ts"
+  ]
+ },
+ {
+  "id": "BD7-cap-leaves-a-row",
+  "part": "unbound",
+  "file": "electron/unbound/close-sequence.ts",
+  "find": "        try { this.ports.capped?.(kind, entry.phase === 'action' ? 'action' : 'reach'); } catch { /* a note never holds her words */ }\n",
+  "replace": "",
+  "what": "2026-11-23：上限放了她的话却没有留一行记录，下次看不出是等超时了",
+  "tests": [
+   "tests/close-beat-deadlock.test.ts"
+  ]
+ },
+ {
+  "id": "default-place-used-on-entry",
+  "part": "unbound",
+  "file": "electron/unbound/place-keeper.ts",
+  "find": "    if (fixed) { this.write('last', this.character(), withinSavedSizes(fixed)); return startOf(frame, fixed); } // she stands there now: that is also where she last stood",
+  "replace": "",
+  "what": "2026-11-23：用户设了默认位置，进全屏时她不从那里出来（仍站在上次走到的地方）",
+  "tests": [
+   "tests/unbound-default-place.test.ts"
+  ]
+ },
+ {
+  "id": "default-place-walks-never-write-it",
+  "part": "unbound",
+  "file": "electron/unbound/place-keeper.ts",
+  "find": "    if (record) this.write('last', id, record);",
+  "replace": "    if (record) { this.write('last', id, record); this.write('fixed', id, record); }",
+  "what": "2026-11-23：她自己的走动、被拉松手也会改掉用户设的默认位置",
+  "tests": [
+   "tests/unbound-default-place.test.ts"
+  ]
+ },
+ {
+  "id": "default-place-only-on-entry",
+  "part": "unbound",
+  "file": "electron/unbound/her-place.ts",
+  "find": "    if (entering) {",
+  "replace": "    if (true) {",
+  "what": "2026-11-23：屏幕变了、看屏幕的距离变了，也把她送回默认位置（只有进全屏才该回去）",
+  "tests": [
+   "tests/unbound-default-place.test.ts"
+  ]
+ },
+ {
+  "id": "default-place-invalid-file-ignored",
+  "part": "unbound",
+  "file": "electron/unbound/place-keeper.ts",
+  "find": "parsePlaceBook(await withTimeout(Promise.resolve().then(() => port.load()), 2_000, null))",
+  "replace": "({ places: new Map(), legacy: (await withTimeout(Promise.resolve().then(() => port.load()), 2_000, null)) as never })",
+  "what": "2026-11-23：默认位置文件越界、版本不对或乱码时不忽略，照样用来放她",
+  "tests": [
+   "tests/unbound-default-place.test.ts"
+  ]
+ },
+ {
+  "id": "I193-go-every-word-leaves-row",
+  "part": "unbound",
+  "file": "shared/unbound/life/host.ts",
+  "find": "private goStayed(word: GoWord, why: GoStayWhy, target: GoTarget | null = null): 'stay' { this.row(goStayedRow(word, why, target)); return 'stay'; }",
+  "replace": "private goStayed(word: GoWord, why: GoStayWhy, target: GoTarget | null = null): 'stay' { return 'stay'; }",
+  "what": "2026-11-23 她写的每一个走位词都在体验记录里留一行（没走的也留，写明为什么）",
+  "tests": [
+   "tests/i193-walk-log.test.ts"
+  ]
+ },
+ {
+  "id": "I193-go-went-row",
+  "part": "unbound",
+  "file": "shared/unbound/life/host.ts",
+  "find": "    this.row(goWentRow(word, metres, target));\n",
+  "replace": "",
+  "what": "2026-11-23 她走起来的走位词也留一行（写明要走多少米）",
+  "tests": [
+   "tests/i193-walk-log.test.ts"
+  ]
+ },
+ {
+  "id": "I193-go-dropped-row",
+  "part": "unbound",
+  "file": "shared/unbound/life/host.ts",
+  "find": "if (go) this.row(goStayedRow(go.word, 'dropped', go.target));",
+  "replace": "",
+  "what": "2026-11-23 排在小动作后面、最后没走成的走位词，也留一行写\"没走成\"",
+  "tests": [
+   "tests/i193-walk-log.test.ts"
+  ]
+ },
+ {
+  "id": "I193-walk-end-row",
+  "part": "unbound",
+  "file": "shared/unbound/life/host.ts",
+  "find": "this.row(placeMovedRow(current.chosen ? 'go-word' : 'own', this.here(), metres));",
+  "replace": "",
+  "what": "2026-11-23 她每走完一次，体验记录留一行（谁的走、站在哪、挪了几米）",
+  "tests": [
+   "tests/i193-walk-log.test.ts"
+  ]
+ },
+ {
+  "id": "I193-come-near-never-closer",
+  "part": "unbound",
+  "file": "shared/unbound/her-position/go.ts",
+  "find": "if (here.size < place * (1 - k.sameSize)) out.push({ across: here.across, size: place });",
+  "replace": "if (true) out.push({ across: here.across, size: place });",
+  "what": "2026-11-23 \"走近\"先走到默认位置那个远近；比它更近时不往外走回默认位置（I-193 起再近一步是另一行：I193-come-near-steps-past-place）",
+  "tests": [
+   "tests/i193-walk-log.test.ts"
+  ]
+ },
+ {
+  "id": "I193-come-near-to-place",
+  "part": "unbound",
+  "file": "shared/unbound/her-position/go.ts",
+  "find": "k.comeNearToPlace && finite(input.nearSize)",
+  "replace": "false && finite(input.nearSize)",
+  "what": "2026-11-23 \"走近\"走到默认位置的远近，不是只挪一小步（旋钮默认开）",
+  "tests": [
+   "tests/i193-walk-log.test.ts"
+  ]
+ },
+ {
+  "id": "I193-default-place-wins",
+  "part": "unbound",
+  "file": "shared/unbound/her-position/near.ts",
+  "find": "if (place && finite(place.size) && place.size > 0) return",
+  "replace": "if (false) return",
+  "what": "2026-11-23 设了默认位置就按它的远近走近，没设才用上半身入镜",
+  "tests": [
+   "tests/i193-walk-log.test.ts"
+  ]
+ },
+ {
+  "id": "I193-journal-stay-why-closed",
+  "part": "unbound",
+  "file": "shared/stage/journal-entries.ts",
+  "find": "if (went ? v.why !== null : !has(GO_STAY_JOURNAL_WHYS, v.why)) return null;",
+  "replace": "",
+  "what": "2026-11-23 走位记录的\"没走的原因\"只能是封闭词，写不进别的话",
+  "tests": [
+   "tests/i193-walk-log.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I203-hug-faces-outward",
+  "file": "shared/unbound/close-moments/plan.ts",
+  "find": "    yawRad: (kiss ? side : 1) * (kiss ? a.kissYawDeg : a.hugYawDeg) * Math.PI / 180,",
+  "replace": "    yawRad: side * (kiss ? a.kissYawDeg : a.hugYawDeg) * Math.PI / 180,",
+  "what": "I-203（用户：\"抱抱没有按我的想法修（反而往内偏了）\"；图：脸侧向外）：抱抱时脸有时转向画面中间（往内）",
+  "tests": [
+   "tests/i203-close-frames.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I203-kiss-eyes-up-mouth-down",
+  "file": "shared/unbound/arrival/screen-frame.ts",
+  "find": "  return { dropM: face.mouthDropM * knobs.kissEyesV / span,",
+  "replace": "  return { dropM: face.mouthDropM / 2,",
+  "what": "I-203（分镜 03/04：两眼在上部、嘴在下部）：亲亲最近时眼睛和嘴不在分镜的位置",
+  "tests": [
+   "tests/i203-close-frames.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I203-hug-ear-right",
+  "file": "shared/unbound/arrival/screen-frame.ts",
+  "find": "  return { offset: earOffset(face, eyeSpanM, side === 1 ? -1 : 1), spot: { u: side * knobs.hugEarU, v: knobs.hugEarV }, fitM, turn };",
+  "replace": "  return { offset: earOffset(face, eyeSpanM, side === 1 ? -1 : 1), spot: { u: 0, v: 0 }, fitM, turn };",
+  "what": "I-203（用户：\"抱抱头大概占比2/5右侧\"）：抱抱停住时头在画面正中，不在右侧",
+  "tests": [
+   "tests/i203-close-frames.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I203-pucker-her-choice",
+  "file": "shared/unbound/close-moments/timeline.ts",
+  "find": "if (chose(plan, 'pucker')) out.pucker = ramp(t, 0.6 * a, a);",
+  "replace": "out.pucker = ramp(t, 0.6 * a, a);",
+  "what": "I-203（用户：\"撩头发，撅嘴，害羞是抱抱亲亲的角色选择。\"）：撅嘴写死在亲亲的动画里，不是她选的",
+  "tests": [
+   "tests/i203-close-frames.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I203-hold-floor",
+  "file": "shared/unbound/arrival/hold.ts",
+  "find": "  return clamp(s, kind === 'kiss' || kind === 'hug' ? knobs.closeHoldMinS : knobs.holdMinS, knobs.holdCapS);",
+  "replace": "  return clamp(s, 0, knobs.holdCapS);",
+  "what": "I-203（用户：\"亲亲抱抱按推荐\"：停留由她定，至少约 1.5 秒）：紧张时亲亲抱抱停不到 1.5 秒就退开",
+  "tests": [
+   "tests/i203-close-frames.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I203-hug-check-sees-ear",
+  "file": "src/unbound/motion/arrive.ts",
+  "find": "    const seen = this.point ? [aim] : [l, r, mouth];",
+  "replace": "    const seen = [l, r, mouth];",
+  "what": "I-203（抱抱最终图：脸被右边缘切掉）：抱抱还要求两眼和嘴都在画面里，脸转向外侧时永远“没到”，抱抱做不成",
+  "tests": [
+   "tests/i192-arrival-models.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I203-no-toes-while-stepping",
+  "file": "src/unbound/motion/arrive.ts",
+  "find": "    this.loop.step(error, sense.offsets, sense.tiptoeRise * toes,",
+  "replace": "    this.loop.step(error, sense.offsets, sense.tiptoeRise,",
+  "what": "I-203（全程丝滑）：她迈步时还踮着脚，脚落地或抬起时髋一帧跳 0.6～4 厘米",
+  "tests": [
+   "tests/i203-close-frames.test.ts",
+   "tests/i192-arrival-models.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I203-hug-arms-stay-out",
+  "file": "src/unbound/director/close-moment.ts",
+  "find": "    let hands = closeHands(arms, c.wrap * CLOSE_BEATS.hugWrap);",
+  "replace": "    let hands = closeHands(arms, c.wrap * 3);",
+  "what": "I-203：抱抱的手臂往前收得太多，手越过看的人的眼睛那个平面（穿进镜头）",
+  "tests": [
+   "tests/i192-arrival-models.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I203-kiss-eye-dip",
+  "file": "src/unbound/director/close-moment.ts",
+  "find": "  get cameraDipM(): number { return this.dip; }",
+  "replace": "  get cameraDipM(): number { return 0; }",
+  "what": "I-203（负责人复核：亲亲最近时眼睛在中间、嘴被下边缘切掉）：镜头不肯往下迎她一点，亲亲的眼和嘴到不了分镜的位置",
+  "tests": [
+   "tests/i192-arrival-models.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I203-eye-dip-clamped",
+  "file": "src/unbound/floor-framing.ts",
+  "find": "    const wantDip = Math.min(DIP_MAX_M, Math.max(0, Number.isFinite(dipM) ? dipM : 0));",
+  "replace": "    const wantDip = Number.isFinite(dipM) ? dipM : 0;",
+  "what": "I-203：亲亲时镜头往下迎她没有上限，或会往上抬",
+  "tests": [
+   "tests/unbound-floor-follow.test.ts"
+  ]
+ },
+ {
+  "id": "window-style-unclamped",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-style.ts",
+  "find": "clampStyle((value as Record<string, unknown>).style) : 0;",
+  "replace": "((value as Record<string, unknown>).style as number) : 0;",
+  "what": "the stored personal-feel strength is read as it is (a broken value above 1 passes into the figure) instead of being clamped to 0..1",
+  "tests": [
+   "tests/unbound-window-engine.test.ts"
+  ]
+ },
+ {
+  "id": "HB1-bridge-from-rest",
+  "part": "unbound",
+  "file": "src/stage/motion-transition.ts",
+  "find": "      const coast = rate ? coastDistance(seconds, coastRate(speedDeg, durationS)) : 0;",
+  "replace": "      const coast = 0;",
+  "what": "交还桥从静止出发、不带动作当时的速度（三处舞台共用）：正在快速动作时让开，会一下急停",
+  "tests": [
+   "tests/motion-handback-velocity.test.ts"
+  ]
+ },
+ {
+  "id": "HB2-fast-coast-clamped",
+  "part": "unbound",
+  "file": "src/stage/motion-transition.ts",
+  "find": "  return Math.max(Math.E * COAST_ACCELERATION_DEG / speedDeg, 2 * speedDeg / MAX_FAST_DRIFT_DEG);",
+  "replace": "  return a;",
+  "what": "很快的速度也只许滑出平常那 10°：手腕每帧 2～3° 时让开，减速太猛，又是一下顿",
+  "tests": [
+   "tests/motion-handback-velocity.test.ts"
+  ]
+ },
+ {
+  "id": "window-readouts-developer-only",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-readouts.ts",
+  "find": "    if (!this.developer()) return;\n",
+  "replace": "",
+  "what": "the window engine writes its diagnostic canvas readouts (mood, gesture, physics, cry...) outside developer mode too",
+  "tests": [
+   "tests/unbound-window-readouts.test.ts"
+  ]
+ },
+ {
+  "id": "window-readouts-dev-clock",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-readouts.ts",
+  "find": "    if (this.developer()) this.set('frameClock', { ...this.heartbeat.getState(), ...this.sources.clock() });",
+  "replace": "    this.set('frameClock', { ...this.heartbeat.getState(), ...this.sources.clock() });",
+  "what": "the frame clock readout is written outside developer mode",
+  "tests": [
+   "tests/unbound-window-readouts.test.ts"
+  ]
+ },
+ {
+  "id": "I205b-chosen-spot-outranks-busy",
+  "part": "unbound",
+  "file": "shared/unbound/life/actions/place.ts",
+  "find": "  return context.chosenSpotKept === true && zone !== 'sleepy';",
+  "replace": "  return false;",
+  "what": "I-205b 她回复里自己选的地方，在窗口内高于程序的\"你在忙就换地方\"这类规则",
+  "tests": [
+   "tests/i205b-chosen-spot.test.ts"
+  ]
+ },
+ {
+  "id": "I205b-chosen-spot-window-starts",
+  "part": "unbound",
+  "file": "shared/unbound/life/host.ts",
+  "find": "    this.row(goWentRow(word, metres, target));\n    this.chosenSpotEnd = chosenSpotUntil(now);",
+  "replace": "    this.row(goWentRow(word, metres, target));",
+  "what": "I-205b 她自己选了去哪，走过去以后窗口就不开，程序马上又能把她挪走",
+  "tests": [
+   "tests/i205b-chosen-spot.test.ts"
+  ]
+ },
+ {
+  "id": "I205b-pull-ends-chosen-spot",
+  "part": "unbound",
+  "file": "shared/unbound/life/host.ts",
+  "find": "this.pulledUntil = now + LIFE_TIMING.pullLeaseMs; this.chosenSpotEnd = null; return;",
+  "replace": "this.pulledUntil = now + LIFE_TIMING.pullLeaseMs; return;",
+  "what": "I-205b 用户拉她以后，她自己选的地方不再算数",
+  "tests": [
+   "tests/i205b-chosen-spot.test.ts"
+  ]
+ },
+ {
+  "id": "I209-guard-never-drops",
+  "part": "unbound",
+  "file": "shared/unbound/company/guard.ts",
+  "find": "    if (this.bad.length < this.k.windowS || bad.length < this.k.badS) return null;",
+  "replace": "    return null;",
+  "what": "几个角色同时在场、帧时间超预算时，守门会说“少放一个”",
+  "tests": [
+   "tests/i209-company-lanes.test.ts"
+  ]
+ },
+ {
+  "id": "I209-host-never-drops",
+  "part": "unbound",
+  "file": "electron/unbound/company/host.ts",
+  "find": "      if (!dropped) return;",
+  "replace": "      return;",
+  "what": "守门说超预算后，主机真的送回最后加进来的那位，并在面板和她身边用中文说一句",
+  "tests": [
+   "tests/i209-company-presence.test.ts"
+  ]
+ },
+ {
+  "id": "I209-old-place-migrates",
+  "part": "unbound",
+  "file": "electron/unbound/place-keeper.ts",
+  "find": "    if (book.legacy) { if (!book.places.has(id)) book.places.set(id, book.legacy); book.legacy = null; }",
+  "replace": "    if (book.legacy) { book.legacy = null; }",
+  "what": "以前只有一份的位置记录归给正在和你说话的角色，不丢",
+  "tests": [
+   "tests/i209-company-places.test.ts",
+   "tests/i209-company-presence.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I212-convert-in-one-place",
+  "file": "electron/unbound/her-place.ts",
+  "find": "return frame ? placementOfLook(frame, this.heightM, spot) : null;",
+  "replace": "return frame ? clampPlacement({ xM: (spot.across - 0.5) * 3, depthM: 4.275 / spot.size - 0.55 }) : null;",
+  "what": "I-212 她站哪的决定又自己按米数换算（绕过 shared/unbound/screen-terms），换了屏幕或模型就不是用户看到的那么大",
+  "tests": [
+   "tests/i212-screen-terms.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I211-distance-screen-formula",
+  "file": "electron/unbound/her-place.ts",
+  "find": "distanceM: toldDistanceM(height, spot.size)",
+  "replace": "distanceM: Math.round((world.viewerDistanceM + this.placement.depthM) * 2) / 2",
+  "what": "I-211 告诉她离用户几米时用了世界里的米数，不是按屏幕的那条公式（同样的画面在不同电脑上说成不同的米数）",
+  "tests": [
+   "tests/i212-screen-terms.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I212-first-follows-screen",
+  "file": "electron/unbound/her-place.ts",
+  "find": "if (frame && this.start) { const at = placementOfLook(frame, heightM, this.start);",
+  "replace": "if (frame && this.start) { const at = clampPlacement({ xM: 2.2, depthM: DEFAULT_DEPTH_M });",
+  "what": "I-212 第一次出场不看屏幕大小（又是固定的 8 米，大屏上她只占四分之一高）",
+  "tests": [
+   "tests/i212-screen-terms.test.ts",
+   "tests/unbound-default-place.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I212-old-place-converted",
+  "file": "electron/unbound/place-keeper.ts",
+  "find": "      if (record?.version !== 1) continue;",
+  "replace": "      continue;",
+  "what": "I-212 旧的位置文件（米数）读进来以后没有按当前屏幕和她的身高换算一次、写成新的样子",
+  "tests": [
+   "tests/i212-screen-terms.test.ts",
+   "tests/unbound-default-place.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I212-place-mark-user-only",
+  "file": "electron/unbound/place-marks.ts",
+  "find": "  if (from !== 'user') return null;",
+  "replace": "",
+  "what": "I-212 自主回复（她自己开口、主动找话题）里的记号也设了默认位置；只有回应用户刚发的话的那条才算",
+  "tests": [
+   "tests/i212-screen-terms.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I212-place-mark-out-only",
+  "file": "electron/unbound/place-marks.ts",
+  "find": "    if (!ports.out()) outcome = 'not-out';",
+  "replace": "    if (false) outcome = 'not-out';",
+  "what": "I-212 她不在全屏里时，记号也设了默认位置",
+  "tests": [
+   "tests/i212-screen-terms.test.ts"
+  ]
+ },
+ {
+  "id": "I203-let-go-ignored",
+  "part": "unbound",
+  "file": "shared/unbound/close-moments/frames.ts",
+  "find": "    if (this.endAt !== null) return holdBeat < this.endAt;\n",
+  "replace": "",
+  "what": "I-203：她写的 ⟦let-go⟧ 不管用，照旧抱到她自己定的时长",
+  "tests": [
+   "tests/i203-frames.test.ts",
+   "tests/i203-frames-gene.test.ts"
+  ]
+ },
+ {
+  "id": "I203-let-go-not-relayed",
+  "part": "unbound",
+  "file": "electron/unbound/peek.ts",
+  "find": "    this.link.send({ type: 'frame', id: current.id, frame: ask.frameBeat, seconds });\n",
+  "replace": "",
+  "what": "I-203：页面说到了 ⟦let-go⟧，主机没转给她的身体，松开不在那个位置",
+  "tests": [
+   "tests/i203-frames.test.ts"
+  ]
+ },
+ {
+  "id": "I203-pause-leaks-as-text",
+  "part": "unbound",
+  "file": "shared/behaviors/speech-beats/interface.ts",
+  "find": "export const SPEECH_BEAT_FRAME_WORDS = ['hug-held', 'pause', 'let-go'] as const;",
+  "replace": "export const SPEECH_BEAT_FRAME_WORDS = ['hug-held', 'let-go'] as const;",
+  "what": "I-203：⟦pause⟧ 不在词表里，变成看得见的字（漏进气泡、被念出来）",
+  "tests": [
+   "tests/i203-frames.test.ts"
+  ]
+ },
+ {
+  "id": "I203-pause-not-held",
+  "part": "unbound",
+  "file": "electron/unbound/close-sequence.ts",
+  "find": "    w.phase = 'pause';\n",
+  "replace": "    w.phase = 'pause'; this.release('done'); return;\n",
+  "what": "I-203：⟦pause⟧ 一到就放字，话没有停那一会",
+  "tests": [
+   "tests/i203-frames.test.ts"
+  ]
+ },
+ {
+  "id": "I203-hug-held-not-waiting",
+  "part": "unbound",
+  "file": "electron/unbound/close-sequence.ts",
+  "find": "    if (word === 'hug-held' && this.close?.frame === 'holding') { resolve('done'); return { done, cancel() {} }; } // already holding: nothing to wait for",
+  "replace": "    if (word === 'hug-held') { resolve('done'); return { done, cancel() {} }; }",
+  "what": "I-203：⟦hug-held⟧ 后面的话不等抱住就出来",
+  "tests": [
+   "tests/i203-frames.test.ts",
+   "tests/close-beat-deadlock.test.ts"
+  ]
+ },
+ {
+  "id": "I203-hold-ignores-pause",
+  "part": "unbound",
+  "file": "shared/unbound/close-moments/frames.ts",
+  "find": "    return plain || now < this.keepUntil;",
+  "replace": "    return plain;",
+  "what": "I-203：抱着的时候她写了 ⟦pause⟧，话一停她就松开了（应该抱着停一会）",
+  "tests": [
+   "tests/i203-frames.test.ts",
+   "tests/i203-frames-gene.test.ts"
+  ]
+ },
+ {
+  "id": "I203-cut-two-immediate-turns",
+  "part": "unbound",
+  "file": "electron/unbound/close-cut.ts",
+  "find": "    p.state = 'offered';\n",
+  "replace": "",
+  "what": "I-203：一次被打断的亲抱，她立刻开口了两次（多占用量）",
+  "tests": [
+   "tests/i203-frames.test.ts"
+  ]
+ },
+ {
+  "id": "I203-cut-note-suggests-words",
+  "part": "unbound",
+  "file": "shared/unbound/close-moments/frames.ts",
+  "find": "    `- 还没说出来的（用户没听到）：「${rest || '（没有）'}」`].join('\\n');",
+  "replace": "    `- 还没说出来的（用户没听到）：「${rest || '（没有）'}」`, '你可以说一句“哎呀被拉开了”。'].join('\\n');",
+  "what": "I-203：打断后那一轮的提示替她想好了说什么",
+  "tests": [
+   "tests/i203-frames.test.ts"
+  ]
+ },
+ {
+  "id": "I203-cut-not-recorded",
+  "part": "unbound",
+  "file": "electron/unbound/peek.ts",
+  "find": "    if (chat && cutBy) safe(() => { this.ports.sequence?.interrupted?.({ kind: chat, frame: was === 'hold' ? 'holding' : 'walking', cause: cutBy === 'pull' ? 'pulled-away' : 'could-not-reach' }); return true; }, false);\n",
+  "replace": "",
+  "what": "I-203：亲抱被拉开，这条回复没算打断：没有打断记录，话和帧也不停",
+  "tests": [
+   "tests/i203-frames.test.ts"
+  ]
+ },
+ {
+  "id": "I209-cut-turn-any-character",
+  "part": "unbound",
+  "file": "electron/unbound/close-cut.ts",
+  "find": "    if (p.owner && characterId !== undefined && characterId !== p.owner) return null;\n",
+  "replace": "",
+  "what": "亲抱被打断后马上那一轮被别的角色接了（I-209 第 2 步：一轮带着是谁）",
+  "tests": [
+   "tests/i209-turn-owner.test.ts"
+  ]
+ },
+ {
+  "id": "U-hold-pause-stops-clocks",
+  "part": "unbound",
+  "file": "electron/unbound/bubble-hold.ts",
+  "find": "    this.follow.pause(this.now());\n    this.pausedBy = held.id;",
+  "replace": "    this.pausedBy = held.id;",
+  "what": "朗读因为你转开而暂停时，全屏气泡的计时不停：几秒后整段字一下全放出来、气泡淡掉，你回来时声音在空屏下继续念（12:34 的“有朗读，没有字泡”）",
+  "tests": [
+   "tests/bubble-hold-read-pause.test.ts"
+  ]
+ },
+ {
+  "id": "U-hold-resume-continues",
+  "part": "unbound",
+  "file": "electron/unbound/bubble-hold.ts",
+  "find": "    if (!this.lips) this.follow.resume(this.now()); // a kiss's lips (pause() below) may still be holding the same clocks\n    this.pump();",
+  "replace": "    this.pump();",
+  "what": "你回来、朗读接着念时，气泡的计时不接着走（暂停的时间被算进“声音卡住了”）",
+  "tests": [
+   "tests/bubble-hold-read-pause.test.ts"
+  ]
+ },
+ {
+  "id": "U-hold-pause-guard",
+  "part": "unbound",
+  "file": "electron/unbound/bubble-hold.ts",
+  "find": "this.guard = (this.ports.setTimer ?? ((callback, ms) => setTimeout(callback, ms)))(() => { this.guard = null; this.resumeFromAway(); }, this.maxPauseMs);",
+  "replace": "void 0;",
+  "what": "没人结束的暂停（窗口关了）会把气泡永远扣住",
+  "tests": [
+   "tests/bubble-hold-read-pause.test.ts"
+  ]
+ },
+ {
+  "id": "U-hold-pause-fact-routed",
+  "part": "unbound",
+  "file": "electron/unbound/bubble-hold.ts",
+  "find": "  if (event === 'paused') hold?.pauseForAway(); else if (event) hold?.resumeFromAway();",
+  "replace": "  if (event) hold?.resumeFromAway();",
+  "what": "窗口说“朗读因为你转开而暂停”的消息到了主进程，却没有交给全屏气泡（气泡照旧自己跑计时）",
+  "tests": [
+   "tests/bubble-hold-read-pause.test.ts"
+  ]
+ },
+ {
+  "id": "I209-overlap-after-pull",
+  "part": "unbound",
+  "file": "shared/unbound/company/bodies.ts",
+  "find": "    if (s >= 0 && s <= 1) t = Math.min(t, Math.max(0, s - k.stopShortM / length));",
+  "replace": "    if (s >= 0 && s <= 1) t = Math.min(t, 1);",
+  "what": "I-209 第 3 步：拉一位往另一位身上靠，两个身体叠在一起（走、拉、亲抱时不在碰到的地方停）",
+  "tests": [
+   "tests/i209-stage-apart.test.ts",
+   "tests/i209-stage-bodies.test.ts"
+  ]
+ },
+ {
+  "id": "I209-overlap-through-middle",
+  "part": "unbound",
+  "file": "shared/unbound/company/bodies.ts",
+  "find": "      if (dx * rx + dz * rz < 0) t = 0;",
+  "replace": "      if (dx * rx + dz * rz < -1e9) t = 0;",
+  "what": "I-209 第 3 步：已经挨着的时候还能往对方身体里、穿过她中间走过去",
+  "tests": [
+   "tests/i209-stage-bodies.test.ts",
+   "tests/i209-stage-apart.test.ts"
+  ]
+ },
+ {
+  "id": "I209-aside-past-edge",
+  "part": "unbound",
+  "file": "shared/unbound/company/bodies.ts",
+  "find": "  if (!fits(goal)) return null; // at the edge: she stays, the one coming stops at contact",
+  "replace": "",
+  "what": "I-209 第 3 步：被靠近的那位在屏幕边上也\"让\"，走出能站的范围",
+  "tests": [
+   "tests/i209-stage-bodies.test.ts",
+   "tests/i209-stage-apart.test.ts"
+  ]
+ },
+ {
+  "id": "I209-click-b-talks-to-a",
+  "part": "unbound",
+  "file": "electron/unbound/company/build.ts",
+  "find": "      touch: report => { stage.address(id); wiring.touch?.(report); },",
+  "replace": "      touch: report => { stage.address(MAIN_KEY); wiring.touch?.(report); },",
+  "what": "I-209 第 3 步：点了 B，输入框和这句话却归第一位（A）",
+  "tests": [
+   "tests/i209-stage-instances.test.ts"
+  ]
+ },
+ {
+  "id": "I209-two-voices",
+  "part": "unbound",
+  "file": "shared/unbound/company/floor.ts",
+  "find": "    this.waiting.push({ replyId, owner });",
+  "replace": "    this.now = { replyId, owner };",
+  "what": "I-209 第 3 步（\"一次只有一个声音，后面的排队\"）：另一位的话来了就抢过去，两张嘴同时在动",
+  "tests": [
+   "tests/i209-stage-instances.test.ts",
+   "tests/i209-stage-bodies.test.ts"
+  ]
+ },
+ {
+  "id": "I209-each-own-look",
+  "part": "unbound",
+  "file": "electron/unbound/company/shared-senses.ts",
+  "find": "    if (this.running) return this.running;",
+  "replace": "",
+  "what": "I-209 第 3 步（按建议：\"看你一眼\"台上的人共用一次）：每一位各看一次，用量变成三倍",
+  "tests": [
+   "tests/i209-stage-instances.test.ts"
+  ]
+ },
+ {
+  "id": "I209-pull-moves-others",
+  "part": "unbound",
+  "file": "src/unbound/company/stage-page.ts",
+  "find": "    return framing.follow(dt, world, figure, nearM, dipM);",
+  "replace": "    const o = (this.view?.others ?? []).reduce((n, b) => (!n || b.depthM < n.depthM ? b : n), null); if (o && world && figure && o.depthM < -figure.rootM.z) return framing.step(dt, world, o.depthM, o.heightM, o.faceM, 0, o.id) ? framing.apply(world, nearM) : null; return framing.follow(dt, world, figure, nearM, dipM);",
+  "what": "2026-11-25（用户：\"unbound多人拉一个人往前，其他人会升降\"）：每个窗口不再按自己的身体定镜头，而是跟着离你最近的那位；把一位往前拉，另外几位在屏幕上上下移动",
+  "tests": [
+   "tests/i209-stage-height.test.ts"
+  ]
+ },
+ {
+  "id": "I209-extra-mouth-never-moves",
+  "part": "unbound",
+  "file": "electron/unbound/company/stage.ts",
+  "find": "    if (this.mouths.get(key) === on) return;",
+  "replace": "    if (this.mouths.get(key) === on || key !== MAIN_KEY) return;",
+  "what": "2026-11-25（用户：\"unbound多人……似乎没有口型\"）：台上另外几位说话时嘴从来不动，只有第一位的嘴会动",
+  "tests": [
+   "tests/i209-stage-mouth.test.ts"
+  ]
+ },
+ {
+  "id": "I209-mouth-follows-wrong-window",
+  "part": "unbound",
+  "file": "electron/unbound/company/stage.ts",
+  "find": "    if (fact.kind === 'start' && fact.voiced) this.sounding(line, key);",
+  "replace": "    if (false) this.sounding(line, key);",
+  "what": "2026-11-25（用户：\"刚刚one说话，确是mumi动嘴\"）：声音念到谁的句子，嘴不跟着换到她的窗口；前一位的话没收尾时，后一位说话动的是前一位的嘴",
+  "tests": [
+   "tests/i209-stage-mouth.test.ts"
+  ]
+ },
+ {
+  "id": "I209-mouth-row-wrong-id",
+  "part": "unbound",
+  "file": "electron/unbound/company/build.ts",
+  "find": "    mouth: (key, sentences) => wiring.stage?.mouth?.(key === MAIN_KEY ? current() : key, sentences),",
+  "replace": "    mouth: (key, sentences) => wiring.stage?.mouth?.(current(), sentences),",
+  "what": "2026-11-25：台上另外几位的嘴型记录写在第一位名下，不是说话那位的",
+  "tests": [
+   "tests/i209-stage-mouth.test.ts"
+  ]
+ },
+ {
+  "id": "I209-two-close-moments",
+  "part": "unbound",
+  "file": "electron/unbound/company/instance-ports.ts",
+  "find": "    ...(close.chat ? { chat: (base, kind, active) => (busy() ? 'busy' : close.chat!(base, kind, active)) } : {}),",
+  "replace": "    ...(close.chat ? { chat: (base, kind, active) => close.chat!(base, kind, active) } : {}),",
+  "what": "I-209 第 3 步（\"亲亲、抱抱一次只有一个\"）：一位正凑近你时，另一位回复里的亲亲也走过来",
+  "tests": [
+   "tests/i209-stage-instances.test.ts"
+  ]
+ },
+ {
+  "id": "I209-place-only-own",
+  "part": "unbound",
+  "file": "electron/unbound/company/place-share.ts",
+  "find": "    if (own) this.book.places.set(id, own); else this.book.places.delete(id);",
+  "replace": "    this.book = written;",
+  "what": "I-209 第 3 步：每位各记自己的位置；一位写的时候把另一位刚记下的位置盖掉",
+  "tests": [
+   "tests/i209-stage-places.test.ts"
+  ]
+ },
+ {
+  "id": "I209-mixed-history",
+  "part": "unbound",
+  "file": "electron/brain/turn-owner/persona.ts",
+  "find": "  return longChat || (!!owner && owner !== current) || othersOnStage > 0;",
+  "replace": "  return longChat;",
+  "what": "I-209 第 3 步：台上有别人时，交给 Claude 的历史用控制窗口那张混着谁说的话的单子（别人的话当成她自己说的）",
+  "tests": [
+   "tests/i209-stage-instances.test.ts"
+  ]
+ },
+ {
+  "id": "I209-gate-off-still-adds",
+  "part": "unbound",
+  "file": "electron/unbound/company/host.ts",
+  "find": "(on ? this.allowed() : true) && this.choice.set",
+  "replace": "true && this.choice.set",
+  "what": "「三人同框（Beta）」开关关着，别人也能被请出来",
+  "tests": [
+   "tests/i209-three-on-stage-gate.test.ts"
+  ]
+ },
+ {
+  "id": "I209-gate-off-keeps-rows",
+  "part": "unbound",
+  "file": "electron/unbound/company/host.ts",
+  "find": "    if (!this.allowed()) return { out: false, cap: 1, notice: null, entries: [] };",
+  "replace": "    if (false) return { out: false, cap: 1, notice: null, entries: [] };",
+  "what": "「三人同框（Beta）」开关关着，全屏面板里仍有「谁在场」",
+  "tests": [
+   "tests/i209-three-on-stage-gate.test.ts"
+  ]
+ },
+ {
+  "id": "I209-gate-off-keeps-them-out",
+  "part": "unbound",
+  "file": "electron/unbound/company/host.ts",
+  "find": "  gateChanged(): void { if (!this.allowed()) this.choice.clear(); if (this.links.state() === 'unbound') void this.publish(); }",
+  "replace": "  gateChanged(): void { if (this.links.state() === 'unbound') void this.publish(); }",
+  "what": "「三人同框（Beta）」开关关掉时，已经在台上的人不被清掉（再打开时又自己回来）",
+  "tests": [
+   "tests/i209-three-on-stage-gate.test.ts"
+  ]
+ },
+ {
+  "id": "KEEP-hand-watch-closed-on-return",
+  "part": "unbound",
+  "file": "electron/unbound/permission-bundle.ts",
+  "find": "    for (const item of WATCH_ITEMS) if (this.session.attempted.includes(item)) this.userKept.add(item);",
+  "replace": "    void WATCH_ITEMS;",
+  "what": "全屏里亲手开的一起看，回小窗还是被关了（权限包不记得是用户开的）",
+  "tests": [
+   "tests/unbound-keep-watch.test.ts"
+  ]
+ },
+ {
+  "id": "KEEP-bundle-opened-not-put-back",
+  "part": "unbound",
+  "file": "electron/unbound/permission-bundle.ts",
+  "find": "const stay = BUNDLE_ITEMS.filter(item => this.userKept.has(item) && now?.[item] === true && session.attempted.includes(item));",
+  "replace": "const stay = BUNDLE_ITEMS.filter(item => session.attempted.includes(item));",
+  "what": "包替用户开的、用户没碰过的，回小窗没收回（全都被留下了）",
+  "tests": [
+   "tests/unbound-keep-watch.test.ts"
+  ]
+ },
+ {
+  "id": "KEEP-user-off-drops-keep",
+  "part": "unbound",
+  "file": "electron/unbound/permission-bundle.ts",
+  "find": "    for (const item of WATCH_ITEMS) this.userKept.delete(item);",
+  "replace": "    void WATCH_ITEMS;",
+  "what": "用户在全屏里亲手关掉的一起看，回来时被“原样”留成开着",
+  "tests": [
+   "tests/unbound-keep-watch.test.ts"
+  ]
+ },
+ {
+  "id": "KEEP-revoked-not-kept",
+  "part": "unbound",
+  "file": "electron/unbound/permission-bundle.ts",
+  "find": "this.userKept.has(item) && now?.[item] === true && session",
+  "replace": "this.userKept.has(item) && session",
+  "what": "屏幕权限被撤了（或窗口离开屏幕、读数已是关）还被当成“保留”",
+  "tests": [
+   "tests/unbound-keep-watch.test.ts"
+  ]
+ },
+ {
+  "id": "KEEP-own-step-is-not-a-hand",
+  "part": "unbound",
+  "file": "electron/unbound/permission-bundle.ts",
+  "find": "    if (!this.session || this.ownStepRecent() || this.reopening.size) return;",
+  "replace": "    if (!this.session) return;",
+  "what": "权限包自己开屏幕引出的“开始一起看”被当成用户亲手开的，回小窗不收回",
+  "tests": [
+   "tests/unbound-keep-watch.test.ts"
+  ]
+ },
+ {
+  "id": "window-music-nod-on-head",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-music.ts",
+  "find": "    if (n) { if (bones.head) port.rotate(bones.head, n.headX, 0, n.headZ); if (bones.chest) port.rotate(bones.chest, 0, 0, n.bodyZ); }",
+  "replace": "",
+  "what": "听歌时说在点头，身上不动：小窗和全屏的点头不写到她头上（11-24 之前的样子：只算出来，身上看不到）",
+  "tests": [
+   "tests/music-nod-window.test.ts",
+   "tests/music-nod-full.test.ts"
+  ]
+ },
+ {
+  "id": "window-music-told-shares",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-music.ts",
+  "find": "      music: this.likeness?.music === true, beat: this.likeness?.score ?? 0, shown: this.shownShares() });",
+  "replace": "      music: this.likeness?.music === true, beat: this.likeness?.score ?? 0 });",
+  "what": "听歌时说在点头，身上不动：告诉主机的听歌状态只看她选了什么，不看身上在不在动",
+  "tests": [
+   "tests/music-nod-window.test.ts",
+   "tests/music-nod-full.test.ts"
+  ]
+ },
+ {
+  "id": "window-music-nod-yields",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-music.ts",
+  "find": "    this.nod?.setSuppressed(blocked); // the nod yields to what the dance yields to (R29b hand-off), then comes back",
+  "replace": "",
+  "what": "她说话、被摸头、窗口被拖时点头不让位",
+  "tests": [
+   "tests/music-nod-window.test.ts"
+  ]
+ },
+ {
+  "id": "full-music-stage-state",
+  "part": "unbound",
+  "file": "electron/mood/her-state-host.ts",
+  "find": "    return (out ? this.away : this.home).current(now);",
+  "replace": "    return this.home.current(now);",
+  "what": "她在全屏时，告诉她的听歌状态仍然用小窗（藏着的）那边的，不是她身上真在做的",
+  "tests": [
+   "tests/music-nod-full.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I193-come-near-steps-past-place",
+  "file": "shared/unbound/her-position/go.ts",
+  "find": "else if (limit !== null && here.size < limit * (1 - k.sameSize))",
+  "replace": "else if (false)",
+  "what": "I-193 \"走近\"到了默认位置那么近以后再说也不再往前",
+  "tests": [
+   "tests/i193-walk-by-screen.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I193-metres-through-screen-terms",
+  "file": "electron/unbound/her-place.ts",
+  "find": "sizeForToldM(this.heightM, Math.max(0.05, target.metres)) ?? undefined",
+  "replace": "(this.heightM ?? 1.6) * 0.55 / ((0.55 + target.metres) * 0.2)",
+  "what": "I-193 ⟦go 1.2m⟧ 的米数绕开 shared/unbound/screen-terms 自己换算，走到的地方下一轮告诉她的不是 1.2 米",
+  "tests": [
+   "tests/i193-walk-by-screen.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I193-stayed-walk-told-as-stayed",
+  "file": "shared/unbound/her-position/screen-facts.ts",
+  "find": "    if (o.outcome === 'went') return en ?",
+  "replace": "    if (true) return en ?",
+  "what": "I-193 没走的走位在下一轮被说成\"换了位置\"",
+  "tests": [
+   "tests/i193-walk-by-screen.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I193-go-numbers-only-on-go",
+  "file": "shared/unbound/her-position/ask.ts",
+  "find": "  if (numbers) return null;\n",
+  "replace": "",
+  "what": "I-193 别的走位词带着数也被当成问题收下（数只认在 go 后面）",
+  "tests": [
+   "tests/i193-walk-by-screen.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "I193-go-clamped-to-face",
+  "file": "shared/unbound/her-position/go.ts",
+  "find": "clamp(t.size, k.farthestSize, limit ?? GO_SIZE[1])",
+  "replace": "t.size",
+  "what": "I-193 ⟦go …m⟧ 的米数超出能站到的范围时不停在边上（会走到比\"只有脸\"更近、比最远更远）",
+  "tests": [
+   "tests/i193-walk-by-screen.test.ts"
+  ]
+ },
+ {
+  "id": "stage-idle-extra-full-rate",
+  "part": "unbound",
+  "file": "shared/unbound/company/extra-pace.ts",
+  "find": "    return { capFps: knobs.idleFps, lowered: now - this.idleSince >= knobs.settleMs, idle: true };",
+  "replace": "    return FULL_PACE;",
+  "what": "三人同框：没在被你陪着的陪衬照旧每秒画满帧、满像素（不降到 30 帧、低一档）",
+  "tests": [
+   "tests/stage-smooth.test.ts"
+  ]
+ },
+ {
+  "id": "stage-focus-throttled",
+  "part": "unbound",
+  "file": "shared/unbound/company/extra-pace.ts",
+  "find": "    if (present < 2 || involvedIn(involvement)) { this.idleSince = null; return FULL_PACE; }",
+  "replace": "    if (present < 2) { this.idleSince = null; return FULL_PACE; }",
+  "what": "三人同框：你正陪着的那位（最后点的、在说话、被摸、在走、在亲抱、在跳舞）也被降到 30 帧",
+  "tests": [
+   "tests/stage-smooth.test.ts"
+  ]
+ },
+ {
+  "id": "stage-page-asks-low-power",
+  "part": "unbound",
+  "file": "src/unbound/gl-options.ts",
+  "find": "powerPreference: 'high-performance' });",
+  "replace": "powerPreference: 'low-power' });",
+  "what": "全屏页向 WebGL 要低功耗的显卡（有两块显卡的笔记本上会落在集显）",
+  "tests": [
+   "tests/gpu-choice.test.ts"
+  ]
+ },
+ {
+  "id": "stage-frame-row-no-gap",
+  "part": "unbound",
+  "file": "electron/unbound/company/stage.ts",
+  "find": "    if ((last !== undefined && now - last < FRAME_ROW_GAP_MS) || !value",
+  "replace": "    if (!value",
+  "what": "一个页面能刷屏写帧时间记录（一分钟一行的下限没了）",
+  "tests": [
+   "tests/stage-smooth.test.ts"
+  ]
+ },
+ {
+  "id": "stage-readout-software-silent",
+  "part": "unbound",
+  "file": "src/unbound/debug-lines.ts",
+  "find": "return gpu.kind === 'software' ? ",
+  "replace": "return false ? ",
+  "what": "全屏页的开发读数在软件渲染时不说\"没有用上显卡\"",
+  "tests": [
+   "tests/gpu-choice.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "default-place-set-does-nothing",
+  "file": "electron/unbound/place-keeper.ts",
+  "find": "    this.write('fixed', this.character(), record);\n    return 'kept';",
+  "replace": "    return 'kept';",
+  "what": "点\"设为默认位置\"嘴上说记好了，其实什么都没写（默认位置还是没有）",
+  "tests": [
+   "tests/default-place-near.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "default-place-near-refused",
+  "file": "electron/unbound/place-keeper.ts",
+  "find": "look.size > nearest * (1 + NEAR_SLACK) || look.size < far",
+  "replace": "look.size > 0.771 || look.size < far",
+  "what": "胸口以上、只有脸这样的近位置存不下来（又回到只认 0.771 以内，点了没反应）",
+  "tests": [
+   "tests/default-place-near.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "default-place-past-near-limit-kept",
+  "file": "electron/unbound/place-keeper.ts",
+  "find": "look.size > nearest * (1 + NEAR_SLACK) || look.size < far",
+  "replace": "look.size < far",
+  "what": "她被拉得比\"只有脸\"还近时，默认位置也照样存下（她下次进全屏就从贴着镜头的地方出来）",
+  "tests": [
+   "tests/default-place-near.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "default-place-file-drops-near",
+  "file": "shared/unbound/company/place-book.ts",
+  "find": "sizeRange: PlaceSizeRange = DEFAULT_PLACE_RANGES.size): PlaceBook {",
+  "replace": "sizeRange: PlaceSizeRange = [0.327, 0.771]): PlaceBook {",
+  "what": "默认位置的文件读回来时把近位置丢掉（点了\"已设\"，重启后又没了）",
+  "tests": [
+   "tests/default-place-near.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "default-place-refusal-silent",
+  "file": "electron/unbound/place-panel.ts",
+  "find": "return { ...places.look(), refused: result };",
+  "replace": "return places.look();",
+  "what": "存不下时小面板收不到原因（点了没反应、没有一句话）",
+  "tests": [
+   "tests/default-place-near.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "default-place-click-no-row",
+  "file": "electron/unbound/place-panel.ts",
+  "find": "        row('keep', result ?? 'done');\n",
+  "replace": "",
+  "what": "点\"设为默认位置\"不写体验记录（没反应时也查不到发生了什么）",
+  "tests": [
+   "tests/default-place-near.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "panel-one-hung-call-freezes-buttons",
+  "file": "src/unbound/input-senses.ts",
+  "find": "if (this.busy.place || !this.api.setDefaultPlace) return;",
+  "replace": "if (this.busy.place || this.busy.company || !this.api.setDefaultPlace) return;",
+  "what": "「谁在场」的一次调用没回应，就把\"设为默认位置\"一起卡住（两类调用共用一个在途标记）",
+  "tests": [
+   "tests/default-place-near.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "panel-call-no-time-limit",
+  "file": "src/unbound/input-senses.ts",
+  "find": "const look = await limited(this.api.setDefaultPlace(on));",
+  "replace": "const look = await this.api.setDefaultPlace(on);",
+  "what": "小面板里一次没回应的调用永远等下去，按钮从此点不动",
+  "tests": [
+   "tests/default-place-near.test.ts"
+  ]
+ },
+ {
+  "id": "window-no-close-still-plays",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-beats.ts",
+  "find": "    if (!this.closeMoments && isCloseOrFrameWord(word)) return false;",
+  "replace": "",
+  "what": "小窗的引擎又会演亲亲、抱抱（连轻一点的害羞笑、凑近一点也会演）",
+  "tests": [
+   "tests/window-no-close.test.ts"
+  ]
+ },
+ {
+  "id": "window-no-close-knob-dead",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-beats.ts",
+  "find": "    if (!this.closeMoments && isCloseOrFrameWord(word)) return false;",
+  "replace": "    if (isCloseOrFrameWord(word)) return false;",
+  "what": "开关打开后小窗的亲亲抱抱仍然不演（开关不起作用）",
+  "tests": [
+   "tests/window-no-close.test.ts"
+  ]
+ },
+ {
+  "id": "I209-voice-proof-any-page",
+  "part": "unbound",
+  "file": "electron/unbound/company/voice-proof.ts",
+  "find": "  try { return id !== null && mine(id) && prove(value); } catch { return false; }",
+  "replace": "  try { return id !== null && prove(value); } catch { return false; }",
+  "what": "I-209 台上的声音（显示证明）：一位的页面能证明另一位气泡里的话\"画出来了\"",
+  "tests": [
+   "tests/i209-stage-voice.test.ts"
+  ]
+ },
+ {
+  "id": "I209-voice-chime-guard-no-proof",
+  "part": "unbound",
+  "file": "electron/wiring/brain-stage-chat-wiring.ts",
+  "find": "{ canSpeak: line => line === lineId && proof.currentId === lineId && proof.isPresentationCurrent(text) && stageIds().includes(id) }",
+  "replace": "{ canSpeak: line => line === lineId }",
+  "what": "I-209 台上的声音（说出来的必须是显示出来的）：她的气泡不显示这句、或她已经回去了，接话那句还在念",
+  "tests": [
+   "tests/i209-stage-voice.test.ts"
+  ]
+ },
+ {
+  "id": "K14-pull-stick-never-walks",
+  "part": "unbound",
+  "file": "src/unbound/pull-input.ts",
+  "find": "this.drive.frame(figure, offset, notches);",
+  "replace": "this.drive.frame(figure, null, notches);",
+  "what": "全屏拉她：按住身体往旁边拉，她不跟着走（K14 那一条在单元测试里）",
+  "tests": [
+   "tests/k14-pull-sideways.test.ts",
+   "tests/i196-joystick-pull.test.ts"
+  ]
+ },
+ {
+  "id": "SD-unbound-page-skipped",
+  "part": "unbound",
+  "file": "electron/unbound/entry.ts",
+  "find": "if (this.ports.skipAsk() !== BUNDLE_SIGNATURE) {",
+  "replace": "if (false as boolean) {",
+  "what": "「让她出来」默认开之后，进入前列出所有感知的那一页被跳过（隐私：没看到那一页就开了感知）",
+  "tests": [
+   "tests/channel-gates.test.ts",
+   "tests/unbound-entry-wait.test.ts"
+  ]
+ },
+ {
+  "id": "R15-close-chooser-stage",
+  "part": "unbound",
+  "file": "shared/unbound/close-moments/chooser.ts",
+  "find": "  const kiss = noKiss ? 0 : scores.kiss, hug = noHug ? 0 : scores.hug;",
+  "replace": "  const kiss = noKiss || (input as { stage?: string }).stage === 'new' ? 0 : scores.kiss, hug = noHug ? 0 : scores.hug;",
+  "what": "规矩清单第 15 条：亲亲又随熟悉度阶段被拿掉（刚认识时不亲）",
+  "tests": [
+   "tests/unbound-close-moments.test.ts"
+  ]
+ },
+ {
+  "id": "R15-close-after-beat-stage",
+  "part": "unbound",
+  "file": "shared/unbound/close-moments/after-beat.ts",
+  "find": "    shy: 0.3 + 0.5 * over(w.cautious)",
+  "replace": "    shy: ((input as { stage?: string }).stage === 'new' ? 0.9 : 0) + 0.3 + 0.5 * over(w.cautious)",
+  "what": "规矩清单第 15 条：亲完抱完之后的害羞又随熟悉度阶段加重",
+  "tests": [
+   "tests/unbound-close-moments.test.ts"
+  ]
+ },
+ {
+  "id": "R15-close-plan-stage",
+  "part": "unbound",
+  "file": "shared/unbound/close-moments/plan.ts",
+  "find": "  const r = closeReading(input.mood, input.label, t), rnd = () => clamp01(random());",
+  "replace": "  const r0 = closeReading(input.mood, input.label, t), r = { ...r0, tension: (input as { stage?: string }).stage === 'new' ? 1 : r0.tension }, rnd = () => clamp01(random());",
+  "what": "规矩清单第 15 条：亲抱的计划（停留、脸红）又随熟悉度阶段变紧张",
+  "tests": [
+   "tests/unbound-close-moments.test.ts"
+  ]
+ },
+ {
+  "id": "I219-tagged-name-in-look",
+  "part": "unbound",
+  "file": "shared/unbound/company/presence.ts",
+  "find": "entries: ordered.map(card => ({ id: card.id, name: card.name,",
+  "replace": "entries: ordered.map(card => ({ id: card.id, name: card.label ?? card.name,",
+  "what": "三人同框面板把带语言标签的显示名当成她的名字（标签会跟着名字走进提示词和接话名单）",
+  "tests": [
+   "tests/i219-first-language.test.ts"
+  ]
+ },
+ {
+  "id": "I219-tagged-name-in-ports",
+  "part": "unbound",
+  "file": "electron/unbound/company/ports.ts",
+  "find": "name: card.name.slice(0, 40), hasModel",
+  "replace": "name: (shown?.get(card.id) ?? card.name).slice(0, 40), hasModel",
+  "what": "同台名单里的名字换成了带语言标签的显示名（别的角色、提示词读到带标签的名字）",
+  "tests": [
+   "tests/i219-first-language.test.ts"
+  ]
+ },
+ {
+  "id": "1626-hand-swallows-hug",
+  "part": "unbound",
+  "file": "shared/unbound/close-moments/chat.ts",
+  "find": "  if (input.kind === 'hug' && g.armsHeld && !handYieldsTo(input.kind, input.arms)) return 'arms';",
+  "replace": "  if (input.kind === 'hug' && g.armsHeld) return 'arms';",
+  "what": "2026-11-25（16:26\"抱抱不行\"）：她自己伸手等牵手时，回复里写的抱抱被手占着挡掉，只演轻一点的，什么都看不出",
+  "tests": [
+   "tests/close-moments-1626.test.ts"
+  ]
+ },
+ {
+  "id": "1626-hand-not-dropped",
+  "part": "unbound",
+  "file": "electron/unbound/close-moments.ts",
+  "find": "    if (handYieldsTo(kind, this.arms())) safe(() => { this.ports.dropHand?.(); return true; }, false);",
+  "replace": "",
+  "what": "2026-11-25：她走过来亲、抱时伸出去的手不收回（手还占着手臂，一秒后被当成\"在玩\"把亲抱打断）",
+  "tests": [
+   "tests/close-moments-1626.test.ts"
+  ]
+ },
+ {
+  "id": "1626-words-before-contact",
+  "part": "unbound",
+  "file": "electron/brain/speech-beats/turn.ts",
+  "find": "    if (this.contactFirst(chunk, close && spoken >= 0 ? from + spoken : -1, push)) return; // 2026-11-25: a kiss / hug's next sentence stops first\n",
+  "replace": "",
+  "what": "2026-11-25（16:26\"先说测试成功啥的，再做动作的\"）：亲抱那一句后面的话不等亲上、抱住就说出来",
+  "tests": [
+   "tests/close-moments-1626.test.ts",
+   "tests/i203-frames.test.ts"
+  ]
+ },
+ {
+  "id": "1626-contact-released-at-ask",
+  "part": "unbound",
+  "file": "electron/unbound/close-sequence.ts",
+  "find": "    if (w.word === 'contact' && w.beat && w.beat.nth > this.asks) return; // not the kiss / hug this wait is about yet\n",
+  "replace": "    if (w.word === 'contact') { this.release('done'); return; }\n",
+  "what": "2026-11-25：页面一问到亲抱（还在走过来的路上）后面的话就放出来，没等嘴贴上、抱住",
+  "tests": [
+   "tests/close-moments-1626.test.ts"
+  ]
+ },
+ {
+  "id": "1626-let-go-before-hold",
+  "part": "unbound",
+  "file": "shared/unbound/close-moments/frames.ts",
+  "find": "    this.endAt = holdBeat === null ? Math.max(0, floorS) : Math.max(0, holdBeat);",
+  "replace": "    this.endAt = Math.max(0, holdBeat ?? 0);",
+  "what": "2026-11-25：走过来的路上就到了 ⟦let-go⟧，一抱上马上松开（没抱够下限）",
+  "tests": [
+   "tests/i203-frames.test.ts",
+   "tests/i203-frames-gene.test.ts"
+  ]
+ },
+ {
+  "id": "1626-fate-not-journaled",
+  "part": "unbound",
+  "file": "electron/unbound/peek.ts",
+  "find": "    if (!close.fated && (close.kind === 'kiss' || close.kind === 'hug')) { close.fated = true; this.fate({ kind: close.kind, outcome: 'not-played', why: closeEndWhy(this.current?.close === close ? this.current.cancelled : null) }); }\n",
+  "replace": "",
+  "what": "2026-11-25：她写的亲抱走过来了却没做成（被拉开、超时），体验记录里没有一行",
+  "tests": [
+   "tests/close-moments-1626.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "default-place-write-failure-forgotten",
+  "file": "electron/unbound/place-keeper.ts",
+  "find": ".then(() => true, () => false); } catch",
+  "replace": ".then(() => true, () => true); } catch",
+  "what": "默认位置写盘失败了，却当成写好了（面板照说已设，重启后丢）",
+  "tests": [
+   "tests/default-place-near-first.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "default-place-said-before-disk",
+  "file": "electron/unbound/place-panel.ts",
+  "find": "const saved = outcome !== 'kept' || await onDisk(places);",
+  "replace": "const saved = true;",
+  "what": "面板不等文件写好就说已设",
+  "tests": [
+   "tests/default-place-near-first.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "default-place-flush-result-dropped",
+  "file": "electron/unbound/company/place-share.ts",
+  "find": "if (this.book.places.size) return this.file.save(placeBookFile(this.book.places));",
+  "replace": "if (this.book.places.size) { this.file.save(placeBookFile(this.book.places)); return; }",
+  "what": "共享位置文件把写盘的结果丢了（失败看不见）",
+  "tests": [
+   "tests/default-place-near-first.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "place-store-drops-record-quietly",
+  "file": "electron/unbound/place-store.ts",
+  "find": "if (Object.keys(book.places).length !== Object.keys((place as PlaceBookFile).places).length) return Promise.reject(new Error('a place record outside what may be kept'));",
+  "replace": "",
+  "what": "位置文件悄悄丢掉不合规的记录还说成功",
+  "tests": [
+   "tests/default-place-near-first.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "first-appearance-old-half-height",
+  "file": "electron/unbound/her-place.ts",
+  "find": "size: firstWaistUpSize(frame, this.heightM ?? FALLBACK_HEIGHT_M) ?? this.knobs.firstSize",
+  "replace": "size: this.knobs.firstSize",
+  "what": "第一次出场又回到半屏高全身（不是半身以上）",
+  "tests": [
+   "tests/default-place-near-first.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "first-appearance-band-wrong",
+  "file": "shared/unbound/her-position/first.ts",
+  "find": "?.seen === 'waist-up'",
+  "replace": "?.seen === 'chest-up'",
+  "what": "第一次出场挑错了一档（胸口以上，太近）",
+  "tests": [
+   "tests/default-place-near-first.test.ts"
+  ]
+ },
+ {
+  "part": "unbound",
+  "id": "extras-overlap-when-row-full",
+  "file": "shared/unbound/company/start-clear.ts",
+  "find": "backStepM: 1.6, rows: 2 }",
+  "replace": "backStepM: 1.6, rows: 0 }",
+  "what": "一排放不下时第三位叠在别人身上",
+  "tests": [
+   "tests/default-place-near-first.test.ts"
+  ]
+ },
+ {
+  "id": "K14-tail-held-as-words",
+  "part": "unbound",
+  "file": "shared/behaviors/speech-beats/contact-hold.ts",
+  "find": "    if (ch === '<' && PRIVATE.startsWith(text.slice(i, i + PRIVATE.length))) return { seek: 'off' };\n",
+  "replace": "",
+  "what": "2026-11-25（K14）：亲抱那一句后面的回复尾注（<sh-state-…>）被当成她的下一句留着，忘写开头标记的回复一个字都显示不出来，抱抱 40 秒都走不过来",
+  "tests": [
+   "tests/k14-hug-regression.test.ts"
+  ]
+ },
+ {
+  "id": "K14-no-unstick-at-end",
+  "part": "unbound",
+  "file": "electron/brain/speech-beats/turn.ts",
+  "find": "    this.unstick(push as (type: 'delta', text: string) => void);\n",
+  "replace": "",
+  "what": "2026-11-25（K14）：回复流完时，留着的话等的那个亲抱或帧前面的字还没到屏幕（忘写开头标记），这一等只能靠 40 秒上限放开",
+  "tests": [
+   "tests/k14-hug-regression.test.ts"
+  ]
+ },
+ {
+  "id": "K14-unshown-never",
+  "part": "unbound",
+  "file": "shared/behaviors/speech-beats/place.ts",
+  "find": "    if (!(at > this.pointer)) return false;\n",
+  "replace": "    return false;\n",
+  "what": "2026-11-25（K14）：看不出拍子前面的字还没显示，回复流完时不放开等待（又回到 40 秒卡住）",
+  "tests": [
+   "tests/k14-hug-regression.test.ts"
+  ]
+ },
+ {
+  "id": "ct-bounding-instead-of-silhouette",
+  "part": "unbound",
+  "file": "src/unbound/catch-region.ts",
+  "find": "return bodyDistancePx <= coarseMarginPx ? 'stage' : 'outside';",
+  "replace": "return bodyDistancePx <= coarseMarginPx ? 'ui' : 'outside';",
+  "what": "全屏穿透：她身形的粗框（骨头胶囊）直接算抓住鼠标，不再用画出来的像素确认（空白处被挡）",
+  "tests": [
+   "tests/click-through-tight.test.ts"
+  ]
+ }
+]

@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import { ambientCommentHistoryText } from '../src/ui/reply-history';
-import { buildCodexChatPrompt } from '../electron/conversation-context';
-import { validateChatRequest } from '../electron/validation';
+import { ambientCommentHistoryText } from '../src/brain/reply-history';
+import { buildCodexChatPrompt } from '../electron/brain/conversation-context';
+import { validateChatRequest } from '../electron/settings/validation';
 
 test('after audio closes, the next Claude request retains a fixed source label and the complete current user',async()=>{
  const comment='这段合成配乐听起来很轻快。';

@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import { VoiceChatHost } from '../electron/voice-chat-host';
-import { CompanionService } from '../electron/companion';
-import { PersistentClaudeChat } from '../electron/claude-session';
-import { encodeWav } from '../src/ui/MediaInput';
-import { VoiceContinuationStatus } from '../src/ui/VoiceContinuationStatus';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import type { VoiceConversationEvent } from '../shared/voice-conversation';
+import { VoiceChatHost } from '../electron/voice/voice-chat-host';
+import { CompanionService } from '../electron/brain/companion';
+import { PersistentClaudeChat } from '../electron/brain/claude-session';
+import { encodeWav } from '../src/senses/MediaInput';
+import { VoiceContinuationStatus } from '../src/voice/VoiceContinuationStatus';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import type { VoiceConversationEvent } from '../shared/voice/voice-conversation';
 
 function deferred<T>() { let resolve!: (value: T) => void; const promise = new Promise<T>(done => { resolve = done; }); return { promise, resolve }; }
 const tick = () => new Promise<void>(resolve => setImmediate(resolve));
@@ -25,7 +25,7 @@ function readRecord(service: CompanionService) {
 }
 
 /**
- * The actual voice host (electron/voice-chat-host.ts, imported, not cut out of
+ * The actual voice host (electron/voice/voice-chat-host.ts, imported, not cut out of
  * main.ts) over Claude's one-process-per-message path, where a reply cannot be
  * stopped and merged: an addition waits and becomes an explicit continuation.
  */

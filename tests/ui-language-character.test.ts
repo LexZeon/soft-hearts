@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { registerUiMessages, setUiLanguage } from '../shared/ui-language';
-import { ENGLISH_CHARACTER_UI_COPY } from '../shared/ui-copy.character.en';
-import { CharacterResponseControls } from '../src/ui/CharacterResponseControls';
-import { PersonalizeLanguageControls } from '../src/ui/PersonalizeLanguageControls';
-import { PersonalizeVisualControls } from '../src/ui/PersonalizeVisualControls';
-import { PersonalizeBodyControls } from '../src/ui/PersonalizeBodyControls';
-import { emptyLanguageRules } from '../shared/personalize-language';
-import { MoodPanel, moodExtendedDifferences } from '../src/ui/MoodPanel';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
+import { registerUiMessages, setUiLanguage } from '../shared/foundation/ui-language';
+import { ENGLISH_CHARACTER_UI_COPY } from '../shared/foundation/ui-copy.character.en';
+import { CharacterResponseControls } from '../src/cards/CharacterResponseControls';
+import { PersonalizeLanguageControls } from '../src/cards/PersonalizeLanguageControls';
+import { PersonalizeVisualControls } from '../src/stage/PersonalizeVisualControls';
+import { PersonalizeBodyControls } from '../src/stage/PersonalizeBodyControls';
+import { emptyLanguageRules } from '../shared/cards/personalize-language';
+import { MoodPanel, moodExtendedDifferences } from '../src/mood/MoodPanel';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
 
 class Element {
   children:Element[]=[]; textContent=''; value=''; disabled=false; hidden=false; open=false; className=''; src=''; alt=''; id='';

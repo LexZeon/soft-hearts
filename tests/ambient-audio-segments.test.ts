@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { AmbientAudioSegments, type AmbientEncodedSegment } from '../src/ui/ambient-audio-segments';
-import { AmbientAudioControls } from '../src/ui/AmbientAudio';
+import { AmbientAudioSegments, type AmbientEncodedSegment } from '../src/senses/ambient-audio-segments';
+import { AmbientAudioControls } from '../src/senses/AmbientAudio';
 
 const flush = async () => { for (let index = 0; index < 12; index++) await Promise.resolve(); };
 const pcm = (seconds: number, level = 0.1, rate = 16000) => new Float32Array(Math.round(seconds * rate)).fill(level);

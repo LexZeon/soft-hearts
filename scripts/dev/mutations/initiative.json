@@ -1,0 +1,1626 @@
+[
+ {
+  "id": "C1-twice",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-wiring.ts",
+  "find": "for (const step of CUE_CHAIN) { claimant = step.claims(cue, view); if (claimant !== null) break; }",
+  "replace": "for (const step of CUE_CHAIN) { claimant = step.claims(cue, view); }",
+  "what": "一个心情时机被认领两次（认领链不在第一个认领者处停下）",
+  "tests": [
+   "tests/initiative-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "C2-swap",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-wiring.ts",
+  "find": "for (const step of CUE_CHAIN) {",
+  "replace": "for (const step of [...CUE_CHAIN].reverse()) {",
+  "what": "认领顺序调换（先问开口，再问手）",
+  "tests": [
+   "tests/initiative-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "C3-hands-dropped",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-wiring.ts",
+  "find": "for (const step of CUE_CHAIN) {",
+  "replace": "for (const step of CUE_CHAIN.filter(s => s.id !== 'hands')) {",
+  "what": "手不再被问（链里少一步）",
+  "tests": [
+   "tests/initiative-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "C4-owner-lost",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-wiring.ts",
+  "find": "moodCueOwner = cue ? { id: cue.id, owner: claimant } : null;",
+  "replace": "moodCueOwner = null;",
+  "what": "认领结果没记给时钟（moodCueOwner）",
+  "tests": [
+   "tests/initiative-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "C5-memorial-dropped",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-wiring.ts",
+  "find": "memorial: c => c.kind === 'speech' && !!textMemorialHost?.offerOpportunity(c),",
+  "replace": "memorial: () => false,",
+  "what": "开口少交一个认领者（纪念邀请）",
+  "tests": [
+   "tests/initiative-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/r20-proactive-offer-main.test.ts"
+  ]
+ },
+ {
+  "id": "G1-canExpress",
+  "part": "initiative",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "ambientSpeakingOwners.size === 0 && !proactiveSpeechGate.busy\n    && ![...pending",
+  "replace": "ambientSpeakingOwners.size === 0\n    && ![...pending",
+  "what": "自动表现不看主动说话关口（companionCanExpress）",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "G2-innerloop-gate",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-inner-loop-wiring.ts",
+  "find": "    gate: proactiveSpeechGate,\n    userActivity:",
+  "replace": "    gate: new ProactiveSpeechGate(Date.now),\n    userActivity:",
+  "what": "内心循环用了另一个关口",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "G3-resting",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-wiring.ts",
+  "find": "{ resting: () => innerLoopHost.loop.asleep() }",
+  "replace": "{ resting: () => false }",
+  "what": "关口不看她睡着（T-209）",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "G4-scope",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-publish-wiring.ts",
+  "find": "proactiveSpeechGate.setScope(`${speechScope()}:${view.token}`);",
+  "replace": "",
+  "what": "心情发布不再设关口的范围",
+  "tests": [
+   "tests/initiative-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "G5-senseRouter",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-look-wiring.ts",
+  "find": "proactiveBusy: proactiveSpeechGate.busy,",
+  "replace": "proactiveBusy: false,",
+  "what": "看一眼、听一下的那句不看关口",
+  "tests": [
+   "tests/initiative-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts"
+  ]
+ },
+ {
+  "id": "G6-feeding",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-together-wiring.ts",
+  "find": "&& !proactiveSpeechGate.busy && ![...pending.values()].some(task => task.kind === 'chat') && !rps.host.active; },",
+  "replace": "&& ![...pending.values()].some(task => task.kind === 'chat') && !rps.host.active; },",
+  "what": "喂食那句不看关口",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "G7-keepsake",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-together-wiring.ts",
+  "find": "(AppPorts.keepsakeCalm, word for word)\n      return !exiting && !innerLoopHost.loop.asleep() && userActivity?.view()?.state !== 'busy' && userActivity?.presence().interrupt !== 'no' && !proactiveSpeechGate.busy",
+  "replace": "(AppPorts.keepsakeCalm, word for word)\n      return !exiting && !innerLoopHost.loop.asleep() && userActivity?.view()?.state !== 'busy' && userActivity?.presence().interrupt !== 'no'",
+  "what": "留给你的东西不看关口",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "G8-specialDay",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-together-wiring.ts",
+  "find": "(AppPorts.specialDayCalm, word for word)\n      return !exiting && !innerLoopHost.loop.asleep() && userActivity?.view()?.state !== 'busy' && userActivity?.presence().interrupt !== 'no' && !proactiveSpeechGate.busy",
+  "replace": "(AppPorts.specialDayCalm, word for word)\n      return !exiting && !innerLoopHost.loop.asleep() && userActivity?.view()?.state !== 'busy' && userActivity?.presence().interrupt !== 'no'",
+  "what": "特别的日子不看关口",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "G9-chat-cancel",
+  "part": "initiative",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "    cancelProactiveVision(false, keepReply);\n    lookAttachments.abort();",
+  "replace": "    lookAttachments.abort();",
+  "what": "用户发消息时不取消还在外面的主动句",
+  "tests": [
+   "tests/initiative-gates.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/user-profile-chat-wiring.test.ts"
+  ]
+ },
+ {
+  "id": "G10-r20-gate",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-inner-loop-wiring.ts",
+  "find": "      gate: proactiveSpeechGate,\n      context: () => { try {",
+  "replace": "      gate: new ProactiveSpeechGate(Date.now),\n      context: () => { try {",
+  "what": "R20 用了另一个关口",
+  "tests": [
+   "tests/initiative-gates.test.ts",
+   "tests/r20-proactive-offer-main.test.ts"
+  ]
+ },
+ {
+  "id": "N1-unanswered",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-inner-loop-wiring.ts",
+  "find": "unanswered: () => needs.companion.mood.unansweredSpeech(),",
+  "replace": "unanswered: () => 0,",
+  "what": "提示里不再说有几句没人回",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "N2-spoke",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-inner-loop-wiring.ts",
+  "find": "impulse.spoke(message.text, message.id);",
+  "replace": "",
+  "what": "她先开口的那句不回到冲动",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "N3-invite",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-together-wiring.ts",
+  "find": "if (entry.event === 'accept' || entry.event === 'decline') impulse.inviteAnswered(id, entry.event === 'accept');",
+  "replace": "",
+  "what": "猜拳邀请被接受或拒绝不回到冲动",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "Q1-opening-budget",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-inner-loop-wiring.ts",
+  "find": "budget: openingBudget(() => needs.companion?.budget ?? null),",
+  "replace": "budget: openingBudget(() => null),",
+  "what": "开口不看互动余额",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "Q2-impulse-budget",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-inner-loop-wiring.ts",
+  "find": "impulse = createImpulseHost({ mood: () => needs.companion?.mood ?? null, budget: () => needs.companion?.budget ?? null,",
+  "replace": "impulse = createImpulseHost({ mood: () => needs.companion?.mood ?? null, budget: () => null,",
+  "what": "冲动不看互动余额",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "Q3-rps-budget",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-together-wiring.ts",
+  "find": "budget: () => needs.companion?.budget ?? null }); // I-010: invite again",
+  "replace": "budget: () => null }); // I-010: invite again",
+  "what": "猜拳邀请不看互动余额",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "Q4-innerloop-canExpress",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-inner-loop-wiring.ts",
+  "find": "(electron/brain/chat-availability.ts).\n    canExpress: () => companionCanExpress() && chatAvailability.isAvailable(),",
+  "replace": "(electron/brain/chat-availability.ts).\n    canExpress: () => chatAvailability.isAvailable(),",
+  "what": "内心循环不看能不能表现",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "Q5-impulse-canExpress",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-inner-loop-wiring.ts",
+  "find": "canExpress: () => companionCanExpress() && chatAvailability.isAvailable(), // hidden, typing",
+  "replace": "canExpress: () => chatAvailability.isAvailable(), // hidden, typing",
+  "what": "冲动不看能不能表现",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "Q6-release-quota",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-inner-loop-wiring.ts",
+  "find": "releaseSpeech: claim => { needs.companion.mood.releaseSpeech({ id: claim.id, at: claim.at }, claim.characterId); needs",
+  "replace": "releaseSpeech: claim => { needs",
+  "what": "没说出口的时机不退回次数",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "Q7-release-budget",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-inner-loop-wiring.ts",
+  "find": "needs.companion.budget.refund(claim.characterId, claim.id); },",
+  "replace": " },",
+  "what": "没说出口的时机不退回互动余额",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "Q8-realize-claim",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-inner-loop-wiring.ts",
+  "find": "kind, claimed: { id: claim.id, kind: claim.kind, at: claim.at } }, claim.characterId),",
+  "replace": "kind }, claim.characterId),",
+  "what": "实现的看一眼不带认领（绕过认领的冷却检查）",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "Q9-current-typing",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-inner-loop-wiring.ts",
+  "find": "&& !needs.petWindowDrag?.active && Date.now() >= userInputUntil && needs.companion",
+  "replace": "&& !needs.petWindowDrag?.active && needs.companion",
+  "what": "内心循环不看用户在打字",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "R1-no-file",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-inner-loop-wiring.ts",
+  "find": "restReminderFile: () => needs.store ? path.join(needs.store.directory, 'inner-loop-state.json') : null,",
+  "replace": "restReminderFile: () => null,",
+  "what": "休息提醒不记文件",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "R2-per-launch",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-inner-loop-wiring.ts",
+  "find": "path.join(needs.store.directory, 'inner-loop-state.json') : null,",
+  "replace": "path.join(needs.store.directory, `inner-loop-state-${Date.now()}.json`) : null,",
+  "what": "休息提醒每次启动换一个文件（同一晚重启会再提醒）",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "R3-diagnostics",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-inner-loop-wiring.ts",
+  "find": "restReminderFile: () => needs.store ? path.join(needs.store.directory, 'inner-loop-state.json') : null,",
+  "replace": "restReminderFile: () => needs.store ? path.join(needs.store.directory, 'dev', 'inner-loop.jsonl') : null,",
+  "what": "休息提醒写进开发日志文件",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "F1-syncText",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-together-wiring.ts",
+  "find": "syncText: (name, content) => herFolder.syncText(herFolder.beginKeepsake(), name, content),",
+  "replace": "syncText: (name, content) => herFolder.syncText(null as never, name, content),",
+  "what": "递给你的东西绕过她的文件夹的主机直接写",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "F2-keepPicture",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-together-wiring.ts",
+  "find": "keepPicture: (stem, png) => herFolder.keepPicture(herFolder.beginKeepsake(), stem, png),",
+  "replace": "keepPicture: (stem, png) => herFolder.keepPicture(null as never, stem, png),",
+  "what": "图片绕过她的文件夹的主机直接写",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "F3-enabled",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-together-wiring.ts",
+  "find": "folder: { enabled: () => herFolder.enabled(),",
+  "replace": "folder: { enabled: () => true,",
+  "what": "她的文件夹关着也写",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "F4-keepsake-folder",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-together-wiring.ts",
+  "find": "keepsake = createKeepsake({ folder: herFolder,",
+  "replace": "keepsake = createKeepsake({ folder: null as never,",
+  "what": "留给你的东西不经她的文件夹的主机",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "F5-specialDay-folder",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-together-wiring.ts",
+  "find": "specialDay = createSpecialDay({ folder: herFolder,",
+  "replace": "specialDay = createSpecialDay({ folder: null as never,",
+  "what": "特别的日子不经她的文件夹的主机",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "F6-state-outside",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-together-wiring.ts",
+  "find": "herFolder = new HerFolderHost({ profileDirectory: () => needs.store ? needs.store.directory : null,",
+  "replace": "herFolder = new HerFolderHost({ profileDirectory: () => needs.store ? path.dirname(needs.store.directory) : null,",
+  "what": "她的文件夹的状态文件写到配置外",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "T1-clock",
+  "part": "initiative",
+  "file": "electron/main.ts",
+  "find": "if (moodTimer) { clearInterval(moodTimer); moodTimer = null; }",
+  "replace": "",
+  "what": "退出时不停 1 秒时钟",
+  "tests": [
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "T2-innerloop",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-cleanup-wiring.ts",
+  "find": "innerLoopHost.loop.dispose();",
+  "replace": "",
+  "what": "退出时不停内心循环",
+  "tests": [
+   "tests/quit-order.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "T3-keepsake",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-cleanup-wiring.ts",
+  "find": "keepsake.dispose();",
+  "replace": "",
+  "what": "退出时不停留给你的东西",
+  "tests": [
+   "tests/quit-order.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "T4-specialDay",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-cleanup-wiring.ts",
+  "find": "specialDay.dispose();",
+  "replace": "",
+  "what": "退出时不停特别的日子",
+  "tests": [
+   "tests/quit-order.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "T5-gate",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-cleanup-wiring.ts",
+  "find": "proactiveSpeechGate.dispose();",
+  "replace": "",
+  "what": "退出时不停关口",
+  "tests": [
+   "tests/quit-order.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "T6-rps",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-cleanup-wiring.ts",
+  "find": "  rps.dispose();",
+  "replace": "",
+  "what": "退出时不停猜拳",
+  "tests": [
+   "tests/quit-order.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "T7-feeding",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-cleanup-wiring.ts",
+  "find": "  feeding.dispose();",
+  "replace": "",
+  "what": "退出时不停喂食认图",
+  "tests": [
+   "tests/quit-order.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "T8-give",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-cleanup-wiring.ts",
+  "find": "  give.dispose();",
+  "replace": "",
+  "what": "退出时不停递东西",
+  "tests": [
+   "tests/quit-order.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "T9-hands",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-cleanup-wiring.ts",
+  "find": "if (typeof hands!=='undefined') hands.dispose();",
+  "replace": "",
+  "what": "退出时不停牵手",
+  "tests": [
+   "tests/quit-order.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "T10-r20",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-cleanup-wiring.ts",
+  "find": "r20ProactiveOffers?.dispose();",
+  "replace": "",
+  "what": "退出时不停 R20",
+  "tests": [
+   "tests/quit-order.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "X1-memorial",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-wiring.ts",
+  "find": "if(!inputOnly)textMemorialHost?.cancel();",
+  "replace": "",
+  "what": "取消她的主动句时不取消纪念邀请",
+  "tests": [
+   "tests/initiative-gates.test.ts",
+   "tests/user-profile-chat-wiring.test.ts"
+  ]
+ },
+ {
+  "id": "X2-hands",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-wiring.ts",
+  "find": "if(!inputOnly&&typeof hands!=='undefined')hands.host.cancel();",
+  "replace": "",
+  "what": "取消时不收回她的手",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "X3-give",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-wiring.ts",
+  "find": "if(!inputOnly&&typeof give!=='undefined')give.host.cancel();",
+  "replace": "",
+  "what": "取消时不收回她递的东西",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "X4-r20",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-wiring.ts",
+  "find": "if(!inputOnly)r20ProactiveOffers?.cancel();",
+  "replace": "",
+  "what": "取消时不取消 R20",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "X5-gate",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-wiring.ts",
+  "find": "    proactiveSpeechGate.cancel();\n    needs.proactiveVision.cancel();",
+  "replace": "    needs.proactiveVision.cancel();",
+  "what": "取消时不放开关口",
+  "tests": [
+   "tests/initiative-gates.test.ts",
+   "tests/unbound-read-aloud.test.ts"
+  ]
+ },
+ {
+  "id": "X6-inputOnly",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-wiring.ts",
+  "find": "if(!inputOnly)textMemorialHost?.cancel();",
+  "replace": "textMemorialHost?.cancel();",
+  "what": "只是打字也取消纪念邀请",
+  "tests": [
+   "tests/initiative-gates.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/user-profile-chat-wiring.test.ts"
+  ]
+ },
+ {
+  "id": "X7-ack-window",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-wiring.ts",
+  "find": "if (sender === pet?.webContents.id && typeof id === 'string' && innerLoopHost.loop.owns(id)) return ackInnerInitiative(sender, id);",
+  "replace": "if (typeof id === 'string' && innerLoopHost.loop.owns(id)) return ackInnerInitiative(sender, id);",
+  "what": "别的窗口也能确认她的内心句",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "X8-ack-current",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-wiring.ts",
+  "find": "\n      || !innerLoopHost.presentation.canSpeak(id)) return false;",
+  "replace": ") return false;",
+  "what": "确认内心句时不看它还算不算数",
+  "tests": [
+   "tests/initiative-gates.test.ts"
+  ]
+ },
+ {
+  "id": "I5-surprise-either-window",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-handlers-wiring.ts",
+  "find": "return surprisePreviewHost!.begin(sender,args[0]);});",
+  "replace": "return surprisePreviewHost!.begin(sender,args[0]);},false);",
+  "what": "桌宠窗口也能开始惊喜预览",
+  "tests": [
+   "tests/surprise-preview-wiring.test.ts",
+   "tests/app-identity.test.ts",
+   "tests/app-session.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/brain-gates.test.ts",
+   "tests/bundle-inputs.test.mjs",
+   "tests/camera-two-switches.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/clipboard-permission.test.ts",
+   "tests/companion-breath.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/companion-framing.test.ts",
+   "tests/desktop-entry-chain.test.ts",
+   "tests/i084-look-at-me.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/layer-check.test.mjs",
+   "tests/listen-late-window.test.ts",
+   "tests/look-stale-frame.test.ts",
+   "tests/media-input.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/model-physics-wiring.test.ts",
+   "tests/mood-gates.test.ts",
+   "tests/motion-track-coverage.test.ts",
+   "tests/motion-weights-ipc.test.ts",
+   "tests/music-settings-wiring.test.ts",
+   "tests/part-table.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/pet-always-on-top-host.test.ts",
+   "tests/pose-privacy.test.ts",
+   "tests/public-snapshot.test.mjs",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r20-proactive-offer-ui.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/reply-speech-native-receipt.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/senses-privacy-gates.test.ts",
+   "tests/size-check.test.mjs",
+   "tests/sleep-entry-ready.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/structure-inventory.test.mjs",
+   "tests/test-affected.test.mjs",
+   "tests/test-command-wiring.test.ts",
+   "tests/test-parts.test.mjs",
+   "tests/text-invitation-archive.test.ts",
+   "tests/text-memorial-question-binding.test.ts",
+   "tests/ui-language-entry.test.ts",
+   "tests/unbound-read-aloud.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/user-profile-host-wiring.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts",
+   "tests/wiring-skeleton.test.ts"
+  ]
+ },
+ {
+  "id": "I5-surprise-other-owner",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-handlers-wiring.ts",
+  "find": "if(!model||!win||win.isDestroyed()||win.webContents.id!==owner)return null;",
+  "replace": "if(!model||!win||win.isDestroyed())return null;",
+  "what": "惊喜预览不核对是不是控制窗口自己的预览",
+  "tests": [
+   "tests/step5-handlers.test.ts",
+   "tests/app-identity.test.ts",
+   "tests/app-session.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/brain-gates.test.ts",
+   "tests/bundle-inputs.test.mjs",
+   "tests/camera-two-switches.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/clipboard-permission.test.ts",
+   "tests/companion-breath.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/companion-framing.test.ts",
+   "tests/desktop-entry-chain.test.ts",
+   "tests/i084-look-at-me.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/layer-check.test.mjs",
+   "tests/listen-late-window.test.ts",
+   "tests/look-stale-frame.test.ts",
+   "tests/media-input.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/model-physics-wiring.test.ts",
+   "tests/mood-gates.test.ts",
+   "tests/motion-track-coverage.test.ts",
+   "tests/motion-weights-ipc.test.ts",
+   "tests/music-settings-wiring.test.ts",
+   "tests/part-table.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/pet-always-on-top-host.test.ts",
+   "tests/pose-privacy.test.ts",
+   "tests/public-snapshot.test.mjs",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r20-proactive-offer-ui.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/reply-speech-native-receipt.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/senses-privacy-gates.test.ts",
+   "tests/size-check.test.mjs",
+   "tests/sleep-entry-ready.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/structure-inventory.test.mjs",
+   "tests/surprise-preview-wiring.test.ts",
+   "tests/test-affected.test.mjs",
+   "tests/test-command-wiring.test.ts",
+   "tests/test-parts.test.mjs",
+   "tests/text-invitation-archive.test.ts",
+   "tests/text-memorial-question-binding.test.ts",
+   "tests/ui-language-entry.test.ts",
+   "tests/unbound-read-aloud.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/user-profile-host-wiring.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts",
+   "tests/wiring-skeleton.test.ts"
+  ]
+ },
+ {
+  "id": "T163-places-unmatched",
+  "part": "initiative",
+  "file": "shared/initiative/take-me-there.ts",
+  "find": "for (const rule of PLACE_RULES) if (rule.patterns.some(pattern => pattern.test(clause))) return rule.id;",
+  "replace": "",
+  "what": "「带我去」的新页面（物理调参台、开发者模式、鼠标穿透……）不再被用户的话认出来",
+  "tests": [
+   "tests/take-me-there-places.test.ts"
+  ]
+ },
+ {
+  "id": "T163-refusal-ignored",
+  "part": "initiative",
+  "file": "shared/initiative/take-me-there.ts",
+  "find": "if (!clause.trim() || NO.test(clause)) continue;",
+  "replace": "if (!clause.trim()) continue;",
+  "what": "用户说「别带我去…」「不要打开…」也照样给按钮",
+  "tests": [
+   "tests/take-me-there-places.test.ts",
+   "tests/take-me-there.test.ts"
+  ]
+ },
+ {
+  "id": "T163-open-does-more",
+  "part": "initiative",
+  "file": "electron/initiative/take-me-there.ts",
+  "find": "this.options.open(active.view.destination);",
+  "replace": "this.options.open(active.view.destination); this.options.send(sender, active.view);",
+  "what": "点「带我去」除了打开那一页还多做了别的事（打开只能打开）",
+  "tests": [
+   "tests/take-me-there-coverage.test.ts"
+  ]
+ },
+ {
+  "id": "T163-optout-no-reason",
+  "part": "initiative",
+  "file": "shared/initiative/take-me-there-coverage.ts",
+  "find": "!((optOut[leaf]?.trim().length ?? 0) >= 4)",
+  "replace": "!(optOut[leaf] !== undefined)",
+  "what": "守门检查放过「写了不能去、却没写原因」的页面入口",
+  "tests": [
+   "tests/take-me-there-coverage.test.ts"
+  ]
+ },
+ {
+  "id": "T163-unknown-place-accepted",
+  "part": "initiative",
+  "file": "shared/initiative/take-me-there-coverage.ts",
+  "find": "Object.prototype.hasOwnProperty.call(destinations, cover) : cover.not",
+  "replace": "true : cover.not",
+  "what": "守门检查放过指向不存在的去处的登记",
+  "tests": [
+   "tests/take-me-there-coverage.test.ts"
+  ]
+ },
+ {
+  "id": "T163-removed-place-unnoticed",
+  "part": "initiative",
+  "file": "shared/initiative/take-me-there-coverage.ts",
+  "find": "for (const leaf of input.leaves) if (!reached.has(leaf)",
+  "replace": "for (const leaf of []) if (!reached.has(leaf)",
+  "what": "守门检查不再看控制窗口的页面入口（新页面没去处也不报）",
+  "tests": [
+   "tests/take-me-there-coverage.test.ts"
+  ]
+ },
+ {
+  "id": "lang-inner-loop-prompt",
+  "part": "initiative",
+  "file": "electron/initiative/inner-loop/context.ts",
+  "find": "return withSpeechLanguage(buildInnerLoopPrompt({",
+  "replace": "return (buildInnerLoopPrompt({",
+  "what": "英文角色主动开口（内心循环）的提示不再以\"用英文说\"收尾（2026-11-21：她主动说了中文）",
+  "tests": [
+   "tests/proactive-language.test.ts"
+  ]
+ },
+ {
+  "id": "lang-inner-loop-wiring",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-inner-loop-wiring.ts",
+  "find": "cardLanguage: () => cardLanguageOf(needs.characterCards.getActive()), // 2026-11-21",
+  "replace": "cardLanguage: () => 'zh-CN', // 2026-11-21",
+  "what": "内心循环不再读角色卡的语言（英文角色又会收到只有中文的提示）",
+  "tests": [
+   "tests/proactive-language.test.ts"
+  ]
+ },
+ {
+  "id": "lang-inner-loop-length",
+  "part": "initiative",
+  "file": "shared/initiative/inner-loop.ts",
+  "find": "length > spokenLineMax(text, INNER_LOOP_TEXT_MAX)",
+  "replace": "length > INNER_LOOP_TEXT_MAX",
+  "what": "英文的一句话按 30 个字符卡长度（英文句子被判无效，她就什么都不说了）",
+  "tests": [
+   "tests/proactive-language.test.ts"
+  ]
+ },
+ {
+  "id": "lang-task-offer",
+  "part": "initiative",
+  "file": "electron/initiative/r20-offer-dialogue.ts",
+  "find": "return withSpeechLanguage('结合本轮真实对话、角色和心情，",
+  "replace": "return ('结合本轮真实对话、角色和心情，",
+  "what": "主动代办提议的问句不按角色卡语言写（提示词不再以英文行收尾）",
+  "tests": [
+   "tests/proactive-language.test.ts"
+  ]
+ },
+ {
+  "id": "lang-rps-prompt",
+  "part": "initiative",
+  "file": "electron/initiative/rps/voice.ts",
+  "find": "withSpeechLanguage(rpsVoicePrompt(",
+  "replace": "(rpsVoicePrompt(",
+  "what": "猜拳里她的话不按角色卡语言写",
+  "tests": [
+   "tests/proactive-language.test.ts"
+  ]
+ },
+ {
+  "id": "lang-rps-length",
+  "part": "initiative",
+  "file": "shared/initiative/rps-voice.ts",
+  "find": "visible(line) > spokenLineMax(line, RPS_VOICE_MAX + 4)",
+  "replace": "visible(line) > RPS_VOICE_MAX + 4",
+  "what": "猜拳里英文的话按 32 个字符卡长度",
+  "tests": [
+   "tests/proactive-language.test.ts"
+  ]
+ },
+ {
+  "id": "lang-rps-wiring",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-together-wiring.ts",
+  "find": "speechLanguage: () => cardLanguageOf(needs.characterCards.getActive()), speechStyle",
+  "replace": "speechStyle",
+  "what": "猜拳的接线不再传角色卡语言",
+  "tests": [
+   "tests/proactive-language.test.ts"
+  ]
+ },
+ {
+  "id": "lang-keepsake-prompt",
+  "part": "initiative",
+  "file": "electron/initiative/her-folder/keepsake.ts",
+  "find": "withSpeechLanguage(keepsakePrompt(",
+  "replace": "(keepsakePrompt(",
+  "what": "\"给你留点东西\"不按角色卡语言写",
+  "tests": [
+   "tests/proactive-language.test.ts"
+  ]
+ },
+ {
+  "id": "lang-keepsake-wiring",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-together-wiring.ts",
+  "find": "profile: () => userProfileManagement?.get() ?? null, speechLanguage: () => cardLanguageOf(needs.characterCards.getActive()), persona:",
+  "replace": "profile: () => userProfileManagement?.get() ?? null, persona:",
+  "what": "\"给你留点东西\"的接线不再传角色卡语言",
+  "tests": [
+   "tests/proactive-language.test.ts"
+  ]
+ },
+ {
+  "id": "lang-task-offer-wiring",
+  "part": "initiative",
+  "file": "electron/wiring/initiative-inner-loop-wiring.ts",
+  "find": "language:characterCards.getActive().language==='en'?'en':'zh-CN' };",
+  "replace": "language:'zh-CN' };",
+  "what": "主动代办提议的接线不再传角色卡语言",
+  "tests": [
+   "tests/proactive-language.test.ts"
+  ]
+ },
+ {
+  "id": "I168-self-look-no",
+  "part": "initiative",
+  "file": "electron/initiative/self-look/host.ts",
+  "find": "    if ((SEE_AND_SAY.holdOnNo as boolean) !== true) return false;\n",
+  "replace": "",
+  "what": "I-168：她自己看一眼又被消息里的\"别看\"挡住",
+  "tests": [
+   "tests/i085-chat-look.test.ts",
+   "tests/i085-self-look.test.ts"
+  ]
+ },
+ {
+  "id": "I174-own-line-host-keep",
+  "part": "initiative",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "    const keepLine = !ownLineYields(cause);",
+  "replace": "    const keepLine = false;",
+  "what": "你点一下、按个键、摸她（心情不是“平静”）又会掐断她正在说的话",
+  "tests": [
+   "tests/i174-own-line.test.ts"
+  ]
+ },
+ {
+  "id": "I174-own-line-rule",
+  "part": "initiative",
+  "file": "shared/behaviors/interrupt/own-line.ts",
+  "find": "  return cause === 'message' || cause === 'stop' || cause === 'sentence' || cause === 'surface';",
+  "replace": "  return true;",
+  "what": "什么都能打断她自己的话",
+  "tests": [
+   "tests/i174-own-line.test.ts"
+  ]
+ },
+ {
+  "id": "I174-own-line-inner-loop-holds",
+  "part": "initiative",
+  "file": "electron/initiative/inner-loop/inner-loop.ts",
+  "find": "pending.offeredAt !== null && this.deps.holds ? this.deps.holds() : this.deps.current()",
+  "replace": "this.deps.current()",
+  "what": "她的话已经冒出来以后，你摸一下（输入、心情离开平静）又会把这句取消",
+  "tests": [
+   "tests/i174-own-line.test.ts"
+  ]
+ },
+ {
+  "id": "I174-own-line-page",
+  "part": "initiative",
+  "file": "src/wiring/chat-wiring.ts",
+  "find": "  export const noteProactiveInput = () => {\n    textMemorialOffer?.invalidate();",
+  "replace": "  export const noteProactiveInput = () => {\n    textMemorialOffer?.invalidate();\n    if (activeVisionSpeechId) { activeVisionSpeechId = null; speech.stop(); }",
+  "what": "窗口上点一下、按个键又会停掉她正在说的自己的话",
+  "tests": [
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "I173-10-anchor-shape",
+  "part": "initiative",
+  "file": "shared/initiative/take-me-there.ts",
+  "find": "  return { destination, ...(isTakeMeThereAnchor(input.anchor) ? { anchor: input.anchor } : {}),",
+  "replace": "  return { destination, ...(typeof input.anchor === 'string' ? { anchor: input.anchor } : {}),",
+  "what": "带我去的高亮收下任意文字（不只元素 id），控制窗口会拿它去找",
+  "tests": [
+   "tests/i173-reachable-options.test.ts"
+  ]
+ },
+ {
+  "id": "I173-11-card-shape",
+  "part": "initiative",
+  "file": "src/initiative/TakeMeThere.ts",
+  "find": "  if (isTakeMeThereCharacter(focus.character) && ports.revealCardMenu) {",
+  "replace": "  if (typeof focus.character === 'string' && ports.revealCardMenu) {",
+  "what": "控制窗口拿不是角色卡 id 的东西去开「更多」",
+  "tests": [
+   "tests/i173-reachable-options.test.ts"
+  ]
+ },
+ {
+  "id": "I173-12-reach-place",
+  "part": "initiative",
+  "file": "shared/initiative/take-me-there-coverage.ts",
+  "find": "  to('fish-key', 'tts_fish_key', 'tts_fish_cap', 'tts_fish_pages'),",
+  "replace": "  to('fish-key', 'tts_fish_cap', 'tts_fish_pages'),",
+  "what": "Drama 3 的 Key 既不能通过通道改，也带不过去",
+  "tests": [
+   "tests/i173-reachable-options.test.ts",
+   "tests/take-me-there-coverage.test.ts"
+  ]
+ },
+ {
+  "id": "I173-13-chat-says",
+  "part": "initiative",
+  "file": "shared/initiative/take-me-there.ts",
+  "find": "const NO = /(?<![识区分特告辨鉴性级类])别|",
+  "replace": "const NO = /别|",
+  "what": "“识别”里的“别”被当成“不要”，她在聊天里给不出语音输入（含识别密钥）那一页",
+  "tests": [
+   "tests/i173-reachable-options.test.ts"
+  ]
+ },
+ {
+  "id": "I173-14-delete-chat",
+  "part": "initiative",
+  "file": "shared/initiative/take-me-there.ts",
+  "find": "  { id: 'delete-character', strong: [rx('(?:删除|删掉|删)[^，。]{0,4}(?:角色卡|角色)')] },\n",
+  "replace": "",
+  "what": "她在聊天里给不出“删除角色卡”的带我去",
+  "tests": [
+   "tests/i173-reachable-options.test.ts"
+  ]
+ },
+ {
+  "id": "hands-no-tooltip",
+  "part": "initiative",
+  "file": "src/initiative/HandsOverlay.ts",
+  "find": "this.target.setAttribute('aria-label', uiText(LABEL[offer.use])); // no title:",
+  "replace": "this.target.setAttribute('aria-label', uiText(LABEL[offer.use])); this.target.title = uiText(LABEL[offer.use]); // no title:",
+  "what": "她伸手时看不见的点击区又带上悬停提示，鼠标停一下就冒出孤零零的\"牵手\"",
+  "tests": [
+   "tests/i087-hands-wiring.test.ts"
+  ]
+ },
+ {
+  "id": "i188-moment-typing",
+  "part": "initiative",
+  "file": "shared/behaviors/moments/interface.ts",
+  "find": "  if (input.typing) return 'typing';",
+  "replace": "",
+  "what": "她认出的时刻在你打字时也会开口（时刻的总闸不看打字）",
+  "tests": [
+   "tests/i188-moments.test.ts"
+  ]
+ },
+ {
+  "id": "i188-moment-call",
+  "part": "initiative",
+  "file": "shared/behaviors/moments/interface.ts",
+  "find": "  if (input.call) return 'call';",
+  "replace": "",
+  "what": "她认出的时刻在你通话时也会开口（时刻的总闸不看通话）",
+  "tests": [
+   "tests/i188-moments.test.ts"
+  ]
+ },
+ {
+  "id": "i188-moment-meeting",
+  "part": "initiative",
+  "file": "electron/initiative/moments/host.ts",
+  "find": "this.read(() => this.ports.call() === true, true) || presence?.presence === 'meeting'",
+  "replace": "this.read(() => this.ports.call() === true, true)",
+  "what": "电脑上在开会或通话（在不在的判断说在开会）时，她认出的时刻照样开口",
+  "tests": [
+   "tests/i188-moments.test.ts"
+  ]
+ },
+ {
+  "id": "i188-reminder-twice",
+  "part": "initiative",
+  "file": "electron/initiative/moments/reminder-store.ts",
+  "find": "    item.state = 'fired'; item.endedAt = now;",
+  "replace": "    item.endedAt = now;",
+  "what": "一条提醒说出口后还会再提醒一次（没记成已提醒）",
+  "tests": [
+   "tests/i188-moments.test.ts"
+  ]
+ },
+ {
+  "id": "i188-reminder-fire-check",
+  "part": "initiative",
+  "file": "electron/initiative/moments/reminder-store.ts",
+  "find": "    if (!item || item.state !== 'due') return false;\n    item.state = 'fired';",
+  "replace": "    if (!item) return false;\n    item.state = 'fired';",
+  "what": "已经提醒过（或取消了）的提醒还能被再记一次\"说出口\"",
+  "tests": [
+   "tests/i188-moments.test.ts"
+  ]
+ },
+ {
+  "id": "i188-screen-only-watching",
+  "part": "initiative",
+  "file": "electron/initiative/moments/host.ts",
+  "find": "    if (!this.read(() => this.ports.watching?.() === true, false)) return null;\n    return screenMoment(",
+  "replace": "    return screenMoment(",
+  "what": "没开一起看时也去读屏幕上出的事",
+  "tests": [
+   "tests/i188-moments.test.ts"
+  ]
+ },
+ {
+  "id": "i195-off-still-fires",
+  "part": "initiative",
+  "file": "electron/initiative/moments/alarms.ts",
+  "find": "  due(characterId: string, now: number): WokenAlarm | null {\n    if (!this.on) return null;",
+  "replace": "  due(characterId: string, now: number): WokenAlarm | null {",
+  "what": "I-195：「让她自己留心」开关关着时，之前留下的闹钟到点照样叫醒她",
+  "tests": [
+   "tests/i195-her-alarms.test.ts"
+  ]
+ },
+ {
+  "id": "i195-off-still-prompts",
+  "part": "initiative",
+  "file": "electron/initiative/moments/alarms.ts",
+  "find": "  chatTurn(userText: unknown): string {\n    if (!this.on) return '';",
+  "replace": "  chatTurn(userText: unknown): string {",
+  "what": "I-195：开关关着时，每一轮聊天的提示词里还是多出闹钟那一句和她留着的清单",
+  "tests": [
+   "tests/i195-her-alarms.test.ts"
+  ]
+ },
+ {
+  "id": "i195-off-still-reads-markers",
+  "part": "initiative",
+  "file": "electron/initiative/moments/alarms.ts",
+  "find": "    if (!this.on || !bodies?.length) return false;",
+  "replace": "    if (!bodies?.length) return false;",
+  "what": "I-195：开关关着时，她回复里的闹钟记号仍被读进存储（关着应当一个都不记）",
+  "tests": [
+   "tests/i195-her-alarms.test.ts"
+  ]
+ },
+ {
+  "id": "i195-off-pending-still-speaks",
+  "part": "initiative",
+  "file": "electron/initiative/moments/host.ts",
+  "find": "        if (!this.read(() => this.ports.alarms?.on === true, false)) return this.end(pending, 'skipped', 'switch');",
+  "replace": "",
+  "what": "I-195：她的闹钟已经在等开口机会时关掉开关，它还是会开口",
+  "tests": [
+   "tests/i195-her-alarms.test.ts"
+  ]
+ },
+ {
+  "id": "i195-alarm-twice",
+  "part": "initiative",
+  "file": "electron/initiative/moments/host.ts",
+  "find": "      if ((p.moment.kind === 'reminder' || p.moment.kind === 'her-alarm') && p.moment.reminderId) { try { this.ports.reminders?.fired(",
+  "replace": "      if (p.moment.kind === 'reminder' && p.moment.reminderId) { try { this.ports.reminders?.fired(",
+  "what": "I-195：她的闹钟说出口后没记成已响，到点会再叫她一次",
+  "tests": [
+   "tests/i195-her-alarms.test.ts"
+  ]
+ },
+ {
+  "id": "i195-word-twice",
+  "part": "initiative",
+  "file": "electron/initiative/moments/alarm-store.ts",
+  "find": "      item.state = 'fired'; item.endedAt = now;\n      hits.push(",
+  "replace": "      hits.push(",
+  "what": "I-195：等「他说到某个词」的留心被叫醒一次后没记成已响，之后每次说到都再叫一次",
+  "tests": [
+   "tests/i195-her-alarms.test.ts"
+  ]
+ },
+ {
+  "id": "i195-cancel-does-nothing",
+  "part": "initiative",
+  "file": "electron/initiative/moments/alarm-store.ts",
+  "find": "    for (const item of chosen) { item.state = 'cancelled'; item.endedAt = now; }",
+  "replace": "    for (const item of chosen) { item.endedAt = now; }",
+  "what": "I-195：用户说取消、或在用户画像页点取消，她的闹钟还在，到点照样响",
+  "tests": [
+   "tests/i195-her-alarms.test.ts"
+  ]
+ },
+ {
+  "id": "i195-journal-keeps-note",
+  "part": "initiative",
+  "file": "electron/initiative/moments/alarms.ts",
+  "find": "{ sets++; this.journal({ characterId, kind: 'her-alarm', outcome: 'set' }); }",
+  "replace": "{ sets++; this.journal({ characterId, kind: 'her-alarm', outcome: 'set', why: marker.spec.note as never }); }",
+  "what": "I-195：体验记录里记下了她给自己写的备注原文（应当只记封闭的词）",
+  "tests": [
+   "tests/i195-her-alarms.test.ts"
+  ]
+ },
+ {
+  "id": "i195-limit-five",
+  "part": "initiative",
+  "file": "electron/initiative/moments/alarm-store.ts",
+  "find": "    if (this.mine(characterId).length >= this.alarmKnobs.perCharacter) return null;",
+  "replace": "",
+  "what": "I-195：她给自己留的闹钟没有上限（同时最多 5 个）",
+  "tests": [
+   "tests/i195-her-alarms.test.ts"
+  ]
+ },
+ {
+  "id": "I206-net-gone-inner-loop",
+  "part": "initiative",
+  "file": "shared/initiative/inner-loop.ts",
+  "find": "export const INNER_LOOP_MISSING_RULE = '- 用户非常难过、接近想轻生的程度时，你先陪着，不加码。';",
+  "replace": "export const INNER_LOOP_MISSING_RULE = '- 你想怎样就怎样。';",
+  "what": "主动开口提示里的安全网（用户非常难过时先陪着）被删掉",
+  "tests": [
+   "tests/i206-no-guilt-lines.test.ts"
+  ]
+ },
+ {
+  "id": "I206-push-away-returns-touch",
+  "part": "initiative",
+  "file": "shared/initiative/inner-loop.ts",
+  "find": "和你当时脸上的样子对得上。不想说",
+  "replace": "和你当时脸上的样子对得上。不施压、不让用户内疚。不想说",
+  "what": "主动开口\"被碰了\"那条里\"不施压、不让用户内疚\"又被写回来",
+  "tests": [
+   "tests/i206-no-guilt-lines.test.ts"
+  ]
+ },
+ {
+  "id": "I206-push-away-returns-rps",
+  "part": "initiative",
+  "file": "shared/initiative/rps-voice.ts",
+  "find": "忠于你的性格。也可以",
+  "replace": "忠于你的性格，但不让用户内疚，也不催用户一直玩下去。也可以",
+  "what": "猜拳时说话的提示里\"不让用户内疚、不催用户玩\"又被写回来",
+  "tests": [
+   "tests/i206-no-guilt-lines.test.ts"
+  ]
+ },
+ {
+  "id": "I203-cut-while-typing",
+  "part": "initiative",
+  "file": "electron/initiative/moments/host.ts",
+  "find": "    if (cut && this.read(() => cut.waiting, false) && !this.gate()) {",
+  "replace": "    if (cut && this.read(() => cut.waiting, false)) {",
+  "what": "I-203：用户已经在打字或有一条消息在路上，她还另起一轮开口（事实应该进那下一轮）",
+  "tests": [
+   "tests/i203-frames.test.ts"
+  ]
+ },
+ {
+  "id": "R13-rps-rigged-pick",
+  "part": "initiative",
+  "file": "shared/initiative/rps-personality.ts",
+  "find": "  return { hand: RPS_HANDS[Math.floor(fair * 3)], intent: 'fair' };",
+  "replace": "  return { hand: Math.floor(fair * 3) === 0 ? 'scissors' : RPS_HANDS[Math.floor(fair * 3)], intent: 'fair' };",
+  "what": "规矩清单第 13 条：她的出拳又被程序动手脚（三分之一的手被固定，用户出石头时赢面不再是三分之一）",
+  "tests": [
+   "tests/rps-game.test.ts"
+  ]
+ },
+ {
+  "id": "R13-rps-named-ignored",
+  "part": "initiative",
+  "file": "shared/initiative/rps-personality.ts",
+  "find": "  if (input.named && RPS_HANDS.includes(input.named)) return { hand: input.named, intent: 'fair' };",
+  "replace": "",
+  "what": "规矩清单第 13 条：她自己点名的那一手被无视，程序另挑",
+  "tests": [
+   "tests/rps-game.test.ts"
+  ]
+ },
+ {
+  "id": "R13-rps-rig-sentence-back",
+  "part": "initiative",
+  "file": "shared/initiative/rps-voice.ts",
+  "find": "    if (round.reaction === 'habit' && moment.habit) lines.push(",
+  "replace": "    if (round.outcome === 'user') lines.push('这一手其实是你故意让着用户的，你不打算说破。');\n    if (round.reaction === 'habit' && moment.habit) lines.push(",
+  "what": "规矩清单第 13 条：猜拳时说话的提示里\"这一手其实是你故意让着用户的，你不打算说破\"又被写回来",
+  "tests": [
+   "tests/rps-voice.test.ts"
+  ]
+ },
+ {
+  "id": "R15-hands-stage-factor",
+  "part": "initiative",
+  "file": "shared/behaviors/hands/choose.ts",
+  "find": "  const factor = clamp(oFactor * tenseFactor, knobs.floor, knobs.ceil);",
+  "replace": "  const factor = clamp(oFactor * tenseFactor * ((mood as { stage?: string }).stage === 'new' ? 0.7 : 1), knobs.floor, knobs.ceil);",
+  "what": "规矩清单第 15 条：牵手的次数又随熟悉度阶段调低（刚认识时更少伸手）",
+  "tests": [
+   "tests/i087-hands.test.ts"
+  ]
+ },
+ {
+  "id": "R15-hands-stage-hesitant",
+  "part": "initiative",
+  "file": "shared/behaviors/hands/choose.ts",
+  "find": "{ hesitant: false, grip",
+  "replace": "{ hesitant: (mood as { stage?: string }).stage === 'new', grip",
+  "what": "规矩清单第 15 条：牵手的犹豫又随熟悉度阶段（刚认识时伸手前犹豫）",
+  "tests": [
+   "tests/i087-hands.test.ts"
+  ]
+ },
+ {
+  "id": "rules-removed-initiative-only-companion",
+  "part": "initiative",
+  "file": "shared/initiative/inner-loop.ts",
+  "find": "    '- 偏爱用户：记得用户在意的细节（只用上面",
+  "replace": "    '- 这次是你自己主动开口，尤其要做到：只说陪伴、你此刻的小心情或对用户作息的关心，不说教、不劝用户去社交或找别人、不讲道理。',\n    '- 偏爱用户：记得用户在意的细节（只用上面",
+  "what": "主动开口的提示里\"尤其要做到：只说陪伴……\"又被写回来",
+  "tests": [
+   "tests/rules-removed.test.ts"
+  ]
+ },
+ {
+  "id": "rules-removed-initiative-quiet-default",
+  "part": "initiative",
+  "file": "shared/initiative/inner-loop.ts",
+  "find": "'什么都不做也可以。'",
+  "replace": "'什么都不做也完全可以，安静陪着本身就是陪伴。'",
+  "what": "主动开口里\"什么都不做也完全可以，安静陪着本身就是陪伴\"又被写回来",
+  "tests": [
+   "tests/rules-removed.test.ts"
+  ]
+ },
+ {
+  "id": "rules-removed-initiative-urging",
+  "part": "initiative",
+  "file": "shared/initiative/inner-loop.ts",
+  "find": "'- 你希望用户过得好。',",
+  "replace": "'- 你希望用户过得好：留意用户的作息、吃饭和休息；很晚了提醒用户休息、记得吃饭。',",
+  "what": "主动开口里催休息、吃饭又被写回来",
+  "tests": [
+   "tests/rules-removed.test.ts"
+  ]
+ },
+ {
+  "id": "1626-hand-starts-over-close",
+  "part": "initiative",
+  "file": "electron/initiative/hands/host.ts",
+  "find": "    if (this.safe(() => this.options.closeOn?.() === true, false)) return false; // 2026-11-25: her close moment has her now\n",
+  "replace": "",
+  "what": "2026-11-25：她正凑近、亲亲抱抱时又伸手等牵手（手臂被占，亲抱被当成\"在玩\"打断）",
+  "tests": [
+   "tests/close-moments-1626.test.ts"
+  ]
+ },
+ {
+  "id": "R1628-relay-busy",
+  "part": "initiative",
+  "file": "electron/unbound/game-line.ts",
+  "find": "if (ports.chatBusy()) { ports.skipped(say.id, 'busy'); return; }",
+  "replace": "",
+  "what": "全屏时她的聊天回复还在进行，猜拳台词照样挤进气泡、盖过去",
+  "tests": [
+   "tests/rps-1628.test.ts"
+  ]
+ },
+ {
+  "id": "R1628-relay-hold",
+  "part": "initiative",
+  "file": "electron/unbound/game-line.ts",
+  "find": "if (!ports.hold(say.id, say.text)) { ports.skipped(say.id, 'bubble-hidden'); return; }",
+  "replace": "",
+  "what": "全屏时气泡看不见，猜拳台词还是被朗读（读的和显示的不一致）",
+  "tests": [
+   "tests/rps-1628.test.ts"
+  ]
+ },
+ {
+  "id": "R1628-relay-voice-off",
+  "part": "initiative",
+  "file": "electron/unbound/game-line.ts",
+  "find": "if (!ports.voiceOn()) { ports.unread('voice-off'); return; }",
+  "replace": "",
+  "what": "朗读关着，全屏里的猜拳台词还是被送去朗读，也不记原因",
+  "tests": [
+   "tests/rps-1628.test.ts"
+  ]
+ },
+ {
+  "id": "R1628-relay-read",
+  "part": "initiative",
+  "file": "electron/unbound/game-line.ts",
+  "find": "const answer = ports.read(say.id, say.text);",
+  "replace": "const answer: ReadAnswer = true;",
+  "what": "全屏里的猜拳台词（比如结束那句）不再朗读：回到 11-25 16:28 的老毛病",
+  "tests": [
+   "tests/rps-1628.test.ts"
+  ]
+ },
+ {
+  "id": "R1628-guard",
+  "part": "initiative",
+  "file": "electron/unbound/game-line.ts",
+  "find": "return line => line === id && proof.currentId === id && proof.isPresentationCurrent(text);",
+  "replace": "return () => true;",
+  "what": "全屏猜拳台词的朗读不再核对气泡显示的正是这句话（读的必须是显示的）",
+  "tests": [
+   "tests/rps-1628.test.ts"
+  ]
+ },
+ {
+  "id": "R1628-held-game-history",
+  "part": "initiative",
+  "file": "src/brain/held-lines.ts",
+  "find": "void this.run(id, 'vision', async () => ({ text, context: { replyId: id } }));",
+  "replace": "void this.run(id, 'vision', async () => { this.ports.rememberSense?.({ id } as never); return { text, context: { replyId: id } }; });",
+  "what": "猜拳台词被当成聊天记进她的历史（游戏里的话不进聊天记录）",
+  "tests": [
+   "tests/rps-1628.test.ts"
+  ]
+ },
+ {
+  "id": "R1628-page-voice-elsewhere",
+  "part": "initiative",
+  "file": "src/unbound/her/out-play.ts",
+  "find": "voiceElsewhere: () => true,",
+  "replace": "voiceElsewhere: () => false,",
+  "what": "全屏页没有自己的朗读，却把每句猜拳台词记成“朗读关着”",
+  "tests": [
+   "tests/rps-1628.test.ts"
+  ]
+ },
+ {
+  "id": "R1628-page-paints",
+  "part": "initiative",
+  "file": "src/unbound/her/out-play.ts",
+  "find": "voiceOn: () => false, voiceElsewhere: () => true, show: () => {},",
+  "replace": "voiceOn: () => false, voiceElsewhere: () => true, show: () => { throw new Error('painted'); },",
+  "what": "全屏页自己再画一个猜拳气泡（和主进程放的那个重复，也没有朗读凭据）",
+  "tests": [
+   "tests/rps-1628.test.ts"
+  ]
+ },
+ {
+  "id": "R1628-unread-voice-off",
+  "part": "initiative",
+  "file": "src/initiative/rps-speech.ts",
+  "find": "...(!voice && !this.elsewhere() ? { unread: 'voice-off' as const } : {})",
+  "replace": "...({})",
+  "what": "小窗里猜拳台词没朗读（朗读关着）时不再记原因",
+  "tests": [
+   "tests/rps-1628.test.ts"
+  ]
+ },
+ {
+  "id": "R1628-journal-unread",
+  "part": "initiative",
+  "file": "electron/initiative/rps/host.ts",
+  "find": "if (id) this.note(id, { event: 'line-unread', unread: why });",
+  "replace": "",
+  "what": "猜拳台词没朗读时体验记录里一行都不写",
+  "tests": [
+   "tests/rps-1628.test.ts"
+  ]
+ },
+ {
+  "id": "R1628-journal-from-window",
+  "part": "initiative",
+  "file": "electron/initiative/rps/host.ts",
+  "find": "if (unread) this.lineUnread(unread); // not read aloud: one journal row, and why",
+  "replace": "",
+  "what": "窗口报告“没朗读和原因”，主进程不记",
+  "tests": [
+   "tests/rps-1628.test.ts"
+  ]
+ },
+ {
+  "id": "R1628-first-sealed",
+  "part": "initiative",
+  "file": "shared/initiative/rps-match.ts",
+  "find": "number === 1 && this.options.first ? this.options.first",
+  "replace": "number === 1 && this.options.first && false ? this.options.first",
+  "what": "答应那句话里告诉她的第一手，和第一局真正封存的手不是同一手",
+  "tests": [
+   "tests/rps-1628.test.ts"
+  ]
+ },
+ {
+  "id": "R1628-first-handed-on",
+  "part": "initiative",
+  "file": "electron/initiative/rps/host.ts",
+  "find": "this.beginStart(pending.characterId, pending.first);",
+  "replace": "this.beginStart(pending.characterId);",
+  "what": "答应那轮定下并告诉她的第一手没有交给开局",
+  "tests": [
+   "tests/rps-1628.test.ts"
+  ]
+ },
+ {
+  "id": "R1628-first-told",
+  "part": "initiative",
+  "file": "electron/initiative/rps/host.ts",
+  "find": "const first = answer === 'accept' ? this.sealFirst(character) : undefined;",
+  "replace": "const first = undefined as { hand: 'rock'; intent: 'fair' } | undefined;",
+  "what": "答应那句话里不再告诉她第一手出什么",
+  "tests": [
+   "tests/rps-1628.test.ts"
+  ]
+ },
+ {
+  "id": "R1628-accept-facts",
+  "part": "initiative",
+  "file": "shared/initiative/rps-personality.ts",
+  "find": "用户点按钮来出拳，三局两胜",
+  "replace": "三局两胜",
+  "what": "答应那句话的提示又不告诉她“游戏马上开始、用户点按钮出拳”",
+  "tests": [
+   "tests/rps-1628.test.ts"
+  ]
+ },
+ {
+  "id": "R1628-layout-keep-clear",
+  "part": "initiative",
+  "file": "src/initiative/rps-layout.ts",
+  "find": "if (free(want)) return want;",
+  "replace": "return want;",
+  "what": "聊天泡盖住猜拳按钮和比分时按钮不让开",
+  "tests": [
+   "tests/rps-1628.test.ts"
+  ]
+ },
+ {
+  "id": "R1628-overlay-avoid",
+  "part": "initiative",
+  "file": "src/initiative/RpsOverlay.ts",
+  "find": "const avoid = this.options.avoid?.() ?? [];",
+  "replace": "const avoid: LayoutRect[] = [];",
+  "what": "猜拳按钮不再避开聊天泡",
+  "tests": [
+   "tests/rps-1628.test.ts"
+  ]
+ },
+ {
+  "id": "TMT-name-dropped",
+  "part": "initiative",
+  "file": "electron/initiative/take-me-there.ts",
+  "find": "destination: matchTakeMeThere(userText, this.currentName()) };",
+  "replace": "destination: matchTakeMeThere(userText) };",
+  "what": "「让<她的名字>看屏幕」不再算请求（运行时的角色名没有传给匹配）",
+  "tests": [
+   "tests/take-me-there-character-name.test.ts"
+  ]
+ },
+ {
+  "id": "TMT-name-unescaped",
+  "part": "initiative",
+  "file": "shared/initiative/take-me-there.ts",
+  "find": "`你|她|${escapeText(name)}`",
+  "replace": "`你|她|${name}`",
+  "what": "角色名里的正则字符没有转义（名字被当成正则）",
+  "tests": [
+   "tests/take-me-there-character-name.test.ts"
+  ]
+ },
+ {
+  "id": "RPSREAD-begin-style",
+  "part": "initiative",
+  "file": "electron/unbound/game-line.ts",
+  "find": "try { ports.begin(win.id, id); } catch { return false; }",
+  "replace": "",
+  "what": "全屏猜拳台词交给桌宠窗口读之前不先建好这句的朗读风格（语音会悄悄拒读，台词只显示不朗读）",
+  "tests": [
+   "tests/rps-read-aloud-1126.test.ts"
+  ]
+ },
+ {
+  "id": "RPSREAD-begin-fail-silent",
+  "part": "initiative",
+  "file": "electron/unbound/game-line.ts",
+  "find": "catch { return false; } // a style that could not be set up",
+  "replace": "catch { /* ignored */ } // a style that could not be set up",
+  "what": "朗读风格建不起来时仍说\"已交给朗读\"（体验记录里没有 line-unread 原因）",
+  "tests": [
+   "tests/rps-read-aloud-1126.test.ts"
+  ]
+ },
+ {
+  "id": "RPSREAD-wait-paint",
+  "part": "initiative",
+  "file": "electron/unbound/game-line.ts",
+  "find": "painted = await proof.waitForPresentation(text);",
+  "replace": "painted = true;",
+  "what": "全屏猜拳台词不等她的页面画好气泡就交给桌宠窗口读（语音悄悄拒读：读的必须是气泡显示的）",
+  "tests": [
+   "tests/rps-read-aloud-1126.test.ts"
+  ]
+ }
+]

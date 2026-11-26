@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {ImmersiveNotice} from '../src/ui/ImmersiveNotice';
+import {ImmersiveNotice} from '../src/stage/ImmersiveNotice';
 
 class Element {
   textContent=''; hidden=false; private names=new Set<string>(); private events=new Map<string,()=>void>();

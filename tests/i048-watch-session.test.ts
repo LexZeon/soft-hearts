@@ -1,5 +1,5 @@
 /**
- * I-048 step 2: 「和她一起看」 running (electron/watch-notes/session.ts and wiring.ts). Never a real model, screen or profile: fake clock,
+ * I-048 step 2: 「和她一起看」 running (electron/senses/watch-notes/session.ts and wiring.ts). Never a real model, screen or profile: fake clock,
  * fake sampler and fake haiku, synthetic pictures, temporary folders. What it pins: nothing is captured unless watching together;
  * the slot is taken at capture time and filled when the description arrives; a stale or cancelled description is never inserted;
  * turning watching, the screen or 一起听 off (or switching character, or a refusal) cancels everything pending and removes the
@@ -11,11 +11,11 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readdir, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { WatchSession, type WatchConditions } from '../electron/watch-notes/session';
-import { WatchNotesStore } from '../electron/watch-notes/store';
-import { ScreenshotCache, SCREENSHOT_FOLDER } from '../electron/watch-notes/screenshots';
-import { KeywordIndexStore, KEYWORD_FOLDER } from '../electron/memory-keywords/store';
-import { WatchTogether } from '../electron/watch-notes/wiring';
+import { WatchSession, type WatchConditions } from '../electron/senses/watch-notes/session';
+import { WatchNotesStore } from '../electron/senses/watch-notes/store';
+import { ScreenshotCache, SCREENSHOT_FOLDER } from '../electron/senses/watch-notes/screenshots';
+import { KeywordIndexStore, KEYWORD_FOLDER } from '../electron/memory/memory-keywords/store';
+import { WatchTogether } from '../electron/senses/watch-notes/wiring';
 import { WATCH_TIMELINE_KNOBS, type WatchTimelineKnobs } from '../shared/behaviors/watch-timeline/knobs';
 
 const SEC = 1_000, MIN = 60_000, T0 = 2_000_000_000_000;
@@ -111,9 +111,13 @@ test('the reply path never waits for the model: render is a local read while the
   await withRig(async rig => {
     await rig.round();
     assert.equal(rig.calls.length, 1);
+    // The call is synchronous: it hands back the rendered timeline, never a promise, while the model's description is still out. (A wall-clock
+    // bound of 500 ms for 2000 calls failed under the full suite's load; the generous bound below only catches a real wait.)
+    const first = rig.session.render('gene');
+    assert.ok(first !== null && typeof (first as { then?: unknown }).then !== 'function' && typeof first.text === 'string', 'render answers at once with the timeline, not a promise');
     const started = performance.now();
     for (let i = 0; i < 2_000; i++) rig.session.render('gene');
-    assert.ok(performance.now() - started < 500, 'render does not wait');
+    assert.ok(performance.now() - started < 5_000, 'render does not wait');
     assert.ok(rig.session.render('gene'), 'it still answers with the placeholder');
   });
 });

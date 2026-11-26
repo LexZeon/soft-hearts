@@ -3,13 +3,20 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import ts from 'typescript';
+import { ipcGuardSource } from './helpers/wiring-source';
+import { windowEventOrder, wiringFunction, wiringSource } from './helpers/wiring-source';
 
 test('actual scoped handlers restrict annotation calls to controls main-frame and exact argument counts', async () => {
-  const source = await readFile(new URL('../electron/main.ts', import.meta.url), 'utf8');
+  const source = wiringSource(); // wiring rewrite step 4: the motion handlers are in electron/wiring/actions-wiring.ts
   const ast = ts.createSourceFile('main.ts', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-  const helper = ast.statements.find(n => ts.isFunctionDeclaration(n) && n.name?.text === 'scopedHost');
-  assert.ok(helper);
-  const register = ast.statements.find(n => ts.isFunctionDeclaration(n) && n.name?.text === 'registerIPC') as ts.FunctionDeclaration;
+  // Wiring rewrite step 3: the IPC guard is electron/wiring/ipc-wiring.ts (ipcGuardSource: its actual host / scopedHost).
+  const helper = ipcGuardSource();
+  assert.ok(helper.includes('function scopedHost('));
+  // Every function body of the wiring (registerIPC, and since step 4 a part's register): the same four registrations, exactly.
+  const blocks: ts.Statement[] = [];
+  const collect = (node: ts.Node) => { if (ts.isBlock(node)) blocks.push(...node.statements); ts.forEachChild(node, collect); };
+  collect(ast);
+  const register = { body: { statements: blocks } };
   const names = ['readMotionWeights', 'saveMotionWeights', 'searchMotionWeights', 'invalidateMotionWeightSelection'];
   const registrations = register.body!.statements.filter(n => ts.isExpressionStatement(n) && ts.isCallExpression(n.expression)
     && n.expression.expression.getText(ast) === 'scopedHost' && ts.isStringLiteral(n.expression.arguments[0])
@@ -22,7 +29,7 @@ test('actual scoped handlers restrict annotation calls to controls main-frame an
       save: (...args: unknown[]) => { calls.push(['save', ...args]); return 'save'; },
       invalidateSelection: (...args: unknown[]) => { calls.push(['invalidate', ...args]); },
       search: (...args: unknown[]) => { calls.push(['search', ...args]); return 'search'; } } };
-  const script = helper.getText(ast) + '\n' + registrations.map(n => n.getText(ast)).join('\n');
+  const script = helper + '\n' + registrations.map(n => n.getText(ast)).join('\n');
   vm.runInNewContext(ts.transpileModule(script, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, context);
   const frame = {}, event = (id: number, child = false) => ({ sender: { id, mainFrame: frame }, senderFrame: child ? {} : frame });
   const read = methods.get('desk:readMotionWeights')!, save = methods.get('desk:saveMotionWeights')!, search = methods.get('desk:searchMotionWeights')!;
@@ -42,7 +49,7 @@ test('actual scoped handlers restrict annotation calls to controls main-frame an
 });
 
 test('actual typed preload forwards four metadata operations and retains null/zero', async () => {
-  const source = await readFile(new URL('../electron/preload.ts', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../electron/safety/preload.ts', import.meta.url), 'utf8');
   let api: any; const calls: unknown[][] = [];
   const context = { process: { platform: 'win32' }, require: (name: string) => {
     assert.equal(name, 'electron'); return { contextBridge: { exposeInMainWorld: (name: string, value: unknown) => { assert.equal(name, 'desktop'); api = value; } },
@@ -59,17 +66,16 @@ test('actual typed preload forwards four metadata operations and retains null/ze
 });
 
 test('actual window hide, close and renderer-loss registrations invalidate annotation ownership', async () => {
-  const source = await readFile(new URL('../electron/main.ts', import.meta.url), 'utf8');
-  const ast = ts.createSourceFile('main.ts', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-  const window = ast.statements.find(n => ts.isFunctionDeclaration(n) && n.name?.text === 'secureWindow') as ts.FunctionDeclaration;
-  const registrations = window.body!.statements.filter(n => ts.isExpressionStatement(n) && ts.isCallExpression(n.expression)
-    && n.getText(ast).includes('motionWeights?.dropOwner(windowId)'));
-  assert.equal(registrations.length, 3);
+  // Wiring rewrite step 5b: secureWindow's listeners are electron/main.ts's order (wireWindowEvents), registered by the trunk's dispatcher
+  // (electron/wiring/window-events-wiring.ts windowEvents); the step is 身体动作's (electron/wiring/actions-wiring.ts dropMotionWeightsOwner).
+  const rows = windowEventOrder().listeners.filter(row => row.steps.includes('dropMotionWeightsOwner'));
+  assert.equal(rows.length, 3);
   const callbacks = new Map<string, () => void>(), dropped: number[] = [];
-  const context = { windowId: 7, win: { on: (event: string, callback: () => void) => callbacks.set(event, callback),
+  const context = { win: { on: (event: string, callback: () => void) => callbacks.set(event, callback),
     webContents: { on: (event: string, callback: () => void) => callbacks.set(event, callback) } },
     motionWeights: { dropOwner: (owner: number) => dropped.push(owner) } };
-  vm.runInNewContext(ts.transpileModule(registrations.map(n => n.getText(ast)).join('\n'), {
+  const order = `const listeners = ${JSON.stringify(rows.map(row => [row.target, row.event]))}.map(([target, event]) => [target, event, [dropMotionWeightsOwner]]);`;
+  vm.runInNewContext(ts.transpileModule([wiringFunction('windowEvents'), wiringFunction('dropMotionWeightsOwner'), order, 'windowEvents(win, "controls", 7);'].join('\n'), {
     compilerOptions: { target: ts.ScriptTarget.ES2022 },
   }).outputText, context);
   assert.deepEqual([...callbacks.keys()], ['hide', 'closed', 'render-process-gone']);

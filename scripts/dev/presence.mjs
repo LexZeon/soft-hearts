@@ -8,18 +8,41 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { tidyOccupancy } from './occupancy-tidy.mjs';
 
 /** What "在" allows. One place to change: the user may turn the cores down (6) if it still stutters, or up (14) if too slow. */
 export const PRESENT_LIMITS = Object.freeze({ maxHeavy: 1, cores: 10, priority: 'BelowNormal' });
 const STALE_MS = 2 * 60_000;
 export const GATED_ENV = 'CLAUDE_HEAVY_GATED';
 
+/**
+ * The folder the tray and Claude share: `%USERPROFILE%\.claude-presence`,
+ * outside AppData. The Claude desktop app is a Windows package: everything it starts sees its own private copy of AppData, while
+ * the tray (started at sign-in) sees the real one, so one path under AppData was two files. The tray said "不在" for days and
+ * Claude read a copy from 11-05 that said nothing current. The user folder is not virtualized: both see the same file.
+ */
 export function presenceDir(env = process.env) {
-  return env.CLAUDE_PRESENCE_DIR || path.join(env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'), 'claude-presence');
+  return env.CLAUDE_PRESENCE_DIR || path.join(env.USERPROFILE || os.homedir(), '.claude-presence');
+}
+/** Where a tray installed before 2026-11-12 still writes, until it is reinstalled; null when a folder is given explicitly. */
+export function legacyPresenceDir(env = process.env) {
+  return env.CLAUDE_PRESENCE_DIR ? null : path.join(env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'), 'claude-presence');
 }
 
-/** "在" unless the tray says "不在" and has said so within the last two minutes. */
-export function readPresence({ dir = presenceDir(), now = Date.now() } = {}) {
+/**
+ * "在" unless the tray says "不在" and has said so within the last two minutes. With no folder given, a fresh answer in the
+ * shared folder wins; without one there, a fresh answer from an older tray's folder is taken.
+ */
+export function readPresence({ dir, legacy, now = Date.now() } = {}) {
+  const main = readPresenceFile(dir ?? presenceDir(), now);
+  const old = dir === undefined ? (legacy === undefined ? legacyPresenceDir() : legacy) : (legacy ?? null);
+  if (main.reason === 'present' || main.reason === 'away' || !old) return main;
+  const fallback = readPresenceFile(old, now);
+  return fallback.reason === 'present' || fallback.reason === 'away' ? fallback : main;
+}
+
+function readPresenceFile(dir, now) {
   let raw;
   try { raw = readFileSync(path.join(dir, 'presence.json'), 'utf8'); } catch { return { present: true, reason: 'no-tray' }; }
   let state;
@@ -91,8 +114,102 @@ const sleep = ms => new Promise(done => setTimeout(done, ms));
  * follow the check box while running: switching to "在" limits this process and everything it started, "不在" lifts it.
  * Already gated (CLAUDE_HEAVY_GATED=1): nothing to do. Returns the release function (also run on exit).
  */
-export async function gateHeavy(label, { log = line => console.error(line), pollMs = 5_000, env = process.env } = {}) {
+/**
+ * Codex X-403 (2026-11-11): our heavy jobs also put one line on the bridge's 真机占用.md while they run, so Codex can plan its
+ * own heavy windows around them; the line is removed when the job ends (also on a crash, through process 'exit'). No bridge
+ * file (another computer), no maintainer tooling (the public snapshot leaves out scripts/pretrial and scripts/test-env) or a
+ * write error: nothing happens. Returns the remover.
+ */
+async function occupancyHelpers() {
+  try {
+    const [files, lib] = await Promise.all([import('../pretrial/files.mjs'), import('../test-env/lib.mjs')]); // optional: left out of the public snapshot
+    return { addOccupancy: files.addOccupancy, removeOccupancy: files.removeOccupancy, formatOccupancyLine: files.formatOccupancyLine, file: lib.OCCUPANCY_FILE };
+  } catch { return null; }
+}
+
+export async function registerHeavyOccupancy(label, { now = new Date(), pid = process.pid, log = () => {}, helpers = null, file = null, lookup = undefined } = {}) {
+  const tools = helpers ?? await occupancyHelpers();
+  if (!tools) return () => {};
+  const { addOccupancy, removeOccupancy, formatOccupancyLine } = tools;
+  file ??= tools.file;
+  const pad = value => String(value).padStart(2, '0');
+  const offset = -now.getTimezoneOffset(), sign = offset < 0 ? '-' : '+';
+  const zone = `${sign}${pad(Math.floor(Math.abs(offset) / 60))}:${pad(Math.abs(offset) % 60)}`;
+  const clean = String(label).replace(/[\r\n|｜]+/gu, ' ').replace(/\s+/gu, ' ').trim().slice(0, 80) || 'heavy job';
+  let line;
+  try {
+    line = formatOccupancyLine({ who: `Claude 重活 pid ${pid}（scripts/dev/presence.mjs）`, start: `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())} ${zone}`,
+      end: '跑完自动删掉这一行', purpose: `${clean}；无屏幕、无模型调用；按用户的 I-030：用户在用电脑时同时只跑一件、低优先级、${PRESENT_LIMITS.cores} 核` });
+    // 2026-11-16: lines left behind by killed jobs of ours are cleared first, so Codex does not wait for a job that is gone.
+    writeFileSync(file, addOccupancy(tidyOccupancy(readFileSync(file, 'utf8'), { lookup }).text, line), 'utf8');
+  } catch { return () => {}; }
+  log(`[真机占用] 登记：${line}`);
+  let removed = false;
+  return () => {
+    if (removed) return; removed = true;
+    try { writeFileSync(file, tidyOccupancy(removeOccupancy(readFileSync(file, 'utf8'), line), { lookup }).text, 'utf8'); } catch { /* The bridge went away; nothing to clean. */ }
+  };
+}
+
+/** The lines other workers (Codex) have under the sign's 「当前登记」 right now; ours start with "Claude". */
+export function otherOccupancy(text) {
+  const lines = String(text ?? '').split(/\r?\n/);
+  const header = lines.findIndex(value => /^##\s*当前登记\s*$/u.test(value));
+  if (header < 0) return [];
+  const out = [];
+  for (let index = header + 1; index < lines.length && !/^##\s/u.test(lines[index]); index++) {
+    const line = lines[index].trim();
+    if (line && !line.startsWith('<!--') && !/^(?:[-*]\s*)?Claude[\s/]/u.test(line)) out.push(line);
+  }
+  return out;
+}
+
+/**
+ * The latest deadline a line states ("绝对截止 2026-11-11 05:05:13 -08:00", "最迟 …", "截止 …"), in ms; null when it states none.
+ * A time without a zone is read as this computer's local time.
+ */
+export function occupancyDeadline(line) {
+  let latest = null;
+  for (const match of String(line).matchAll(/(?:绝对截止|截止|最迟)\s*[:：]?\s*(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?)\s*(Z|[+-]\d{2}:\d{2})?/gu)) {
+    const at = Date.parse(`${match[1]}T${match[2].length === 5 ? `${match[2]}:00` : match[2]}${match[3] ?? ''}`);
+    if (Number.isFinite(at) && (latest === null || at > latest)) latest = at;
+  }
+  return latest;
+}
+
+/**
+ * Codex C-211 / X-413 (2026-11-11): one heavy job at a time across both of us. Before starting, wait while another worker has a
+ * line on the sign. A line that states a deadline is waited for until it is taken off, or until that deadline plus
+ * `graceMs` has passed (then it is a forgotten line and we say so); there is no fixed timeout for it. Only a line that
+ * states no deadline at all is waited for at most `noDeadlineMaxMs`. `read` returns the sign's text, or null when there is none.
+ */
+export async function waitForOthers(read, { noDeadlineMaxMs = 60 * 60_000, graceMs = 5 * 60_000, pollMs = 5_000, log = () => {}, label = '', wait = sleep, clock = () => Date.now() } = {}) {
+  const started = clock();
+  let announced = false;
+  for (;;) {
+    let others = [];
+    try { others = otherOccupancy(read() ?? ''); } catch { return 'no-sign'; }
+    const now = clock();
+    const live = others.filter(line => {
+      const deadline = occupancyDeadline(line);
+      return deadline === null ? now - started < noDeadlineMaxMs : now <= deadline + graceMs;
+    });
+    if (!live.length) {
+      if (others.length) log(`[真机占用] 对方还留着登记，但已过它自己写的截止时间（或没写截止、已等 ${Math.round(noDeadlineMaxMs / 60_000)} 分钟），当作忘了撤，"${label}" 开始：${others[0].slice(0, 80)}`);
+      else if (announced) log(`[真机占用] 对方的登记撤了，"${label}" 开始。`);
+      return others.length ? 'stale' : announced ? 'waited' : 'free';
+    }
+    if (!announced) { log(`[真机占用] 对方正在跑重活（${live[0].slice(0, 80)}），"${label}" 等它做完、撤掉登记再开始。`); announced = true; }
+    await wait(pollMs);
+  }
+}
+
+export async function gateHeavy(label, { log = line => console.error(line), pollMs = 5_000, env = process.env, occupancy = true } = {}) {
   if (env[GATED_ENV] === '1') return () => {};
+  if (occupancy && env.CLAUDE_HEAVY_IGNORE_OTHERS !== '1') {
+    const tools = await occupancyHelpers();
+    if (tools) await waitForOthers(() => { try { return readFileSync(tools.file, 'utf8'); } catch { return null; } }, { pollMs, log, label });
+  }
   let announced = false;
   for (;;) {
     const presence = readPresence();
@@ -104,7 +221,9 @@ export async function gateHeavy(label, { log = line => console.error(line), poll
     }
     await sleep(pollMs);
   }
-  const release = takeSlot(label);
+  const slot = takeSlot(label);
+  const unregister = occupancy ? await registerHeavyOccupancy(label, { log }) : () => {};
+  const release = () => { slot(); unregister(); };
   env[GATED_ENV] = '1';
   let present = readPresence().present;
   applyLimits([process.pid], present);
@@ -122,3 +241,17 @@ export async function gateHeavy(label, { log = line => console.error(line), poll
   process.once('exit', finish);
   return finish;
 }
+
+/** `node scripts/dev/presence.mjs --tidy`: clear our stale lines on the sign now; prints what it removed. */
+export async function tidyOccupancyFile({ file = null, lookup = undefined, now = Date.now(), log = console.log } = {}) {
+  file ??= (await occupancyHelpers())?.file;
+  if (!file) { log('[真机占用] 没有找到沟通桥的登记文件，什么都没动。'); return []; }
+  let text;
+  try { text = readFileSync(file, 'utf8'); } catch { log('[真机占用] 读不到登记文件，什么都没动。'); return []; }
+  const result = tidyOccupancy(text, { lookup, now });
+  if (result.removed.length) writeFileSync(file, result.text, 'utf8');
+  log(result.removed.length ? `[真机占用] 清掉 ${result.removed.length} 条过期的登记：\n${result.removed.map(line => `  ${line}`).join('\n')}` : '[真机占用] 没有过期的登记，什么都没删。');
+  return result.removed;
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url) && process.argv.includes('--tidy')) await tidyOccupancyFile();

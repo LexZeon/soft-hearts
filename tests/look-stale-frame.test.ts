@@ -1,19 +1,21 @@
 // 关掉之后的旧帧（2026-11-04，V1 细看的边角）：宿主取好一帧交回窗口，窗口再把它放进聊天请求。这中间用户关掉了屏幕共享
 // （或摄像头），修之前宿主的聊天入口照样把这张旧帧交给 Claude（本文件两路的"关掉"测试在修之前都失败：图到了 Claude）。
 // 用户关掉的意思是"别看了"：关掉之后，任何一帧都不能再离开本机；关掉再打开也不能让旧帧复活。
-// 这里用真实的媒体开关（electron/runtime.ts MediaRuntime）、真实的宿主附图（electron/look-attachments.ts）、真实的聊天请求校验
-// （electron/validation.ts）和这一轮的感知行，按 electron/main.ts 聊天入口的顺序走一遍；取图口和 Claude 是假的，不开窗口、不碰屏幕和摄像头。
+// 这里用真实的媒体开关（electron/senses/media-runtime.ts MediaRuntime）、真实的宿主附图（electron/senses/look-attachments.ts）、真实的聊天请求校验
+// （electron/settings/validation.ts）和这一轮的感知行，按 electron/main.ts 聊天入口的顺序走一遍；取图口和 Claude 是假的，不开窗口、不碰屏幕和摄像头。
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import ts from 'typescript';
-import type { Attachment } from '../shared/contracts';
-import { LookTurns } from '../electron/look-turns';
-import { LookAttachments } from '../electron/look-attachments';
-import { MediaRuntime } from '../electron/runtime';
-import { validateChatRequest } from '../electron/validation';
-import { lookHint, turnAttachments } from '../src/look-send';
-import { perceptionTurnLine, perceptionTurnState, SCREEN_LOOK_LINE } from '../shared/perception-rule';
+import type { Attachment } from '../shared/foundation/chat';
+import { LookTurns } from '../electron/senses/look-turns';
+import { LookAttachments } from '../electron/senses/look-attachments';
+import { MediaRuntime } from '../electron/senses/media-runtime';
+import { validateChatRequest } from '../electron/settings/validation';
+import { lookHint, turnAttachments } from '../src/senses/look-send';
+import { CAMERA_NONE_LINE, perceptionTurnLine, perceptionTurnState, SCREEN_LOOK_LINE } from '../shared/brain/perception-rule';
+// Reads as text (test-affected selects this test when they change): 'electron/main.ts' (wiring rewrite step 4c: with electron/wiring/*.ts).
+import { wiringSource } from './helpers/wiring-source';
 
 const PERSONA = '你是测试角色。';
 
@@ -41,7 +43,7 @@ function host(options: { same?: boolean } = {}) {
   let id = 0;
   /**
    * electron/main.ts `chat` handler: check at the entry, check again where the perception line is written, then the Claude adapter
-   * (electron/claude-session.ts) reads the persona and the frames where it writes the message. `meanwhile` runs before that write
+   * (electron/brain/claude-session.ts) reads the persona and the frames where it writes the message. `meanwhile` runs before that write
    * (a process start or a previous turn's drain).
    */
   function chat(sent: { content: string; attachments: Attachment[] }, meanwhile?: () => void) {
@@ -105,7 +107,8 @@ test('关掉再打开：旧帧不复活（屏幕、摄像头都是）；重新�
   const fresh = await h.ask('你看看我屏幕');
   h.chat(fresh);
   assert.deepEqual(h.last().images, [fresh.attachments[0].dataUrl], '这次开启期间取的新帧照常带上');
-  assert.equal(h.last().sight, '【此刻的感知】' + SCREEN_LOOK_LINE);
+  // I-084: the camera shares pictures here and none of the user went this turn: she is told so.
+  assert.equal(h.last().sight, '【此刻的感知】' + SCREEN_LOOK_LINE + CAMERA_NONE_LINE);
 });
 
 test('同样的画面在这次开启里又取了一次：照常带上（旧的那份不算数，新的算）', async () => {
@@ -153,7 +156,7 @@ test('正常情况：共享一直开着就照常带图（屏幕、摄像头）�
   const screen = await h.ask('你看看我屏幕');
   h.chat(screen);
   assert.deepEqual(h.last().images, [screen.attachments[0].dataUrl]);
-  assert.equal(h.last().sight, '【此刻的感知】' + SCREEN_LOOK_LINE);
+  assert.equal(h.last().sight, '【此刻的感知】' + SCREEN_LOOK_LINE + CAMERA_NONE_LINE, 'I-084: no picture of the user this turn');
   const camera = await h.ask('你看看我');
   h.chat(camera);
   assert.deepEqual(h.last().images, [camera.attachments[0].dataUrl]);
@@ -173,9 +176,9 @@ test('正常情况：共享一直开着就照常带图（屏幕、摄像头）�
 });
 
 // ---- electron/main.ts wiring (AST, no eval): the chat handler asks at its entry and again where the perception line is
-// written, and the Claude task reads the frames and the persona through the turn's frames (electron/claude-session.ts reads both
+// written, and the Claude task reads the frames and the persona through the turn's frames (electron/brain/claude-session.ts reads both
 // where it writes the message; tests/claude-session.test.ts checks that).
-const mainSource = readFileSync(new URL('../electron/main.ts', import.meta.url), 'utf8');
+const mainSource = wiringSource();
 const main = ts.createSourceFile('main.ts', mainSource, ts.ScriptTarget.Latest, true);
 
 test('electron/main.ts：聊天入口先问一次，写感知行前再问一次，交给 Claude 的帧和人设都按这一轮的帧现读', () => {
@@ -187,12 +190,15 @@ test('electron/main.ts：聊天入口先问一次，写感知行前再问一次�
   };
   visit(main);
   assert.ok(handler && ts.isBlock(handler.body), 'the chat handler');
-  const statements = handler.body.statements.map(statement => statement.getText(main));
+  // Wiring rewrite step 4h: the moved turn first reads what it uses from 大脑's needs (one destructuring, no call); then the same three lines.
+  // 2026-11-23: the full-screen line gate (electron/brain/handed-line-gate.ts) sits before them; it only reads the request.
+  const statements = handler.body.statements.map(statement => statement.getText(main)).filter(text => !/^const {[^}]*} = needs;$/.test(text) && !text.startsWith('const handed = admitHandedLine('));
   assert.equal(statements[0], 'const request = validateChatRequest(value);');
   assert.equal(statements[1], 'const turnFrames = lookAttachments.admit(request.attachments);');
   assert.equal(statements[2], 'request.attachments = turnFrames.current();');
   const body = handler.body.getText(main);
-  assert.match(body, /request\.attachments = turnFrames\.current\(\);[^\n]*\n\s*const sight = perceptionTurnState\(media\.state, request\.attachments,/);
+  // I-085 第 3 步: her own look's line, the text-first facts and the journal row sit in between; none of them waits for anything.
+  assert.match(body, /request\.attachments = turnFrames\.current\(\);[^\n]*\n(?:(?![^\n]*await)[^\n]*\n){0,4}\s*const sight = perceptionTurnState\(media\.state, request\.attachments,/);
   const getters: Record<string, string> = {};
   const collect = (node: ts.Node): void => {
     if (ts.isGetAccessorDeclaration(node) && ts.isIdentifier(node.name)) getters[node.name.text] = node.body?.getText(main) ?? '';

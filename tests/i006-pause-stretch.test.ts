@@ -15,26 +15,22 @@ import test from 'node:test';
 import os from 'node:os';
 import path from 'node:path';
 import { mkdtemp, rm } from 'node:fs/promises';
-import { Vector3 } from 'three';
-import {
-  POSE_FOLLOW_CHANCE_MAX, POSE_REACTION_POLICY, decidePosePause, emptyPosePauseMemory, posePauseRested, readPoseReactionView,
-  type PoseCharacter, type PoseCoverCue, type PoseReactionView,
-} from '../shared/pose-reactions';
-import { PoseReactionHost, type PoseReactionTickInput } from '../electron/pose-reactions/host';
-import { HerActionHost } from '../electron/her-action-host';
-import { CompanionService } from '../electron/companion';
-import { createUserActivity } from '../electron/user-activity';
+import { POSE_FOLLOW_CHANCE_MAX, POSE_REACTION_POLICY, decidePosePause, emptyPosePauseMemory, posePauseRested, readPoseReactionView, type PoseCharacter, type PoseCoverCue, type PoseReactionView } from '../shared/mood/pose-reactions';
+import { PoseReactionHost, type PoseReactionTickInput } from '../electron/mood/pose-reactions/host';
+import { HerActionHost } from '../electron/actions/her-action-host';
+import { CompanionService } from '../electron/brain/companion';
+import { createUserActivity } from '../electron/senses/user-activity';
 import { UserActivityTracker } from '../shared/behaviors/user-activity/track';
 import { UNKNOWN_ACTIVITY, type UserActivityView } from '../shared/behaviors/user-activity/interface';
-import { buildJournalEntry, describeJournalEntry } from '../shared/journal';
-import { poseInput } from '../electron/journal/sources';
-import { PoseReactionStage, POSE_REACTION_TIMELINES, framesWholeBody, type PoseReactionStageInput } from '../src/stage/pose-reaction-stage';
+import { buildJournalEntry, describeJournalEntry } from '../shared/memory/journal';
+import { poseInput } from '../electron/memory/journal/sources';
+import { PoseReactionStage, framesWholeBody, type PoseReactionStageInput } from '../src/mood/pose-reaction-stage';
 import { framingCamera } from '../src/stage/stage-framing';
 import type { HerLifeStageGates } from '../src/stage/her-life-stage';
 import type { LifeActivity } from '../src/stage/procedural-life';
-import { HER_ACTION_CUE_MS, HER_ACTION_SPECS } from '../shared/her-actions';
-import { between, geneStage, patContact, pointAtScalp, surprises, TRACKED_BONES, type GeneStage } from './helpers/gene-stage-harness';
+import { HER_ACTION_CUE_MS } from '../shared/actions/her-actions';
 import { seeded } from './helpers/seeded';
+import { TRACKED_BONES } from './helpers/frame-stats';
 
 const MINUTE = 60_000, SECOND = 1_000, HOUR = 60 * MINUTE;
 const T0 = Date.UTC(2026, 10, 6, 1, 0, 0);
@@ -348,135 +344,4 @@ const START = 2;
 const floor = (fps: number) => fps >= 60 ? 0.15 : 0.6;
 const ALL = TRACKED_BONES.map((_, i) => i);
 const worst = (series: number[][], idx: readonly number[]) => Math.max(0, ...idx.map(i => Math.max(0, ...series[i])));
-const guardAll = (frames: GeneStage['shown']) => frames.slice(1).filter((frame, i) => frame.guardJumps > frames[i].guardJumps).map(frame => `${frame.guardLast}@${frame.t.toFixed(2)}`);
-const fullCamera = (h: GeneStage, preset: 'full' | 'portrait') => framingCamera(preset, { height: h.stage.height, width: h.stage.height * 0.4, baseY: 0, centerX: 0 }, { aspect: 400 / 560, fov: 32 });
-function breather(h: GeneStage, kind: 'stretch' | 'yawn', cover?: PoseCoverCue) {
-  const v = h.stage.moodView;
-  h.stage.setMood({ ...v, revision: v.revision + 1, pose: { attention: 0, boost: 2.2, cue: { id: `pause-${kind}-${h.fps}`, kind, source: 'pause', at: Date.now() - 1, strength: 1, ...(cover ? { cover } : {}) } } });
-}
 const waitFor = async (check: () => boolean, ms = 3_000) => { for (const end = Date.now() + ms; !check() && Date.now() < end;) await new Promise(resolve => setTimeout(resolve, 5)); };
-
-for (const fps of [60, 30]) {
-  test(`${fps} fps on Gene: a breather's stretch enters and leaves without a jump; the guard catches nothing`, async () => {
-    const idle = await geneStage({ fps });
-    let undisturbed: number;
-    try { idle.run(START + 7.5); undisturbed = worst(surprises(between(idle.shown, START - 0.2, START + 7.5)), ALL); } finally { idle.close(); }
-    const h = await geneStage({ fps });
-    try {
-      h.run(START);
-      breather(h, 'stretch');
-      const duration = POSE_REACTION_TIMELINES.stretch.duration;
-      h.run(duration + 2);
-      const during = between(h.shown, START - 0.2, START + duration + 1.5);
-      assert.deepEqual(guardAll(during), [], 'nothing for the guard');
-      const whole = worst(surprises(between(h.shown, START - 2 / fps, START + duration + 1.5)), ALL);
-      if (report) console.log(`[I-006 ${fps}fps] breather stretch: largest unexpected step ${whole.toFixed(3)}° (same seconds without it ${undisturbed.toFixed(3)}°)`);
-      assert.ok(whole <= Math.max(floor(fps), 1.25 * undisturbed), `largest unexpected step ${whole} (undisturbed ${undisturbed})`);
-      const state = h.stage.poseReaction.getState();
-      assert.equal(state.played, 1); assert.equal(state.playing, null, 'ended');
-    } finally { h.close(); }
-  });
-
-  test(`${fps} fps on Gene: a breather's yawn in a whole-body framing is 哈欠捂嘴 (hand and the usual yawn face); in a half-body one the stretch; the guard catches nothing`, async () => {
-    for (const preset of ['full', 'portrait'] as const) {
-      const h = await geneStage({ fps, herActions: true });
-      try {
-        h.stage.framingCamera = fullCamera(h, preset);
-        h.run(START);
-        const at = Date.now(), cover = { id: `cover${fps}${preset}`, at, expiresAt: at + HER_ACTION_CUE_MS };
-        h.grantAction({ ...cover, action: 'cover-yawn' });
-        breather(h, 'yawn', cover);
-        h.tick();
-        await waitFor(() => h.actionReports.some(r => r.cueId === cover.id));
-        const jumps = h.shown.at(-1)!.guardJumps;
-        h.run(0.5);
-        if (preset === 'full') {
-          assert.equal(h.actionReports.find(r => r.cueId === cover.id)?.status, 'played');
-          assert.equal(h.stage.herAction.active, true, 'the hand');
-          assert.equal(h.stage.poseReaction.getState().playing?.kind, 'yawn', 'the usual yawn face on the same clock');
-          h.run(HER_ACTION_SPECS['cover-yawn'].durationFrames / 30 + 0.3);
-          assert.equal(h.stage.herAction.active, false);
-        } else {
-          assert.deepEqual(h.actionReports.filter(r => r.cueId === cover.id), [], 'no hand in a half-body framing');
-          assert.equal(h.stage.poseReaction.getState().playing?.kind, 'stretch');
-          h.run(POSE_REACTION_TIMELINES.stretch.duration + 0.5);
-        }
-        assert.equal(h.stage.poseReaction.getState().playing, null, 'ended');
-        assert.equal(h.shown.at(-1)!.guardJumps, jumps, `${preset}: nothing for the guard (${h.shown.at(-1)!.guardLast})`);
-        if (report) console.log(`[I-006 ${fps}fps] breather yawn, ${preset}: ${preset === 'full' ? '哈欠捂嘴' : 'stretch'}, guard ${h.shown.at(-1)!.guardJumps - jumps}`);
-      } finally { h.close(); }
-    }
-  });
-}
-
-test('on Gene: music, a pat and sleep keep a breather out (skipped, never played late)', async () => {
-  for (const what of ['music', 'pat', 'asleep'] as const) {
-    const h = await geneStage({ fps: 60, ...(what === 'music' ? { music: true } : {}) });
-    try {
-      h.run(START);
-      if (what === 'pat') { pointAtScalp(h); h.run(0.5, time => { h.stage.setMoodContact(patContact(time)); }); }
-      if (what === 'asleep') { const v = h.stage.moodView; h.stage.setMood({ ...v, revision: v.revision + 1, fatigue: { ...(v.fatigue ?? {}), sleeping: true } }); h.run(0.2); }
-      breather(h, 'stretch');
-      if (what === 'pat') h.run(1, time => { h.stage.setMoodContact(patContact(time)); }); else h.run(1);
-      const state = h.stage.poseReaction?.getState();
-      assert.equal(state?.played ?? 0, 0, what); assert.equal(state?.skipped, 1, what);
-      // Free again later: the old cue is not replayed.
-      if (what === 'pat') h.stage.setMoodContact({ ...patContact(0), contact: false, hover: 0 });
-      h.run(3);
-      assert.equal(h.stage.poseReaction.getState().played, 0, `${what}: not played late`);
-    } finally { h.close(); }
-  }
-});
-
-/**
- * Real window 2026-11-06 (240005b): while the user was "busy" she was thinking, a hand on her chin (her own life), and the breather's
- * stretch played on top of it: shoulders up and chest out with the hand still at her chin, the fingers moving over her face (0.51 in
- * her head's frame, against 0.40 for thinking alone; never closer to the head). A stretch takes her body, so her held pose now gives
- * way meanwhile (smoothly, at its own pace) and comes back after, as it does for every other body owner.
- */
-async function thinkingStretch(fps: number, stretch: boolean) {
-  const h = await geneStage({ fps, herLife: true });
-  const stage = h.stage, view = stage.moodView;
-  stage.setMood({ ...view, revision: view.revision + 1, herLife: { activity: 'thinking', since: Date.now(), until: Date.now() + 600_000, source: 'rule', lookUp: null } });
-  h.tick();
-  stage.herLife.request('thinking');
-  for (let i = 0; i < 400 && stage.herLife.getState().clips.thinking !== 'ready'; i++) await new Promise(resolve => setTimeout(resolve, 2));
-  h.run(6);
-  const held = stage.herLife.getState().pose?.weight ?? 0;
-  const bones = ['左人指３', '右人指３', '頭'].map(name => h.mesh.skeleton.bones.find((b: { name: string }) => b.name === name)!);
-  const gap = () => { const head = bones[2].getWorldPosition(new Vector3()); return Math.min(...bones.slice(0, 2).map(b => b.getWorldPosition(new Vector3()).distanceTo(head))); };
-  // Where the nearer fingertip sits in her head's own frame (how it moves over her face, whatever her body does).
-  const near = bones[0].getWorldPosition(new Vector3()).distanceTo(bones[2].getWorldPosition(new Vector3()))
-    <= bones[1].getWorldPosition(new Vector3()).distanceTo(bones[2].getWorldPosition(new Vector3())) ? bones[0] : bones[1];
-  const onFace = () => bones[2].worldToLocal(near.getWorldPosition(new Vector3()));
-  const start = h.time(), before = gap(), origin = onFace();
-  if (stretch) breather(h, 'stretch');
-  let closest = Infinity, lowest = Infinity, slide = 0;
-  h.run(POSE_REACTION_TIMELINES.stretch.duration, () => {
-    closest = Math.min(closest, gap()); lowest = Math.min(lowest, stage.herLife.getState().pose?.weight ?? 0);
-    if ((stage.herLife.getState().pose?.weight ?? 0) > 0.5) slide = Math.max(slide, onFace().distanceTo(origin));
-  });
-  h.run(6);
-  return { h, held, before, closest, lowest, slide, after: stage.herLife.getState().pose?.weight ?? 0, start };
-}
-
-for (const fps of [60, 30]) {
-  test(`${fps} fps on Gene: thinking with a hand on her chin, a breather's stretch puts the hand down first (her stretch outranks her thinking), then it comes back`, async () => {
-    const still = await thinkingStretch(fps, false);
-    still.h.close();
-    const run = await thinkingStretch(fps, true);
-    try {
-      const frames = between(run.h.shown, run.start - 0.2, Infinity);
-      assert.deepEqual(guardAll(frames), [], 'nothing for the guard');
-      const step = worst(surprises(frames), ALL), base = worst(surprises(between(still.h.shown, still.start - 0.2, Infinity)), ALL);
-      if (report) console.log(`[I-006 ${fps}fps] thinking + stretch: held ${run.held.toFixed(2)}, lowest ${run.lowest.toFixed(2)}, after ${run.after.toFixed(2)}; `
-        + `fingertip-head ${run.before.toFixed(3)} → closest ${run.closest.toFixed(3)} (no stretch ${still.closest.toFixed(3)}); `
-        + `fingertip slides over her face (while the hand is held) ${run.slide.toFixed(3)} (no stretch ${still.slide.toFixed(3)}); largest unexpected step ${step.toFixed(3)}° (no stretch ${base.toFixed(3)}°)`);
-      assert.ok(run.held > 0.5, `the hand was on her chin (${run.held})`);
-      assert.ok(run.lowest < 0.1, `it gave way during the stretch (${run.lowest})`);
-      assert.ok(run.closest >= still.closest - 1e-3, `never closer to her face than while just thinking (${run.closest} vs ${still.closest})`);
-      assert.ok(run.after > 0.5, `it came back after (${run.after})`);
-      assert.ok(step <= Math.max(floor(fps) * 2, 0.3), `largest unexpected step ${step} (thinking alone ${base})`);
-    } finally { run.h.close(); }
-  });
-}

@@ -11,22 +11,24 @@ import { readFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import ts from 'typescript';
-import type { ChatMessage } from '../shared/contracts';
-import type { MemoryRecall, MemoryScope } from '../shared/memory';
-import type { MemoryNoteBody } from '../shared/memory-notes/interface';
-import { MEMORY_NOTES_KNOBS } from '../shared/memory-notes/knobs';
-import { FakeNoteWriter, fakeNoteBody } from '../shared/memory-notes/fake';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { CompanionService } from '../electron/companion';
-import { MemoryStore } from '../electron/memory';
-import { MemoryNotes } from '../electron/memory-notes/host';
-import { PersistentClaudeChat, type CompanionClaudeTask } from '../electron/claude-session';
-import type { ClaudeChatProcess } from '../electron/claude-process';
-import { buildCodexChatPrompt, buildCompanionPersona, companionMemoryBlock, replaceMemoryBlock } from '../electron/conversation-context';
-import { recallLateCheck } from '../electron/recall-late-check';
-import { validateProvider } from '../electron/validation';
-import { VoiceChatHost } from '../electron/voice-chat-host';
-import { encodeWav } from '../src/ui/MediaInput';
+import type { ChatMessage } from '../shared/foundation/chat';
+import type { MemoryRecall, MemoryScope } from '../shared/memory/memory';
+import type { MemoryNoteBody } from '../shared/memory/memory-notes/interface';
+import { MEMORY_NOTES_KNOBS } from '../shared/memory/memory-notes/knobs';
+import { FakeNoteWriter, fakeNoteBody } from '../shared/memory/memory-notes/fake';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { CompanionService } from '../electron/brain/companion';
+import { MemoryStore } from '../electron/memory/memory';
+import { MemoryNotes } from '../electron/memory/memory-notes/host';
+import { PersistentClaudeChat, type CompanionClaudeTask } from '../electron/brain/claude-session';
+import type { ClaudeChatProcess } from '../electron/brain/claude-process';
+import { buildCodexChatPrompt, buildCompanionPersona, companionMemoryBlock, replaceMemoryBlock } from '../electron/brain/conversation-context';
+import { recallLateCheck } from '../electron/memory/recall-late-check';
+import { validateProvider } from '../electron/settings/validation';
+import { VoiceChatHost } from '../electron/voice/voice-chat-host';
+import { encodeWav } from '../src/senses/MediaInput';
+// Reads as text (test-affected selects this test when they change): 'electron/main.ts' (wiring rewrite step 4c: with electron/wiring/*.ts).
+import { wiringSource } from './helpers/wiring-source';
 
 const HOUR = 3_600_000;
 const CHARACTER = 'synthetic-late-girl';
@@ -307,7 +309,7 @@ test('recallLateCheck: only drops, never adds; nothing recalled stays nothing; a
 
 // electron/main.ts (syntax tree, no eval): the typed chat's prompt and session persona getters go through the turn's check.
 test('electron/main.ts: the prompt and the session persona handed to Claude are read through turn.withCurrentRecall', () => {
-  const source = readFileSync(new URL('../electron/main.ts', import.meta.url), 'utf8');
+  const source = wiringSource();
   const main = ts.createSourceFile('main.ts', source, ts.ScriptTarget.Latest, true);
   const getters: Record<string, string[]> = { prompt: [], persona: [] };
   const visit = (node: ts.Node): void => {

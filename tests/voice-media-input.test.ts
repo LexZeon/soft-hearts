@@ -1,13 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MediaInput } from '../src/ui/MediaInput';
-import { MicrophoneInput } from '../src/ui/MicrophoneInput';
-import { AudioCaptureHost } from '../electron/audio-capture-host';
-import { MediaRuntime } from '../electron/runtime';
-import { VoiceInputPipeline } from '../electron/voice-input-pipeline';
-import type { VoicePcmReceipt, VoicePcmSubmission } from '../shared/voice-segments';
-import type { VoiceTextCompletion, VoiceTextSettlement } from '../electron/voice-text-continuation';
-import { setUiLanguage } from '../shared/ui-language';
+import { MediaInput } from '../src/senses/MediaInput';
+import { MicrophoneInput } from '../src/senses/MicrophoneInput';
+import { AudioCaptureHost } from '../electron/senses/audio-capture-host';
+import { MediaRuntime } from '../electron/senses/media-runtime';
+import { VoiceInputPipeline } from '../electron/voice/voice-input-pipeline';
+import type { VoicePcmReceipt, VoicePcmSubmission } from '../shared/voice/voice-segments';
+import type { VoiceTextCompletion, VoiceTextSettlement } from '../electron/voice/voice-text-continuation';
+import { setUiLanguage } from '../shared/foundation/ui-language';
 function deferred<T>() { let resolve!: (value: T) => void; const promise = new Promise<T>(done => { resolve = done; }); return { promise, resolve }; }
 const tick = () => new Promise<void>(resolve => setImmediate(resolve));
 const receipt = (seq: number): VoicePcmReceipt => ({ state: 'queued', groupId: 'group', segmentId: 'segment-' + seq, captureSeq: seq });

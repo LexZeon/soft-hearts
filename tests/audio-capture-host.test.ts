@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { AudioCaptureHost } from '../electron/audio-capture-host';
-import type { AudioCaptureAck, AudioCaptureDescriptor, AudioCaptureState, ReadingCaptureToken } from '../shared/audio-capture';
-import type { AudioReadingSource } from '../shared/audio-reading-toggles';
+import { AudioCaptureHost } from '../electron/senses/audio-capture-host';
+import type { AudioCaptureAck, AudioCaptureDescriptor, AudioCaptureState, ReadingCaptureToken } from '../shared/senses/audio-capture';
+import type { AudioReadingSource } from '../shared/voice/audio-reading-toggles';
 
 type Owner = 'pet' | 'controls';
 const flush = async () => { for (let i = 0; i < 6; i++) await Promise.resolve(); };

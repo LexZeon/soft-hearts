@@ -1,5 +1,5 @@
-/** The control window's top-level pages in sidebar order. tests/control-navigation-roots.test.ts keeps it equal to src/ui/control-navigation-state.ts. */
-export const CONTROL_ROOTS = Object.freeze(['chat', 'characters', 'appearance', 'memory', 'providers', 'agent', 'privacy']);
+/** The control window's top-level pages in sidebar order. tests/control-navigation-roots.test.ts keeps it equal to src/settings/control-navigation-state.ts. */
+export const CONTROL_ROOTS = Object.freeze(['chat', 'characters', 'appearance', 'memory', 'providers', 'agent', 'assistant', 'privacy']);
 const CONTROL_PAGES = new Set(CONTROL_ROOTS);
 
 /**

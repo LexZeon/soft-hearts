@@ -53,7 +53,7 @@ test('anything that is not a link with an ID list and a plain drive path is left
 const win = process.platform === 'win32';
 const ps = (script: string) => execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', '[Console]::OutputEncoding=[Text.Encoding]::UTF8; ' + script], { encoding: 'utf8', windowsHide: true }).trim();
 
-test('a real shell-written link to a file under the OneDrive folder resolves and launches after its ID list is rebuilt', { skip: !win }, async () => {
+test('a real shell-written link to a file under the OneDrive folder resolves and launches after its ID list is rebuilt', { skip: !win, timeout: 120_000 }, async () => {
   const dir = await mkdtemp(path.join(os.tmpdir(), 'sh-lnk-'));
   try {
     const target = process.execPath, marker = path.join(dir, 'launched.txt');
@@ -68,8 +68,12 @@ test('a real shell-written link to a file under the OneDrive folder resolves and
     assert.equal(read[0].toLowerCase(), target.toLowerCase());
     assert.equal(read[1], args);
     assert.equal(read[2].toLowerCase(), path.dirname(target).toLowerCase());
+    // Start-Process throws (so ps() throws) when the shell refuses the link; once it returns, the launch was accepted and the
+    // target's own first act (the marker) is the completion signal. How long node takes to start depends on the machine's load, so
+    // there is no fixed polling window (it was 5 s and ran out under load, after the three COM calls above had already taken ~18 s):
+    // the case's own timeout is only the guard against a hang.
     ps(`Start-Process '${file}'`);
-    for (let i = 0; i < 50 && !existsSync(marker); i++) await new Promise(r => setTimeout(r, 100));
+    while (!existsSync(marker)) await new Promise(r => setTimeout(r, 50));
     assert.ok(existsSync(marker), 'double-click equivalent started the target');
   } finally { await rm(dir, { recursive: true, force: true }); }
 });

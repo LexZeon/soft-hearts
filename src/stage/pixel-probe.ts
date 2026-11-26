@@ -5,8 +5,8 @@
  * stalling the frame: right after render the block is copied into a pixel-pack
  * buffer behind a fence (WebGL2), and the bytes are picked up on a later frame
  * once the GPU has signalled. Nothing is read unless a request is waiting, so a
- * pet that is not in click-through mode (or a pointer that is elsewhere) costs
- * nothing. See src/ui/pointer-passthrough.ts for who asks and how often.
+ * companion that is not in click-through mode (or a pointer that is elsewhere) costs
+ * nothing. See src/stage/pointer-passthrough.ts for who asks and how often.
  */
 export interface StageAlpha {
   /** Highest alpha (0–255) within PROBE_INNER_RADIUS device px of the pointer. */
@@ -131,6 +131,8 @@ export class StagePixelProbe {
   }
 
   dispose(): void { this.cancel(); this.dropBuffer(); this.gl = null; }
+  /** The context was lost and came back (src/stage/context-recovery.ts): its buffer and fence belonged to the old one; the next read starts over. */
+  forgetContext(): void { const queued = this.queued; this.queued = null; queued?.resolve(null); this.flight?.resolve(null); this.flight = null; this.gl = null; this.buffer = null; }
 
   private dropBuffer(): void {
     if (this.buffer && this.gl) try { this.gl.deleteBuffer(this.buffer); } catch { /* lost context */ }

@@ -1,12 +1,12 @@
 /**
- * "这会儿……"的门槛（shared/mood-tendency.ts，I-020 各功能共用）：她的数值回到基线时总会高出一丝（隔一天还高 1e-11），心情模型的
+ * "这会儿……"的门槛（shared/foundation/mood-tendency.ts，I-020 各功能共用）：她的数值回到基线时总会高出一丝（隔一天还高 1e-11），心情模型的
  * companion 照样会写"想黏着你"。#8、#11、#21、#26 的"此刻"都只认够强的倾向，所以"为什么"里只写从此刻状态来的真实理由。
  * 用真的心情模型（摸头后 O 高 10 点，再过 1 / 6 / 24 小时）造此刻；不读任何配置或角色卡。
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { advanceMood, createMoodState, DEFAULT_MOOD_PARAMETERS, getMoodSnapshot, type MoodSnapshot } from '../shared/mood';
-import { MOOD_TENDENCY_MIN, tendencyNow } from '../shared/mood-tendency';
+import { advanceMood, createMoodState, DEFAULT_MOOD_PARAMETERS, getMoodSnapshot, type MoodSnapshot } from '../shared/foundation/mood';
+import { MOOD_TENDENCY_MIN, tendencyNow } from '../shared/foundation/mood-tendency';
 import { boredomTimingNow, drawBoredomRound, EMPTY_BOREDOM_HISTORY } from '../shared/behaviors/boredom-timing/choose';
 import { chooseIdleGesture, idleGestureNow } from '../shared/behaviors/idle-gesture/choose';
 import { TOUCH_FEED_TENDENCY_MIN, touchFeedNow } from '../shared/behaviors/touch-feed-effect/choose';

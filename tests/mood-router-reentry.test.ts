@@ -8,8 +8,8 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { MoodHost } from '../electron/mood';
-import { ModuleRouter } from '../electron/module-router/router';
+import { MoodHost } from '../electron/mood/mood';
+import { ModuleRouter } from '../electron/brain/module-router/router';
 
 async function withHost(run: (host: MoodHost) => Promise<void> | void) {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'soft-mood-router-reentry-'));

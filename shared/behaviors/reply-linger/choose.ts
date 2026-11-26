@@ -2,14 +2,14 @@
  * #5 主机这一侧的真实现：回复显示完以后，气泡留多久由她定（接口见 interface.ts，旋钮见 knobs.ts）。
  * 纯本地、零额度、不碰聊天提示词；只在内存里记最近几次"为什么"，不进体验记录和存档。
  */
-import { validReplyPieces } from '../../reply-bubbles';
-import { MOOD_LABELS } from '../../mood-runtime';
-import type { MoodLabel, MoodSnapshot, MoodTendency } from '../../mood';
-import type { FatiguePhase } from '../../fatigue';
+import { validReplyPieces } from '../../voice';
+import { MOOD_LABELS } from '../../mood';
+import type { MoodLabel, MoodSnapshot, MoodTendency } from '../../foundation/mood';
+import type { FatiguePhase } from '../../mood';
 import { REPLY_LINGER_KNOBS, type ReplyLingerKnobs } from './knobs';
 import type { ReplyLingerBubble, ReplyLingerChoice, ReplyLingerHost, ReplyLingerMood, ReplyLingerNow, ReplyLingerWaiting, ReplyLingerWhy } from './interface';
 import { safeLingerMs } from './perform';
-import { tendencyNow } from '../../mood-tendency';
+import { tendencyNow } from '../../foundation/mood-tendency';
 
 const TENDENCIES: readonly MoodTendency[] = ['playful', 'close', 'comfortable', 'cautious'];
 const NOW_WORDS: Readonly<Record<MoodTendency | 'wistful', string>> = {
@@ -74,6 +74,12 @@ export function readableChars(text: string, knobs: ReplyLingerKnobs = REPLY_LING
   return Math.round((whole + letters / per) * 10) / 10;
 }
 
+/** How long it takes to read `chars` characters: the notice time plus the characters at the reading speed. The one floor both stages use. */
+export function readableMs(chars: number, knobs: ReplyLingerKnobs = REPLY_LINGER_KNOBS): number {
+  const perSecond = Math.max(0.5, finite(knobs.readable.charsPerSecond, 6));
+  return Math.max(0, finite(knobs.readable.noticeMs, 0)) + Math.max(0, finite(chars, 0)) / perSecond * 1000;
+}
+
 /**
  * Her last bubble as the window shows it: from the last piece with words in it to the end (a trailing "😊" or "～" piece rides
  * with the sentence before it, so a long sentence followed by an emoji bubble is read as a whole, Codex T-207 2A; the
@@ -121,7 +127,7 @@ export function waitingForYou(sentence: string): ReplyLingerWaiting | null {
 // ---------------------------------------------------------------- her mood and card, as MoodHost hands them over
 
 export interface ReplyLingerMoodInput {
-  /** `tendencies` (the snapshot's own strengths) lets a leftover hair above baseline stop counting (shared/mood-tendency.ts). */
+  /** `tendencies` (the snapshot's own strengths) lets a leftover hair above baseline stop counting (shared/foundation/mood-tendency.ts). */
   readonly snapshot: Pick<MoodSnapshot, 'primary' | 'companion'> & { readonly tendencies?: MoodSnapshot['tendencies'] | null };
   readonly personality: Partial<Record<MoodTendency, number>> | null | undefined;
   readonly fatiguePhase?: FatiguePhase | null;
@@ -138,7 +144,7 @@ export function replyLingerMood(input: ReplyLingerMoodInput): ReplyLingerMood {
 /** The window's bubble plus her mood → "此刻" (only counts are kept; her words stop here). */
 export function replyLingerNow(bubble: ReplyLingerBubble, mood: ReplyLingerMood | null, knobs: ReplyLingerKnobs = REPLY_LINGER_KNOBS): ReplyLingerNow {
   const last = lastBubble(bubble);
-  return { chars: readableChars(last, knobs), waiting: waitingForYou(last), mood };
+  return { chars: readableChars(last, knobs), waiting: waitingForYou(last), mood, readAll: bubble?.readAll === true };
 }
 
 // ---------------------------------------------------------------- the choice
@@ -153,8 +159,7 @@ const direction = (factor: number): string => factor > 1 ? '多留一会儿' : '
 export function chooseReplyLinger(now: ReplyLingerNow, random: () => number, knobs: ReplyLingerKnobs = REPLY_LINGER_KNOBS): ReplyLingerChoice {
   const roll = unit(random());
   const chars = Math.max(0, finite(now.chars, 0));
-  const perSecond = Math.max(0.5, finite(knobs.readable.charsPerSecond, 6));
-  const readMs = Math.max(0, finite(knobs.readable.noticeMs, 0)) + chars / perSecond * 1000;
+  const readMs = readableMs(chars, knobs);
   const lean: { text: string; factor: number }[] = [];
   const m = now.mood;
   if (m) {
@@ -173,12 +178,16 @@ export function chooseReplyLinger(now: ReplyLingerNow, random: () => number, kno
   const wait = now.waiting ? Math.max(0, finite(knobs.waiting[now.waiting], 1)) : 1;
   const [low, high] = knobs.after;
   const afterMs = (low + (high - low) * roll) * leaning * wait;
-  const ms = safeLingerMs(readMs + afterMs, knobs);
+  // A bubble that shows the whole reply at once (full-screen) is never cut below the time it takes to read all of it.
+  const cut = safeLingerMs(readMs + afterMs, knobs);
+  const reading = now.readAll === true && Math.round(readMs) > cut;
+  const ms = reading ? Math.round(readMs) : cut;
   const why: string[] = [];
   if (now.waiting && Math.abs(wait - 1) >= REASON_MIN) why.push(`${WAITING_WORDS[now.waiting]}（${direction(wait)}）`);
   why.push(`${Math.round(chars)} 个字（读完约 ${seconds(readMs)} 秒）`);
   for (const reason of lean) if (Math.abs(reason.factor - 1) >= REASON_MIN) why.push(`${reason.text}（${direction(reason.factor)}）`);
-  if (ms >= knobs.range[1] && readMs + afterMs > knobs.range[1]) why.push(`太长了，最多留 ${seconds(knobs.range[1])} 秒（全文可以点"查看完整回复"）`);
+  if (reading) why.push(`整段都摆着，读完要 ${seconds(readMs)} 秒，比上限 ${seconds(knobs.range[1])} 秒还长，按读完留`);
+  else if (ms >= knobs.range[1] && readMs + afterMs > knobs.range[1]) why.push(`太长了，最多留 ${seconds(knobs.range[1])} 秒（全文可以点"查看完整回复"）`);
   else if (ms <= knobs.range[0] && readMs + afterMs < knobs.range[0]) why.push(`很短，至少留 ${seconds(knobs.range[0])} 秒`);
   return { ms, readMs: Math.round(readMs), afterMs: Math.round(afterMs), why };
 }

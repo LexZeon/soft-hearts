@@ -1,8 +1,8 @@
-// 识图第 1 步：哪条消息带画面（electron/look-turns.ts）。屏幕只读大概（推翻上午的 V1"每条带最近一帧"）：
-// 共享开着，普通消息不带图（她只知道大概，electron/screen-glance.ts）；叫她看、按按钮、回她"要我凑近看看吗"或点桌宠上的"看吧"才现截一张。
+// 识图第 1 步：哪条消息带画面（electron/senses/look-turns.ts）。屏幕只读大概（推翻上午的 V1"每条带最近一帧"）：
+// 共享开着，普通消息不带图（她只知道大概，electron/senses/screen-glance.ts）；叫她看、按按钮、回她"要我凑近看看吗"或点桌宠上的"看吧"才现截一张。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DECLINE_HOLDS, LOOK_OFFER_TTL_MS, LookTurns, validateLookHint, type LookOfferView } from '../electron/look-turns';
+import { DECLINE_HOLDS, LOOK_OFFER_TTL_MS, LookTurns, validateLookHint, type LookOfferView } from '../electron/senses/look-turns';
 
 const sharing = { screen: true, camera: false, scope: 'conversation-1|7' };
 const off = { screen: false, camera: false, scope: 'conversation-1|7' };
@@ -32,12 +32,13 @@ test('"给她看看屏幕"按钮：不管说了什么都带屏幕（只要共享
 });
 
 // I-036 开着时普通消息带一张小图（glance），叫她看才拍清楚的一张。
-test('「发图片」开着：普通消息带小图；"你看看我"拍清楚的；"你看看这个"有屏幕时看屏幕（仍带小图）', () => {
+test('「发图片」开着：普通消息带小图；"你看看我"拍清楚的；"你看看这个"有屏幕时两样都看（2026-11-21，以前只看屏幕）', () => {
   const turns = new LookTurns(), camera = { screen: false, camera: true, scope: 's' }, both = { screen: true, camera: true, scope: 's' };
   assert.deepEqual(turns.decide({ text: '今天好累' }, camera), { screen: false, camera: false, via: null, glance: true });
   assert.deepEqual(turns.decide({ text: '你看看我' }, camera), { screen: false, camera: true, via: 'words' });
   assert.deepEqual(turns.decide({ text: '你看看这个' }, camera), { screen: false, camera: true, via: 'words' });
-  assert.deepEqual(turns.decide({ text: '你看看这个' }, both), { screen: true, camera: false, via: 'words', glance: true });
+  assert.deepEqual(turns.decide({ text: '你看看这个' }, both), { screen: true, camera: true, via: 'words' });
+  assert.deepEqual(turns.decide({ text: '你看看这个' }, { ...both, cameraHeld: true }), { screen: true, camera: false, via: 'words' }, '"别看" on the camera wins over "this"');
   assert.deepEqual(turns.decide({ text: '你看看我今天的发型' }, both), { screen: false, camera: true, via: 'words' });
   assert.deepEqual(turns.decide({ text: '你看看我屏幕' }, camera), { screen: false, camera: false, via: null, glance: true }, 'screen asked, only the camera on: just the small frame');
   // Older windows send no words: nothing, as before.
@@ -97,7 +98,7 @@ test('附图请求的格式：只认 text 和 look，错的在取画面之前就
 });
 
 test('R10 (her looking at the screen on her own) starts off until 识图第 3 步 replaces it', async () => {
-  const { PROACTIVE_VISION_DEFAULT } = await import('../electron/look-turns');
+  const { PROACTIVE_VISION_DEFAULT } = await import('../electron/senses/look-turns');
   assert.equal(PROACTIVE_VISION_DEFAULT, false);
 });
 
@@ -139,7 +140,7 @@ test('桌宠上点"不用"：只关这一个邀请、不取图，也不算"别�
   assert.equal(turns.refusedIn(sharing), DECLINE_HOLDS, '"不用" is not "别看": she still knows roughly what the user does');
   assert.equal(turns.decline(id, sharing), false, 'answered once');
   assert.deepEqual(turns.decide({ text: '嗯' }, sharing).via, null, 'a later "嗯" takes nothing on the closed offer');
-  // "看吧" on the pet sends like the button: a frame right then.
+  // "看吧" on the companion sends like the button: a frame right then.
   turns.noteOffer(sharing.scope, sharing.scope);
   assert.deepEqual(turns.decide({ text: '看吧。', look: true }, sharing), { screen: true, camera: false, via: 'button' });
   assert.equal(turns.offerOpen, false);

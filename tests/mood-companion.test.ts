@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { MoodInput, MoodView } from "../shared/mood-runtime";
-import { DEFAULT_MOOD_PARAMETERS } from "../shared/mood";
-import { MoodInputQueue } from "../src/ui/MoodCompanion";
-import { moodExtendedDifferences } from "../src/ui/MoodPanel";
+import type { MoodInput, MoodView } from "../shared/mood/mood-runtime";
+import { DEFAULT_MOOD_PARAMETERS } from "../shared/foundation/mood";
+import { MoodInputQueue } from "../src/mood/MoodCompanion";
+import { moodExtendedDifferences } from "../src/mood/MoodPanel";
 
 const view = (token: string, revision = 1) => ({ token, revision } as MoodView);
 const flush = async () => { for (let i = 0; i < 8; i++) await Promise.resolve(); };

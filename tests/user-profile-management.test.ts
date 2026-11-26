@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { UserProfileManagement } from '../electron/user-profile-management';
-import { UserProfileStore, type UserProfileOptions, type UserProfileView, type UserProfileScope } from '../electron/user-profile';
+import { UserProfileManagement } from '../electron/memory/user-profile-management';
+import { UserProfileStore, type UserProfileOptions, type UserProfileView, type UserProfileScope } from '../electron/memory/user-profile';
 
 const scopeA = { characterId: 'management-a', providerScope: 'provider-a' };
 const scopeB = { characterId: 'management-b', providerScope: 'provider-a' };

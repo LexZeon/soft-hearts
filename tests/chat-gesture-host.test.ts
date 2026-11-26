@@ -3,14 +3,14 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import catalogData from '../shared/motion-catalog.json';
-import type { ChatGestureCue, ChatGestureAppraisal } from '../shared/chat-gesture';
-import type { MotionCatalog } from '../shared/motion-library';
-import type { ProviderConfig } from '../shared/contracts';
-import { MoodHost } from '../electron/mood';
-import { CompanionService, type CompanionTurn } from '../electron/companion';
-import { MotionLibrary } from '../electron/motion-library';
-import { resolveChatGestureResource, chatGestureDurationMs } from '../electron/chat-gesture';
+import catalogData from '../shared/actions/motion-catalog.json';
+import type { ChatGestureCue, ChatGestureAppraisal } from '../shared/actions/chat-gesture';
+import type { MotionCatalog } from '../shared/actions/motion-library';
+import type { ProviderConfig } from '../shared/foundation/settings';
+import { MoodHost } from '../electron/mood/mood';
+import { CompanionService, type CompanionTurn } from '../electron/brain/companion';
+import { MotionLibrary } from '../electron/actions/motion-library';
+import { resolveChatGestureResource, chatGestureDurationMs } from '../electron/actions/chat-gesture';
 
 const appraisal: ChatGestureAppraisal = { context: 'neutral', delta: {}, reason: '原创说明测试', gesture: 'explain' };
 const cue = (intent: ChatGestureCue['intent'] = 'explain'): ChatGestureCue => ({

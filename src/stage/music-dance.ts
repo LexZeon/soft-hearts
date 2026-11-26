@@ -1,3 +1,6 @@
+import type { DanceShape } from './music-react/director';
+import { shapeDanceTargets } from './music-react/dance-shape';
+
 export interface MusicEnergySample {
   /** Monotonic sample time in seconds; energy values are normalized to 0..1. */
   time: number;
@@ -5,6 +8,10 @@ export interface MusicEnergySample {
   low: number;
   mid: number;
   high: number;
+  /** I-072: running onset counters per band from the unsmoothed analyser (shared/senses/music-detect/onset.ts); only the computer's sound has them. */
+  onsetLow?: number;
+  onsetMid?: number;
+  onsetHigh?: number;
 }
 
 export interface MusicDanceBeat {
@@ -96,6 +103,8 @@ export class MusicDance {
    * the shown share eases out and back in; so once music is recognized and the share is back to 1, every frame is R15's own.
    */
   private held = false;
+  /** I-077 (music-react/): the song's style and her reactions reshaping the dance; null = untouched (R15 bit for bit). */
+  private shape: Readonly<DanceShape> | null = null;
   private hold = 1;
   private holdFrom = 1;
   private holdElapsed = 0;
@@ -109,6 +118,14 @@ export class MusicDance {
       releasing: this.release !== null, releaseProgress: this.release ? clamp(this.release.elapsed / MUSIC_RELEASE_SECONDS) : 1,
       releaseRemainingMs: this.release ? Math.max(0, (MUSIC_RELEASE_SECONDS - this.release.elapsed) * 1000) : 0,
       presence: this.presence };
+  }
+
+  /**
+   * 2026-11-24 (docs/claude/2026-11-24-music-nod-window.md): the share of the beat motion on screen now (0..1): its activity under the
+   * presence (R29b), the hold (I-016) and an exit's envelope. Read only: what she is told she does is what this says shows.
+   */
+  get shownShare(): number {
+    return clamp(this.activity * this.presence * this.hold * (this.release ? musicReleaseGain(this.release.elapsed / MUSIC_RELEASE_SECONDS) : 1));
   }
 
   /**
@@ -155,6 +172,10 @@ export class MusicDance {
     if (!this.release && Object.values(this.pose).every(value => value === 0)) this.hold = this.holdFrom = on ? 0 : 1;
   }
   get isHeld(): boolean { return this.held; }
+  /** I-077: the shape to apply from the next frame on (null or a neutral one: none). A live object may be passed and changed per frame. */
+  setShape(shape: Readonly<DanceShape> | null): void {
+    this.shape = shape && !(shape.sway === 1 && shape.bounce === 1 && shape.nod === 1 && shape.slow === 0 && shape.headX === 0 && shape.headZ === 0) ? shape : null;
+  }
   /** The shown share the hold leaves (1 = all of it). */
   get heldShare(): number { return this.hold; }
 
@@ -313,6 +334,7 @@ export class MusicDance {
       headRoll: amount * MUSIC_DANCE_LIMITS.headRoll * this.level * Math.sin(this.phase * 0.5) * headWeight * (0.4 + this.kick * 0.6),
       headPitch: amount * MUSIC_DANCE_LIMITS.headPitch * headAmount * nod,
     };
+    if (this.shape) shapeDanceTargets(targets, this.shape, { amount, level: this.level, activity: this.activity, phase: this.phase, swayWeight, signedKick: this.signedKick, swayLimit: MUSIC_DANCE_LIMITS.sway });
     for (const channel of Object.keys(this.pose) as (keyof MusicDancePose)[]) {
       this.pose[channel] = smooth(this.pose[channel], targets[channel], delta, 0.055);
       this.pose[channel] = channel === "bounce"

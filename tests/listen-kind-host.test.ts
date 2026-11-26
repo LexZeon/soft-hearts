@@ -1,7 +1,7 @@
 /**
- * I-016 A (docs/claude/2026-11-03-listen-kind.md): the host's slower layer (electron/listen-kind-source.ts): music / show / talk /
+ * I-016 A (docs/claude/2026-11-03-listen-kind.md): the host's slower layer (electron/senses/listen-kind-source.ts): music / show / talk /
  * quiet from the stage's beat score (I-017's narrow channel, one more number) and, only as help, the recognizer's tags; 30 s
- * smoothing with hysteresis; the shared ListenKindHost (shared/listen-kind.ts) is set only on a change, with a new revision.
+ * smoothing with hysteresis; the shared ListenKindHost (shared/senses/listen-kind.ts) is set only on a change, with a new revision.
  * Also: the channel's new field is checked like the rest, stale reports say nothing, the I-017 line names the kind and a change
  * of kind is a change worth the full sentence, the recognizer route reports words/tags (never text), the developer line.
  */
@@ -9,15 +9,15 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   LISTEN_ENTER_MS, LISTEN_MIN_SOUND_MS, LISTEN_QUIET_MS, LISTEN_STRETCH_GAP_MS, ListenKindJudge, ListenKindSource, type ListenObservation,
-} from '../electron/listen-kind-source';
-import { STAGE_STATE_TTL_MS, StageStateHost, createHerState } from '../electron/her-state-host';
-import { AmbientAsrRoute, localAmbientResult } from '../electron/asr/ambient-route';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { briefHearingWords, hearingWords, parseStageStateReport, HER_STATE_MAX, type HearingNow, type StageMusicState } from '../shared/her-state';
-import { HER_STATE_BEAT_STEP, HerStateReporter } from '../src/ui/her-state-reporter';
-import { ListenKindPanelFeed } from '../src/ui/listen-kind-panel';
-import type { ListenKind } from '../shared/listen-kind';
-import type { AsrEventTag } from '../electron/asr/decode';
+} from '../electron/senses/listen-kind-source';
+import { STAGE_STATE_TTL_MS, StageStateHost, createHerState } from '../electron/mood/her-state-host';
+import { AmbientAsrRoute, localAmbientResult } from '../electron/senses/asr/ambient-route';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { briefHearingWords, hearingWords, parseStageStateReport, HER_STATE_MAX, type HearingNow, type StageMusicState } from '../shared/mood/her-state';
+import { HER_STATE_BEAT_STEP, HerStateReporter } from '../src/mood/her-state-reporter';
+import { ListenKindPanelFeed } from '../src/senses/listen-kind-panel';
+import type { ListenKind } from '../shared/senses/listen-kind';
+import type { AsrEventTag } from '../electron/senses/asr/decode';
 
 const T0 = 1_700_000_000_000;
 type Step = { seconds: number; music?: StageMusicState; beat?: number; hearing?: boolean; stale?: boolean };

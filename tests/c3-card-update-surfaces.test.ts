@@ -4,27 +4,29 @@
 // different name, updates only on OK). Real card stores and the real tool, bridge and host actions; synthetic cards only.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CharacterCardStore } from '../electron/character-cards';
-import { CharacterResponseStore } from '../electron/character-response';
-import { CharacterCardUpdater } from '../electron/character-card-update';
-import { MutationQueue } from '../electron/mutation-queue';
-import { AgentToolRegistry, AGENT_CHANNEL_CLOSED, type AgentAuditEntry, type AgentConfirmRequest } from '../electron/agent-channel/registry';
-import { createAppTools, type CommitResult } from '../electron/agent-channel/app-tools';
-import { createHostBridge, type IpcHandler } from '../electron/agent-channel/bridge';
-import { agentHostActions, type AgentHostActionPorts } from '../electron/agent-channel/host-actions';
-import type { FileSystemPort } from '../electron/agent-channel/validate';
-import { AGENT_TOOLS } from '../shared/agent-channel';
-import { CHARACTER_CARD_FORMAT, defaultCharacterMoodTemplate, type CharacterCardState } from '../shared/character-cards';
-import { planCharacterCardUpdate, type CharacterCardUpdatePreview } from '../shared/character-card-update';
-import { defaultCharacterResponseProfile } from '../shared/character-response';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { registerUiMessages, setUiLanguage } from '../shared/ui-language';
-import { ENGLISH_CHARACTER_UI_COPY } from '../shared/ui-copy.character.en';
-import { CharacterPage, type CharacterPageApi } from '../src/ui/CharacterPage';
-import type { CharacterRosterView } from '../shared/character-roster';
+import { CharacterCardStore } from '../electron/cards/character-cards';
+import { CharacterResponseStore } from '../electron/cards/character-response';
+import { CharacterCardUpdater } from '../electron/cards/character-card-update';
+import { MutationQueue } from '../electron/foundation/mutation-queue';
+import { AgentToolRegistry, AGENT_CHANNEL_CLOSED, type AgentAuditEntry, type AgentConfirmRequest } from '../electron/safety/agent-channel/registry';
+import { createAppTools, type CommitResult } from '../electron/safety/agent-channel/app-tools';
+import { createHostBridge, type IpcHandler } from '../electron/safety/agent-channel/bridge';
+import { agentHostActions, type AgentHostActionPorts } from '../electron/safety/agent-channel/host-actions';
+import type { FileSystemPort } from '../electron/safety/agent-channel/validate';
+import type { FileBytesPort } from '../electron/safety/agent-channel/file-binding';
+import { AGENT_TOOLS } from '../shared/safety/agent-channel';
+import { CHARACTER_CARD_FORMAT, defaultCharacterMoodTemplate, type CharacterCardState } from '../shared/cards/character-cards';
+import { planCharacterCardUpdate, type CharacterCardUpdatePreview } from '../shared/cards/character-card-update';
+import { defaultCharacterResponseProfile } from '../shared/cards/character-response';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { registerUiMessages, setUiLanguage } from '../shared/foundation/ui-language';
+import { ENGLISH_CHARACTER_UI_COPY } from '../shared/foundation/ui-copy.character.en';
+import { CharacterPage, type CharacterPageApi } from '../src/cards/CharacterPage';
+import type { CharacterRosterView } from '../shared/cards/character-roster';
 
 const tick = () => new Promise(resolve => setImmediate(resolve));
 async function until(check: () => boolean, ms = 3_000): Promise<void> {
@@ -65,12 +67,18 @@ async function agentFixture(t: test.TestContext) {
   const operations = new Map<string, IpcHandler>([['getSettings', () => structuredClone(DEFAULT_SETTINGS)], ['getCharacterCards', () => cards.publicState()]]);
   const bridge = createHostBridge({ version: () => 'test', controls: () => window, pet: () => window, operations, replyLatency: () => [], broadcast: () => {},
     planCharacterCardUpdate: (cardId, content) => updater.plan(cardId, content), ...agentHostActions(ports) });
-  const file = { size: 300, mtimeMs: 1, content: v2File('阿澄', '安静，也会撒娇'), shiftAfterReads: Infinity, reads: 0 };
+  // T-239 + X-435: `contentReads` counts reads of the content (one, only after the first OK); `hashes` counts a fingerprint (the
+  // old pre-dialog read), which must never happen now.
+  const file = { size: null as number | null, mtimeMs: 1, content: v2File('阿澄', '安静，也会撒娇'), shiftAfterReads: Infinity, reads: 0, contentReads: 0, hashes: 0 };
+  const bytes = () => Buffer.from(file.content, 'utf8');
   const fs: FileSystemPort = { realpath: async value => value, stat: async () => {
     file.reads++;
-    return { isFile: () => true, size: file.size, mtimeMs: file.reads > file.shiftAfterReads ? file.mtimeMs + 1 : file.mtimeMs };
+    return { isFile: () => true, size: file.size ?? bytes().byteLength, mtimeMs: file.reads > file.shiftAfterReads ? file.mtimeMs + 1 : file.mtimeMs };
   } };
-  const tools = createAppTools(bridge, { fs, platform: 'win32', readText: async () => file.content });
+  const port = { readBytes: async () => { file.contentReads++; return bytes(); },
+    hashFile: async () => { file.hashes++; return createHash('sha256').update(bytes()).digest('hex'); } };
+  const fileBytes: FileBytesPort = port;
+  const tools = createAppTools(bridge, { fs, platform: 'win32', fileBytes });
   const audit: AgentAuditEntry[] = [], asked: AgentConfirmRequest[] = [], answers: Array<(value: boolean) => void> = [];
   let enabled = true;
   const registry = new AgentToolRegistry(tools, { enabled: () => enabled, confirmTimeoutMs: 300, audit: entry => audit.push(entry),
@@ -85,7 +93,17 @@ test('update_character_card asks with the file, its place, her name and what cha
   f.file.content = v2File('菲菲', '安静，也会撒娇');
   const call = f.registry.call('update_character_card', { id: f.id, path: PATH });
   await until(() => f.asked.length === 1);
-  const { title, detail } = f.asked[0];
+  // T-239: the first dialog asks to read the file: its name, place, size and her name; nothing of the file's content yet.
+  assert.match(f.asked[0].title, /读取一个角色卡文件，用来更新「阿澄」/);
+  assert.match(f.asked[0].detail, /文件：阿澄 new\.json/); assert.match(f.asked[0].detail, /位置：C:\\cards/); assert.match(f.asked[0].detail, /大小：\d+ KB/);
+  assert.doesNotMatch(f.asked[0].detail, /菲菲|撒娇|名字不一样/);
+  assert.deepEqual(f.asked[0].buttons, ['不读', '允许读取']);
+  assert.equal(f.file.contentReads, 0, 'not read before the OK');
+  assert.equal(f.file.hashes, 0, 'X-435: not even a fingerprint before the OK');
+  f.answers[0](true);
+  await until(() => f.asked.length === 2);
+  assert.equal(f.file.contentReads, 1);
+  const { title, detail } = f.asked[1];
   assert.match(title, /名字不一样/);
   assert.match(detail, /要更新的角色：阿澄（原地更新，还是同一个她）/);
   assert.match(detail, /文件：阿澄 new\.json/); assert.match(detail, /位置：C:\\cards/);
@@ -93,7 +111,7 @@ test('update_character_card asks with the file, its place, her name and what cha
   assert.match(detail, /会换成文件里的：性格与说话方式。/);
   assert.match(detail, /她的聊天、日记、画像、熟悉度和昵称都会保留/);
   assert.equal(f.log.length, 0, 'nothing happens before the OK');
-  f.answers[0](true);
+  f.answers[1](true);
   const result = await call;
   assert.equal(result.ok, true, JSON.stringify(result));
   const value = (result as { result: any }).result;
@@ -115,19 +133,55 @@ test('update_character_card: deny, no answer for the time limit, and a file chan
   const denied = f.registry.call('update_character_card', { id: f.id, path: PATH });
   await until(() => f.asked.length === 1); f.answers[0](false);
   assert.equal(((await denied) as any).error.code, 'denied_by_user');
+  assert.equal(f.file.contentReads, 0, 'T-239: a "no" to reading leaves the file unread');
   const timedOut = await f.registry.call('update_character_card', { id: f.id, path: PATH });
   assert.equal((timedOut as any).error.code, 'confirm_timeout', '60 s in the app (300 ms here) without an answer is a no');
   f.answers[1]?.(true); await tick();
-  // Changed on disk between the dialog and the update (its stat is read again after the OK).
+  assert.equal(f.file.contentReads, 0);
+  // Changed on disk between the dialog and the read (its stat is read again after the OK).
   f.file.shiftAfterReads = f.file.reads + 1;
   const raced = f.registry.call('update_character_card', { id: f.id, path: PATH });
   await until(() => f.asked.length === 3); f.answers[2](true);
   const racedResult = await raced as any;
   assert.equal(racedResult.error.code, 'unavailable');
   assert.match(racedResult.error.message, /确认之后被改动/);
+  // X-435: other bytes with the same size and time put there before the OK are what the one read after the OK returns (nothing
+  // was read before the OK to compare them with); the second dialog shows exactly them, and a "no" there changes nothing.
+  f.file.shiftAfterReads = Infinity;
+  const swapped = f.registry.call('update_character_card', { id: f.id, path: PATH });
+  await until(() => f.asked.length === 4);
+  const length = Buffer.byteLength(f.file.content), reads = f.file.contentReads;
+  f.file.content = v2File('阿澄', '安静，也会撒谎');
+  assert.equal(Buffer.byteLength(f.file.content), length, 'same size');
+  f.answers[3](true);
+  await until(() => f.asked.length === 5);
+  assert.match(f.asked[4].detail, /会换成文件里的：性格与说话方式。/, 'the plan is of the bytes read after the OK');
+  assert.equal(f.file.contentReads, reads + 1);
+  f.answers[4](false);
+  assert.equal(((await swapped) as any).error.code, 'denied_by_user');
+  assert.equal(f.file.hashes, 0);
   assert.deepEqual(await f.stored(), before);
   assert.deepEqual(f.log, []);
   assert.equal(f.cards.publicState().cards.find(card => card.id === f.id)!.personality, '安静');
+});
+
+test('update_character_card (X-435): what is written is the content read once after the first OK and shown in the second dialog', async t => {
+  const f = await agentFixture(t);
+  f.file.content = v2File('阿澄', '安静，也会撒娇');
+  const call = f.registry.call('update_character_card', { id: f.id, path: PATH });
+  await until(() => f.asked.length === 1);
+  assert.equal(f.file.contentReads + f.file.hashes, 0);
+  f.answers[0](true);
+  await until(() => f.asked.length === 2);
+  assert.match(f.asked[1].detail, /会换成文件里的：性格与说话方式。/);
+  // Codex's case: while the plan is shown the file becomes other bytes of the same size and time.
+  const length = Buffer.byteLength(f.file.content);
+  f.file.content = v2File('阿澄', '安静，也会撒谎');
+  assert.equal(Buffer.byteLength(f.file.content), length);
+  f.answers[1](true);
+  assert.equal(((await call) as any).ok, true);
+  assert.equal(f.cards.publicState().cards.find(card => card.id === f.id)!.personality, '安静，也会撒娇', 'the previewed content, not the new bytes');
+  assert.deepEqual({ reads: f.file.contentReads, hashes: f.file.hashes }, { reads: 1, hashes: 0 }, 'read once, never again by path');
 });
 
 test('update_character_card: closing the channel abandons an approved update still waiting for its turn; nothing is written', async t => {
@@ -138,6 +192,8 @@ test('update_character_card: closing the channel abandons an approved update sti
   const call = f.registry.call('update_character_card', { id: f.id, path: PATH });
   await until(() => f.asked.length === 1);
   f.answers[0](true);
+  await until(() => f.asked.length === 2);
+  f.answers[1](true);
   await tick(); await tick();
   f.close();
   busy.resolve(); await userWork;
@@ -147,24 +203,36 @@ test('update_character_card: closing the channel abandons an approved update sti
   assert.deepEqual((await readdir(f.directory)).filter(name => name.includes('before-update')), [], 'not even a backup');
 });
 
-test('update_character_card refuses bad arguments, unknown cards, bad or identical files and big files before any dialog', async t => {
+test('update_character_card refuses bad arguments, unknown cards and big files before any dialog; bad or identical files right after reading them', async t => {
   const f = await agentFixture(t);
   const code = async (args: unknown) => ((await f.registry.call('update_character_card', args)) as any).error?.code;
+  // T-239: the content is checked only after the user agreed to reading it; a bad file never reaches the second dialog.
+  const afterRead = async (args: unknown) => {
+    const seen = f.asked.length;
+    const call = f.registry.call('update_character_card', args);
+    await until(() => f.asked.length === seen + 1);
+    f.answers[seen](true);
+    const result = await call as any;
+    assert.equal(f.asked.length, seen + 1, 'no second dialog');
+    return result;
+  };
   for (const args of [{ id: f.id }, { path: PATH }, { id: 'abc', path: PATH }, { id: f.id, path: 'cards\\a.json' }, { id: f.id, path: '\\\\server\\a.json' },
     { id: f.id, path: 'C:\\cards\\a.txt' }, { id: f.id, path: PATH, extra: 1 }])
     assert.equal(await code(args), 'invalid_input', JSON.stringify(args));
   assert.equal(await code({ id: '0f8fad5b-d9cb-469f-a165-70867728950e', path: PATH }), 'invalid_input', 'not one of her cards');
-  f.file.content = '{"name":';
-  assert.equal(await code({ id: f.id, path: PATH }), 'invalid_input');
-  f.file.content = JSON.stringify({ format: CHARACTER_CARD_FORMAT, version: 2, card: { ...text('阿澄'), mood: defaultCharacterMoodTemplate(), modelPath: 'C:\\x.pmx' } });
-  const refused = await f.registry.call('update_character_card', { id: f.id, path: PATH }) as any;
-  assert.equal(refused.error.code, 'invalid_input'); assert.match(refused.error.message, /不能导入路径/);
-  f.file.content = v2File('阿澄', '安静');
-  const same = await f.registry.call('update_character_card', { id: f.id, path: PATH }) as any;
-  assert.equal(same.error.code, 'unavailable'); assert.match(same.error.message, /一模一样/);
   f.file.content = v2File('阿澄', '新的'); f.file.size = 2_000_000;
   assert.equal(await code({ id: f.id, path: PATH }), 'invalid_input');
+  f.file.size = null;
   assert.equal(f.asked.length, 0, 'no dialog for any of them');
+  assert.equal(f.file.contentReads, 0);
+  f.file.content = '{"name":';
+  assert.equal((await afterRead({ id: f.id, path: PATH })).error.code, 'invalid_input');
+  f.file.content = JSON.stringify({ format: CHARACTER_CARD_FORMAT, version: 2, card: { ...text('阿澄'), mood: defaultCharacterMoodTemplate(), modelPath: 'C:\\x.pmx' } });
+  const refused = await afterRead({ id: f.id, path: PATH });
+  assert.equal(refused.error.code, 'invalid_input'); assert.match(refused.error.message, /不能导入路径/);
+  f.file.content = v2File('阿澄', '安静');
+  const same = await afterRead({ id: f.id, path: PATH });
+  assert.equal(same.error.code, 'unavailable'); assert.match(same.error.message, /一模一样/);
   assert.deepEqual(f.log, []);
 });
 
@@ -218,7 +286,7 @@ function pageFixture(preview: CharacterCardUpdatePreview | null) {
     bindCharacterModel: unused, deleteCharacter: unused, importCharacterCard: unused, exportCharacterCard: unused, selectAsset: unused, saveCharacterCard: unused,
     copyCharacterResponse: unused, getCharacterCards: async () => state(), onCharacterRoster: () => () => {}, saveCharacterAvatar: unused,
     previewCharacterCardUpdate: async id => { calls.push(['preview', id]); return structuredClone(preview); },
-    applyCharacterCardUpdate: async token => { calls.push(['apply', token]); return state(preview?.summary.name.after); },
+    applyCharacterCardUpdate: async (token, options) => { calls.push(['apply', token, ...(options ? [options] : [])]); return state(preview?.summary.name.after); },
     discardCharacterCardUpdate: async token => { calls.push(['discard', token]); },
   };
   const root = new Node('div'), errors: string[] = [];
@@ -285,4 +353,29 @@ test('角色页 in English: the update question shows no Chinese fixed text (nam
     assert.ok(texts.some(value => value.startsWith('Different name: the file says “Mira”, she is “Alice” now.')));
     f.page.dispose();
   } finally { setUiLanguage('zh-CN'); }
+}));
+
+// I-162 step 2: a file that carries another voice offers a tick; her current voice stays unless it is ticked.
+test('角色页: a file with another voice offers 「也换成文件里的声音」, off by default; apply sends it only when ticked', async () => withDom(async () => {
+  const mood = defaultCharacterMoodTemplate();
+  const summary = planCharacterCardUpdate({ ...text('Alice', '安静'), mood, voice: { provider: 'system', voiceId: '' } }, defaultCharacterResponseProfile(),
+    { format: 'soft-hearts-v2', draft: { ...text('Alice', '新'), mood, voice: { provider: 'bailian', voiceId: 'longanhuan_v3.1' } }, response: null }).summary;
+  assert.equal(summary.voice, 'offered');
+  for (const tick of [false, true]) {
+    const f = pageFixture({ token: `token-${tick}`, id: ALICE, summary });
+    await f.page.init();
+    f.find('update-file').click(); await flush();
+    const box = all(f.panel()).find(node => node.dataset.updateVoice === 'file')!;
+    assert.ok(box, 'the tick is shown');
+    assert.equal(box.checked, false, 'her current voice stays by default');
+    assert.ok(all(f.panel()).some(node => /也换成文件里的声音（百炼 · 龙安欢）/u.test(node.textContent)));
+    if (tick) { box.checked = true; (box as unknown as { onchange: () => void }).onchange(); }
+    f.find('confirm-update').click(); await flush();
+    assert.deepEqual(f.calls.at(-1), tick ? ['apply', 'token-true', { useFileVoice: true }] : ['apply', 'token-false']);
+    f.page.dispose();
+  }
+  // A file with no other voice shows no tick.
+  const plain = pageFixture({ token: 'token-4', id: ALICE, summary: summaryFor('Mira', '新') });
+  await plain.page.init(); plain.find('update-file').click(); await flush();
+  assert.ok(!all(plain.panel()).some(node => node.dataset.updateVoice === 'file'));
 }));

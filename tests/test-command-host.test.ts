@@ -5,11 +5,11 @@
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { TEST_NOTE_MAX, type TestCommandNote } from '../shared/test-command';
-import { TestCommandHost } from '../electron/test-commands/host';
-import { pickTestEntry, parseTestPick, testPickPrompt, TEST_PICK_SYSTEM_PROMPT } from '../electron/test-commands/model-pick';
-import { INNER_LOOP_MODEL, quickLineWithClaude, type InnerLoopStream } from '../electron/inner-loop/model';
-import { buildTestEntries } from '../electron/test-commands/entries';
+import { TEST_NOTE_MAX, type TestCommandNote } from '../shared/safety/test-command';
+import { TestCommandHost } from '../electron/safety/test-commands/host';
+import { pickTestEntry, parseTestPick, testPickPrompt, TEST_PICK_SYSTEM_PROMPT } from '../electron/safety/test-commands/model-pick';
+import { INNER_LOOP_MODEL, quickLineWithClaude, type InnerLoopStream } from '../electron/initiative/inner-loop/model';
+import { buildTestEntries } from '../electron/safety/test-commands/entries';
 import { fakeTestDeps } from './helpers/test-command-fixtures';
 
 const settle = () => new Promise<void>(resolve => setImmediate(resolve));
@@ -202,8 +202,8 @@ test('the model call itself: haiku, tool-less, its own system prompt, the list o
 
 test('no chat prompt module imports the test commands (a normal message\'s prompt cannot change because of them)', async () => {
   const { readFile } = await import('node:fs/promises');
-  for (const file of ['electron/claude-session-prompt.ts', 'electron/claude-session.ts', 'electron/claude.ts', 'electron/conversation-context.ts',
-    'electron/mood-chat.ts', 'electron/chat-settings.ts', 'shared/companion-rules.ts', 'electron/companion.ts']) {
+  for (const file of ['electron/brain/claude-session-prompt.ts', 'electron/brain/claude-session.ts', 'electron/brain/claude.ts', 'electron/brain/conversation-context.ts',
+    'electron/mood/mood-chat.ts', 'electron/brain/chat-settings.ts', 'shared/brain/companion-rules.ts', 'electron/brain/companion.ts']) {
     const source = await readFile(new URL(`../${file}`, import.meta.url), 'utf8');
     assert.equal(/from\s+['"][^'"]*test-command/u.test(source), false, file);
   }

@@ -1,0 +1,2015 @@
+[
+ {
+  "id": "V1-lease-onscreen",
+  "part": "voice",
+  "file": "electron/wiring/voice-wiring.ts",
+  "find": "\n      || !herOnScreen()) return false;",
+  "replace": ") return false;",
+  "what": "控制窗口的睡眠租约不查“她在屏幕上”",
+  "tests": [
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "V2-lease-voice-off",
+  "part": "voice",
+  "file": "electron/wiring/voice-wiring.ts",
+  "find": "(owner !== controls && !(owner === pet && unbound?.state === 'unbound')) || !store.current.voice.enabled\n      || !herOnScreen())",
+  "replace": "(owner !== controls && !(owner === pet && unbound?.state === 'unbound'))\n      || !herOnScreen())",
+  "what": "控制窗口的睡眠租约不查朗读开关",
+  "tests": [
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "V3-prefix-voice-off",
+  "part": "voice",
+  "file": "electron/wiring/voice-wiring.ts",
+  "find": "if(!store.current.voice.enabled||surface!==replySurface()||scope!==speechScope(id)",
+  "replace": "if(surface!==replySurface()||scope!==speechScope(id)",
+  "what": "前缀证明提交前不查朗读开关",
+  "tests": [
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "V4-prefix-surface",
+  "part": "voice",
+  "file": "electron/wiring/voice-wiring.ts",
+  "find": "if(!store.current.voice.enabled||surface!==replySurface()||scope!==speechScope(id)",
+  "replace": "if(!store.current.voice.enabled||scope!==speechScope(id)",
+  "what": "前缀证明提交前不查回复面还是同一个",
+  "tests": [
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/b06-pat-speech-proof.test.ts",
+   "tests/r27-native-prefix-wrapper.test.ts",
+   "tests/unbound-read-aloud.test.ts"
+  ]
+ },
+ {
+  "id": "V5-prefix-current",
+  "part": "voice",
+  "file": "electron/wiring/voice-wiring.ts",
+  "find": "||!(follows?surface.followingText?.()===candidate:surface.isCompletedPrefixCurrent(candidate)))return false;",
+  "replace": ")return false;",
+  "what": "前缀证明提交前不查气泡里的字还是这一段",
+  "tests": [
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/b06-pat-speech-proof.test.ts",
+   "tests/r27-native-prefix-wrapper.test.ts",
+   "tests/unbound-read-aloud.test.ts",
+   "tests/bubble-follow-host.test.ts"
+  ]
+ },
+ {
+  "id": "V6-clear-cancel",
+  "part": "voice",
+  "file": "electron/wiring/voice-wiring.ts",
+  "find": "function clearReplySpeech(): void { cancelCompletedReply(undefined, 'superseded'); completedReplySpeech.clear();",
+  "replace": "function clearReplySpeech(): void { completedReplySpeech.clear();",
+  "what": "换角色时不取消正在读的那句（clearReplySpeech）",
+  "tests": [
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "V7-plain-bubble",
+  "part": "voice",
+  "file": "electron/wiring/voice-wiring.ts",
+  "find": "if (fullText == null || !petReply?.isPresentationCurrent(fullText))",
+  "replace": "if (false)",
+  "what": "普通句段合成前不查回复气泡确认显示",
+  "tests": [
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "V8-synth-voice-off",
+  "part": "voice",
+  "file": "electron/wiring/voice-wiring.ts",
+  "find": "if (!store.current.voice.enabled) throw new Error('自动朗读已关闭。');",
+  "replace": "",
+  "what": "合成语音时不查自动朗读开关（普通回复那一支）",
+  "tests": [
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "V9-cancel-runtime",
+  "part": "voice",
+  "file": "electron/wiring/voice-wiring.ts",
+  "find": "speechRuntime.cancelReply(current.owner, current.id);",
+  "replace": "",
+  "what": "取消一句回复时不叫运行时停",
+  "tests": [
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "V10-cancel-windows",
+  "part": "voice",
+  "file": "electron/wiring/voice-wiring.ts",
+  "find": "win.webContents.send('desk:reply-speech-cancelled', current.id);",
+  "replace": "void current.id;",
+  "what": "取消一句回复时不通知窗口",
+  "tests": [
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "V11-save-stops-model",
+  "part": "voice",
+  "file": "electron/wiring/voice-wiring.ts",
+  "find": "if (settingsSaveCutsReading(store.current, next)) {",
+  "replace": "if (false) {",
+  "what": "换模型时不停正在读的话",
+  "tests": [
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "V12-save-stops-tts",
+  "part": "voice",
+  "file": "electron/wiring/voice-wiring.ts",
+  "find": "if (settingsSaveCutsReading(store.current, next)) {",
+  "replace": "if (settingsSaveCutsReading(store.current, next) || JSON.stringify(next.tts) !== JSON.stringify(store.current.tts)) {",
+  "what": "保存设置时换了声音就停下正在读的话（应该从下一条回复起生效，只有换模型才停）",
+  "tests": [
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "V13-tts-key",
+  "part": "voice",
+  "file": "electron/wiring/voice-wiring.ts",
+  "find": "if (next.tts) next.tts = resolveTtsKey(next.tts, store.current.tts);",
+  "replace": "",
+  "what": "保存时窗口看不见的密钥不保留",
+  "tests": [
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "V14-feed-cue-voice-off",
+  "part": "voice",
+  "file": "electron/wiring/voice-wiring.ts",
+  "find": "!store.current.voice.enabled ? null : feedCueSynth.clip(kind,",
+  "replace": "feedCueSynth.clip(kind,",
+  "what": "朗读关着也合成喂食提示音",
+  "tests": [
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/feed-cue.test.ts",
+   "tests/b06-feed-cues.test.ts",
+   "tests/b06-feed-cue-prefetch.test.ts",
+   "tests/x1-reply-thinking.test.ts",
+   "tests/audio-start-freeze.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "V15-save-order",
+  "part": "voice",
+  "file": "electron/main.ts",
+  "find": "saveTtsKey, saveStopsSpeech,",
+  "replace": "saveStopsSpeech, saveTtsKey,",
+  "what": "保存步骤顺序：先停朗读再保存密钥",
+  "tests": [
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "V16-call-out-surface",
+  "part": "voice",
+  "file": "electron/voice/voice-call/surface.ts",
+  "find": "const her = facts.pet || facts.held;",
+  "replace": "const her = facts.pet;",
+  "what": "Unbound 第 3 步：她出去时通话照旧按\"桌宠不在屏幕上\"挂断",
+  "tests": [
+   "tests/unbound-call.test.ts"
+  ]
+ },
+ {
+  "id": "V17-call-out-surface-loose",
+  "part": "voice",
+  "file": "electron/voice/voice-call/surface.ts",
+  "find": "return (owner === 'pet' ? her : facts.controls) && her;",
+  "replace": "return owner === 'pet' ? her : facts.controls || her;",
+  "what": "Unbound 第 3 步：放宽过头：在家时桌宠不在屏幕上，控制窗口的通话也不挂断",
+  "tests": [
+   "tests/unbound-call.test.ts"
+  ]
+ },
+ {
+  "id": "V18-call-out-told",
+  "part": "voice",
+  "file": "electron/voice/voice-call/controller.ts",
+  "find": "else if (this.isOut() !== this.toldOut) this.publish();",
+  "replace": ";",
+  "what": "Unbound 第 3 步：她出去或回来时，通话所在的窗口不知道（隐藏的桌宠页不读通话回复）",
+  "tests": [
+   "tests/unbound-call.test.ts"
+  ]
+ },
+ {
+  "id": "V19-call-reads-out",
+  "part": "voice",
+  "file": "shared/voice/voice-call.ts",
+  "find": "view.owner === windowKind && view.out === true;",
+  "replace": "view.owner === windowKind;",
+  "what": "Unbound 第 3 步：放宽过头：在家时隐藏的通话窗口也读回复",
+  "tests": [
+   "tests/unbound-call.test.ts"
+  ]
+ },
+ {
+  "id": "V20-pet-reads-call-out",
+  "part": "voice",
+  "file": "electron/wiring/voice-wiring.ts",
+  "find": "(owner !== controls && !(owner === pet && unbound?.state === 'unbound'))",
+  "replace": "(owner !== controls)",
+  "what": "Unbound 第 3 步：她在外面时，隐藏的桌宠窗口读不了通话回复（拿不到播放许可）",
+  "tests": [
+   "tests/r27-prefix-host-caller.test.ts"
+  ]
+ },
+ {
+  "id": "V21-voice-bubble-delta",
+  "part": "voice",
+  "file": "electron/unbound/voice-bubble.ts",
+  "find": "if (event.type === 'delta') return",
+  "replace": "if (event.type === 'delta' && false) return",
+  "what": "Unbound 第 3 步：她说的回复不进 Unbound 气泡（外面读不出来）",
+  "tests": [
+   "tests/unbound-call.test.ts"
+  ]
+ },
+ {
+  "id": "V22-voice-bubble-user",
+  "part": "voice",
+  "file": "electron/unbound/voice-bubble.ts",
+  "find": "speechBeats: speechBeats as SpeechBeatsEvent } : null; }\n  return null;",
+  "replace": "speechBeats: speechBeats as SpeechBeatsEvent } : null; }\n  return typeof event.text === 'string' ? { id, kind: 'chat', type: 'delta', text: event.text } : null;",
+  "what": "Unbound 第 3 步：用户自己说的话和草稿也进了她的气泡",
+  "tests": [
+   "tests/unbound-call.test.ts"
+  ]
+ },
+ {
+  "id": "V23-voice-bubble-wired",
+  "part": "voice",
+  "file": "electron/wiring/shell-wiring.ts",
+  "find": "  unbound?.voiceReply?.(channel, value);",
+  "replace": "  void 0;",
+  "what": "Unbound 第 3 步：广播不把她说的回复交给 Unbound 气泡",
+  "knownGap": "接线这一行没有测试会失败（shell-wiring 的 broadcast 没有沙箱测试）；映射本身由 tests/unbound-call.test.ts 守着。"
+ },
+ {
+  "id": "V24-voice-input-held",
+  "part": "voice",
+  "file": "electron/wiring/senses-voice-input-wiring.ts",
+  "find": "return !!win && needs.onScreen(win);",
+  "replace": "return !!win && win.isVisible() && !win.isMinimized();",
+  "what": "Unbound 第 3 步：她在外面时，语音输入的每一段都被当成\"窗口不在屏幕上\"丢掉",
+  "knownGap": "这行在 wireVoiceInput 里，没有沙箱测试；放宽的边界就是 onScreen 本身（她因为出去而被收起的桌宠窗口），onScreen 由第 1 步的测试守着。"
+ },
+ {
+  "id": "V25-screen-before-asr",
+  "part": "voice",
+  "file": "electron/voice/voice-chat-host.ts",
+  "find": "verdict !== 'pass' ? '' :",
+  "replace": "false ? '' :",
+  "what": "Unbound 第 3 步：明显不是你的那一段照样被转成文字",
+  "tests": [
+   "tests/voiceprint.test.ts"
+  ]
+ },
+ {
+  "id": "V26-wake-fails-closed",
+  "part": "voice",
+  "file": "electron/voice/voice-chat-host.ts",
+  "find": "!await ports.wake(capture.owner, heard).catch(() => false)) return '';",
+  "replace": "!await ports.wake(capture.owner, heard).catch(() => true)) return '';",
+  "what": "Unbound 第 3 步：听名字的判断出错时，没叫名字的话也发给她",
+  "tests": [
+   "tests/voiceprint.test.ts"
+  ]
+ },
+ {
+  "id": "V27-name-only-listening",
+  "part": "voice",
+  "file": "electron/voice/voice-call/controller.ts",
+  "find": "    if (via === 'name' && this.wakeOwner() !== owner) return Promise.reject(Error('没有在听她的名字。'));",
+  "replace": "",
+  "what": "Unbound 第 3 步：没在听名字的窗口也能以\"叫名字\"开始通话",
+  "tests": [
+   "tests/unbound-call.test.ts"
+  ]
+ },
+ {
+  "id": "V28-speech-note-dropped",
+  "part": "voice",
+  "file": "electron/voice/voice-chat-host.ts",
+  "find": "callNote + callStyle + speechNote + beats.sentence();",
+  "replace": "callNote + callStyle + beats.sentence();",
+  "what": "I-158：语音输入或通话的一轮不再带\"这是语音识别转来的文字\"那句",
+  "tests": [
+   "tests/i158-speech-recognition-note.test.ts"
+  ]
+ },
+ {
+  "id": "V29-speech-note-english",
+  "part": "voice",
+  "file": "shared/voice/speech-recognition-note.ts",
+  "find": "return language === 'en' ? SPEECH_RECOGNITION_NOTE_EN : SPEECH_RECOGNITION_NOTE_ZH;",
+  "replace": "return SPEECH_RECOGNITION_NOTE_ZH;",
+  "what": "I-158：英文角色的语音那一轮拿到中文版",
+  "tests": [
+   "tests/i158-speech-recognition-note.test.ts"
+  ]
+ },
+ {
+  "id": "V30-segment-frames-drop",
+  "part": "voice",
+  "file": "electron/voice/voice-chat-host.ts",
+  "find": "look?.drop(); // I-161",
+  "replace": "// I-161",
+  "what": "I-161 帧不跨段：一段结束后它的帧还能被读出发送",
+  "tests": [
+   "tests/i161-call-frames.test.ts"
+  ]
+ },
+ {
+  "id": "V31-segment-frames-call",
+  "part": "voice",
+  "file": "electron/voice/voice-chat-host.ts",
+  "find": "segment && !controller.signal.aborted && this.current(capture) ? segment.dataUrls() : []",
+  "replace": "segment ? segment.dataUrls() : []",
+  "what": "I-161 帧不跨通话：通话结束或这一段被取消后，写消息时照样带上帧",
+  "tests": [
+   "tests/i161-call-frames.test.ts"
+  ]
+ },
+ {
+  "id": "V32-call-glance-only",
+  "part": "voice",
+  "file": "electron/senses/voice-look.ts",
+  "find": "    glanceOnly: () => !dropped && !!frames && frames.glanceOnly(),",
+  "replace": "    glanceOnly: () => true,",
+  "what": "I-161 A 通话里每一段都标成\"只有小画面\"（清楚画面也留到挂电话）",
+  "tests": [
+   "tests/i161-call-glance-held.test.ts"
+  ]
+ },
+ {
+  "id": "V32-gate-filler-noise",
+  "part": "voice",
+  "file": "shared/behaviors/interrupt/judge.ts",
+  "find": "if (kind === 'filler' && input.continuous && levels &&",
+  "replace": "if (false && kind === 'filler' && input.continuous && levels &&",
+  "what": "通话里没说话、杂音被认成“嗯”：短的或轻的只有语气词的一段照样当成用户说的话发出去",
+  "tests": [
+   "tests/interrupt-gate.test.ts"
+  ]
+ },
+ {
+  "id": "I204-three-chars",
+  "part": "voice",
+  "file": "shared/behaviors/interrupt/judge.ts",
+  "find": "if (chars >= knobs.minChars) return { pass: true, kind, interrupt: 'chars', chars, match };",
+  "replace": "if (chars > knobs.minChars) return { pass: true, kind, interrupt: 'chars', chars, match };",
+  "what": "I-204：她念的时候认出 3 个字不再打断她（20:09 那样的短话又被当成碎片扔掉）",
+  "tests": [
+   "tests/i204-barge-in.test.ts"
+  ]
+ },
+ {
+  "id": "I204-two-chars-held",
+  "part": "voice",
+  "file": "shared/behaviors/interrupt/judge.ts",
+  "find": "if (chars >= knobs.minChars) return { pass: true, kind, interrupt: 'chars', chars, match };",
+  "replace": "if (chars >= 1) return { pass: true, kind, interrupt: 'chars', chars, match };",
+  "what": "I-204：她念的时候一两个字（\"对\"\"好的\"\"嗯嗯\"）也打断她",
+  "tests": [
+   "tests/i204-barge-in.test.ts"
+  ]
+ },
+ {
+  "id": "I204-no-filler-filter",
+  "part": "voice",
+  "file": "shared/behaviors/interrupt/judge.ts",
+  "find": "  const units = list.reduce((sum, token) => sum + (token.cjk ? 1 : 2), 0);",
+  "replace": "  const units = list.reduce((sum, token) => sum + (isFiller(token) ? 0 : token.cjk ? 1 : 2), 0);",
+  "what": "I-204：又偷偷加回语气词过滤（\"嗯嗯嗯\"不算字），用户说的是\"不写过滤程序\"",
+  "tests": [
+   "tests/i204-barge-in.test.ts"
+  ]
+ },
+ {
+  "id": "I204-echo-ratio",
+  "part": "voice",
+  "file": "shared/behaviors/interrupt/judge.ts",
+  "find": "if (exact !== null && exact >= knobs.echoMatchRatio) return { pass: false, kind, held: 'echo', chars, match };",
+  "replace": "if (exact !== null && exact >= 0.99) return { pass: false, kind, held: 'echo', chars, match };",
+  "what": "I-204：回声不按对得上的比例判（只认一字不差），喇叭漏回来、认错一个同音字的她自己的话就把她打断了",
+  "tests": [
+   "tests/i204-barge-in.test.ts",
+   "tests/interrupt-gate.test.ts"
+  ]
+ },
+ {
+  "id": "I204-echo-off",
+  "part": "voice",
+  "file": "shared/behaviors/interrupt/judge.ts",
+  "find": "if (exact !== null && exact >= knobs.echoMatchRatio) return { pass: false, kind, held: 'echo', chars, match };",
+  "replace": "if (false) return { pass: false, kind, held: 'echo', chars, match };",
+  "what": "她自己被麦克风录进去的话能打断她，还被当成用户说的",
+  "tests": [
+   "tests/i204-barge-in.test.ts",
+   "tests/interrupt-gate.test.ts"
+  ]
+ },
+ {
+  "id": "V36-host-held-goes-nowhere",
+  "part": "voice",
+  "file": "electron/voice/voice-chat-host.ts",
+  "find": "&& !gateClip(ports.gate, capture.owner, text, wav).pass) { this.event(capture, { type: 'held' }); return ''; }",
+  "replace": "&& !gateClip(ports.gate, capture.owner, text, wav).pass) { void 0; }",
+  "what": "被拦下的语气词、碎片、回声照样发给她、显示、存进聊天，并让她停下",
+  "tests": [
+   "tests/interrupt-gate.test.ts"
+  ]
+ },
+ {
+  "id": "V37-speech-start-no-stop",
+  "part": "voice",
+  "file": "electron/voice/voice-conversation-session.ts",
+  "find": "    return this.enabled && !this.destroyed;",
+  "replace": "    if (!this.enabled || this.destroyed) return false;\n    return this.stopReading();",
+  "what": "麦克风一听到声音（语音检测、音量）就让她停，不等识别出明确的话",
+  "tests": [
+   "tests/interrupt-gate.test.ts"
+  ]
+ },
+ {
+  "id": "V38-window-no-stop-on-sound",
+  "part": "voice",
+  "file": "src/voice/voice-call/call-controls.ts",
+  "find": "else if (event.type === 'barge-in') { this.scheduler.reset(); this.clock.interrupted(); this.duck.overHer(); }",
+  "replace": "else if (event.type === 'barge-in') { this.scheduler.reset(); this.clock.interrupted(); this.duck.overHer(); void (this.options.api as unknown as { voiceCallBargeIn(id: null): Promise<boolean> }).voiceCallBargeIn(null); }",
+  "what": "通话窗口一听到声音盖过她就通知主机让她停（不等成句的话）",
+  "tests": [
+   "tests/interrupt-gate.test.ts"
+  ]
+ },
+ {
+  "id": "V39-call-interrupt-marks",
+  "part": "voice",
+  "file": "electron/voice/voice-call/host.ts",
+  "find": "return call ? this.bargeIn(owner, this.interruption.current, typeof heard?.text === 'string' ? heard.text : '') : false;",
+  "replace": "return false;",
+  "what": "通话里认出够数的字打断她以后，主机不停她逐句的朗读、不记打断、下一轮不知道她被打断",
+  "tests": [
+   "tests/interrupt-gate.test.ts"
+  ]
+ },
+ {
+  "id": "V40-over-her-keeps-words",
+  "part": "voice",
+  "file": "src/senses/MediaInput.ts",
+  "find": "    if (this.overHer) return; // what the user says over her keeps being collected; listening over her ends with the clip\n",
+  "replace": "",
+  "what": "用户盖过她说话时，她换下一句就把用户说到一半的话丢掉",
+  "tests": [
+   "tests/interrupt-gate.test.ts"
+  ]
+ },
+ {
+  "id": "V41-her-voice-from",
+  "part": "voice",
+  "file": "electron/voice/utterance-gate.ts",
+  "find": "return speakingWindows.size > 0 || runtime.busy || calling;",
+  "replace": "return speakingWindows.size > 0 || calling;",
+  "what": "主机在读、窗口的“她在说话”还没到（隐藏窗口会迟到）时，当成她没在说话，半句话也能打断她",
+  "tests": [
+   "tests/interrupt-gate.test.ts"
+  ]
+ },
+ {
+  "part": "voice",
+  "id": "VMIC-open-stops-reading",
+  "file": "electron/voice/voice-chat-host.ts",
+  "find": "        if (!this.opening) ports.stopReading();",
+  "replace": "        ports.stopReading();",
+  "what": "打断规矩：打开麦克风又会让她停下朗读，而不是等你说出成句的话",
+  "tests": [
+   "tests/voice-mic-finish-sentence.test.ts"
+  ]
+ },
+ {
+  "id": "V32-bailian-wrong-gender",
+  "part": "voice",
+  "file": "shared/voice/character-voice-resolver.ts",
+  "find": "const usable = !!candidate && (known ? known === traits.gender : trusted);",
+  "replace": "const usable = !!candidate;",
+  "what": "I-162 绝不用错性别：她的百炼音色是已知的另一性别（许南川给女角色）时照样用",
+  "tests": [
+   "tests/character-voice-resolver.test.ts"
+  ]
+ },
+ {
+  "id": "V33-fish-builtin-voice",
+  "part": "voice",
+  "file": "shared/voice/character-voice-resolver.ts",
+  "find": "if (!voiceId) { if (isWanted) fallback = 'no-voice-id'; continue; }",
+  "replace": "",
+  "what": "I-162 某个角色出男声的原因：Drama 3 没有声音编号时照样用（Fish 自带的声音，可能是男声）",
+  "tests": [
+   "tests/character-voice-resolver.test.ts"
+  ]
+ },
+ {
+  "id": "V34-system-voice-gender",
+  "part": "voice",
+  "file": "src/voice/voice-language.ts",
+  "find": "const fits = (voice: V): boolean => !wish || systemVoiceGender(voice) !== (wish.gender === 'female' ? 'male' : 'female');",
+  "replace": "const fits = (_voice: V): boolean => true;",
+  "what": "I-162 绝不用错性别：系统声音按名字已知是另一性别（康康给女角色）时照样选",
+  "tests": [
+   "tests/character-voice-resolver.test.ts"
+  ]
+ },
+ {
+  "id": "V35-default-voice-gender",
+  "part": "voice",
+  "file": "shared/voice/character-voice-resolver.ts",
+  "find": "const trusted = isWanted ? !!own : !!binding;",
+  "replace": "const trusted = true;",
+  "what": "I-162 绝不随便用别人的声音：没有自己声音的角色照样用全局（新角色默认）里性别不明的自定义百炼音色",
+  "tests": [
+   "tests/character-voice-resolver.test.ts"
+  ]
+ },
+ {
+  "id": "V36-paths-through-resolver",
+  "part": "voice",
+  "file": "electron/voice/stage-voices.ts",
+  "find": "  return !owner || owner === active.id ? characterTtsConfig(settings, active) :",
+  "replace": "  return !owner || owner === active.id ? effectiveTtsConfig(settings.tts!, active.id, settings.model?.path ?? '') :",
+  "what": "I-162 每条朗读路径都经过同一个解析：朗读的合成配置绕过角色声音直接取旧的全局/绑定",
+  "tests": [
+   "tests/character-voice-paths.test.ts"
+  ]
+ },
+ {
+  "id": "SB18-voice-leg-unfiltered",
+  "part": "voice",
+  "file": "electron/voice/voice-call/beats.ts",
+  "find": "    return (type, text) => { const clean = this.filter.push(typeof text === 'string' ? text : '').text; if (clean) push(type, clean); };",
+  "replace": "    return (type, text) => push(type, text);",
+  "what": "边说边演：语音那一轮不去标记，⟦词⟧ 会被念出来、进气泡和存档",
+  "tests": [
+   "tests/i091-call-step4.test.ts"
+  ]
+ },
+ {
+  "id": "S2-default-moves-nobody",
+  "part": "voice",
+  "file": "shared/voice/character-voice-settle.ts",
+  "find": "return own?.provider === 'system' && uri !== (previous.voice?.voiceURI ?? '') && uri !== own.voiceId ? set({ voiceId: uri }) : null;",
+  "replace": "return own?.provider === 'system' && uri !== (previous.voice?.voiceURI ?? '') && uri !== own.voiceId ? set({ voiceId: uri }) : (next.tts?.provider !== previous.tts?.provider ? set({ provider: next.tts!.provider, voiceId: '' }) : null);",
+  "what": "I-162 第 2 步：改「新角色的默认声音」把当前角色的声音也改了（该是只管新角色）",
+  "tests": [
+   "tests/character-voice-step2.test.ts",
+   "tests/character-voice-card.test.ts"
+  ]
+ },
+ {
+  "id": "S2-fallback-takes-her-pace",
+  "part": "voice",
+  "file": "shared/voice/character-voice-resolver.ts",
+  "find": "const hersSystem = used === 'system' && wanted.provider === 'system' && !reason;",
+  "replace": "const hersSystem = used === 'system';",
+  "what": "I-162 第 2 步：她的 Drama 3 退到系统声音时，把给 Drama 3 设的语速也用在系统声音上",
+  "tests": [
+   "tests/character-voice-step2.test.ts"
+  ]
+ },
+ {
+  "id": "S2-cloud-pace-from-panel",
+  "part": "voice",
+  "file": "shared/voice/character-voice-resolver.ts",
+  "find": "isWanted ? wanted.rate ?? style.rate : style.rate;",
+  "replace": "style.rate;",
+  "what": "I-162 第 2 步：「她的声音」里设的语速不起作用，云端声音仍用面板里的语速",
+  "tests": [
+   "tests/character-voice-step2.test.ts"
+  ]
+ },
+ {
+  "part": "voice",
+  "id": "VFILL-words-back",
+  "file": "shared/voice/voice-call.ts",
+  "find": "  mm: '嗯……', mmmm: '嗯嗯', eh: '诶？', en: '嗯？', oh: '哦——', wu: '唔……', ahmm: '啊，嗯',",
+  "replace": "  mm: '嗯……', mmmm: '嗯嗯', eh: '诶？', en: '嗯？', oh: '哦——', wu: '唔……', ahmm: '啊，嗯，我在听',",
+  "what": "通话快速回应：又出现了带字的那种（\"我在听\"）",
+  "tests": [
+   "tests/i091-voice-call.test.ts"
+  ]
+ },
+ {
+  "id": "CALLV1-signal-ignores-call-reading",
+  "part": "voice",
+  "file": "electron/voice/utterance-gate.ts",
+  "find": "return speakingWindows.size > 0 || runtime.busy || calling;",
+  "replace": "return speakingWindows.size > 0 || runtime.busy;",
+  "what": "打断判断不把通话里她正在读的话算作“她在说话”（短“嗯”又会变成一轮、切断朗读）",
+  "tests": [
+   "tests/call-her-voice.test.ts"
+  ]
+ },
+ {
+  "id": "CALLV2-reading-ignores-streamed-text",
+  "part": "voice",
+  "file": "electron/voice/voice-call/streaming-speech.ts",
+  "find": "for (const stream of this.streams.values()) if (stream.text) return true;",
+  "replace": "",
+  "what": "回复文字已经送进朗读计划时，不算她在读",
+  "tests": [
+   "tests/call-her-voice.test.ts"
+  ]
+ },
+ {
+  "id": "CALLV3-reading-ignores-playing",
+  "part": "voice",
+  "file": "electron/voice/voice-call/streaming-speech.ts",
+  "find": "try { return this.ports.playing?.() === true; } catch { return false; }",
+  "replace": "return false;",
+  "what": "文字写完后还在排队或播放的朗读不算她在读",
+  "tests": [
+   "tests/call-her-voice.test.ts"
+  ]
+ },
+ {
+  "id": "CALLV4-playing-without-call",
+  "part": "voice",
+  "file": "electron/voice/voice-call/playing.ts",
+  "find": "return () => ask(ports.call) && (ask(ports.holding) || ask(ports.playback));",
+  "replace": "return () => ask(ports.holding) || ask(ports.playback);",
+  "what": "没在通话时也把别的朗读算作通话里的朗读",
+  "tests": [
+   "tests/call-her-voice.test.ts"
+  ]
+ },
+ {
+  "id": "CALLV5-playing-ignores-lease",
+  "part": "voice",
+  "file": "electron/voice/voice-call/playing.ts",
+  "find": "ask(ports.holding) || ask(ports.playback));",
+  "replace": "ask(ports.holding));",
+  "what": "窗口还在播放（播放租约开着）不算她在读",
+  "tests": [
+   "tests/call-her-voice.test.ts"
+  ]
+ },
+ {
+  "id": "CALLV6-interrupt-no-overher",
+  "part": "voice",
+  "file": "electron/voice/voice-call/host.ts",
+  "find": "journal({ event: 'interrupt', by, overHer, call, ...gateNumbers(heard) })",
+  "replace": "journal({ event: 'interrupt', by, overHer: false, call, ...gateNumbers(heard) })",
+  "what": "打断记录不带“她当时正在说话”",
+  "tests": [
+   "tests/call-her-voice.test.ts"
+  ]
+ },
+ {
+  "id": "CALLV7-new-reply-not-noted",
+  "part": "voice",
+  "file": "electron/voice/voice-call/streaming-speech.ts",
+  "find": "try { this.ports.cancelled?.('new-reply'); } catch { /* journal only */ }",
+  "replace": "",
+  "what": "下一条回复切断还在读的话时，记录不说是它切的",
+  "tests": [
+   "tests/call-her-voice.test.ts"
+  ]
+ },
+ {
+  "id": "CALLV8-cause-not-first-wins",
+  "part": "voice",
+  "file": "electron/voice/read-cancel-cause.ts",
+  "find": "if (this.cause !== null || !",
+  "replace": "if (!",
+  "what": "取消原因被内层的“换掉”盖掉（打断变成换掉）",
+  "tests": [
+   "tests/call-her-voice.test.ts"
+  ]
+ },
+ {
+  "id": "CALLV9-cause-not-closed",
+  "part": "voice",
+  "file": "electron/voice/read-cancel-cause.ts",
+  "find": "!(READING_CANCEL_BYS as readonly unknown[]).includes(by)",
+  "replace": "false",
+  "what": "取消原因不限于固定的几个词",
+  "tests": [
+   "tests/call-her-voice.test.ts"
+  ]
+ },
+ {
+  "id": "CALLV10-reading-line-no-cause",
+  "part": "voice",
+  "file": "electron/memory/journal/extras.ts",
+  "find": "cancelBy = this.causes?.take() ?? p.cancelBy ?? 'unlogged';",
+  "replace": "cancelBy = p.cancelBy ?? 'unlogged';",
+  "what": "朗读时间记录不写宿主记下的是谁取消的（只剩窗口自己给的或“没记原因”）",
+  "tests": [
+   "tests/call-her-voice.test.ts"
+  ]
+ },
+ {
+  "id": "CALLV11-new-reply-keeps-old-cause",
+  "part": "voice",
+  "file": "electron/voice/read-notes.ts",
+  "find": "      try { this.onNewReply?.(replyId); } catch { /* journal only */ }",
+  "replace": "",
+  "what": "上一条朗读留下的取消原因带到新回复的朗读上（新回复一开始就该清掉旧的）",
+  "tests": [
+   "tests/call-her-voice.test.ts"
+  ]
+ },
+ {
+  "id": "CALLV12-cancelby-on-any-line",
+  "part": "voice",
+  "file": "shared/voice/journal-entries.ts",
+  "find": "...(v.why === 'cancelled' && has(READING_CANCEL_BYS, v.cancelBy)",
+  "replace": "...(has(READING_CANCEL_BYS, v.cancelBy)",
+  "what": "没被取消的朗读（读完、出错）也带取消原因",
+  "tests": [
+   "tests/call-her-voice.test.ts"
+  ]
+ },
+ {
+  "id": "FILLERMOUTH1-filler-never-reaches-mouth",
+  "part": "voice",
+  "file": "src/voice/voice-call/call-controls.ts",
+  "find": "        this.fillerMouth.attach(id, started); // 2026-11-20: her mouth moves for exactly as long as the sound\n",
+  "replace": "",
+  "what": "她的快速回应（嗯、啊）响起时不再带动口型",
+  "tests": [
+   "tests/i091-filler-mouth.test.ts"
+  ]
+ },
+ {
+  "id": "FILLERMOUTH2-reply-keeps-filler-mouth",
+  "part": "voice",
+  "file": "src/voice/voice-call/call-controls.ts",
+  "find": "stop: () => { this.player.stop(); this.fillerMouth.release(); ",
+  "replace": "stop: () => { this.player.stop(); ",
+  "what": "她的正式回复开口、插话或挂断时，快速回应的口型不立刻停",
+  "tests": [
+   "tests/i091-filler-mouth.test.ts"
+  ]
+ },
+ {
+  "id": "FILLERMOUTH3-unbound-mouth-ignores-filler",
+  "part": "voice",
+  "file": "src/unbound/mouth.ts",
+  "find": "this.hold.frame(dt, this.raw || this.filler !== null)",
+  "replace": "this.hold.frame(dt, this.raw)",
+  "what": "Unbound 的嘴（整屏和窗口里的她）不跟快速回应动",
+  "tests": [
+   "tests/i091-filler-mouth.test.ts"
+  ]
+ },
+ {
+  "id": "FILLERMOUTH4-stage-no-filler-source",
+  "part": "voice",
+  "file": "src/voice/speaking-sources.ts",
+  "find": "source === 'remote' || source === 'filler') this.active",
+  "replace": "source === 'remote') this.active",
+  "what": "旧窗口舞台不认「快速回应」这个说话来源",
+  "tests": [
+   "tests/i091-filler-mouth.test.ts"
+  ]
+ },
+ {
+  "id": "R164-cloud-skips-reading",
+  "part": "voice",
+  "file": "electron/voice/speech-runtime.ts",
+  "find": "readAs = applyReading(spoken, raw?.voicePlan?.reading).slice(0, TTS_TEXT_LIMIT);",
+  "replace": "readAs = spoken;",
+  "what": "I-164 读法：云端声音（回复、朗读、通话、预览都走这里）不再按她的读法表读",
+  "tests": [
+   "tests/reading-map.test.ts"
+  ]
+ },
+ {
+  "id": "R164-system-skips-reading",
+  "part": "voice",
+  "file": "src/voice/speech.ts",
+  "find": "text = applyReading(speakableText(text), systemVoiceReading());",
+  "replace": "text = speakableText(text);",
+  "what": "I-164 读法：系统声音不再按她的读法表读",
+  "tests": [
+   "tests/reading-map.test.ts"
+  ]
+ },
+ {
+  "id": "R164-resolver-drops-reading",
+  "part": "voice",
+  "file": "shared/voice/character-voice-resolver.ts",
+  "find": "{ pitch: wanted.pitch } : {}),\n      ...(reading.length ? { reading } : {}) };",
+  "replace": "{ pitch: wanted.pitch } : {}) };",
+  "what": "I-164 读法：解析函数不把她的读法表交给声音路径（所有朗读路径都读不到）",
+  "tests": [
+   "tests/reading-map.test.ts"
+  ]
+ },
+ {
+  "id": "R164-wish-takes-other-provider",
+  "part": "voice",
+  "file": "src/voice/voice-language.ts",
+  "find": "...(plan.used === 'system' && plan.reading?.length ? { reading: plan.reading } : {}) } : null;",
+  "replace": "...(plan.reading?.length ? { reading: plan.reading } : {}) } : null;",
+  "what": "I-164 读法：系统声音顶替 Drama 3 时用了 Drama 3 那一套读法",
+  "tests": [
+   "tests/reading-map.test.ts"
+  ]
+ },
+ {
+  "id": "R164-provider-blind",
+  "part": "voice",
+  "file": "shared/voice/reading-map.ts",
+  "find": "return [...entries.filter(entry => !entry.provider && !taken.has(keyOf(entry))), ...own];",
+  "replace": "return [...entries];",
+  "what": "I-164 读法：不分服务商，别家专用的读法也被用上",
+  "tests": [
+   "tests/reading-map.test.ts"
+  ]
+ },
+ {
+  "id": "R164-export-keeps-key-entry",
+  "part": "voice",
+  "file": "shared/foundation/character-voice-reading.ts",
+  "find": ".filter(entry => ![entry.from, entry.to].some(text => LINK_LIKE.test(text) || PATH_LIKE.test(text) || KEY_LIKE.test(text)))",
+  "replace": "",
+  "what": "I-164 读法：导出角色卡时带出像密钥、路径、链接的读法条目",
+  "tests": [
+   "tests/reading-map.test.ts"
+  ]
+ },
+ {
+  "id": "R164-tic-inside-word",
+  "part": "voice",
+  "file": "shared/voice/reading-map.ts",
+  "find": "alone: entry.alone === true || isSingleLetter(entry.from) }",
+  "replace": "alone: entry.alone === true }",
+  "what": "I-164 读法：单个字的口癖也在词语里被换（「关切」里的切变了读音）",
+  "tests": [
+   "tests/reading-map.test.ts"
+  ]
+ },
+ {
+  "id": "R164-shown-segment-mapped",
+  "part": "voice",
+  "file": "src/voice/VoiceOutput.ts",
+  "find": "const segments = splitSpeechText(text);",
+  "replace": "const segments = splitSpeechText(text.replace(/切/gu, 'ちっ'));",
+  "what": "I-164 读法：读法被用在交给主进程核对的分段上（该只在声音那一步用，气泡、核对、进度都按显示的字）",
+  "tests": [
+   "tests/reading-map.test.ts"
+  ]
+ },
+ {
+  "id": "VDESC-drama3-reads-description",
+  "part": "voice",
+  "file": "shared/voice/character-voice-resolver.ts",
+  "find": "const acting = style.fishActingStyle; // never the 声音描述",
+  "replace": "const acting = style.fishActingStyle || description; // never the 声音描述",
+  "what": "声音描述又被塞进 Drama 3 的表演提示（Drama 3 会把长段描述念出来）",
+  "tests": [
+   "tests/character-voice-resolver.test.ts"
+  ]
+ },
+ {
+  "id": "R164-name-ignores-case",
+  "part": "voice",
+  "file": "shared/voice/reading-map.ts",
+  "find": "const exactCase = (from: string): boolean => /\\p{Lu}/u.test(from);",
+  "replace": "const exactCase = (from: string): boolean => false;",
+  "what": "I-164 读法：大写写的名字（One）不再只认原样大小写，英文的 one 也被读成她的名字",
+  "tests": [
+   "tests/reading-map.test.ts"
+  ]
+ },
+ {
+  "id": "R164-sentence-start-number",
+  "part": "voice",
+  "file": "shared/voice/reading-map.ts",
+  "find": "  if (numberAtSentenceStart(text, at, end, entry.from)) return false;",
+  "replace": "",
+  "what": "I-164 读法：句首的 One 后面跟着英文词（One more thing）也被当成她的名字念",
+  "tests": [
+   "tests/reading-map.test.ts"
+  ]
+ },
+ {
+  "id": "BF1-fallback-shows-all",
+  "part": "voice",
+  "file": "shared/voice/bubble-follow/follow.ts",
+  "find": "if (!reply || reply.released !== null) return null;\n    if (this.stalled",
+  "replace": "if (!reply) return null;\n    if (this.stalled",
+  "what": "I-165 声音不跟（结束、取消、出错、打断）时气泡不全显示",
+  "tests": [
+   "tests/bubble-follow-core.test.ts",
+   "tests/bubble-follow-window.test.ts"
+  ]
+ },
+ {
+  "id": "BF2-waits-for-the-voice",
+  "part": "voice",
+  "file": "shared/voice/bubble-follow/follow.ts",
+  "find": "if (segment.startAt !== null && segment.end >= 0 && index > latest) latest = index;",
+  "replace": "if (segment.end >= 0 && index > latest) latest = index;",
+  "what": "I-165 气泡不等声音：句子的字一到就显示",
+  "tests": [
+   "tests/bubble-follow-core.test.ts",
+   "tests/bubble-follow-window.test.ts"
+  ]
+ },
+ {
+  "id": "BF3-stall-releases",
+  "part": "voice",
+  "file": "shared/voice/bubble-follow/follow.ts",
+  "find": "if (this.stalled(reply, now)) { this.release(reply.id, 'stall'); return null; }",
+  "replace": "",
+  "what": "I-165 声音卡住时气泡一直不出剩下的字",
+  "tests": [
+   "tests/bubble-follow-core.test.ts",
+   "tests/bubble-follow-window.test.ts"
+  ]
+ },
+ {
+  "id": "BF4-held-only-first",
+  "part": "voice",
+  "file": "electron/voice/completed-prefix-proof.ts",
+  "find": "if(held!==null&&full.startsWith(held))this.finish(p,true,held);",
+  "replace": "if(held!==null)this.finish(p,true,held);",
+  "what": "I-165 气泡里别的回复的字（或\"……\"以外的东西）也算这条朗读在显示",
+  "tests": [
+   "tests/bubble-follow-host.test.ts",
+   "tests/completed-prefix-proof.test.ts"
+  ]
+ },
+ {
+  "id": "BF5-proof-is-previous-sentence",
+  "part": "voice",
+  "file": "electron/voice/completed-reply-speech.ts",
+  "find": "if(!s.follow||!s.prefixEligible)return lease.visibleText.length;",
+  "replace": "return lease.visibleText.length;",
+  "what": "I-165 跟着声音的回复，朗读仍要等气泡画出这一句（声音被气泡拖住）",
+  "tests": [
+   "tests/bubble-follow-host.test.ts"
+  ]
+ },
+ {
+  "id": "BF6-approve-checks-end",
+  "part": "voice",
+  "file": "electron/voice/completed-reply-speech.ts",
+  "find": "text.length<this.proofEnd(owner,id,scope,lease)",
+  "replace": "text.length<lease.visibleText.length",
+  "what": "I-165 批准朗读时仍按旧规矩要这一句已显示（\"……\"上不能开口）",
+  "tests": [
+   "tests/bubble-follow-host.test.ts"
+  ]
+ },
+ {
+  "id": "BF7-heard-from-own-windows",
+  "part": "voice",
+  "file": "electron/wiring/voice-wiring.ts",
+  "find": "if (!windows().some(win => win.webContents.id === sender) || typeof id !== 'string'",
+  "replace": "if (typeof id !== 'string'",
+  "what": "I-165 别的窗口也能让全屏气泡提前显示",
+  "tests": [
+   "tests/bubble-follow-host.test.ts"
+  ]
+ },
+ {
+  "id": "BF8-cancel-releases-unbound",
+  "part": "voice",
+  "file": "electron/wiring/voice-wiring.ts",
+  "find": "    try { needs.unbound?.bubbleHold?.release(id ?? current?.id, 'cancelled'); } catch { /* I-165: her full-screen bubble shows the rest */ }\n",
+  "replace": "",
+  "what": "I-165 朗读取消后全屏气泡不显示剩下的字",
+  "tests": [
+   "tests/bubble-follow-host.test.ts"
+  ]
+ },
+ {
+  "id": "BF9-following-commit",
+  "part": "voice",
+  "file": "electron/wiring/voice-wiring.ts",
+  "find": "follows?surface.followingText?.()===candidate:",
+  "replace": "follows?true:",
+  "what": "I-165 提交朗读时不再核对气泡此刻还在显示这条回复",
+  "tests": [
+   "tests/bubble-follow-host.test.ts"
+  ]
+ },
+ {
+  "id": "WAKE1-not-speaking",
+  "part": "voice",
+  "file": "src/voice/EmotionalVoice.ts",
+  "find": "this.pendingStart = at; // the mouth opens at her (held) sound, never during the wake tone",
+  "replace": "this.pendingStart = unheld; // the mouth opens at her (held) sound, never during the wake tone",
+  "what": "I-150 叫醒耳机的那段时间里嘴就张开了（叫醒信号被当成她在说话）",
+  "tests": [
+   "tests/output-wake.test.ts"
+  ]
+ },
+ {
+  "id": "WAKE2-stop-after-keep",
+  "part": "voice",
+  "file": "src/voice/output-wake/wake.ts",
+  "find": "this.wanted = false; this.stopTone(); // KEEP_AFTER has passed",
+  "replace": "this.wanted = false; // KEEP_AFTER has passed",
+  "what": "I-150 叫醒信号说完后一直不停（输出流不放手，电脑可能因此睡不着）",
+  "tests": [
+   "tests/output-wake.test.ts"
+  ]
+ },
+ {
+  "id": "WAKE3-cold-hold",
+  "part": "voice",
+  "file": "src/voice/EmotionalVoice.ts",
+  "find": "Math.max(unheld, this.output.wakeReadyAt(context))",
+  "replace": "unheld",
+  "what": "I-150 冷着时她的第一个声音不等耳机醒（开头被吃掉）",
+  "tests": [
+   "tests/output-wake.test.ts"
+  ]
+ },
+ {
+  "id": "WAKE4-voice-off",
+  "part": "voice",
+  "file": "src/voice/VoiceOutput.ts",
+  "find": "if (voice.enabled && voice.volume > 0) this.audio.wake();",
+  "replace": "this.audio.wake();",
+  "what": "I-150 朗读关着或音量为 0 时也放叫醒信号",
+  "tests": [
+   "tests/output-wake.test.ts"
+  ]
+ },
+ {
+  "id": "WAKE5-never-builds",
+  "part": "voice",
+  "file": "src/voice/audio-output.ts",
+  "find": "if (this.disposed || !this.waker || !context) return;\n    this.waker.request(context.state === 'running' && !this.pending && !this.suspendingNow());",
+  "replace": "if (this.disposed || !this.waker) return;\n    this.waker.request(context?.state === 'running' && !this.pending && !this.suspendingNow());",
+  "what": "I-150 叫醒时窗口还没有声音上下文就当场新建一个（2026-11-05 卡住的那一步）",
+  "tests": [
+   "tests/output-wake.test.ts"
+  ]
+ },
+ {
+  "id": "CD1-no-switch-without-click",
+  "part": "voice",
+  "file": "src/voice/voice-call/call-mic.ts",
+  "find": "    this.shown = shown;\n",
+  "replace": "    this.shown = shown; this.state.prefs.inputOrder = suggestion.inputOrder; this.save();\n",
+  "what": "I-177 通话的麦克风建议没等用户点“换”就自己改了优先级列表",
+  "tests": [
+   "tests/i177-call-devices.test.ts"
+  ]
+ },
+ {
+  "id": "CD2-owner-names-stay",
+  "part": "voice",
+  "file": "shared/voice/call-devices.ts",
+  "find": "[...new Set(real(devices, kind).map(stripped).filter(Boolean))]",
+  "replace": "[...new Set(real(devices, kind).map(d => d.label).filter(Boolean))]",
+  "what": "I-177 交给 Claude 判断的设备名带着原名（含机主名），没先去掉",
+  "tests": [
+   "tests/i177-call-devices.test.ts"
+  ]
+ },
+ {
+  "id": "CD3-one-ask-per-set",
+  "part": "voice",
+  "file": "src/voice/voice-call/call-mic.ts",
+  "find": "this.ports.ask && !this.state.asked.includes(key) && ",
+  "replace": "this.ports.ask && ",
+  "what": "I-177 同一组设备每次通话都再问一次 Claude",
+  "tests": [
+   "tests/i177-call-devices.test.ts"
+  ]
+ },
+ {
+  "id": "CD4-hint-off-stays-off",
+  "part": "voice",
+  "file": "shared/voice/call-devices.ts",
+  "find": "return input.labelsKnown && !input.off && ",
+  "replace": "return input.labelsKnown && ",
+  "what": "I-177 关掉“戴耳机”提醒后还是每天提醒",
+  "tests": [
+   "tests/i177-call-devices.test.ts"
+  ]
+ },
+ {
+  "id": "CD5-host-owner-names",
+  "part": "voice",
+  "file": "electron/voice/call-device-judge.ts",
+  "find": "const name = stripDeviceName(item.replace(/[\\u0000-\\u001f\\u007f]/g, ' ')).slice(0, MAX_CHARS).trim();",
+  "replace": "const name = item.replace(/[\\u0000-\\u001f\\u007f]/g, ' ').slice(0, MAX_CHARS).trim();",
+  "what": "I-177 第 2 批：主进程没再去掉机主名，窗口送来带机主名的设备名就原样交给 Claude",
+  "tests": [
+   "tests/i177-call-device-judge.test.ts"
+  ]
+ },
+ {
+  "id": "CD6-host-one-ask-per-set",
+  "part": "voice",
+  "file": "electron/voice/call-device-judge.ts",
+  "find": "    if (known) { this.stats.repeated++; return known; }",
+  "replace": "    if (known && false) { this.stats.repeated++; return known; }",
+  "what": "I-177 第 2 批：同一组设备每次都问一次 haiku（多用用户的 Claude 用量）",
+  "tests": [
+   "tests/i177-call-device-judge.test.ts"
+  ]
+ },
+ {
+  "id": "DUCK1-never-silence",
+  "part": "voice",
+  "file": "src/voice/voice-call/call-duck.ts",
+  "find": "this.ports.level(dbToGain(this.knobs.duckDb), this.knobs.downMs);",
+  "replace": "this.ports.level(0, this.knobs.downMs);",
+  "what": "I-177 第 2 批：你一开口她的声音被切成无声（光是放低就等于停了她，违反 11-19 的\"明确成句才打断\"）",
+  "tests": [
+   "tests/i177-call-duck.test.ts"
+  ]
+ },
+ {
+  "id": "DUCK2-held-comes-back",
+  "part": "voice",
+  "file": "src/voice/voice-call/call-duck.ts",
+  "find": "  held(): void { if (this.since !== null) this.end('resume'); }",
+  "replace": "  held(): void { }",
+  "what": "I-177 第 2 批：你只说了\"嗯\"，她的声音一直低着不回来",
+  "tests": [
+   "tests/i177-call-duck.test.ts"
+  ]
+ },
+ {
+  "id": "SINK1-unplugged-default",
+  "part": "voice",
+  "file": "src/voice/audio-output.ts",
+  "find": "context.state === 'running') void this.routed(context);",
+  "replace": "context.state === 'running') void context;",
+  "what": "I-177 第 2 批：拔掉列表里的输出设备后，她的声音不回到系统默认（停在拔掉的设备上）",
+  "tests": [
+   "tests/i177-output-sink.test.ts"
+  ]
+ },
+ {
+  "id": "SINK2-refused-default",
+  "part": "voice",
+  "file": "src/voice/output-sink.ts",
+  "find": "if (wanted !== '' && currentSink(context) !== '' && await this.switch(context, ''))",
+  "replace": "if (false)",
+  "what": "I-177 第 2 批：选的输出设备拒绝或已经不在了，不退回系统默认",
+  "tests": [
+   "tests/i177-output-sink.test.ts"
+  ]
+ },
+ {
+  "id": "SINK3-wake-follows",
+  "part": "voice",
+  "file": "src/voice/audio-output.ts",
+  "find": "    this.waker?.moved(); this.waker?.running(context);\n",
+  "replace": "",
+  "what": "I-177 第 2 批：换了输出设备，叫醒信号还当它是热的，新耳机的第一个字被吃掉",
+  "tests": [
+   "tests/i177-output-sink.test.ts"
+  ]
+ },
+ {
+  "id": "STORE1-fresh-read",
+  "part": "voice",
+  "file": "src/voice/voice-call/call-mic.ts",
+  "find": "  private fresh(): CallDeviceState { this.state = this.ports.storage.load(); return this.state; }",
+  "replace": "  private fresh(): CallDeviceState { return this.state; }",
+  "what": "I-177 第 2 批：设置页改的列表到不了桌宠窗口的通话（各窗口只用启动时读的那份，还会把旧的写回去）",
+  "tests": [
+   "tests/i177-output-sink.test.ts"
+  ]
+ },
+ {
+  "id": "i189-away-pause-needs-away",
+  "part": "voice",
+  "file": "src/voice/away-read-pause.ts",
+  "find": "    if (!awayForReading(this.read(() => this.ports.attention(), null), this.knobs)) return;",
+  "replace": "",
+  "what": "你没转开也没走开，她的朗读也在一句说完时停下",
+  "tests": [
+   "tests/i189-read-pause.test.ts"
+  ]
+ },
+ {
+  "id": "i189-away-pause-unsure-goes-on",
+  "part": "voice",
+  "file": "src/voice/away-read-pause.ts",
+  "find": "    if (this.read(() => this.ports.reading(), null) !== paused.replyId) { this.release(null); return; } // nothing of it left to read\n    if (awayForReading(this.read(() => this.ports.attention(), null), { ...this.knobs, awaySeconds: 0 })) { this.clearResume(); return; }",
+  "replace": "    if (this.read(() => this.ports.reading(), null) !== paused.replyId) { this.release(null); return; } // nothing of it left to read\n    if (this.read(() => this.ports.attention(), null)?.state !== 'toward') { this.clearResume(); return; }",
+  "what": "姿势识别关了或读数过期（不知道）时，停下的朗读一直不接着念",
+  "tests": [
+   "tests/i189-read-pause.test.ts"
+  ]
+ },
+ {
+  "id": "i189-barge-held-in-call",
+  "part": "voice",
+  "file": "src/senses/MediaInput.ts",
+  "find": "          if (this.options.overHerHeld?.() === true) this.bargeIn.reset(); else {",
+  "replace": "          if (false) this.bargeIn.reset(); else {",
+  "what": "通话里你侧过脸说话也算插她的话（侧脸不算插话这条不起作用）",
+  "tests": [
+   "tests/i099-call-listening.test.ts"
+  ]
+ },
+ {
+  "id": "I204-echo-partial-overlap",
+  "part": "voice",
+  "file": "shared/behaviors/interrupt/judge.ts",
+  "find": "  return Math.max(0, 1 - edits / clip.length);",
+  "replace": "  return Math.max(0, 1 - edits / clip.length / 2);",
+  "what": "I-204（原 T-260）：你说的话和她念的只重合一部分（等一下 / 等一会儿）也被当成她的回声丢掉，叫不停她",
+  "tests": [
+   "tests/call-stop-volume.test.ts",
+   "tests/i204-barge-in.test.ts"
+  ]
+ },
+ {
+  "id": "I204-echo-window",
+  "part": "voice",
+  "file": "electron/voice/voice-call/interruption.ts",
+  "find": "    return text.slice(Math.min(before?.start ?? latest.start, latest.start), Math.min(text.length, latest.end + ECHO_AHEAD));",
+  "replace": "    return text;",
+  "what": "I-204：回声拿她整条回复比，不是她正在念的那一段；你正好说到她后面才要念的话，也被当成回声丢掉",
+  "tests": [
+   "tests/i204-barge-in.test.ts"
+  ]
+ },
+ {
+  "id": "I204-cut-point",
+  "part": "voice",
+  "file": "electron/voice/voice-call/interruption.ts",
+  "find": "    this.pending = { replyId, point: this.point(), line: typeof line === 'string' ? line.slice(0, LINE_MAX) : '' };",
+  "replace": "    this.pending = { replyId, point: { known: true, saidEnd: 0, sentenceEnd: 0 }, line: typeof line === 'string' ? line.slice(0, LINE_MAX) : '' };",
+  "what": "I-204：被打断后她不知道自己断在哪一句、已经念出口的是哪些",
+  "tests": [
+   "tests/i204-barge-in.test.ts",
+   "tests/i091-call-step4.test.ts"
+  ]
+ },
+ {
+  "id": "I204-rest-written-after-cut",
+  "part": "voice",
+  "file": "electron/voice/voice-call/streaming-speech.ts",
+  "find": "    if (written !== undefined && written.length + text.length <= 20_000) this.written.set(replyId, written + text);",
+  "replace": "    if (written !== undefined && this.streams.has(replyId) && written.length + text.length <= 20_000) this.written.set(replyId, written + text);",
+  "what": "I-204：被打断时还没写完的后半段不算进\"原本还想说的\"，她不知道自己还想说什么",
+  "tests": [
+   "tests/i091-call-step4.test.ts"
+  ]
+ },
+ {
+  "id": "I204-rest-not-archived",
+  "part": "voice",
+  "file": "electron/voice/voice-chat-host.ts",
+  "find": "        try { callNote = this.ports.turnNote?.() ?? ''; } catch { callNote = ''; }",
+  "replace": "        try { callNote = this.ports.turnNote?.() ?? ''; if (callNote) await group.turn.extend(callNote); } catch { callNote = ''; }",
+  "what": "I-204：被打断的说明（里面有她没念出来的话）被存进聊天记录，好像说过一样",
+  "tests": [
+   "tests/i204-barge-in.test.ts"
+  ]
+ },
+ {
+  "id": "t260-duck-limit-extended",
+  "part": "voice",
+  "file": "src/voice/voice-call/call-duck.ts",
+  "find": "    this.arm(Math.min(this.knobs.verdictWaitMs, left));",
+  "replace": "    this.arm(this.knobs.verdictWaitMs);",
+  "what": "交给识别时重新计时，放低最多 6 秒的上限被顺延（可能拖到 8.5 秒才恢复音量）",
+  "tests": [
+   "tests/call-stop-volume.test.ts"
+  ]
+ },
+ {
+  "id": "t260-playback-ignores-list",
+  "part": "voice",
+  "file": "shared/voice/call-devices.ts",
+  "find": "  const id = pickByPriority(outputOrder, devices, 'audiooutput');",
+  "replace": "  const id: string | null = null;",
+  "what": "戴耳机的门槛只看系统默认输出，不看她的声音实际播放的设备",
+  "tests": [
+   "tests/call-stop-volume.test.ts"
+  ]
+ },
+ {
+  "id": "t260-device-change-stale",
+  "part": "voice",
+  "file": "src/voice/voice-call/call-controls.ts",
+  "find": "if (reading && this.inCall) { this.output = reading.output;",
+  "replace": "if (false) { this.output = reading.output;",
+  "what": "通话中插拔耳机后，插话门槛仍按旧的输出分类",
+  "tests": [
+   "tests/call-stop-volume.test.ts",
+   "tests/i177-call-duck.test.ts"
+  ]
+ },
+ {
+  "id": "I197-silent-gate",
+  "part": "voice",
+  "file": "electron/voice/voice-call/add-on.ts",
+  "find": "    if (this.silent()) return this.fillerOn;",
+  "replace": "    if (this.silent() && false) return this.fillerOn;",
+  "what": "通话里她还没出声（字到了、声音没出来）时，补的一句明确的话仍按“插嘴”的门判，短句被扔掉（出声前的明确一句不会被扔掉）",
+  "tests": [
+   "tests/i197-call-add-on.test.ts"
+  ]
+ },
+ {
+  "id": "I197-join-utterance",
+  "part": "voice",
+  "file": "electron/voice/voice-conversation-session.ts",
+  "find": "if (!open || !this.currentFlight(flight) || !flight.entry.queue.reopen()) return null;",
+  "replace": "if (true) return null;",
+  "what": "她还没出声时补的一句不接到上一句，变成另一轮各回各的（出声前的明确一句要接上去）",
+  "tests": [
+   "tests/i197-call-add-on.test.ts"
+  ]
+ },
+ {
+  "id": "I197-voiced-closes",
+  "part": "voice",
+  "file": "electron/voice/voice-call/add-on.ts",
+  "find": "  voiced(replyId: unknown): void { if (typeof replyId === 'string') this.answer(replyId, 'voiced'); }",
+  "replace": "  voiced(replyId: unknown): void { void replyId; }",
+  "what": "她出声以后，补的一句仍不过插嘴的门、还会把她正在说的回复丢掉（出声后照旧要过插嘴的门）",
+  "tests": [
+   "tests/i197-call-add-on.test.ts"
+  ]
+ },
+ {
+  "id": "I197-hold-archive",
+  "part": "voice",
+  "file": "electron/voice/voice-companion.ts",
+  "find": "      if (holding()) held.push(archived); else { release(); write(archived); }",
+  "replace": "      { release(); write(archived); }",
+  "what": "她还没念出来的字一到就写进记录，补一句后被丢掉的回复也留在她的记录里（没念出来的字不进记录）",
+  "tests": [
+   "tests/i197-call-add-on.test.ts"
+  ]
+ },
+ {
+  "id": "I197-discard",
+  "part": "voice",
+  "file": "electron/voice/voice-chat-host.ts",
+  "find": "        const chars = turn.discard();",
+  "replace": "        const chars = 0;",
+  "what": "补一句时被丢掉的回复，停下时把扣着的字照样写进记录（没念出来的字不进记录）",
+  "tests": [
+   "tests/i197-call-add-on.test.ts"
+  ]
+ },
+ {
+  "id": "I197-complete-waits",
+  "part": "voice",
+  "file": "electron/voice/voice-companion.ts",
+  "find": "        if (status !== 'complete' || !holding()) commit();",
+  "replace": "        commit();",
+  "what": "回复写完但还没出声时就写进记录，之后补一句丢掉它也晚了（没念出来的字不进记录）",
+  "tests": [
+   "tests/i197-call-add-on.test.ts"
+  ]
+ },
+ {
+  "id": "VG1-cancel-without-cause",
+  "part": "voice",
+  "file": "electron/memory/journal/extras.ts",
+  "find": "cancelBy = this.causes?.take() ?? p.cancelBy ?? 'unlogged'; }",
+  "replace": "cancelBy = this.causes?.take() ?? null; }",
+  "what": "一条被取消的朗读写进记录时，没有任何路径给出原因就不写原因（取消不再有原因可查）",
+  "tests": [
+   "tests/voice-gaps-journal.test.ts"
+  ]
+ },
+ {
+  "id": "VG2-window-cancel-without-cause",
+  "part": "voice",
+  "file": "src/voice/speech-diagnostics.ts",
+  "find": "      ...(outcome === \"cancelled\" ? { cancelBy: cancelBy ?? \"unlogged\" } : {}),",
+  "replace": "",
+  "what": "窗口这边取消朗读时，记录不带取消原因",
+  "tests": [
+   "tests/voice-gaps-output.test.ts"
+  ]
+ },
+ {
+  "id": "VG3-fish-network-no-retry",
+  "part": "voice",
+  "file": "electron/voice/fish-retry.ts",
+  "find": "      if (handedOn || signal.aborted || !worthRetrying(first)) throw first;",
+  "replace": "      throw first;",
+  "what": "Drama 3 的网络失败不再重试一次",
+  "tests": [
+   "tests/voice-gaps-retry.test.ts"
+  ]
+ },
+ {
+  "id": "VG4-fish-retry-after-audio",
+  "part": "voice",
+  "file": "electron/voice/fish-retry.ts",
+  "find": "      if (handedOn || signal.aborted || !worthRetrying(first)) throw first;",
+  "replace": "      if (signal.aborted || !worthRetrying(first)) throw first;",
+  "what": "Drama 3 已经出过声的句子失败后也重试（同一句话会读两遍）",
+  "tests": [
+   "tests/voice-gaps-retry.test.ts"
+  ]
+ },
+ {
+  "id": "VG5-fish-without-retry-in-host",
+  "part": "voice",
+  "file": "electron/voice/fish-retry.ts",
+  "find": "  return retryingFishSynthesizer(budgetedFishSynthesizer(budget, synthesize), retry);",
+  "replace": "  return budgetedFishSynthesizer(budget, synthesize);",
+  "what": "宿主用的 Drama 3 合成不带重试（单元测过重试，但宿主没用上）",
+  "tests": [
+   "tests/voice-gaps-retry.test.ts"
+  ]
+ },
+ {
+  "id": "VG6-retried-failure-not-said",
+  "part": "voice",
+  "file": "electron/memory/journal/extras.ts",
+  "find": "...(why === 'failed' && this.notes?.takeRetriedFailure(p.reply) ? { afterRetry: true as const } : {})",
+  "replace": "",
+  "what": "重试后仍失败的朗读，那一条回复的行不说“重试过”",
+  "tests": [
+   "tests/voice-gaps-retry.test.ts"
+  ]
+ },
+ {
+  "id": "I197-late-recognition",
+  "part": "voice",
+  "file": "electron/voice/voice-call/add-on.ts",
+  "find": "    if (this.waiting(reply)) { this.defer(replyId, reply); return; }",
+  "replace": "    if (false) { this.defer(replyId, reply); return; }",
+  "what": "你在她出声之前就开口、话在她出声之后才认出来时，补的一句不接到上一句（变成插嘴，她没念出来的字留在存档里）",
+  "tests": [
+   "tests/i197-call-add-on.test.ts"
+  ]
+ },
+ {
+  "id": "I197-noise-settles",
+  "part": "voice",
+  "file": "electron/voice/voice-call/add-on.ts",
+  "find": "    for (const [id, reply] of this.replies) if (reply.deferred) this.release(id, reply);",
+  "replace": "    void 0;",
+  "what": "你开了口却没认出话（噪声、被拦下的短音）时，她已经开始的声音还一直被当成没出声，回复迟迟不算数、不存档",
+  "tests": [
+   "tests/i197-call-add-on.test.ts"
+  ]
+ },
+ {
+  "id": "I197-noise-reaches-settle",
+  "part": "voice",
+  "file": "electron/voice/voice-chat-host.ts",
+  "find": "        return recognized.then(text => { if (!HAS_WORDS.test(text)) settle(); return text; }, error => { settle(); throw error; });",
+  "replace": "        return recognized;",
+  "what": "一段没认出话的录音不通知补一句的窗口，出声前开的口落空后她的声音迟迟不算数",
+  "tests": [
+   "tests/i197-call-add-on.test.ts"
+  ]
+ },
+ {
+  "id": "I197-speech-start-reaches-window",
+  "part": "voice",
+  "file": "electron/voice/voice-call/host.ts",
+  "find": "  heard(): void { this.controller.heard(); this.addOn.speechStart(); }",
+  "replace": "  heard(): void { this.controller.heard(); }",
+  "what": "通话窗口报的“你开口了”不交给补一句的窗口，出声前开口的那句仍会被当成插嘴",
+  "tests": [
+   "tests/i197-call-add-on.test.ts"
+  ]
+ },
+ {
+  "id": "CUT-marker-becomes-words",
+  "part": "voice",
+  "file": "electron/memory/memory.ts",
+  "find": "{ ...turn.reply, ...(cutOf(cut, turn) ? { cut: cutOf(cut, turn) } : {}) }",
+  "replace": "{ ...turn.reply, content: turn.reply.content + (cutOf(cut, turn)?.label ?? '') }",
+  "what": "打断的提示变成了她说的话的一部分（聊天页里那条回复的字里多出“被打断”几个字，之后会被朗读、被存档）",
+  "tests": [
+   "tests/i204-barge-in.test.ts"
+  ]
+ },
+ {
+  "id": "CUT-cause-forgotten",
+  "part": "voice",
+  "file": "shared/foundation/reply-cut.ts",
+  "find": "return { cause: v.cause, known: v.known === true, saidEnd, sentenceEnd };",
+  "replace": "return { cause: 'user-spoke', known: v.known === true, saidEnd, sentenceEnd };",
+  "what": "不管是被拉开、够不到还是别的原因，记下来的都变成“用户开口”，她下一轮知道的原因是错的",
+  "tests": [
+   "tests/reply-cut-record.test.ts"
+  ]
+ },
+ {
+  "id": "CUT-only-entry-dropped",
+  "part": "voice",
+  "file": "electron/brain/speech-beats/archive.ts",
+  "find": "    if (!beats.length && !cut) continue;",
+  "replace": "    if (!beats.length) continue;",
+  "what": "没有拍子、只有打断记录的回复，重启或从回收站找回后打断记录丢了（打断位置跟不上回复）",
+  "tests": [
+   "tests/reply-cut-record.test.ts"
+  ]
+ },
+ {
+  "id": "CUT-note-tells-how-to-react",
+  "part": "voice",
+  "file": "shared/voice/call-cut-note.ts",
+  "find": "...(line ? [`- What the user said to interrupt you: \"${line}\"`] : []), ')'].join('\\n');",
+  "replace": "...(line ? [`- What the user said to interrupt you: \"${line}\"`] : []), 'Answer the user first.)'].join('\\n');",
+  "what": "给她的说明里写了该怎么反应（只告诉事实，怎么反应她自己定）",
+  "tests": [
+   "tests/reply-cut-record.test.ts"
+  ]
+ },
+ {
+  "id": "CUT-nothing-cut-still-filed",
+  "part": "voice",
+  "file": "electron/voice/voice-call/host.ts",
+  "find": "    if (known && nothingCut({ ...point, known, text: text!, userLine: '' })) return;",
+  "replace": "    void nothingCut;",
+  "what": "她那句话其实已经全念完了才被打断，也记了一条“被打断”（聊天页多出一个没有意义的提示，她的历史里也多一条）",
+  "tests": [
+   "tests/reply-cut-record.test.ts"
+  ]
+ },
+ {
+  "id": "CUT-user-line-kept-for-other-causes",
+  "part": "voice",
+  "file": "shared/voice/call-cut-note.ts",
+  "find": "line = spoken ? head(clean(typeof cut.userLine === 'string' ? cut.userLine : ''), LINE_MAX) : '';",
+  "replace": "line = head(clean(typeof cut.userLine === 'string' ? cut.userLine : ''), LINE_MAX);",
+  "what": "不是用户开口打断的（被拉开、够不到）也把“用户打断时说的”那句塞进她的说明",
+  "tests": [
+   "tests/reply-cut-record.test.ts"
+  ]
+ },
+ {
+  "id": "V-held-reply-not-recorded",
+  "part": "voice",
+  "file": "electron/voice/voice-chat-host.ts",
+  "find": "} else if (verdict) try { ports.reading?.notHanded(verdict); } catch { /* journal only */ }",
+  "replace": "}",
+  "what": "一条交不给声音的回复（比如后一句话先到了）被悄悄丢掉：既没读，也不记原因（12:26 的“没读出来”）",
+  "tests": [
+   "tests/voice-bubble-1226-1234.test.ts"
+  ]
+ },
+ {
+  "id": "V-handed-reply-not-expected",
+  "part": "voice",
+  "file": "electron/voice/voice-chat-host.ts",
+  "find": "try { ports.reading?.expect(group.replyId); } catch { /* journal only */ }",
+  "replace": "",
+  "what": "交给声音的回复不登记“等她来要第一句”，声音一直不来要也没人发现",
+  "tests": [
+   "tests/voice-bubble-1226-1234.test.ts"
+  ]
+ },
+ {
+  "id": "V-ledger-timeout-silent",
+  "part": "voice",
+  "file": "electron/voice/reading-ledger.ts",
+  "find": "try { this.ports.write('not-asked', true, replyId); } catch { /* journal only */ }",
+  "replace": "void 0;",
+  "what": "交给声音却一直没被要第一句的回复，超时后不写那一行（又变成没有记录的没读出来）",
+  "tests": [
+   "tests/voice-bubble-1226-1234.test.ts"
+  ]
+ },
+ {
+  "id": "V-handover-newer-line",
+  "part": "voice",
+  "file": "electron/voice/speech-handover.ts",
+  "find": "  if (!facts.allowSpeech) return 'newer-line';\n",
+  "replace": "",
+  "what": "交接清单不查“后一句话是不是先到了”，被换掉的回复照样交给声音",
+  "tests": [
+   "tests/voice-bubble-1226-1234.test.ts"
+  ]
+ },
+ {
+  "id": "V-drop-fact-not-cause",
+  "part": "voice",
+  "file": "electron/memory/journal/extras.ts",
+  "find": "this.readCancel.note(why); return true;",
+  "replace": "return true;",
+  "what": "窗口说“没显示/新一轮已开始”的原因，记录里却写不上（只剩笼统的“没来要”）",
+  "tests": [
+   "tests/voice-bubble-1226-1234.test.ts"
+  ]
+ },
+ {
+  "id": "V-unsaved-no-sign",
+  "part": "voice",
+  "file": "src/voice/EmotionalVoice.ts",
+  "find": "this.sign?.update(value, [...this.touched]);",
+  "replace": "void value;",
+  "what": "语音页有没保存的修改（例如 Drama 3 每月上限）时不显示“未保存”、不指出保存按钮",
+  "tests": [
+   "tests/unsaved-sign.test.ts"
+  ]
+ },
+ {
+  "id": "VK1-keeps-while-off",
+  "part": "voice",
+  "file": "electron/voice/voice-keep/recorder.ts",
+  "find": "if (!this.ports.available() || !this.ports.on()) return null;",
+  "replace": "if (!this.ports.available()) return null;",
+  "what": "保存她念出来的声音：开关关着也照样保存",
+  "tests": [
+   "tests/voice-keep.test.ts"
+  ]
+ },
+ {
+  "id": "VK2-keeps-microphone",
+  "part": "voice",
+  "file": "electron/voice/voice-keep/recorder.ts",
+  "find": "if (origin !== HER_READING) return null;",
+  "replace": "",
+  "what": "保存她念出来的声音：别的来源（麦克风、用户的声音）也保存",
+  "tests": [
+   "tests/voice-keep.test.ts"
+  ]
+ },
+ {
+  "id": "VK3-old-days-kept",
+  "part": "voice",
+  "file": "electron/voice/voice-keep/store.ts",
+  "find": "if (day >= oldest) continue;",
+  "replace": "continue;",
+  "what": "保存她念出来的声音：过期的天从不删除",
+  "tests": [
+   "tests/voice-keep.test.ts"
+  ]
+ },
+ {
+  "id": "VK4-stable-has-it",
+  "part": "voice",
+  "file": "electron/voice/voice-keep/availability.ts",
+  "find": "if (channel === 'stable') return false;",
+  "replace": "if (channel === 'stable') return true;",
+  "what": "保存她念出来的声音：稳定版里也有这个工具",
+  "tests": [
+   "tests/voice-keep.test.ts"
+  ]
+ },
+ {
+  "id": "VK5-clear-without-asking",
+  "part": "voice",
+  "file": "electron/voice/voice-keep/host.ts",
+  "find": "if (!await this.ports.confirmClear({ sentences: this.measuredAt.sentences, bytes: this.measuredAt.bytes })) return { view: this.view(), cleared: false };",
+  "replace": "",
+  "what": "保存她念出来的声音：清空不先问",
+  "tests": [
+   "tests/voice-keep.test.ts"
+  ]
+ },
+ {
+  "id": "VK6-no-size-cap",
+  "part": "voice",
+  "file": "electron/voice/voice-keep/recorder.ts",
+  "find": "if (this.bytes >= VOICE_KEEP_SIZE_CAP_BYTES) {",
+  "replace": "if (false) {",
+  "what": "保存她念出来的声音：存满上限也不停",
+  "tests": [
+   "tests/voice-keep.test.ts"
+  ]
+ },
+ {
+  "id": "VK7-channel-no-dialog",
+  "part": "voice",
+  "file": "electron/voice/voice-keep/channel-tool.ts",
+  "find": "alwaysConfirmFor: prepared => prepared.on === true,",
+  "replace": "alwaysConfirmFor: () => false,",
+  "what": "保存她念出来的声音：通过内部通道打开时带了原话也不弹窗",
+  "tests": [
+   "tests/voice-keep.test.ts"
+  ]
+ },
+ {
+  "id": "VK8-channel-on-direct",
+  "part": "voice",
+  "file": "electron/voice/voice-keep/channel-tool.ts",
+  "find": "tierFor: prepared => prepared.on === true ? 'confirm' : 'reversible',",
+  "replace": "tierFor: () => 'reversible',",
+  "what": "保存她念出来的声音：通过内部通道打开不需要用户原话",
+  "tests": [
+   "tests/voice-keep.test.ts"
+  ]
+ },
+ {
+  "id": "VK9-backup-carries-audio",
+  "part": "voice",
+  "file": "scripts/experience/backup-profile.mjs",
+  "find": "{ skip: rel => rel === 'voice-keep' }",
+  "replace": "{}",
+  "what": "保存她念出来的声音：备份把她的声音音频也带上",
+  "tests": [
+   "tests/voice-keep.test.ts"
+  ]
+ },
+ {
+  "id": "I209-voice-extra-never-read",
+  "part": "voice",
+  "file": "electron/voice/stage-voices.ts",
+  "find": "  if (!owner || owner === ports.desk()) return ports.deskScope();",
+  "replace": "  return ports.deskScope();",
+  "what": "I-209 台上的声音：台上别人（不是桌面陪伴那位）的回复永远念不出来（她的回合在她自己的范围里，声音只认第一位的）",
+  "tests": [
+   "tests/i209-stage-voice.test.ts"
+  ]
+ },
+ {
+  "id": "I209-voice-in-her-voice",
+  "part": "voice",
+  "file": "electron/voice/stage-voices.ts",
+  "find": "  return !owner || owner === active.id ? characterTtsConfig(settings, active) : characterTtsConfig(settings, cards.getCard(owner), '');",
+  "replace": "  return characterTtsConfig(settings, active);",
+  "what": "I-209 台上的声音：台上别人的话用第一位的声音念",
+  "tests": [
+   "tests/i209-stage-voice.test.ts"
+  ]
+ },
+ {
+  "id": "I209-voice-rows-wrong-character",
+  "part": "voice",
+  "file": "electron/memory/journal/extras.ts",
+  "find": "    safely(this.sink, { type: 'reading-time', characterId: p.characterId, firstAudioMs: p.firstAudioMs,",
+  "replace": "    safely(this.sink, { type: 'reading-time', characterId: this.characterId(), firstAudioMs: p.firstAudioMs,",
+  "what": "I-209 台上的声音：朗读记录写成了桌面陪伴那位的 id，不是说话的那位",
+  "tests": [
+   "tests/i209-stage-voice.test.ts"
+  ]
+ },
+ {
+  "id": "NI1-voice-change-stops-reply",
+  "part": "voice",
+  "file": "src/voice/VoiceOutput.ts",
+  "find": "if ((session.preview && identity(this.options.getTtsConfig()) !== session.identity) || (!session.preview && !this.options.getVoiceConfig().enabled)) {",
+  "replace": "if (identity(this.options.getTtsConfig()) !== session.identity || (!session.preview && !this.options.getVoiceConfig().enabled)) {",
+  "what": "换声音、语速或服务时，正在读的这条回复被打断（应该下一条回复才生效）",
+  "tests": [
+   "tests/no-interrupt.test.ts"
+  ]
+ },
+ {
+  "id": "NI2-save-always-cuts",
+  "part": "voice",
+  "file": "shared/voice/interrupt-policy.ts",
+  "find": "return (previous.model?.path ?? null) !== (next.model?.path ?? null);",
+  "replace": "return true;",
+  "what": "任何一次设置保存都打断她的朗读",
+  "tests": [
+   "tests/no-interrupt.test.ts"
+  ]
+ },
+ {
+  "id": "NI3-model-change-no-cut",
+  "part": "voice",
+  "file": "shared/voice/interrupt-policy.ts",
+  "find": "return (previous.model?.path ?? null) !== (next.model?.path ?? null);",
+  "replace": "return false;",
+  "what": "换模型（换角色）不再结束她的朗读",
+  "tests": [
+   "tests/no-interrupt.test.ts"
+  ]
+ },
+ {
+  "id": "NI4-sight-on-clears",
+  "part": "voice",
+  "file": "electron/senses/vision-context.ts",
+  "find": "(before[3] === null || before[3] === after[3]) ? 'grew' : 'off';",
+  "replace": "(before[3] === null || before[3] === after[3]) ? 'seeing' : 'off';",
+  "what": "打开发图片、摄像头或屏幕时清掉她正在说的这轮（打断她）",
+  "tests": [
+   "tests/no-interrupt.test.ts"
+  ]
+ },
+ {
+  "id": "NI5-sight-off-cuts",
+  "part": "voice",
+  "file": "electron/senses/vision-context.ts",
+  "find": "if (!after) return 'off'; // every source went off",
+  "replace": "if (!after) return 'seeing'; // every source went off",
+  "what": "关掉看的开关时立刻清掉这一轮（打断她），而不是等她说完",
+  "tests": [
+   "tests/no-interrupt.test.ts"
+  ]
+ },
+ {
+  "id": "NI6-restart-never-waits",
+  "part": "voice",
+  "file": "electron/voice/settle-when-quiet.ts",
+  "find": "if (!during && this.waiting.length === 0) {",
+  "replace": "if (true) {",
+  "what": "要重启她的设置改动不等她说完，马上执行",
+  "tests": [
+   "tests/no-interrupt.test.ts"
+  ]
+ },
+ {
+  "id": "NI7-reply-voice-not-frozen",
+  "part": "voice",
+  "file": "electron/voice/frozen-reading-voices.ts",
+  "find": "if (this.voices.has(replyId)) return this.voices.get(replyId)!;\n",
+  "replace": "",
+  "what": "一条回复中途换声音：后面的句子用了新声音",
+  "tests": [
+   "tests/no-interrupt.test.ts"
+  ]
+ },
+ {
+  "id": "NI8-sight-off-always-waits-not-noted",
+  "part": "voice",
+  "file": "electron/voice/settle-when-quiet.ts",
+  "find": "if (!during) { this.noted.clear(); return false; }",
+  "replace": "return true;",
+  "what": "看的开关关掉时总说\"要等她说完\"，她安静时也不立刻清理",
+  "tests": [
+   "tests/no-interrupt.test.ts"
+  ]
+ },
+ {
+  "id": "NI9-connection-restart-midreply",
+  "part": "voice",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "if (change === 'connection' || change === 'persona') await settleWhenQuiet(change, restart); else await restart();",
+  "replace": "await restart();",
+  "what": "保存设置里换了连接或角色设定，马上重启她的聊天进程（打断正在说的回复）",
+  "tests": [
+   "tests/no-interrupt.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "NI10-vision-reset-cuts",
+  "part": "voice",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "clearVisionContext(waitsForHer('connection'));",
+  "replace": "clearVisionContext();",
+  "what": "换连接或角色设定时，立刻清掉这一轮（窗口马上清聊天，打断她）",
+  "tests": [
+   "tests/no-interrupt.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "NI11-sight-off-cuts-wiring",
+  "part": "voice",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "else if (change === 'off') sightOff();",
+  "replace": "else if (change === 'off') clearVisionContext();",
+  "what": "看的来源关了或换了，立刻清掉这一轮（打断她），而不是等她说完",
+  "tests": [
+   "tests/no-interrupt.test.ts",
+   "tests/warm-small-frames.test.ts",
+   "tests/off-switch-interrupts.test.ts"
+  ]
+ },
+ {
+  "id": "NI12-sight-off-aborts-chat",
+  "part": "voice",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "cameraImagesRevoked(previous, next)\n    ) {\n      sightOff();",
+  "replace": "cameraImagesRevoked(previous, next)\n    ) {\n      sightOff(); for (const task of needs.pending.values()) if (task.kind === 'chat') task.controller.abort();",
+  "what": "关发图片或屏幕时中止正在回复的聊天（打断她）",
+  "tests": [
+   "tests/no-interrupt.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/off-switch-interrupts.test.ts"
+  ]
+ },
+ {
+  "id": "RM1-tee-drops-model",
+  "part": "voice",
+  "file": "electron/voice/voice-call/timing.ts",
+  "find": "base?.firstDelta(replyId, model);",
+  "replace": "base?.firstDelta(replyId);",
+  "what": "通话计时的转接丢掉 Claude 报告的模型，日志第一个字那行就没有 model（2026-11-26 真机上就是这样漏的）",
+  "tests": [
+   "tests/reported-model-call-tee.test.ts"
+  ]
+ },
+ {
+  "id": "NI13-sight-off-clears-page-after-reply",
+  "part": "voice",
+  "file": "electron/wiring/senses-look-wiring.ts",
+  "find": "function sightOff(): void { waitsForHer('sight-off'); clearVisionContext(true, true); }",
+  "replace": "function sightOff(): void { clearVisionContext(waitsForHer('sight-off')); }",
+  "what": "I-221：关掉看的来源时回到 11-25 的做法（她说完后清空页面，安静时立刻清空，连你最后一句也没了）",
+  "tests": [
+   "tests/off-switch-interrupts.test.ts",
+   "tests/warm-small-frames.test.ts"
+  ]
+ },
+ {
+  "id": "NI14-keep-conversation-ignored",
+  "part": "voice",
+  "file": "src/brain/clear-after-reply.ts",
+  "find": "  if (clearKeepsConversation(value)) { ports.keep?.(); return () => {}; }\n",
+  "replace": "",
+  "what": "I-221：窗口不认\"留着对话\"，主机说关了看的来源时照样马上清空页面",
+  "tests": [
+   "tests/off-switch-interrupts.test.ts"
+  ]
+ },
+ {
+  "id": "NI15-quiet-stretch-never-ends",
+  "part": "voice",
+  "file": "electron/voice/settle-when-quiet.ts",
+  "find": "    this.noted.clear(); // the busy stretch is over (quiet, you cut in, the cap, or quitting)\n",
+  "replace": "",
+  "what": "体验记录：同类的\"等她说完\"只在第一次忙碌时写一行，之后她再说话时关掉屏幕共享不再记（走查第二个故事没有这一行）",
+  "tests": [
+   "tests/off-switch-interrupts.test.ts"
+  ]
+ },
+ {
+  "id": "NI16-stale-read-cancel-cause",
+  "part": "voice",
+  "file": "electron/wiring/voice-wiring.ts",
+  "find": "if (by && ((current && (id === undefined || current.id === id)) || id !== undefined)) { try { noteReadCancel(by); } catch { /* journal only */ } }",
+  "replace": "if (by) { try { noteReadCancel(by); } catch { /* journal only */ } }",
+  "what": "体验记录：没有可取消的朗读也记下取消原因，之后不相干的一次打断被写成 window 或 superseded（走查里两种不同的痕迹）",
+  "tests": [
+   "tests/off-switch-interrupts.test.ts"
+  ]
+ }
+]

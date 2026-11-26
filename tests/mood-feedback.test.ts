@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { EMPTY_CONTACT, MoodFeedback, type StageMoodState } from '../src/stage/mood-feedback';
-import { DEFAULT_MOOD_PARAMETERS, applyMoodEvent, createMoodState, getMoodSnapshot, type MoodEventSnapshot } from '../shared/mood';
+import { EMPTY_CONTACT, MoodFeedback, PAT_HOLD, type StageMoodState } from '../src/mood/mood-feedback';
+import { DEFAULT_MOOD_PARAMETERS, applyMoodEvent, createMoodState, getMoodSnapshot, type MoodEventSnapshot } from '../shared/foundation/mood';
 const mood: StageMoodState = { mood: '满足', phase: 'rua', expressive: true, face: 50, posture: 50, playful: 50, responding: true };
 
 test('two-second local attention approaches contact continuously and leaves without a snap', () => {
@@ -27,7 +27,51 @@ test('enjoyed eyelids stay stable across the former instantaneous speed threshol
   for (let frame = 0; frame < 240; frame++) lids.push(layer.frame(1 / 30,
     { ...EMPTY_CONTACT, contact: true, speed: frame % 2 ? 3 : 0.1 }, mood).eyelids);
   assert.ok(Math.max(...lids) - Math.min(...lids) < 1e-5);
+  // this mood has no comfortable companion, so a pat stays ~0.38 however long
+  // (the deep closure below needs her comfortable); the old pin is kept for the fresh / uncomfortable case.
   assert.ok(lids.every(value => value > 0.37 && value < 0.39));
+});
+
+const comfy: StageMoodState = { ...mood, companion: 'comfortable' };
+const pat = { ...EMPTY_CONTACT, contact: true };
+const run = (layer: MoodFeedback, seconds: number, input: typeof pat, state: StageMoodState) => {
+  let last = layer.frame(1 / 30, input, state);
+  for (let i = 1; i < Math.round(seconds * 30); i++) last = layer.frame(1 / 30, input, state);
+  return last;
+};
+
+test('a fresh pat while comfortable closes the eyes about as before (~0.4), not shut', () => {
+  const lids = run(new MoodFeedback(), 1, pat, comfy).eyelids;
+  assert.ok(lids > 0.3 && lids < 0.5, `got ${lids}`);
+});
+
+test('a long comfortable pat closes the eyes to at least 0.9 of her own full amount, smoothly', () => {
+  const layer = new MoodFeedback(), seen: number[] = [];
+  for (let i = 0; i < 300; i++) seen.push(layer.frame(1 / 30, pat, comfy).eyelids);
+  assert.ok(seen.at(-1)! >= 0.9 && seen.at(-1)! <= 0.93, `got ${seen.at(-1)}`);
+  assert.ok(seen.slice(1).every((v, i) => v - seen[i] < 0.04), 'no step');
+  assert.ok(seen.slice(1).every((v, i) => v >= seen[i] - 1e-9), 'only closes while patting');
+});
+
+test('a long pat while not comfortable stays at ~0.38', () => {
+  const lids = run(new MoodFeedback(), 8, pat, { ...mood, companion: 'close' }).eyelids;
+  assert.ok(lids > 0.37 && lids < 0.39, `got ${lids}`);
+});
+
+test('her own amount scales the deep closure (expressiveness 0 closes nothing)', () => {
+  assert.ok(run(new MoodFeedback(), 6, pat, { ...comfy, face: 0 }).eyelids < 0.01);
+});
+
+test('leaving the head for at most PAT_HOLD does not drop the deep closure; a real exit reopens', () => {
+  const layer = new MoodFeedback();
+  run(layer, 4, pat, comfy);
+  const gap = run(layer, PAT_HOLD - 0.05, EMPTY_CONTACT, comfy).eyelids;
+  assert.ok(gap >= 0.9, `got ${gap}`);
+  const back = run(layer, 1, pat, comfy).eyelids;
+  assert.ok(back >= 0.9, `got ${back}`);
+  run(layer, 0.6, EMPTY_CONTACT, comfy);
+  assert.ok(run(layer, 3, EMPTY_CONTACT, comfy).eyelids < 0.05, 'reopens after a real exit');
+  assert.ok(run(layer, 1, pat, comfy).eyelids < 0.5, 'a new pat starts shallow again');
 });
 
 test('feeding uses a bounded larger mouth envelope and closes after acceptance or leaving', () => {

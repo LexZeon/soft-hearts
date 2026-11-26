@@ -9,14 +9,14 @@
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createMoodState, getMoodSnapshot, type MoodCue, type MoodLabel, type MoodSnapshot } from '../shared/mood';
+import { createMoodState, getMoodSnapshot, type MoodCue, type MoodLabel, type MoodSnapshot } from '../shared/foundation/mood';
 import { IDLE_GESTURE_KNOBS, IDLE_SHAPE_IDS, type IdleGestureKnobs } from '../shared/behaviors/idle-gesture/knobs';
 import { chooseIdleGesture, IdleGestureDirector, idleGestureNow, type IdleGestureNowInput } from '../shared/behaviors/idle-gesture/choose';
 import { IDLE_GESTURE_TIMELINES, IdleGesturePerformer, readIdleGesture, sampleIdleGesture, sampleIdleKeys } from '../shared/behaviors/idle-gesture/perform';
 import { FakeIdleGestureHost, FakeIdleGestureStage } from '../shared/behaviors/idle-gesture/fake';
 import type { IdleGestureHost, IdleGestureNow, IdleGestureStage, IdleGestureView } from '../shared/behaviors/idle-gesture/interface';
-import { EMPTY_CONTACT, MoodFeedback, type StageMoodState } from '../src/stage/mood-feedback';
-import { formatIdleGestureLines } from '../src/ui/MoodPanel';
+import { EMPTY_CONTACT, MoodFeedback, type StageMoodState } from '../src/mood/mood-feedback';
+import { formatIdleGestureLines } from '../src/mood/MoodPanel';
 import { seeded } from './helpers/seeded';
 
 const report = !!process.env.IDLE_GESTURE_REPORT;

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { ProceduralLifeToggle } from '../src/ui/procedural-life-toggle';
+import { ProceduralLifeToggle } from '../src/stage/procedural-life-toggle';
 
 class Element extends EventTarget {
   children: Element[] = []; className = ''; id = ''; type = ''; checked = false; textContent = ''; title = '';

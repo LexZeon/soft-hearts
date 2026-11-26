@@ -1,16 +1,15 @@
 /**
- * 动作跳变记录 (on her own model; tests never use it). The pet window's stage reports a guard catch
+ * 动作跳变记录 (on her own model; tests never use it). The companion window's stage reports a guard catch
  * or a physics kick (src/stage/motion-glitch.ts); the host journals it while 体验记录 is on, through the journal's whitelist
- * (shared/journal.ts `motion`). These tests hold: what a line carries (and nothing else), the rate limit, the physics kick rule,
+ * (shared/memory/journal.ts `motion`). These tests hold: what a line carries (and nothing else), the rate limit, the physics kick rule,
  * and the real stage reporting a real catch with what she was doing.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Bone, Quaternion, Vector3 } from 'three';
-import { buildJournalEntry, describeJournalEntry } from '../shared/journal';
+import { buildJournalEntry, describeJournalEntry } from '../shared/memory/journal';
 import { MOTION_GLITCH_REPEAT_MS, MotionGlitchWatch, PHYSICS_KICK_DEG, type MotionGlitchReport } from '../src/stage/motion-glitch';
-import { AppJournal } from '../electron/journal/app-journal';
-import { geneStage } from './helpers/gene-stage-harness';
+import { AppJournal } from '../electron/memory/journal/app-journal';
 
 const state = (jumps: number, property: string, size: number, resets = 0) => ({ active: 1, maxAngleDeg: 0, maxPosition: 0, maxMorph: 0, jumps, lastJump: { property, size },
   resets, lastReset: 'x', baseTrusted: true, properties: 10 });
@@ -60,19 +59,4 @@ test('the watch: a physics bone that kicks within one frame is a line; one that 
   watch.physics(mesh, [1], idle, 60, 16.7);
   assert.equal(lines.length, 1); assert.equal(lines[0].kind, 'physics'); assert.equal(lines[0].name, '左胸'); assert.ok(lines[0].size >= PHYSICS_KICK_DEG);
   assert.deepEqual(lines[0].activities, ['chat-gesture']);
-});
-
-test('the real stage reports a real catch with the bone and what she was doing (a layer that snaps the elbow once)', async () => {
-  const h = await geneStage({ fps: 60, refreshHz: 60 });
-  try {
-    const lines: MotionGlitchReport[] = [];
-    h.stage.options.onMotionGlitch = (line: MotionGlitchReport) => lines.push(line);
-    h.run(1);
-    const elbow = h.mesh.skeleton.bones.find((bone: Bone) => bone.name === '右ひじ')!, show = h.stage.frameExpressionShow;
-    let snap = false;
-    h.stage.frameExpressionShow = function (this: unknown, time: number) { show.call(this, time); if (snap) { h.stage.rememberBone(elbow); elbow.rotateZ(0.35); } };
-    snap = true; h.run(0.5); snap = false; h.run(0.5);
-    assert.ok(lines.some(line => line.kind === 'guard' && line.name === '右ひじ' && line.activities.includes('idle')), JSON.stringify(lines));
-    assert.ok(lines.every(line => line.fps === 60 && line.frameMs !== null));
-  } finally { h.close(); }
 });

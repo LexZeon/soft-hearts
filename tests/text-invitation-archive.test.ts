@@ -1,13 +1,16 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {mkdtemp,readFile,writeFile,realpath,rm,rmdir,mkdir,rename} from 'node:fs/promises';import os from 'node:os';import path from 'node:path';import ts from 'typescript';
-import {MemoryStore,TEXT_INVITATION_ID_PREFIX} from '../electron/memory';
+import {MemoryStore,TEXT_INVITATION_ID_PREFIX} from '../electron/memory/memory';
 import {MemoryStore as LegacyMemoryStore} from './fixtures/r39-legacy/electron/memory';
-import {TextMemorialHost} from '../electron/text-memorial-host';import {ProactiveSpeechGate} from '../electron/proactive-speech-gate';
+import {TextMemorialHost} from '../electron/memory/text-memorial-host';import {ProactiveSpeechGate} from '../electron/initiative/proactive-speech-gate';
+// Reads as text (test-affected selects this test when they change): 'electron/main.ts' (wiring rewrite step 4c: with electron/wiring/*.ts).
+import { WIRING_PRELUDE, wiringFunction, wiringSource } from './helpers/wiring-source'; // step 4d: 记忆's moved lines read the other parts through needs (the prelude reads the names below)
 
-const raw=await readFile(new URL('../electron/main.ts',import.meta.url),'utf8'),ast=ts.createSourceFile('main.ts',raw,ts.ScriptTarget.Latest,true);
-function declaration(name:string){const found=ast.statements.filter((node):node is ts.FunctionDeclaration=>ts.isFunctionDeclaration(node)&&node.name?.text===name);assert.equal(found.length,1);return found[0].getText(ast);}
+const raw=wiringSource(),ast=ts.createSourceFile('main.ts',raw,ts.ScriptTarget.Latest,true);
+function declaration(name:string){return wiringFunction(name);} // wiring rewrite step 4c: exactly one, at any depth of the wiring
 function callback(name:string){const found:string[]=[];function visit(node:ts.Node){if(ts.isCallExpression(node)&&node.expression.getText(ast)==='host'&&ts.isStringLiteral(node.arguments[0])&&node.arguments[0].text===name)found.push(node.arguments[1].getText(ast));ts.forEachChild(node,visit);}visit(ast);assert.equal(found.length,1);return found[0];}
-const compile=ts.transpileModule(`let textMemorialHost=null,textInvitationMemory=null,textInvitationMemoryError='';
+const compile=ts.transpileModule(`${WIRING_PRELUDE}
+let textMemorialHost=null,textInvitationMemory=null,textInvitationMemoryError='';
 ${['textMemorialEligible','initTextMemorials','managedMemory'].map(declaration).join('\n')}
 return {init:initTextMemorials,getHost:()=>textMemorialHost,getArchive:()=>textInvitationMemory,
 list:(${callback('listMemories')}),read:(${callback('readMemory')}),edit:(${callback('editMemory')}),remove:(${callback('deleteMemory')})};`,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None}}).outputText;
@@ -49,7 +52,7 @@ async function hostFixture(directory:string){
  const env={MemoryStore,TEXT_INVITATION_ID_PREFIX,TextMemorialHost,path,store:{directory,current:{provider:{},tts:{},model:undefined}},companion:{memory:shared,currentScope:()=>currentScope,mood:{get:()=>({token:'token',snapshot:{phase:'idle',primary:'neutral',context:'neutral'}})},removeMemory:()=>{throw Error('Sidecar must not delete ordinary memory');}},characterCards:{getActive:()=>({id:currentScope.characterId})},memoryProviderScope:()=>currentScope.providerScope,
   speechScope:()=>identity,proactiveSpeechGate:gate,pet:{webContents:{id:7},isDestroyed:()=>false,isVisible:()=>true,isMinimized:()=>false},petWindowDrag:null,userInputUntil:0,pending,petReply:{waitForPresentation:async(body:string)=>shown===body,isPresentationCurrent:(body:string)=>shown===body},
   broadcast:(channel:string,value?:unknown)=>{if(channel==='desk:text-memorials-changed'&&value)ready();},exiting:false,
-  replySpeechStyles:{begin:()=>{},complete:()=>{}},effectiveTtsConfig:()=>({}),DEFAULT_TTS_CONFIG:{},composeSpeechConfig:()=>({}),characterSpeechPersona:()=>'',completedFatigueFeeling:()=>undefined,windows:()=>[],speechRuntime:{cancelReply:()=>{},stop:()=>{}},cancelReplyStyle:()=>{},mutate:(operation:()=>Promise<unknown>)=>operation(),stopSystemAudio:()=>{},clearVisionContext:()=>{},clearReplySpeech:()=>{cancels++;},refreshVisionContext:()=>{},ambientStore:{deleteComment:()=>{throw Error('No ambient archive');}}};
+  replySpeechStyles:{begin:()=>{},complete:()=>{}},effectiveTtsConfig:()=>({}),characterTtsConfig:()=>({}),DEFAULT_TTS_CONFIG:{},composeSpeechConfig:()=>({}),characterSpeechPersona:()=>'',completedFatigueFeeling:()=>undefined,windows:()=>[],speechRuntime:{cancelReply:()=>{},stop:()=>{}},cancelReplyStyle:()=>{},mutate:(operation:()=>Promise<unknown>)=>operation(),stopSystemAudio:()=>{},clearVisionContext:()=>{},clearReplySpeech:()=>{cancels++;},refreshVisionContext:()=>{},ambientStore:{deleteComment:()=>{throw Error('No ambient archive');}},movingMemory:undefined,recycleSingle:(_take:unknown,remove:()=>unknown)=>remove()}; // I-144b: the bin passes straight through here (tests/i144b-recycle-items.test.ts)
  const api=new Function(...Object.keys(env),compile)(...Object.values(env))as{init():Promise<void>;getHost():TextMemorialHost;getArchive():MemoryStore|null;list(query?:unknown):ReturnType<MemoryStore['list']>;read(id:string,query?:unknown):ReturnType<MemoryStore['read']>;edit(id:string,patch:unknown):Promise<void>;remove(id:string):Promise<unknown>};
  await api.init();await readyView;let serial=0;
  async function offer(body:string){const host=api.getHost(),id='human_'+(++serial),turn=host.accept({requestId:id,messageId:id,text:body,acceptedAt:Date.now(),source:'text'},identity);assert.ok(turn);await turn.result;const invite=`你愿意把“${body}”留作文字纪念吗？`;turn.complete(true,JSON.stringify({quote:body,purpose:'留作文字纪念',invite}));assert.equal(host.offerOpportunity({id:'cue_'+serial,kind:'speech',until:Date.now()+5000}),true);const state=host.getOffer();assert.ok(state.offer);return{host,state,invite};}

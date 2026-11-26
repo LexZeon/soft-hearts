@@ -7,11 +7,11 @@
  * （没补的从卡上推），所以要慎重（docs/claude/how-to-add-a-reaction.md）。
  *
  * 倾向**不写进角色卡存档**（旧版本对卡校验严，多一个字段整张卡读不出来）：按角色 id 存在配置目录的
- * reaction-dispositions.json（electron/reactions/store.ts）。没有这个文件、或文件里没有这个角色时，用 deriveDispositions
+ * reaction-dispositions.json（electron/mood/reactions/store.ts）。没有这个文件、或文件里没有这个角色时，用 deriveDispositions
  * 从卡上现有的数（weights、sensitivity、intensity、blush）推出默认值；默认卡（全是 1、强度 50、脸红 35）推出来全是 50。
  * 纯数据和纯函数：没有 Electron、没有文件、不知道 Claude。
  */
-import type { MoodParameters } from '../../mood';
+import type { MoodParameters } from '../../foundation/mood';
 
 /** 推默认值时读的卡上的数（角色卡心情参数的一部分）。 */
 export type DispositionCard = Pick<MoodParameters, 'weights' | 'sensitivity' | 'intensity' | 'blush'>;

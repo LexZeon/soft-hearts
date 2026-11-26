@@ -7,7 +7,7 @@
  *  - 余地：余额够这一件就是 1；不够时按 smoothstep(余额 / 花费) 平滑往下压；强烈的心情按 strong 越过压低。
  *  - 花：先花攒下的，再花保底，不会花成负数；同一个编号只花一次。退回：每一笔只退一次，原样退回它从哪里花的。
  */
-import type { MoodTendency } from '../../mood';
+import type { MoodTendency } from '../../foundation/mood';
 import { INTERACTION_BUDGET_KNOBS, type BudgetCreditKind, type BudgetSpendKind, type InteractionBudgetKnobs } from './knobs';
 import type { BudgetAsk, BudgetLogEntry, BudgetRoom } from './interface';
 

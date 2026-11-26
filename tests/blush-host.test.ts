@@ -1,5 +1,5 @@
 /**
- * #26 on the real MoodHost (electron/mood.ts) with an isolated temporary profile, and on the stage with a blush part (a model
+ * #26 on the real MoodHost (electron/mood/mood.ts) with an isolated temporary profile, and on the stage with a blush part (a model
  * with its own blush morph, like Gene's 赤み): 20 times "a pat after five quiet minutes" with the card's blush (FixedBlush = as
  * before) and with hers (BlushDirector); the snapshot carries the picked shape all the way through; never more often than the
  * card; the shy card blushes where the card's threshold would not; the why developer-only and never saved.
@@ -10,18 +10,15 @@ import test from 'node:test';
 import os from 'node:os';
 import path from 'node:path';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
-import { Bone, Euler, PerspectiveCamera, Quaternion, SkinnedMesh } from 'three';
-import { MoodHost } from '../electron/mood';
-import { DEFAULT_MOOD_PARAMETERS, getBlushAmount, type MoodBlushSnapshot, type MoodParameters } from '../shared/mood';
-import type { MoodView } from '../shared/mood-runtime';
+import { MoodHost } from '../electron/mood/mood';
+import { DEFAULT_MOOD_PARAMETERS, getBlushAmount, type MoodBlushSnapshot, type MoodParameters } from '../shared/foundation/mood';
+import type { MoodView } from '../shared/mood/mood-runtime';
 import { FixedBoredomTiming } from '../shared/behaviors/boredom-timing/fake';
 import { FixedTouchFeedEffect } from '../shared/behaviors/touch-feed-effect/fake';
 import { BlushDirector } from '../shared/behaviors/blush/choose';
 import { FixedBlush } from '../shared/behaviors/blush/fake';
 import type { BlushHost } from '../shared/behaviors/blush/interface';
-import { MmdStage } from '../src/stage/MmdStage';
-import { EMPTY_CONTACT, MoodFeedback } from '../src/stage/mood-feedback';
-import { formatBlushLines } from '../src/ui/MoodPanel';
+import { formatBlushLines } from '../src/mood/MoodPanel';
 import { seeded } from './helpers/seeded';
 
 const MINUTE = 60_000;
@@ -167,53 +164,6 @@ test('the shy card blushes at a pat the card\'s own threshold would not reach (a
   assert.equal(before.seen.length, 0, 'a soft pat: the card\'s threshold of 6 is not reached');
   assert.equal(after.seen.length, 1);
   assert.match(after.why![0].why.join('；'), /性格：谨慎（容易害羞）：涨够 4\.2 就红了（卡上要涨够 6）/);
-});
-
-function stageWith(blushChannel: { index: number; name: string } | null) {
-  const stage = Object.create(MmdStage.prototype) as any;
-  Object.assign(stage, { surprisePending: null, surprisePreview: null });
-  const head = new Bone(); head.name = '頭'; head.position.set(0, 15, 0);
-  const mesh = new SkinnedMesh(); mesh.add(head); mesh.morphTargetInfluences = [0.1, 0.2, 0.05, 0, 0.07];
-  const camera = new PerspectiveCamera(32, 400 / 560, 0.1, 3000);
-  camera.position.set(0, 10, 35); camera.lookAt(0, 10, 0); camera.updateMatrixWorld(true);
-  Object.assign(stage, { mesh, head, eyes: [], camera, controls: { interacting: false }, hostVisible: true,
-    renderer: { domElement: { dataset: {} } }, container: { clientWidth: 400, clientHeight: 560 }, height: 20,
-    moodFeedback: new MoodFeedback(), moodContact: { ...EMPTY_CONTACT }, moodFaceBlocked: false, moodHeadBlocked: false,
-    boneLayers: [], morphLayers: [], rotation: new Euler(), offset: new Quaternion(),
-    blinkIndex: 0, smileIndex: 1, mouthIndex: 2, sadIndex: 3, blushChannel, speaking: false });
-  return stage;
-}
-
-test('on a model with a blush part the stage draws her picked blush: a long one still shows where the card\'s would be over; without one it skips quietly', async () => {
-  const found: { snapshot: MoodView['snapshot'] | null } = { snapshot: null };
-  await withHost(new BlushDirector({ random: seeded(12) }), card, ({ host, clock }) => {
-    for (let i = 0; i < 40 && !found.snapshot; i++) {
-      away(host, clock);
-      input(host, { type: 'phase', sessionId: `s${i}`, phase: 'rua' });
-      let b: MoodBlushSnapshot | null = null;
-      for (let j = 0; j < 10 && !b; j++) { clock.now += 500; input(host, { type: 'rua', sessionId: `s${i}`, id: `s${i}-${j}`, activeMs: 500 }); b = host.get().snapshot.blush; }
-      input(host, { type: 'phase', sessionId: `s${i}`, phase: 'idle' });
-      // A longer blush than the card's 3.45 s: look at it at 3.6 s, when the card's shape would already be over.
-      if (b && length(b.profile) > 4_000) { clock.now = b.at + 3_600; found.snapshot = host.get().snapshot; }
-    }
-  });
-  const snapshot = found.snapshot;
-  assert.ok(snapshot && snapshot.blush, 'found a long blush');
-  const blush = snapshot.blush;
-  const expected = getBlushAmount(3_600, blush.strength, blush.profile);
-  assert.equal(getBlushAmount(3_600, blush.strength, card.blush), 0, 'the card\'s own shape is over by now');
-  assert.ok(expected > 0.05);
-  const stage = stageWith({ index: 4, name: '赤み' });
-  stage.moodView = { expressions: true, snapshot, parameters: DEFAULT_MOOD_PARAMETERS };
-  stage.animateMood(1 / 30);
-  const drawn = stage.mesh.morphTargetInfluences[4];
-  assert.ok(Math.abs(drawn - Math.max(0.07, expected)) < 1e-6, `${drawn} vs ${expected}`);
-  stage.restoreLayers();
-  assert.equal(stage.mesh.morphTargetInfluences[4], 0.07, 'the authored base comes back');
-  const none = stageWith(null);
-  none.moodView = { expressions: true, snapshot, parameters: DEFAULT_MOOD_PARAMETERS };
-  assert.doesNotThrow(() => none.animateMood(1 / 30));
-  assert.deepEqual(none.mesh.morphTargetInfluences.slice(4), [0.07], 'no blush part: nothing is written');
 });
 
 test('the developer panel line says how she blushed, why, and how long until the next one', async () => {

@@ -1,5 +1,5 @@
 /**
- * #32 照着做的一侧：舞台（src/stage/mood-feedback.ts）按主机挑好的这一份点心的吃法张嘴、嚼、摇头。这里不做决定。
+ * #32 照着做的一侧：舞台（src/mood/mood-feedback.ts）按主机挑好的这一份点心的吃法张嘴、嚼、摇头。这里不做决定。
  *
  * 连续（R29，"像 K 帧"）：
  *  - 张嘴、嚼的快慢和大小不是一下子换掉：每一帧朝这一份的值平滑地靠过去（打算晚到几十毫秒也不跳）；
@@ -7,7 +7,7 @@
  *  - 摇头是加在头部弹簧目标上的一小段：sin²（起止都是 0、速度也是 0）× 来回几下，再经过原来的弹簧，速度连续。
  *  - 没有打算（自动表现关着、假实现给的照常、旧主机）时，四个倍数正好是 1、摇头正好是 0：舞台每一帧和原来逐位一样。
  */
-import { isFeedEatSound, isFeedOpenSound } from '../../feed-cue';
+import { isFeedEatSound, isFeedOpenSound } from '../../initiative/feed-cue';
 import type { FeedCueView, FeedEatFrame, FeedEatMoment, FeedEatStage } from './interface';
 
 /** 安全线（不是旋钮）：只会比原来慢、比原来小；摇头很轻、很短。主机挑的和舞台读的都过这一关。 */

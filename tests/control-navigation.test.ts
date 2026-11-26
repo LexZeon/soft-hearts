@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { ControlNavigation, renderControlNavigation } from "../src/ui/ControlNavigation";
+import { ControlNavigation, renderControlNavigation } from "../src/settings/ControlNavigation";
 import {
   CONTROL_NAVIGATION, CONTROL_PAGE_TITLES, ControlNavigationState, isNavigationGroup,
   type ControlNavigationNode, type ControlNavigationLeaf, type ControlNavigationLocation, type ControlPage,
-} from "../src/ui/control-navigation-state";
+} from "../src/settings/control-navigation-state";
 
 function flatten(nodes: readonly ControlNavigationNode[]): ControlNavigationNode[] {
   return nodes.flatMap(node => [node, ...(isNavigationGroup(node) ? flatten(node.children) : [])]);

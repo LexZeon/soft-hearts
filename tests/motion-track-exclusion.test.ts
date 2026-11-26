@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { matchesMotionTrackFilter, passesMotionTrackExclusion, type MotionTrackCoverage, type MotionTrackProperty } from '../shared/motion-track-coverage';
-import { motionTrackFacts } from '../electron/motion-track-coverage';
-import { stripDefaultVmdTracks } from '../src/stage/vmd-tracks';
+import { matchesMotionTrackFilter, passesMotionTrackExclusion, type MotionTrackCoverage, type MotionTrackProperty } from '../shared/actions/motion-track-coverage';
+import { motionTrackFacts } from '../electron/actions/motion-track-coverage';
+import { stripDefaultVmdTracks } from '../src/foundation/vmd-tracks';
 
 const row = (target: string, kind: MotionTrackProperty['kind'] = 'quaternion', part: MotionTrackProperty['part'] = 'right-arm'): MotionTrackProperty =>
   ({ target, kind, part, modelIndex: 27, keyframes: 1, state: 'static-nondefault' });

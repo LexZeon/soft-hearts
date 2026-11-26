@@ -9,9 +9,10 @@
  *    的节奏一个个停过了，收起时你还没读的是刚冒出来的那一个。心情和性格从不把它缩短。
  *  - 余韵：每次在 after 的范围里随机取一个点，再 × 心情、这会儿的倾向、角色卡性格、困不困（乘起来夹在 lean 里），
  *    最后一句在问你或把话递给你时再 × waiting。所以同一个场景两次只差余韵里的那一点随机，不会乱。
+ * 全屏 Unbound 的气泡用同一条规则（整段回复一个气泡，ReplyLingerBubble.readAll）：只有一处不同，读得完的下限压过 range 的上限，不会把长回复截到读完以下。
  * 这些都只是试用值，没在真机上看过。
  */
-import type { MoodLabel, MoodTendency } from '../../mood';
+import type { MoodLabel, MoodTendency } from '../../foundation/mood';
 
 export interface ReplyLingerKnobs {
   readonly range: readonly [number, number];
@@ -57,7 +58,7 @@ export const REPLY_LINGER_KNOBS: ReplyLingerKnobs = Object.freeze<ReplyLingerKno
 
   // 用户可能怎么说：她想我、黏我的时候说完话气泡收得太快了／她兴奋的时候气泡收得太慢了
   // 怎么调：她此刻的心情让余韵 × 多少（没写的心情 = 1）。大于 1 多留一会儿，小于 1 收得早一点
-  mood: { close: 1.2, longing: 1.25, concerned: 1.2, 'tense-expectation': 1.2, sad: 1.15, disappointed: 1.1, relieved: 1.05,
+  mood: { close: 1.2, longing: 1.25, concerned: 1.2, afraid: 1.2, 'tense-expectation': 1.2, sad: 1.15, disappointed: 1.1, relieved: 1.05,
     content: 1.05, happy: 0.92, excited: 0.85, upset: 0.9 },
 
   // 用户可能怎么说：她正黏着我的时候气泡多留一会儿／她调皮的时候收得利落点

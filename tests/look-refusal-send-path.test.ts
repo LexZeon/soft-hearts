@@ -1,19 +1,19 @@
 // Codex T-205 第二轮（X-253，2026-11-04，固定 a9ad29f）：真实 Electron 里开着屏幕共享，发"禁止查看我的屏幕""请停止查看我的屏幕"
 // "别擅自看我的屏幕""没授权你看我屏幕""不允许你看我屏幕"或"同事原话是‘你看看这个报错’"，六句各取了一帧屏幕、各有一张图到模拟 Claude。
-// 根因在唯一的判断 shared/look-request.ts：这些说法不在第 030 轮补的否定和转述规则里，被认成了"叫她看"（docs/claude/2026-11-04-v1-refusal-grab.md）。
-// 这里走真实发送路径：窗口这一半（src/look-send.ts，sendChat 用的就是它）→ 宿主附图（electron/look-attachments.ts，preload
-// sharedAttachments 的处理）→ 宿主聊天入口（electron/validation.ts validateChatRequest，再把附件交给聊天适配器）→ 这一轮的感知行；
+// 根因在唯一的判断 shared/senses/look-request.ts：这些说法不在第 030 轮补的否定和转述规则里，被认成了"叫她看"（docs/claude/2026-11-04-v1-refusal-grab.md）。
+// 这里走真实发送路径：窗口这一半（src/senses/look-send.ts，sendChat 用的就是它）→ 宿主附图（electron/senses/look-attachments.ts，preload
+// sharedAttachments 的处理）→ 宿主聊天入口（electron/settings/validation.ts validateChatRequest，再把附件交给聊天适配器）→ 这一轮的感知行；
 // 取图口和 Claude 都是假的，不开窗口、不碰真实屏幕。
 // 屏幕只读大概：共享开着的普通消息一张图都不带，感知行只说"大概"（这里假的大概是"写代码"）；说不之后连大概也不说。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { Attachment } from '../shared/contracts';
-import { LookTurns, PROACTIVE_VISION_DEFAULT } from '../electron/look-turns';
-import { LookAttachments } from '../electron/look-attachments';
-import { validateChatRequest } from '../electron/validation';
-import { lookHint, turnAttachments } from '../src/look-send';
-import { lookButtonContent } from '../src/ui/LookButton';
-import { perceptionTurnLine, perceptionTurnState, roughLine, SCREEN_LOOK_LINE, SHARING_LINE } from '../shared/perception-rule';
+import type { Attachment } from '../shared/foundation/chat';
+import { LookTurns, PROACTIVE_VISION_DEFAULT } from '../electron/senses/look-turns';
+import { LookAttachments } from '../electron/senses/look-attachments';
+import { validateChatRequest } from '../electron/settings/validation';
+import { lookHint, turnAttachments } from '../src/senses/look-send';
+import { lookButtonContent } from '../src/senses/LookButton';
+import { perceptionTurnLine, perceptionTurnState, roughLine, SCREEN_LOOK_LINE, SHARING_LINE } from '../shared/brain/perception-rule';
 
 /** Codex 报告里的六句原句。 */
 const T205_ROUND2 = ['禁止查看我的屏幕', '请停止查看我的屏幕', '别擅自看我的屏幕', '没授权你看我屏幕', '不允许你看我屏幕', '同事原话是‘你看看这个报错’'];
@@ -174,12 +174,14 @@ test('R10 主动看画面默认关，聊天发送路径不会因为共享开着�
   assert.equal(PROACTIVE_VISION_DEFAULT, false);
 });
 
-test('和她一起看 (screen sharing + 一起听): an ordinary message takes one screen frame; a "别看" holds it; screen sharing alone stays rough only', async () => {
+// I-085 第 3 步 (text first): an ordinary message of 和她一起看 no longer takes a frame; this pins the undo path
+// (TEXT_FIRST_KNOBS.enabled false). With B: tests/i085-text-first.test.ts.
+test('和她一起看 with text first off (the 2026-11-07 behaviour): an ordinary message takes one screen frame; a "别看" holds it; screen sharing alone stays rough only', async () => {
   let watching = true, captured = 0;
   const look = new LookAttachments(new LookTurns(), { noteActivity() {}, state: () => ({ screen: true, camera: false, scope: 's', screenOpening: 1 }),
     sharesCameraFrames: () => false, revision: () => 0, generation: () => 0, opening: () => 1,
     captureScreen: async () => { captured++; return { source: 'screen', dataUrl: 'data:image/jpeg;base64,/9j/screenAA==' }; },
-    captureCamera: async () => null, watchingTogether: () => watching });
+    captureCamera: async () => null, watchingTogether: () => watching, textFirst: () => false });
   assert.equal((await look.request(lookHint('看着好馋', false))).length, 1, 'watching together: the screen comes along');
   assert.equal((await look.request(lookHint('别看我屏幕', false))).length, 0, 'a no holds it');
   assert.equal((await look.request(lookHint('看着好馋', false))).length, 0, 'and keeps holding');

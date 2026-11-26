@@ -1,10 +1,10 @@
 /**
- * I-006 第 1 步 "陪你做事" (shared/behaviors/user-activity/, electron/user-activity.ts; docs/claude/2026-11-06-i006-step1.md).
+ * I-006 第 1 步 "陪你做事" (shared/behaviors/user-activity/, electron/senses/user-activity.ts; docs/claude/2026-11-06-i006-step1.md).
  * Fake clock and fake idle seconds only: nothing here reads this computer's real keyboard and mouse.
  *  - the state: 30 s of reading does not leave "在忙", a lock is "不在", a failed read is "说不准" and starts nothing, a long silence without a
  *    lock is "说不准" (never "不在"), working in her own window is looking for her, not being busy;
- *  - her side: one simulated hour on the real MoodHost (busy speaks clearly less, the three personalities lean the right way), the
- *    opening choice leans toward 这次不说 while strong feelings still speak, her own life weighs and lasts longer, one short line;
+ *  - her side: one simulated hour on the real MoodHost (busy speaks a little later, never not at all: I-066; the
+ *    three personalities lean the right way), the opening choice leans a little toward 这次不说 while strong feelings still speak, her own life weighs and lasts longer, one short line;
  *  - privacy: switch off = not one read, the config folder gets no extra file, nothing but the switch is ever written, no timers.
  */
 import assert from 'node:assert/strict';
@@ -12,10 +12,10 @@ import test from 'node:test';
 import os from 'node:os';
 import path from 'node:path';
 import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
-import { MoodHost } from '../electron/mood';
-import { createUserActivity } from '../electron/user-activity';
-import { createHerState, StageStateHost } from '../electron/her-state-host';
-import { DEFAULT_MOOD_PARAMETERS, type MoodParameters, type MoodTendency } from '../shared/mood';
+import { MoodHost } from '../electron/mood/mood';
+import { createUserActivity } from '../electron/senses/user-activity';
+import { createHerState, StageStateHost } from '../electron/mood/her-state-host';
+import { DEFAULT_MOOD_PARAMETERS, type MoodParameters, type MoodTendency } from '../shared/foundation/mood';
 import { UserActivityTracker } from '../shared/behaviors/user-activity/track';
 import { BUSY_ACTIVITY, FixedUserActivity, PAUSE_ACTIVITY } from '../shared/behaviors/user-activity/fake';
 import { UNKNOWN_ACTIVITY, type UserActivityHost, type UserActivitySample, type UserActivityView } from '../shared/behaviors/user-activity/interface';
@@ -25,12 +25,12 @@ import { FixedBoredomTiming } from '../shared/behaviors/boredom-timing/fake';
 import { IdleGestureDirector } from '../shared/behaviors/idle-gesture/choose';
 import { OPENING_CANDIDATE_IDS } from '../shared/behaviors/opening-choice/knobs';
 import { chooseOpening, openingNow } from '../shared/behaviors/opening-choice/choose';
-import { createMoodState, getMoodSnapshot, type MoodLabel } from '../shared/mood';
-import { HER_LIFE_TABLE, herLifeDuration, herLifeWeights, stepHerLife, type HerLifeRecord } from '../shared/her-life';
-import { buildInnerLoopPrompt, type InnerLoopPromptInput } from '../shared/inner-loop';
-import { PERCEPTION_LINE_MAX, perceptionTurnLine, type PerceptionTurn } from '../shared/perception-rule';
-import { buildTestEntries } from '../electron/test-commands/entries';
-import { matchTestEntry } from '../electron/test-commands/match';
+import { createMoodState, getMoodSnapshot, type MoodLabel } from '../shared/foundation/mood';
+import { HER_LIFE_TABLE, herLifeDuration, herLifeWeights, stepHerLife, type HerLifeRecord } from '../shared/stage/her-life';
+import { buildInnerLoopPrompt, type InnerLoopPromptInput } from '../shared/initiative/inner-loop';
+import { PERCEPTION_LINE_MAX, perceptionTurnLine, type PerceptionTurn } from '../shared/brain/perception-rule';
+import { buildTestEntries } from '../electron/safety/test-commands/entries';
+import { matchTestEntry } from '../electron/safety/test-commands/match';
 import { fakeTestDeps as makeDeps } from './helpers/test-command-fixtures';
 import { seeded } from './helpers/seeded';
 
@@ -235,11 +235,13 @@ test('config folder: ticks write nothing; turning the switch off writes exactly 
 
 test('no timers, no files, no network anywhere in the feature (static check of its own sources)', async () => {
   for (const file of ['shared/behaviors/user-activity/track.ts', 'shared/behaviors/user-activity/effects.ts', 'shared/behaviors/user-activity/interface.ts',
-    'shared/behaviors/user-activity/fake.ts', 'shared/behaviors/user-activity/knobs.ts']) {
+    'shared/behaviors/user-activity/fake.ts', 'shared/behaviors/user-activity/knobs.ts',
+    // I-066 你现在方便吗
+    'shared/behaviors/user-activity/presence.ts', 'shared/behaviors/user-activity/held.ts', 'shared/behaviors/user-activity/screen-look.ts']) {
     const source = await readFile(path.join(process.cwd(), file), 'utf8');
     assert.ok(!/setInterval|setTimeout|node:fs|node:net|node:http|fetch\(|electron/.test(source.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '')), file);
   }
-  const host = (await readFile(path.join(process.cwd(), 'electron/user-activity.ts'), 'utf8')).replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
+  const host = (await readFile(path.join(process.cwd(), 'electron/senses/user-activity.ts'), 'utf8')).replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
   assert.ok(!/setInterval|setTimeout/.test(host), 'the host has no timer of its own: it is called from the existing second tick');
   assert.ok(!/from 'electron'/.test(host));
 });
@@ -305,13 +307,16 @@ async function speechMinutes(weights: Partial<Record<MoodTendency, number>>, act
   } finally { await host.flush().catch(() => {}); await rm(directory, { recursive: true, force: true }); }
 }
 
-test('one hour left alone on the real mood host: not busy she speaks (about minute 42); busy she does not (average card)', async () => {
+// I-066: busy only holds her back a little (quiet.base 0.45 → 0.8).
+// Before: busy, the average card said nothing in the hour; now about ten minutes later than when the user is not busy.
+test('one hour left alone on the real mood host: not busy she speaks (about minute 42); busy a little later, never not at all (average card)', async () => {
   const idle = await speechMinutes({}, null, 60);
   const idleToo = await speechMinutes({}, UNKNOWN_ACTIVITY, 60);
   const busy = await speechMinutes({}, BUSY_ACTIVITY, 60);
   assert.ok(idle.length >= 1 && idle[0] >= 40 && idle[0] <= 46, `not busy: ${JSON.stringify(idle)}`);
   assert.deepEqual(idleToo, idle, 'an unknown state changes nothing at all');
-  assert.equal(busy.length, 0, `busy: ${JSON.stringify(busy)}`);
+  assert.equal(busy.length, 1, `busy: ${JSON.stringify(busy)}`);
+  assert.ok(busy[0] > idle[0] && busy[0] <= idle[0] + 15, `busy a little later: ${busy[0]} vs ${idle[0]}`);
 });
 
 test('the three personalities lean the right way over three hours: clingy speaks first, then average, slow-to-warm and easygoing last', async () => {
@@ -319,9 +324,10 @@ test('the three personalities lean the right way over three hours: clingy speaks
   const [clingy, average, slow, easy] = [await first(personalities.clingy), await first(personalities.average), await first(personalities.slowToWarm), await first(personalities.easygoing)];
   assert.ok(clingy < average && average < easy && easy <= slow, JSON.stringify({ clingy, average, easy, slow }));
   if (process.env.USER_ACTIVITY_REPORT) console.log("first speech minute when busy (fixed focus 1):", JSON.stringify({ clingy, average, easy, slow }));
-  assert.ok(clingy >= 60 && clingy <= 90, `clingy ${clingy}: about an hour and a bit`);
-  assert.ok(average > 60, `average ${average}`);
-  assert.ok(slow >= 120, `slow-to-warm ${slow}: two hours and more`);
+  // I-066: before 63 / 88 / 112 / 130 minutes (clingy / average / easygoing / slow-to-warm); now 49 / 52 / 59 / 63.
+  assert.ok(clingy >= 45 && clingy <= 60, `clingy ${clingy}: under an hour`);
+  assert.ok(average > clingy && average <= 60, `average ${average}`);
+  assert.ok(slow >= 55 && slow <= 75, `slow-to-warm ${slow}: about an hour`);
   const free = await speechMinutes(personalities.clingy, null, 240);
   assert.ok(free[0] < clingy, 'and always later than when she is not slowed');
 });
@@ -383,11 +389,12 @@ function quietShare(busy: boolean, primary: MoodLabel, need: boolean, draws = 40
   return { quiet: quiet / draws, byId };
 }
 
-test('opening choice: while busy she is much more likely to pick 这次不说, and the busy moment is shown as a real reason', () => {
+// I-066: busy is "gently": 这次不说 0.082 → 0.408 before, now 0.082 → 0.159 (moments.busy moved toward 1 like quiet.base).
+test('opening choice: while busy she is a little more likely to pick 这次不说 (gently, never a stop), and the busy moment is shown as a real reason', () => {
   const free = quietShare(false, 'calm', false), busy = quietShare(true, 'calm', false);
   if (process.env.USER_ACTIVITY_REPORT) console.log("opening quiet share: free", free.quiet.toFixed(3), JSON.stringify(free.byId), "busy", busy.quiet.toFixed(3), JSON.stringify(busy.byId));
-  assert.ok(busy.quiet > free.quiet + 0.25, `${free.quiet} -> ${busy.quiet}`);
-  assert.ok(busy.quiet > free.quiet * 3 && busy.quiet > 0.35, `busy quiet ${busy.quiet} ${JSON.stringify(busy.byId)} free ${JSON.stringify(free.byId)}`);
+  assert.ok(busy.quiet > free.quiet + 0.04, `${free.quiet} -> ${busy.quiet}`);
+  assert.ok(busy.quiet < 0.25, `gently: busy quiet ${busy.quiet} ${JSON.stringify(busy.byId)} free ${JSON.stringify(free.byId)}`);
   const now = openingNow({ available: ALL, snapshot: { ...REST, primary: 'calm', companion: null, boredom: 80 }, personality: PERSON, need: false, quiet: { night: false, drowsy: false }, last: null, busy: true });
   assert.ok(now.moments.includes('busy'));
   assert.ok(chooseOpening(now, [], () => 0.9999)!.why.some(line => line.includes('专心做事')) || true);

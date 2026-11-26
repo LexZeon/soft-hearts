@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test, { type TestContext } from "node:test";
-import type { SystemAudioState } from "../shared/contracts";
-import { SystemAudioInput, type SystemAudioSample } from "../src/ui/SystemAudio";
+import type { SystemAudioState } from "../shared/foundation/runtime-state";
+import { SystemAudioInput, type SystemAudioSample } from "../src/senses/SystemAudio";
 
 const flush = async () => { for (let index = 0; index < 16; index++) await Promise.resolve(); };
 function deferred<T>() {
@@ -135,8 +135,10 @@ test("system audio defaults off and only becomes active after a real audio strea
   assert.equal(env.capture.audio.stops, 0);
   assert.equal(env.input.active, true);
   assert.equal(env.analysers[0].fftSize, 2048);
-  assert.equal(env.destinations.length, 1);
-  assert.equal(env.destinations[0], env.analysers[0], "the graph has no speaker destination or feedback path");
+  // I-072: a second analyser on the same source, unsmoothed, only for onsets; still no speaker destination.
+  assert.deepEqual(env.analysers.map(a => [a.fftSize, a.smoothingTimeConstant]), [[2048, 0.65], [2048, 0]]);
+  assert.equal(env.destinations.length, 2);
+  assert.deepEqual(env.destinations, env.analysers, "the graph has no speaker destination or feedback path");
 });
 
 test("sampling is limited to 30 Hz and reports bounded RMS and separated frequency bands", async t => {
@@ -151,7 +153,8 @@ test("sampling is limited to 30 Hz and reports bounded RMS and separated frequen
   assert.ok(Math.abs(sample.mid - 10 ** (-18 / 20)) < 1e-6);
   assert.ok(Math.abs(sample.high - 10 ** (-24 / 20)) < 1e-6);
   env.setRms(NaN); env.spectrum.fill(Infinity); await env.tick(34);
-  assert.deepEqual(env.samples.at(-1), { time: 10.068, rms: 0, low: 0, mid: 0, high: 0 });
+  // I-072: the onset counters ride along; an unreadable spectrum adds no onset.
+  assert.deepEqual(env.samples.at(-1), { time: 10.068, rms: 0, low: 0, mid: 0, high: 0, onsetLow: 0, onsetMid: 0, onsetHigh: 0 });
   await env.tick(1000);
   assert.equal(env.statuses.at(-1), "等待系统声音");
 });
@@ -199,7 +202,7 @@ test("stop releases tracks, listeners, context and animation frames without reco
   assert.equal(env.capture.audio.stops, 1);
   assert.equal(env.capture.audio.listeners.size, 0);
   assert.equal(env.contexts[0].closes, 1);
-  assert.equal(env.disconnected(), 2);
+  assert.equal(env.disconnected(), 3, 'the source and both analysers');
   assert.equal(env.frames.size, 0);
   assert.deepEqual(env.permissions, [true, false]);
   const count = env.samples.length;
@@ -420,4 +423,19 @@ test("unrecognized exception names and messages do not escape the connection err
   assert.match(env.errors[0], /系统声音连接失败.*采集/);
   assert.ok(!env.errors[0].includes("private exception"));
   assert.ok(!env.errors[0].includes("PrivateExceptionName"));
+});
+
+test('I-072: a 30 Hz display is read on every frame (they come 31–35 ms apart), a 60 Hz one on every other frame', async t => {
+  const env = environment(t);
+  await env.input.setEnabled(true);
+  await env.tick(0);
+  for (const ms of [31, 35, 32, 34, 33, 31]) await env.tick(ms);
+  assert.equal(env.samples.length, 7, 'every 30 Hz frame');
+  const at30 = env.samples.length;
+  for (let i = 0; i < 12; i++) await env.tick(16.7);
+  assert.equal(env.samples.length - at30, 6, 'every other 60 Hz frame: still about 30 samples a second');
+  for (let i = 1; i < env.samples.length; i++) {
+    const sample = env.samples[i]!;
+    for (const key of ['onsetLow', 'onsetMid', 'onsetHigh'] as const) assert.ok(Number.isFinite(sample[key]), `${key} rides along`);
+  }
 });

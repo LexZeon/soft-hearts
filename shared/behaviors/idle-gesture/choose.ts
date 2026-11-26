@@ -2,19 +2,19 @@
  * #11 主机这一侧的真实现：她来挑"动一动""看你一眼"的样子和表情（接口见 interface.ts，旋钮见 knobs.ts）。
  * 纯本地、零额度、不碰聊天提示词；只在内存里记最近几次。
  */
-import { sheChooses, type SheChoosesCandidate, type SheChose } from '../../she-chooses';
-import { selectBehaviorState, type BehaviorFaceBindingId } from '../../behavior-motion';
-import { MOOD_LABELS } from '../../mood-runtime';
-import { tendencyNow } from '../../mood-tendency';
-import type { MoodCue, MoodLabel, MoodSnapshot, MoodTendency } from '../../mood';
-import type { FatiguePhase } from '../../fatigue';
-import type { HerContact } from '../../her-state';
+import { sheChooses, type SheChoosesCandidate, type SheChose } from '../../brain';
+import { selectBehaviorState, type BehaviorFaceBindingId } from '../../actions';
+import { MOOD_LABELS } from '../../mood';
+import { tendencyNow } from '../../foundation/mood-tendency';
+import type { MoodCue, MoodLabel, MoodSnapshot, MoodTendency } from '../../foundation/mood';
+import type { FatiguePhase } from '../../mood';
+import type { HerContact } from '../../mood';
 import { IDLE_GESTURE_KNOBS, IDLE_FACE_IDS, IDLE_SHAPE_IDS, type IdleFaceId, type IdleFaceKnob, type IdleGestureKnobs,
   type IdleMoment, type IdleShapeId, type IdleShapeKnob } from './knobs';
 import type { IdleGestureHost, IdleGestureKind, IdleGestureNow, IdleGesturePresentation, IdleGestureSource, IdleGestureView, IdleGestureWhy } from './interface';
 
 const TENDENCIES: readonly MoodTendency[] = ['playful', 'close', 'comfortable', 'cautious'];
-const SERIOUS_MOODS = new Set<MoodLabel>(['concerned', 'disappointed', 'upset', 'longing', 'sad', 'tense-expectation']);
+const SERIOUS_MOODS = new Set<MoodLabel>(['concerned', 'disappointed', 'upset', 'longing', 'sad', 'tense-expectation', 'afraid']);
 /** "这会儿……"：心情快照里最强的那项倾向。 */
 const NOW_WORDS: Readonly<Record<MoodTendency | 'wistful', string>> = {
   playful: '这会儿有点调皮', close: '这会儿想黏着你', comfortable: '这会儿很放松', cautious: '这会儿有点拘谨', wistful: '还在想念的余韵里',
@@ -54,7 +54,7 @@ export interface IdleGestureNowInput {
 export function idleGestureNow(input: IdleGestureNowInput, knobs: IdleGestureKnobs = IDLE_GESTURE_KNOBS): IdleGestureNow {
   const s = input.snapshot;
   const mood = (Object.hasOwn(MOOD_LABELS, s.primary) ? s.primary : 'calm') as MoodLabel;
-  const serious = SERIOUS_MOODS.has(mood) || s.context === 'concern' || s.context === 'disappointment' || s.context === 'offense';
+  const serious = SERIOUS_MOODS.has(mood) || s.context === 'concern' || s.context === 'disappointment' || s.context === 'offense' || s.context === 'fright';
   const personality = Object.fromEntries(TENDENCIES.map(t => [t, Math.min(4, Math.max(0, finite(input.personality?.[t], 1)))])) as Record<MoodTendency, number>;
   const moments: IdleMoment[] = [];
   const within = (kind: HerContact, ms: number) => input.contacts.some(c => c.kind === kind && Number.isFinite(c.at) && input.now - c.at >= -1_000 && input.now - c.at <= ms);
@@ -65,7 +65,7 @@ export function idleGestureNow(input: IdleGestureNowInput, knobs: IdleGestureKno
   if (input.fatiguePhase === 'drowsy' || input.fatiguePhase === 'light-drowsy') moments.push('drowsy');
   let moodFace: BehaviorFaceBindingId = 'face.in-trouble';
   try { moodFace = selectBehaviorState(s as MoodSnapshot).bindingId ?? 'face.in-trouble'; } catch { moodFace = 'face.in-trouble'; }
-  // Only a tendency that is really there (回到基线时那一丝不算, shared/mood-tendency.ts): no "这会儿想黏着你" at rest.
+  // Only a tendency that is really there (回到基线时那一丝不算, shared/foundation/mood-tendency.ts): no "这会儿想黏着你" at rest.
   const tendency = tendencyNow(s);
   return { kind: input.kind, source: input.source, mood, serious, tendency, personality, moments, moodFace };
 }

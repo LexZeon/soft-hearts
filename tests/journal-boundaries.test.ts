@@ -11,14 +11,14 @@ import { mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/
 import os from 'node:os';
 import path from 'node:path';
 import test, { type TestContext } from 'node:test';
-import { CompanionService } from '../electron/companion';
-import { AppJournal, registerJournalIpc } from '../electron/journal/app-journal';
-import { LABEL_STABLE_MS, MoodJournal, TOUCH_GAP_MS, type MoodJournalEvent } from '../electron/journal/sources';
-import { JournalWriter } from '../electron/journal/writer';
-import { JOURNAL_DAY_LIMIT_BYTES, buildJournalEntry, type JournalInput, type JournalView } from '../shared/journal';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
-import type { MoodView } from '../shared/mood-runtime';
-import type { ProviderConfig } from '../shared/contracts';
+import { CompanionService } from '../electron/brain/companion';
+import { AppJournal, registerJournalIpc } from '../electron/memory/journal/app-journal';
+import { LABEL_STABLE_MS, MoodJournal, TOUCH_GAP_MS, type MoodJournalEvent } from '../electron/memory/journal/sources';
+import { JournalWriter } from '../electron/memory/journal/writer';
+import { JOURNAL_DAY_LIMIT_BYTES, buildJournalEntry, type JournalInput, type JournalView } from '../shared/memory/journal';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
+import type { MoodView } from '../shared/mood/mood-runtime';
+import type { ProviderConfig } from '../shared/foundation/settings';
 
 async function temp(t: TestContext, prefix: string): Promise<string> {
   const root = await mkdtemp(path.join(os.tmpdir(), prefix));
@@ -162,7 +162,7 @@ test('the real CompanionService: a pat while off moves her mood as usual and is 
   assert.deepEqual((await read()).map(entry => entry.type + ':' + (entry.source ?? entry.event)), ['journal:on']);
   await stroke('pat-on');
   await service.flush(); await journal.flush();
-  assert.deepEqual((await read()).map(entry => entry.type + ':' + (entry.source ?? entry.event)), ['journal:on', 'blush:pat', 'mood-event:touch']); // the pat made a blush moment (2026-11-06 batch 1); the pat while off made none
+  assert.deepEqual((await read()).map(entry => entry.type + ':' + (entry.source ?? entry.event)), ['journal:on', 'mood-snapshot:undefined', 'blush:pat', 'mood-event:touch']); // I-179: the first view after it is turned on writes one mood snapshot (no pat, nothing from while it was off); the pat made a blush moment (2026-11-06 batch 1); the pat while off made none
 });
 
 // ------------------------------------------------------------------ 2. 8 MiB 含标记

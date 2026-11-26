@@ -11,7 +11,7 @@ const appDirectory = path.resolve(process.env.MMD_TEST_APP_DIR ?? workspace);
 const output = path.join(workspace, ".local", "bundled-assets-smoke");
 await mkdir(output, { recursive: true });
 const profile = await mkdtemp(path.join(output, "profile-"));
-const catalog = JSON.parse(await readFile(path.join(appDirectory, "shared", "motion-catalog.json"), "utf8"));
+const catalog = JSON.parse(await readFile(path.join(appDirectory, "shared/actions/motion-catalog.json"), "utf8"));
 assert.ok(!catalog.packs.some(pack => pack.id === "uka"), "Uka is excluded");
 const pack = catalog.packs.find(pack => pack.id === "gene");
 assert.ok(pack);

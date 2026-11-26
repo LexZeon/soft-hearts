@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { setUiLanguage } from '../shared/ui-language';
-import type { ChatAvailabilityView } from '../shared/chat-availability';
-import { ChatAvailabilityNotice, RECOVERED_NOTICE_MS, type ChatAvailabilityPorts } from '../src/ui/ChatAvailabilityNotice';
+import { setUiLanguage } from '../shared/foundation/ui-language';
+import type { ChatAvailabilityView } from '../shared/brain/chat-availability';
+import { ChatAvailabilityNotice, RECOVERED_NOTICE_MS, type ChatAvailabilityPorts } from '../src/brain/ChatAvailabilityNotice';
 
 class Element {
   children: Element[] = []; className = ''; textContent: string | null = ''; type = '';

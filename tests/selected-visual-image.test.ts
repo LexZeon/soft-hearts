@@ -7,7 +7,7 @@ import test from 'node:test';
 import {
   MAX_IMAGE_EDGE, MAX_IMAGE_PIXELS, MAX_SELECTED_IMAGE_BYTES,
   readSelectedVisualImage, selectedImageHeader, type EncodedVisualImage,
-} from '../electron/selected-visual-image';
+} from '../electron/senses/selected-visual-image';
 
 // These are synthetic header fixtures, not encoded-image/real codec acceptance.
 const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);

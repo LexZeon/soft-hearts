@@ -1,5 +1,5 @@
 /**
- * I-037 新的反应方式 (shared/behaviors/reactions/, electron/reactions/) with a fake haiku on a fake clock. Never a real model call.
+ * I-037 新的反应方式 (shared/behaviors/reactions/, electron/mood/reactions/) with a fake haiku on a fake clock. Never a real model call.
  * The character here is invented (its six 反应倾向 are made up for the test; no real character's numbers appear anywhere), and
  * so is every sentence.
  *
@@ -16,12 +16,12 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { ReactionHost, type ReactionHostOptions, type ReactionJournalInput, type ReactionNowSource, type ReactionQuiet } from '../electron/reactions/host';
-import { ReactionStore } from '../electron/reactions/store';
-import { createReactions, type ReactionMoodPort } from '../electron/reactions/wiring';
-import { createReactionPerformers } from '../electron/reactions/performers';
-import { MoodJudgeHost } from '../electron/mood-judge/host';
-import { MoodHost } from '../electron/mood';
+import { ReactionHost, type ReactionHostOptions, type ReactionJournalInput, type ReactionNowSource, type ReactionQuiet } from '../electron/mood/reactions/host';
+import { ReactionStore } from '../electron/mood/reactions/store';
+import { createReactions, type ReactionMoodPort } from '../electron/mood/reactions/wiring';
+import { createReactionPerformers } from '../electron/mood/reactions/performers';
+import { MoodJudgeHost } from '../electron/mood/mood-judge/host';
+import { MoodHost } from '../electron/mood/mood';
 import { FakeReactionJudge, pickFirstOf } from '../shared/behaviors/reactions/fake';
 import { DISPOSITION_IDS, deriveDispositions, dispositionSummary, validateDispositions, type Dispositions } from '../shared/behaviors/reactions/dispositions';
 import { REACTION_EVENTS, WORD_EVENT_IDS } from '../shared/behaviors/reactions/events';
@@ -29,16 +29,16 @@ import { REACTION_KNOBS, REACTION_TABLE, type ReactionRow } from '../shared/beha
 import { MoodBlend, parseReactionAnswer, reactionPrompt, reactionSystemPrompt, scoreReactions, topPick } from '../shared/behaviors/reactions/choose';
 import type { ReactionBlock, ReactionPerformer, ReactionScoring } from '../shared/behaviors/reactions/interface';
 import { readReactionStageCue } from '../shared/behaviors/reactions/stage';
-import { playReactionCue } from '../src/stage/reaction-performers';
-import { DEFAULT_MOOD_PARAMETERS, type MoodLabel, type MoodValues } from '../shared/mood';
-import type { MoodView } from '../shared/mood-runtime';
-import { buildJournalEntry, describeJournalEntry } from '../shared/journal';
-import { ENGLISH_JOURNAL_UI_COPY as JOURNAL_EN } from '../shared/ui-copy.journal.en';
-import { AgentToolRegistry } from '../electron/agent-channel/registry';
-import { createAppTools } from '../electron/agent-channel/app-tools';
-import { AGENT_HOST_OPERATIONS, createHostBridge, type IpcHandler } from '../electron/agent-channel/bridge';
-import { capability } from '../shared/capabilities';
-import { agentSetting } from '../shared/agent-channel';
+import { playReactionCue } from '../src/mood/reaction-performers';
+import { DEFAULT_MOOD_PARAMETERS, type MoodLabel, type MoodValues } from '../shared/foundation/mood';
+import type { MoodView } from '../shared/mood/mood-runtime';
+import { buildJournalEntry, describeJournalEntry } from '../shared/memory/journal';
+import { ENGLISH_JOURNAL_UI_COPY as JOURNAL_EN } from '../shared/foundation/ui-copy.journal.en';
+import { AgentToolRegistry } from '../electron/safety/agent-channel/registry';
+import { createAppTools } from '../electron/safety/agent-channel/app-tools';
+import { AGENT_HOST_OPERATIONS, createHostBridge, type IpcHandler } from '../electron/safety/agent-channel/bridge';
+import { capability } from '../shared/settings/capabilities';
+import { agentSetting } from '../shared/safety/agent-channel';
 
 const SECOND = 1_000;
 /** An invented character's six (not any real character's): 害羞 70、黏人 60、活泼 40、好哄 50、情绪起伏 65、克制 55. */

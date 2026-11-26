@@ -1,18 +1,21 @@
 // L1 inner loop: the two cards and the synthetic idle timeline of the measured day
 // (docs/claude/2026-11-02-inner-loop.md). Gene is the preinstalled card; "Momo" is synthetic.
-import definition from '../shared/presets/gene-balanced-card.json';
-import { compileCharacterPersona, type CharacterTextDraft } from '../shared/character-cards';
-import { DEFAULT_FATIGUE_PARAMETERS, type FatigueParameters } from '../shared/fatigue';
-import { validateMoodParameters, type MoodParameters } from '../shared/mood';
+import definition from '../shared/cards/presets/gene-balanced-card.json';
+import { compileCharacterPersona, type CharacterTextDraft } from '../shared/cards/character-cards';
+import { DEFAULT_FATIGUE_PARAMETERS, type FatigueParameters } from '../shared/mood/fatigue';
+import { DEFAULT_MOOD_PARAMETERS, validateMoodParameters, type MoodParameters } from '../shared/foundation/mood';
 import type { DayCard, IdleBlock } from './lib/inner-loop-day';
 
 const MINUTE = 60_000;
+// I-172 (2026-11-21): the preinstalled Gene is the courier-intern persona with her own brighter mood block, no longer the neutral reference.
+// "gene" here stays the NEUTRAL measuring card (so day numbers and tests stay comparable with the older ones): her persona text, but the
+// code-default mood parameters (DEFAULT_MOOD_PARAMETERS), which is what the older Gene block was identical to.
 const gene = definition.card as unknown as CharacterTextDraft & { mood: { parameters: MoodParameters } };
 
 export const GENE_DAY_CARD: DayCard = {
   id: 'gene',
   persona: compileCharacterPersona(gene),
-  parameters: validateMoodParameters(gene.mood.parameters),
+  parameters: validateMoodParameters(DEFAULT_MOOD_PARAMETERS),
 };
 
 const slowParameters = structuredClone(GENE_DAY_CARD.parameters);

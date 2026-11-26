@@ -11,6 +11,7 @@ import { createHash } from 'node:crypto';
 import { readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { replay, type TurnRecord } from './prompt-eval-analysis';
+import { getPromptSwitches, setPromptSwitches } from '../../shared/brain/prompt-switches';
 
 type Recorded = Pick<TurnRecord, 'chunks' | 'nonce' | 'settingOffered' | 'error' | 'prompt' | 'user'>;
 
@@ -77,6 +78,8 @@ function option(name: string): string | null {
 
 async function main(): Promise<void> {
   const save = option('save'), against = option('against');
+  // I-139 (docs/claude/2026-11-15-i139-defences.md): --relaxed replays with the I-139 switch on (the guard's listener words count).
+  if (process.argv.includes('--relaxed')) setPromptSwitches({ ...getPromptSwitches(), relaxed: true });
   const targets = process.argv.slice(2).filter((arg, index, all) => !arg.startsWith('--') && !['--save', '--against'].includes(all[index - 1]));
   const records: Recorded[] = [];
   for (const target of targets) for (const file of await files(target)) {

@@ -1,18 +1,18 @@
 // Codex T-205 第六轮（X-263，2026-11-04，固定稳定补丁 8225ccc）：开着屏幕共享，控制窗口发「同事跟你说了声，你看看这个报错。」
 // 「同事跟你说——你看看这个报错。」各取了一帧、模拟常驻进程各收到一张图，感知行写着"用户叫你看屏幕"。"了声"和破折号又绕过了词表，
-// 前五轮每轮补词，每轮都有新变体。这一轮在词表之外加一条结构规则（shared/look-request.ts 的 firstReported）：请求之前（前面的分句，
+// 前五轮每轮补词，每轮都有新变体。这一轮在词表之外加一条结构规则（shared/senses/look-request.ts 的 firstReported）：请求之前（前面的分句，
 // 或同一分句的前半），只要有不是用户自己的说话人说／讲／问／告诉／发／回／让我……，不管动词后面跟什么，这条消息的文字都不叫她看。
 // 说话人只认"我／我们／咱"是用户自己；拿不准就是别人。按钮不读文字，照旧能用。docs/claude/2026-11-04-v1-refusal-grab.md
 // 「第六轮：从词表改成结构规则」。全部是手写的合成句子，取图口和 Claude 是假的；不开窗口、不碰任何配置。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { Attachment } from '../shared/contracts';
-import { scanLookRequest, withheldLook } from '../shared/look-request';
-import { LookTurns } from '../electron/look-turns';
-import { LookAttachments } from '../electron/look-attachments';
-import { validateChatRequest } from '../electron/validation';
-import { lookHint, turnAttachments } from '../src/look-send';
-import { perceptionTurnLine, perceptionTurnState, SCREEN_LOOK_LINE, SHARING_LINE } from '../shared/perception-rule';
+import type { Attachment } from '../shared/foundation/chat';
+import { scanLookRequest, withheldLook } from '../shared/senses/look-request';
+import { LookTurns } from '../electron/senses/look-turns';
+import { LookAttachments } from '../electron/senses/look-attachments';
+import { validateChatRequest } from '../electron/settings/validation';
+import { lookHint, turnAttachments } from '../src/senses/look-send';
+import { perceptionTurnLine, perceptionTurnState, SCREEN_LOOK_LINE, SHARING_LINE } from '../shared/brain/perception-rule';
 
 const X263 = ['同事跟你说了声，你看看这个报错。', '同事跟你说——你看看这个报错。'];
 /** 同类：动词后面跟了声、了一句、破折号、省略号、冒号、空格、句号、直接连写；他让我、老板说过、群里有人说；没点名的"，说你看看"。 */

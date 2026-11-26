@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import test, { type TestContext } from 'node:test';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { DEFAULT_TTS_CONFIG, type ApprovedReplySpeechSegment, type SpeechRequestContext, type TtsConfig, type TtsStreamEvent } from '../shared/tts';
-import { StreamingVoicePlayer } from '../src/ui/EmotionalVoice';
-import { VoiceOutput, type VoiceOutputEvent } from '../src/ui/VoiceOutput';
-import { SharedAudioOutput } from '../src/ui/audio-output';
-import { CompletedReplySpeechQueue } from '../src/ui/completed-reply-speech-queue';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { DEFAULT_TTS_CONFIG, type ApprovedReplySpeechSegment, type SpeechRequestContext, type TtsConfig, type TtsStreamEvent } from '../shared/voice/tts';
+import { StreamingVoicePlayer } from '../src/voice/EmotionalVoice';
+import { VoiceOutput, type VoiceOutputEvent } from '../src/voice/VoiceOutput';
+import { SharedAudioOutput } from '../src/voice/audio-output';
+import { CompletedReplySpeechQueue } from '../src/voice/completed-reply-speech-queue';
 import { deferred, flush, pcm, world } from './helpers/r02-audio-world';
 
 /*
@@ -156,21 +156,24 @@ test('R02 reply: turning read-aloud off mid-reply never leaves a session waiting
   assert.equal(h.output.openReply({ ...voice }, 'next') !== null, true);
 });
 
-test('R02 reply: a voice change during prefetch discards the prefetched segment and stops the queue', async t => {
+// 2026-11-25 (docs/claude/2026-11-25-no-interrupt.md, user: only cutting in interrupts her): the old rule here was "a voice change during prefetch
+// discards the prefetched segment and stops the queue". A reply now keeps the voice it started in (the host freezes it per reply), so the change
+// is for her next reply and nothing is cancelled.
+test('R02 reply: a voice change during prefetch does not touch the reply that is playing', async t => {
   const h = harness(t);
   const id = 'reply-5';
   h.show(segment(id, 0, '一。')); h.show(segment(id, 1, '二。')); h.show(segment(id, 2, '三。'));
   const speaking = h.queue.speak(id);
   await flush(); await h.w.advance(300); h.synthesize(0); await flush(); await h.w.advance(150);
   assert.equal(h.requests.length, 2, 'segment 1 is being pre-synthesized');
-  const askedBefore = h.asked.length;
   h.changeVoice('another-voice');
-  h.synthesize(1); await flush(); await h.w.advance(1500); await speaking;
-  assert.ok(h.cancellations.includes(h.requests[1].id), 'the prefetched request is cancelled');
-  assert.ok(h.cancellations.includes(`reply:${id}`), 'the host is told the reply speech ended');
-  assert.equal(h.requests.length, 2, 'segment 2 is never synthesized');
-  assert.equal(h.asked.length, askedBefore, 'the queue does not walk the remaining bubbles silently');
-  assert.ok(h.w.contexts[0].sources.slice(3).every(source => source.startAt < 0), 'late PCM of the discarded segment is never scheduled');
+  await h.w.advance(200); h.synthesize(1); await flush();
+  await h.w.advance(600);
+  assert.equal(h.requests.length, 3, 'the reply goes on: segment 2 is requested');
+  h.synthesize(2); h.end(3); await flush();
+  await h.w.advance(1500); await speaking;
+  assert.deepEqual(h.cancellations, [], 'nothing was cancelled');
+  assert.deepEqual(h.errors, []);
   assert.equal(h.speaking.at(-1)!.value, false);
 });
 

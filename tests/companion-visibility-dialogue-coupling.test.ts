@@ -1,8 +1,8 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {CompanionCommandHost} from '../electron/companion-command-host';
-import {classifyCompanionCommand,formatCompanionCommandReceipt} from '../electron/companion-command-intent';
-import {createCommandDialogueTurn} from '../electron/companion-command-dialogue';
-import type {CompanionCommandActionId,CompanionCommandIntentInput,CompanionCommandView} from '../shared/companion-commands';
+import {CompanionCommandHost} from '../electron/settings/companion-command-host';
+import {classifyCompanionCommand,formatCompanionCommandReceipt} from '../electron/settings/companion-command-intent';
+import {createCommandDialogueTurn} from '../electron/settings/companion-command-dialogue';
+import type {CompanionCommandActionId,CompanionCommandIntentInput,CompanionCommandView} from '../shared/settings/companion-commands';
 
 test('frozen Main host with actual Voice classifier/dialogue binds one human domain and reports only its actual receipt',async()=>{
  for(const mode of ['show-hidden','hide-controls','restore-intent','clarify-cancel','clarify-stale','clarify-manual','legacy-topmost']as const){
@@ -16,7 +16,7 @@ test('frozen Main host with actual Voice classifier/dialogue binds one human dom
    commits++;domains.push(actionId);
    if(actionId==='pet.set-always-on-top'){const persistence=top===value?'unchanged':'saved';top=value;topRevision++;return{persistence,presentation:'applied',value};}
    const persistence=visible===value?'unchanged':'saved';visible=value;visibleRevision++;native=value;
-   host.refresh(); // The pet's expected own hide must not revoke the current controls sender.
+   host.refresh(); // The companion's expected own hide must not revoke the current controls sender.
    return{persistence,presentation:'applied',value,nativeValue:native};
   }});
   const body=mode==='show-hidden'?'显示桌宠':mode==='hide-controls'?'隐藏桌宠':mode==='legacy-topmost'?'取消桌宠置顶':'我看不到桌宠了';

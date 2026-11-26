@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ReplyPresentationState } from '../src/ui/reply-presentation';
-import { ReplyPresentation, type ReplyPresentationClock } from '../electron/reply-presentation';
+import { ReplyPresentationState } from '../src/brain/reply-presentation';
+import { ReplyPresentation, type ReplyPresentationClock } from '../electron/brain/reply-presentation';
 import { getEventListeners } from 'node:events';
 
 test('only an accepted ID enters waiting; whitespace does not finish it', () => {

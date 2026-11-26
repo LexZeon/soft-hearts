@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { BodyMotionAccess, type BodyMotionAccessDependencies } from '../electron/body-motion-access';
-import { BodyMotionController } from '../electron/body-motion';
-import type { BodyMotionCue, BodyMotionResource } from '../shared/body-motion';
+import { BodyMotionAccess, type BodyMotionAccessDependencies } from '../electron/actions/body-motion-access';
+import { BodyMotionController } from '../electron/actions/body-motion';
+import type { BodyMotionCue, BodyMotionResource } from '../shared/actions/body-motion';
 
 function deferred<T>() {
   let resolve!: (value: T) => void;

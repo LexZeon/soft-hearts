@@ -1,5 +1,5 @@
 // I-025 漏项检查: every control of the settings window must be in the
-// capability list (shared/capabilities.ts) or marked 不开放 there with a reason. The real control-window markup and every
+// capability list (shared/settings/capabilities.ts) or marked 不开放 there with a reason. The real control-window markup and every
 // panel src/main.ts mounts in it (tests/fixtures/control-window-harness.ts, fake host, no Electron) are laid out in headless
 // Edge (Playwright channel "msedge") or Playwright's Chromium, and every interactive element is checked against the list.
 // Skips only when neither browser can start (as tests/control-chat-layout.test.mjs).
@@ -10,10 +10,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 import { chromium, type Browser } from 'playwright';
-import { CAPABILITIES, capabilityPatterns } from '../shared/capabilities';
+import { CAPABILITIES, capabilityPatterns } from '../shared/settings/capabilities';
 import {
   describeControl, parseControlPattern, unregisteredControls, unusedPatterns, type ControlDescriptor,
-} from '../shared/capability-controls';
+} from '../shared/settings/capability-controls';
 
 const tests = path.dirname(fileURLToPath(import.meta.url));
 
@@ -29,10 +29,15 @@ const skip = browser ? false : 'neither Edge nor Playwright Chromium could start
 
 async function bundle() {
   const result = await build({
-    stdin: { contents: "import '../src/style.css'; import '../src/mood.css'; import './fixtures/control-window-harness';",
+    stdin: { contents: "import '../src/settings/style.css'; import '../src/mood/mood.css'; import './fixtures/control-window-harness';",
       resolveDir: tests, loader: 'ts', sourcefile: 'capability-coverage-entry.ts' },
     bundle: true, write: false, format: 'iife', platform: 'browser', outdir: path.join(os.tmpdir(), 'soft-capability-coverage'), logLevel: 'silent',
     loader: { '.svg': 'text', '.png': 'dataurl' },
+    // Vite's `?url` imports (the lazily loaded Ammo runtime the stage page reaches since I-154 batch 1) are a URL string there; here, an empty one.
+    plugins: [{ name: 'vite-url', setup(b) {
+      b.onResolve({ filter: /\?url$/ }, args => ({ path: args.path, namespace: 'vite-url' }));
+      b.onLoad({ filter: /.*/, namespace: 'vite-url' }, () => ({ contents: 'export default ""', loader: 'js' }));
+    } }],
   });
   const file = (extension: string) => result.outputFiles.find(output => output.path.endsWith(extension))?.text ?? '';
   return { js: file('.js'), css: file('.css') };
@@ -76,7 +81,7 @@ test('the harness mounts every panel of the settings window without errors, so t
 test('every control of the settings window is in the capability list or marked 不开放 there', { skip }, async () => {
   const missing = unregisteredControls((await scan()).controls, patterns());
   assert.deepEqual(missing.map(describeControl), [],
-    '这些控件既不在 shared/capabilities.ts 的清单里，也没写明不开放及原因。新功能要登记：能三方改的写清怎么改；不能的写明原因。');
+    '这些控件既不在 shared/settings/capabilities.ts 的清单里，也没写明不开放及原因。新功能要登记：能三方改的写清怎么改；不能的写明原因。');
 });
 
 test('every control pattern in the list still finds its control (renamed or removed controls show up here)', { skip }, async () => {

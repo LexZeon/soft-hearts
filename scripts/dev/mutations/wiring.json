@@ -1,0 +1,370 @@
+[
+ {
+  "id": "W1-core-switchable",
+  "part": "wiring",
+  "file": "electron/wiring/parts-wiring.ts",
+  "find": "return !p || !p.units.includes(unit) || !!p.core?.includes(unit);",
+  "replace": "return !p || !p.units.includes(unit);",
+  "what": "核心单位（设置、角色卡、聊天和心情、舞台核心、求助卡）也能被单独关掉",
+  "tests": [
+   "tests/part-runner.test.ts"
+  ]
+ },
+ {
+  "id": "W2-reason-keeps-message",
+  "part": "wiring",
+  "file": "electron/wiring/parts-wiring.ts",
+  "find": "return /^[A-Za-z][A-Za-z0-9_]{0,39}$/.test(error.name) ? error.name : 'Error';",
+  "replace": "return error.message;",
+  "what": "关掉一部分的原因里留下了报错原文（可能带路径和对话）",
+  "tests": [
+   "tests/part-runner.test.ts"
+  ]
+ },
+ {
+  "id": "W3-part-off-not-answered",
+  "part": "wiring",
+  "file": "electron/wiring/ipc-wiring.ts",
+  "find": "    if (runner && unit && runner.isOff(part, unit)) throw new PartOffError(part, unit);",
+  "replace": "    void unit;",
+  "what": "关掉的部分的窗口接口照样执行，不回 PART_OFF",
+  "tests": [
+   "tests/part-runner.test.ts",
+   "tests/part-isolation.test.ts"
+  ]
+ },
+ {
+  "id": "W4-privacy-stores-not-refusing",
+  "part": "wiring",
+  "file": "electron/wiring/memory-recycle-wiring.ts",
+  "find": "export function privacyStores(): PrivacyStores {\n  refuseWhilePartOff(); // step 7: before anything is cleared\n",
+  "replace": "export function privacyStores(): PrivacyStores {\n",
+  "what": "有一部分没启动时关「允许记录」照样清（可能只删一半）",
+  "tests": [
+   "tests/privacy-part-off.test.ts"
+  ]
+ },
+ {
+  "id": "W5-recycle-stores-not-refusing",
+  "part": "wiring",
+  "file": "electron/wiring/memory-recycle-wiring.ts",
+  "find": "export function recycleStores(): RecycleStores {\n  refuseWhilePartOff(); // step 7: before anything is taken\n",
+  "replace": "export function recycleStores(): RecycleStores {\n",
+  "what": "有一部分没启动时删角色连带记忆、单条删除照样进行（可能只删一半）",
+  "tests": [
+   "tests/privacy-part-off.test.ts"
+  ]
+ },
+ {
+  "id": "W6-recycle-host-not-refusing",
+  "part": "wiring",
+  "file": "electron/wiring/memory-recycle-wiring.ts",
+  "find": "return refused ? Promise.reject(refused) : run(...args);",
+  "replace": "return run(...args);",
+  "what": "有一部分没启动时回收站照样放回、彻底删除",
+  "tests": [
+   "tests/privacy-part-off.test.ts",
+   "tests/part-isolation.test.ts"
+  ]
+ },
+ {
+  "id": "W7-recording-off-not-checked-first",
+  "part": "wiring",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "        if (field(request, 'enabled') === false) { const refused = privacyRefusal(); if (refused) throw refused; } // step 7: 「允许记录」 off clears everything or nothing\n",
+  "replace": "",
+  "what": "有一部分没启动时关「允许记录」不先拒绝（开关先翻了，清的时候才拒绝：删一半）",
+  "tests": [
+   "tests/part-isolation.test.ts"
+  ]
+ },
+ {
+  "id": "W8-cleanup-skipped-while-off",
+  "part": "wiring",
+  "file": "electron/wiring/parts-wiring.ts",
+  "find": "if (!always && off.has(key(part, unit))) return undefined;",
+  "replace": "if (off.has(key(part, unit))) return undefined;",
+  "what": "部分关掉后它的收尾步骤（放开摄像头、麦克风等）也被跳过",
+  "tests": [
+   "tests/part-runner.test.ts"
+  ]
+ },
+ {
+  "id": "W9-tick-not-isolated",
+  "part": "wiring",
+  "file": "electron/wiring/parts-wiring.ts",
+  "find": "tick(part, unit, run) { return guarded(idOf(part), unit, 'tick', run, false)(); },",
+  "replace": "tick(part, unit, run) { return run(); },",
+  "what": "1 秒时钟里一项出错又会让后面各项都停掉",
+  "tests": [
+   "tests/part-runner.test.ts"
+  ]
+ },
+ {
+  "id": "W10-start-not-isolated",
+  "part": "wiring",
+  "file": "electron/wiring/parts-wiring.ts",
+  "find": "    async startUnit(part, unit, run) {\n      triedStart.add(key(part, unit));\n      if (!isolating(part, unit)) return await run();\n",
+  "replace": "    async startUnit(part, unit, run) {\n      triedStart.add(key(part, unit));\n      return await run();\n",
+  "what": "一部分启动失败又会让整个应用启动失败退出",
+  "tests": [
+   "tests/part-runner.test.ts",
+   "tests/part-isolation.test.ts"
+  ]
+ },
+ {
+  "id": "W11-fail-part-in-packaged-app",
+  "part": "wiring",
+  "file": "electron/wiring/parts-wiring.ts",
+  "find": "if (!raw || at.packaged) return null;",
+  "replace": "if (!raw) return null;",
+  "what": "打包后的正式应用也认 SOFT_HEARTS_FAIL_PART（故意关掉一部分）",
+  "tests": [
+   "tests/part-runner.test.ts"
+  ]
+ },
+ {
+  "id": "W12-away-with-switch-off",
+  "part": "wiring",
+  "file": "electron/senses/user-activity.ts",
+  "find": "      if (!on()) { noteStageAway(false); return UNKNOWN_ACTIVITY; }",
+  "replace": "      if (!on()) { noteStageAway(true); return UNKNOWN_ACTIVITY; }",
+  "what": "「知道你是不是在忙」关着时也说用户不在",
+  "tests": [
+   "tests/user-away-stage.test.ts"
+  ]
+ },
+ {
+  "id": "W13-clock-entry-unwrapped",
+  "part": "wiring",
+  "file": "electron/wiring/clock-wiring.ts",
+  "find": "  tickUnit('initiative', 'rps', () => rps.host.sweep()); // G1",
+  "replace": "  rps.host.sweep(); // G1",
+  "what": "1 秒时钟里有一项不经过部分运行器（它出错又会停掉后面的）",
+  "tests": [
+   "tests/part-units.test.ts"
+  ]
+ },
+ {
+  "id": "W14-shell-answers-early",
+  "part": "wiring",
+  "file": "electron/wiring/ipc-wiring.ts",
+  "find": "shell.handler ? shell.handler(event, ...args) : new Promise((resolve, reject) => { shell.waiting.push({ event, args, resolve, reject }); }));",
+  "replace": "shell.handler ? shell.handler(event, ...args) : undefined);",
+  "what": "窗口在部分注册之前的调用不等，空壳直接回空值（她的设置、语言读成空）",
+  "tests": [
+   "tests/ipc-shells.test.ts"
+  ]
+ },
+ {
+  "id": "W15-part-used-before-ready",
+  "part": "wiring",
+  "file": "electron/wiring/shell-wiring.ts",
+  "find": "  openIpcShells(IPC_SHELL_METHODS);\n",
+  "replace": "  openIpcShells([]);\n",
+  "what": "窗口先加载，却没有空壳：部分还没注册时窗口的调用直接失败（启动失败）",
+  "tests": [
+   "tests/ipc-shells.test.ts"
+  ]
+ },
+ {
+  "id": "W16-waiting-calls-reordered",
+  "part": "wiring",
+  "file": "electron/wiring/ipc-wiring.ts",
+  "find": "    const waiting = shell.waiting.splice(0);\n",
+  "replace": "    const waiting = shell.waiting.splice(0).reverse();\n",
+  "what": "等在空壳里的调用不按来的先后执行（后发的先到）",
+  "tests": [
+   "tests/ipc-shells.test.ts"
+  ]
+ },
+ {
+  "id": "W17-shells-never-closed",
+  "part": "wiring",
+  "file": "electron/wiring/shell-wiring.ts",
+  "find": "  closeIpcShells(); // step 8",
+  "replace": "  void closeIpcShells; // step 8",
+  "what": "最后一次注册后空壳不关：没注册的方法永远挂着，ipcMain.handle 一直被换着",
+  "tests": [
+   "tests/ipc-shells.test.ts"
+  ]
+ },
+ {
+  "id": "W18-injection-before-start",
+  "part": "wiring",
+  "file": "electron/wiring/parts-wiring.ts",
+  "find": "  const injectedLater = (part: string, unit: string) => { if (startsOver || triedStart.has(key(part, unit))) injected(part, unit); };",
+  "replace": "  const injectedLater = (part: string, unit: string) => { void startsOver; injected(part, unit); };",
+  "what": "注入的失败在部分启动之前就打到它的回调上（窗口先加载后，被关掉的原因变成回调而不是启动，测不到启动失败）",
+  "tests": [
+   "tests/part-runner.test.ts",
+   "tests/part-isolation.test.ts"
+  ]
+ },
+ {
+  "id": "W19-lazy-shell-answers-before-creating",
+  "part": "wiring",
+  "file": "electron/wiring/lazy-wiring.ts",
+  "find": "  const run = (method: string, args: unknown[]) => { ensure(); return table!.get(method)!(...args); };",
+  "replace": "  const run = (method: string, args: unknown[]) => table?.get(method)?.(...args);",
+  "what": "按需创建的部分：空壳不先创建就回答（第一次调用回空，Claude 任务的开关读成没有）",
+  "tests": [
+   "tests/lazy-parts.test.ts"
+  ]
+ },
+ {
+  "id": "W20-recorder-misses-lazy-operation",
+  "part": "wiring",
+  "file": "electron/wiring/lazy-wiring.ts",
+  "find": "  for (const entry of lazy.methods) shell(entry.method);",
+  "replace": "  for (const entry of lazy.methods.slice(1)) shell(entry.method);",
+  "what": "按需创建的部分有一个方法启动时没登记空壳（内部通道录不到，窗口调用说没有处理函数）",
+  "tests": [
+   "tests/lazy-parts.test.ts",
+   "tests/ipc-shells.test.ts"
+  ]
+ },
+ {
+  "id": "W21-lazy-made-every-call",
+  "part": "wiring",
+  "file": "electron/wiring/lazy-wiring.ts",
+  "find": "    if (table) return;\n",
+  "replace": "",
+  "what": "按需创建的部分每次调用都重新创建（状态丢失，开关和任务列表每次重来）",
+  "tests": [
+   "tests/lazy-parts.test.ts"
+  ]
+ },
+ {
+  "id": "W22-late-controls-action-not-held",
+  "part": "wiring",
+  "file": "electron/wiring/late-controls-wiring.ts",
+  "find": "    if (state !== 'ready' && CONTROL_ACTION_CHANNELS.includes(channel)) { held.push([channel, args]); void start(); return; }\n",
+  "replace": "",
+  "what": "控制窗口晚载时，带我去的页面、Claude 任务提议、内部通道动作、Unbound 打的字在页面准备好之前就发出去，丢了",
+  "tests": [
+   "tests/late-controls.test.ts"
+  ]
+ },
+ {
+  "id": "W23-late-controls-ready-any-window",
+  "part": "wiring",
+  "file": "electron/wiring/late-controls-wiring.ts",
+  "find": "    if (sender !== contents.id || state === 'ready') return;\n",
+  "replace": "    if (state === 'ready') return;\n",
+  "what": "桌宠窗口要角色卡也被当成控制窗口准备好了，攒着的动作提前发出去",
+  "tests": [
+   "tests/late-controls.test.ts"
+  ]
+ },
+ {
+  "id": "W24-late-controls-show-without-load",
+  "part": "wiring",
+  "file": "electron/wiring/late-controls-wiring.ts",
+  "find": "  controls.show = () => { void start(); show(); };\n",
+  "replace": "  controls.show = () => { show(); };\n",
+  "what": "晚载的控制窗口打开时不加载页面（一片空白）",
+  "tests": [
+   "tests/late-controls.test.ts"
+  ]
+ },
+ {
+  "id": "W25-late-panel-listens-after-ready",
+  "part": "wiring",
+  "file": "src/main.ts",
+  "find": "  await mountControlTools();\n",
+  "replace": "  applyCharacterCards(await window.desktop.getCharacterCards());\n  await mountControlTools();\n",
+  "what": "控制窗口启动时先要角色卡、后挂 Unbound 打字和任务提议的监听：晚载时攒着的动作发过去没人接",
+  "tests": [
+   "tests/late-controls.test.ts"
+  ]
+ },
+ {
+  "part": "wiring",
+  "id": "I207-no-milestone-still-a-line",
+  "file": "electron/wiring/card-milestone-wiring.ts",
+  "find": "  if (!card.milestone) return '';\n  try { return milestoneLine(",
+  "replace": "  if (!card.milestone) return '这一单：还没签收。';\n  try { return milestoneLine(",
+  "what": "I-207：没有声明里程碑的角色卡，每一轮也多出一句“这一单：还没签收”（不声明就一个字都不该多）",
+  "tests": [
+   "tests/i207-card-milestone.test.ts"
+  ]
+ },
+ {
+  "part": "wiring",
+  "id": "I207-any-marker-records",
+  "file": "electron/wiring/card-milestone-wiring.ts",
+  "find": "!markers?.some(isMilestoneMarker)",
+  "replace": "!markers?.length",
+  "what": "I-207：她回复里任何一个看不见的记号（比如闹钟记号）都被当成“签收了”记下来",
+  "tests": [
+   "tests/i207-card-milestone.test.ts"
+  ]
+ },
+ {
+  "part": "wiring",
+  "id": "I207-clear-skips-bin",
+  "file": "electron/wiring/card-milestone-wiring.ts",
+  "find": "await recycled(take, () => relationship.clearCardMilestone(card.id));",
+  "replace": "await relationship.clearCardMilestone(card.id);",
+  "what": "I-207：用户清掉里程碑时没有先进「最近删除的」，清掉就找不回",
+  "tests": [
+   "tests/i207-card-milestone.test.ts"
+  ]
+ },
+ {
+  "part": "wiring",
+  "id": "I208-whole-book-every-turn",
+  "file": "electron/wiring/card-objects-wiring.ts",
+  "find": "recallObject(card.object, notes, userText)",
+  "replace": "{ entries: card.object.entries, notes }",
+  "what": "I-208：每一轮都把整本《地球投递须知》和全部批注塞进她的提示词，不管用户说了什么（首字会变慢）",
+  "tests": [
+   "tests/i208-archive-step3.test.ts"
+  ]
+ },
+ {
+  "part": "wiring",
+  "id": "I208-note-delete-skips-bin",
+  "file": "electron/wiring/card-objects-wiring.ts",
+  "find": "await recycled(() => take(request.id), () => relationship.removeObjectNote(request.characterId, request.id));",
+  "replace": "await relationship.removeObjectNote(request.characterId, request.id);",
+  "what": "I-208：用户在档案页删一条批注，直接删掉，没有先放进回收站（找不回来）",
+  "tests": [
+   "tests/i208-archive-step3.test.ts"
+  ]
+ },
+ {
+  "part": "wiring",
+  "id": "X-export-clean-stamp-in-data",
+  "file": "shared/voice/silero-vad.json",
+  "find": "\"use\": \"I-099: voice activity",
+  "replace": "\"use\": \"I-099 (user\u00202026-11-12): voice activity",
+  "what": "公开版导出：数据文件里又写进了\"用户 日期\"的归因（导出改不了数据文件，发布日才发现）",
+  "tests": [
+   "tests/public-export-clean.test.mjs"
+  ]
+ },
+ {
+  "part": "wiring",
+  "id": "X-export-clean-personal-path",
+  "file": "tests/helpers/banned-terms.mjs",
+  "find": "// The maintainer's private word list",
+  "replace": "// C:\u005cUsers\u005crealperson\u005cnotes: the maintainer's private word list",
+  "what": "公开版导出：保留的文件里又写进了一个真人用户名的本机路径",
+  "tests": [
+   "tests/public-export-clean.test.mjs"
+  ]
+ },
+ {
+  "part": "wiring",
+  "id": "X-export-clean-email",
+  "file": "tests/helpers/banned-terms.mjs",
+  "find": "// names leaking use it when the file is there",
+  "replace": "// write to someone\u0040realcorp.com: names leaking use it when the file is there",
+  "what": "公开版导出：保留的文件里又写进了一个真实邮箱地址",
+  "tests": [
+   "tests/public-export-clean.test.mjs"
+  ]
+ }
+]

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CompletedReplySpeech } from '../electron/completed-reply-speech';
+import { CompletedReplySpeech } from '../electron/voice/completed-reply-speech';
 
 const owner = 7, id = 'reply-1', scope = 'card-provider-conversation', full = '第一句。第二句。';
 const flush = async () => { await Promise.resolve(); await Promise.resolve(); };

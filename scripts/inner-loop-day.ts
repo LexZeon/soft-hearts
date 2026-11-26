@@ -9,7 +9,7 @@
 // Output (synthetic text only) goes to .local/inner-loop-day/.
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { decideWithClaude } from '../electron/inner-loop/model';
+import { decideWithClaude } from '../electron/initiative/inner-loop/model';
 import { runInnerLoopDay, type DayDecide, type DayResult } from './lib/inner-loop-day';
 import { DAY_BLOCKS, GENE_DAY_CARD, SLOW_TIRED_CARD } from './inner-loop-day-cards';
 

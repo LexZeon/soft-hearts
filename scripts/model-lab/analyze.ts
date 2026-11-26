@@ -4,9 +4,9 @@
  * - the profile and collision proxy from the stage adapter
  *   (src/stage/model-profile.ts `StageModelProfile`, as a model that is not the
  *   host-verified Gene), fed by the MMDLoader-equivalent mesh of pmx-mesh.ts;
- * - the retarget plan from src/stage/motion-retarget.ts `StageMotionRetarget`
+ * - the retarget plan from src/actions/motion-retarget.ts `StageMotionRetarget`
  *   (Gene source rig, same rig key), and each bundled motion through
- *   shared/motion-fit.ts `adaptMotion`, which is what the stage's VMD parser
+ *   shared/actions/motion-fit.ts `adaptMotion`, which is what the stage's VMD parser
  *   hook calls for catalog motions; motions are parsed with the stage's
  *   `createVmdParser` (header repair, default-track strip).
  * The lab only adds read-only diagnostics on the result: the arm clearance of
@@ -14,23 +14,23 @@
  * the flagged sample times (`fitSamples`). No file or network access here.
  */
 import { createHash } from 'node:crypto';
-import bundledAssets from '../../shared/bundled-assets.json';
-import catalogData from '../../shared/motion-catalog.json';
-import type { MotionCatalog } from '../../shared/motion-library';
+import bundledAssets from '../../shared/actions/bundled-assets.json';
+import catalogData from '../../shared/actions/motion-catalog.json';
+import type { MotionCatalog } from '../../shared/actions/motion-library';
 import {
-  CORE_BONES, MODEL_PROFILE_VERSION, MORPH_SLOTS, buildModelProfile, profileBindings, standardBoneOfName,
+  CORE_BONES, MODEL_PROFILE_VERSION, MORPH_SLOTS, buildModelProfile, profileBindings, standardBoneOfName, weakSlots,
   type ModelProfile, type ModelProfileInput, type ModelProfileSummary, type MorphSlot, type SlotPolicy, type StandardBone,
-} from '../../shared/model-profile';
-import { COLLISION_PROXY_VERSION, classifyProxyBones, type ProxySegment } from '../../shared/collision-proxy';
-import { contactFor } from '../../shared/motion-contact';
-import { RETARGET_VERSION, tracksOnRig, vlength, vsub, type RetargetPlan, type RetargetReport, type VmdLike } from '../../shared/motion-retarget';
+} from '../../shared/stage/model-profile';
+import { COLLISION_PROXY_VERSION, classifyProxyBones, type ProxySegment } from '../../shared/foundation/collision-proxy';
+import { contactFor } from '../../shared/actions/motion-contact';
+import { RETARGET_VERSION, tracksOnRig, vlength, vsub, type RetargetPlan, type RetargetReport, type VmdLike } from '../../shared/actions/motion-retarget';
 import {
   adaptMotion, armClearance, fitFrames, fitSamples, usesFittedBody, type AdaptedMotion, type FitIssue, type MotionFitStatus,
-} from '../../shared/motion-fit';
+} from '../../shared/actions/motion-fit';
 import { StageModelProfile, modelProfileInput } from '../../src/stage/model-profile';
-import { GENE_SOURCE_RIG, StageMotionRetarget } from '../../src/stage/motion-retarget';
-import { createVmdParser } from '../../src/stage/vmd';
-import type { VmdTrackData, VmdTrackReport } from '../../src/stage/vmd-tracks';
+import { GENE_SOURCE_RIG, StageMotionRetarget } from '../../src/actions/motion-retarget';
+import { createVmdParser } from '../../src/foundation/vmd';
+import type { VmdTrackData, VmdTrackReport } from '../../src/foundation/vmd-tracks';
 import { labMesh, readPmx, type LabMesh, type PmxConversion } from './pmx-mesh';
 
 export const MODEL_LAB_VERSION = 1;
@@ -122,7 +122,7 @@ export interface ModelReport {
       ambiguous: { bone: StandardBone; names: string[] }[]; features: ModelProfile['bones']['features'] };
     morphs: Record<MorphSlot, { name: string | null; index: number; policy: SlotPolicy; amplitude: number; scale: number; rejected: { name: string; reason: string }[] }>;
     /** What the stage writes for lip-sync, blink, smile and troubled brows (morph names), with calibrated scales by morph name. */
-    bindings: { blink: string | null; blinkPartner: string | null; mouth: string | null; smile: string | null; sad: string | null; scales: Record<string, number> };
+    bindings: { blink: string | null; blinkPartner: string | null; mouth: string | null; smile: string | null; sad: string | null; weak: Partial<Record<MorphSlot, number>> };
     restPose: { pose: ModelProfile['proportions']['restPose']; armDeg: number | null; alignedToGeneDeg: RetargetPlan['alignedDeg'] };
     proportions: { height: number; headSize: number; headsTall: number; shoulderWidth: number | null; armLength: number | null; legLength: number | null;
       eyeLine: ModelProfile['proportions']['eyeLineSource']; mouth: ModelProfile['proportions']['mouth']['source'] };
@@ -151,14 +151,14 @@ export interface ModelReport {
 const round = (value: number, digits = 4) => { const factor = 10 ** digits; return Math.round(value * factor) / factor; };
 const roundOrNull = (value: number | null, digits = 4) => value === null || !Number.isFinite(value) ? null : round(value, digits);
 const ratio = (value: number | null, reference: number | null) => value !== null && reference ? round(value / reference, 3) : null;
-/** The last frame retargeting and the check use: the latest bone or morph key (as shared/motion-retarget.ts retargetTracks counts it). */
+/** The last frame retargeting and the check use: the latest bone or morph key (as shared/actions/motion-retarget.ts retargetTracks counts it). */
 function lastFrameOf(vmd: VmdLike): number {
   let last = 0;
   for (const frame of vmd.motions) if (Number.isInteger(frame.frameNum) && frame.frameNum > last) last = frame.frameNum;
   for (const frame of vmd.morphs) if (Number.isInteger(frame.frameNum) && frame.frameNum > last) last = frame.frameNum;
   return last;
 }
-/** shared/collision-proxy.ts classifies excluded (hair/skirt/accessory/physics) bones as -2; cross-checked against the proxy's own count. */
+/** shared/foundation/collision-proxy.ts classifies excluded (hair/skirt/accessory/physics) bones as -2; cross-checked against the proxy's own count. */
 const EXCLUDED_CLASS = -2;
 const timer = () => { const start = performance.now(); return () => round(performance.now() - start, 1); };
 const WATCH_TIGHTEST = 5, WATCH_TIMES = 8;
@@ -259,15 +259,13 @@ function describeProfile(report: ModelReport, profile: ModelProfile, stage: Stag
   // The stage's bindings (the same call StageModelProfile makes for a model that is not the reviewed Gene), named.
   const bindings = profileBindings(profile, false);
   const morphName = (index: number) => index >= 0 ? input.morphs[index]?.name ?? String(index) : null;
-  const scales: Record<string, number> = {};
-  for (const [index, scale] of bindings.scales) scales[morphName(index)!] = round(scale, 3);
   report.profile = {
     summary: stage.summary,
     bones: { mapped, missing: [...profile.bones.missing], missingCore: CORE_BONES.filter(bone => profile.bones.missing.includes(bone)),
       ambiguous: profile.bones.ambiguous.map(entry => ({ bone: entry.bone, names: [...entry.names] })), features: { ...profile.bones.features } },
     morphs,
     bindings: { blink: morphName(bindings.blink), blinkPartner: morphName(bindings.blinkPartner), mouth: morphName(bindings.mouth), smile: morphName(bindings.smile),
-      sad: morphName(bindings.sad), scales },
+      sad: morphName(bindings.sad), weak: weakSlots(profile) },
     restPose: { pose: p.restPose, armDeg: roundOrNull(p.restArmDeg, 1), alignedToGeneDeg: {} },
     proportions: { height: round(p.height), headSize: round(p.headSize), headsTall: round(p.headsTall, 2), shoulderWidth: roundOrNull(p.shoulderWidth),
       armLength: roundOrNull(p.armLength), legLength: roundOrNull(p.legLength), eyeLine: p.eyeLineSource, mouth: p.mouth.source },

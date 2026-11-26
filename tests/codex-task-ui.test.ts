@@ -1,11 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { CodexTasks, mountCodexTaskOffer, type CodexTaskBridge } from "../src/ui/CodexTasks";
-import { claudeTasksOffered, watchClaudeTasks } from "../src/ui/claude-task-gate";
-import type { CodexTaskDetails, CodexTaskEvent, CodexTaskSummary } from "../shared/codex-tasks";
-import { DEFAULT_SETTINGS } from "../shared/defaults";
-import { registerUiMessages, setUiLanguage } from '../shared/ui-language';
-import { ENGLISH_TASKS_UI_COPY } from '../shared/ui-copy.tasks.en';
+import { CodexTasks, mountCodexTaskOffer, type CodexTaskBridge } from "../src/safety/CodexTasks";
+import { claudeTasksOffered, watchClaudeTasks } from "../src/safety/claude-task-gate";
+import type { CodexTaskDetails, CodexTaskEvent, CodexTaskSummary } from "../shared/safety/codex-tasks";
+import { DEFAULT_SETTINGS } from "../shared/foundation/defaults";
+import { registerUiMessages, setUiLanguage } from '../shared/foundation/ui-language';
+import { ENGLISH_TASKS_UI_COPY } from '../shared/foundation/ui-copy.tasks.en';
 
 // Narrow DOM fixture: records text and actions; no script parsing or browser behavior is mocked.
 class Node {

@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import { MoodHost } from '../electron/mood';
-import { MoodInputQueue } from '../src/ui/MoodCompanion';
-import { PetInteractionTracker } from '../src/ui/PetInteraction';
-import type { MoodInput } from '../shared/mood-runtime';
+import { MoodHost } from '../electron/mood/mood';
+import { MoodInputQueue } from '../src/mood/MoodCompanion';
+import { PetInteractionTracker } from '../src/mood/PetInteraction';
+import type { MoodInput } from '../shared/mood/mood-runtime';
 
 test('rapid immediate reentry cancels only unsubmitted old tail and the real host never receives an expired packet', async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'soft-immediate-session-'));

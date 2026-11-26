@@ -1,8 +1,8 @@
 // A persistent Claude chat whose process start can be held open, so a test can act in the late window: after a turn was put
 // together, while its message waits for the process (the same stand-in as tests/recall-late-window.test.ts). No CLI, no
 // network, no model: the fake process keeps every message line it is handed and answers one short line.
-import { PersistentClaudeChat } from '../../electron/claude-session';
-import type { ClaudeChatProcess } from '../../electron/claude-process';
+import { PersistentClaudeChat } from '../../electron/brain/claude-session';
+import type { ClaudeChatProcess } from '../../electron/brain/claude-process';
 
 export function deferred<T>() { let resolve!: (value: T) => void; const promise = new Promise<T>(done => { resolve = done; }); return { promise, resolve }; }
 

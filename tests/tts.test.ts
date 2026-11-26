@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { DEFAULT_TTS_CONFIG, DEFAULT_TTS_INSTRUCTION, effectiveTtsConfig, TTS_EMOTIONS, type TtsConfig, type TtsStreamEvent } from "../shared/tts";
-import { BAILIAN_TTS_PATH, resolveTtsKey, synthesizeBailianSpeech, ttsInstruction, validateTtsConfig } from "../electron/tts";
+import { DEFAULT_TTS_CONFIG, DEFAULT_TTS_INSTRUCTION, effectiveTtsConfig, TTS_EMOTIONS, type TtsConfig, type TtsStreamEvent } from "../shared/voice/tts";
+import { BAILIAN_TTS_PATH, resolveTtsKey, synthesizeBailianSpeech, ttsInstruction, validateTtsConfig } from "../electron/voice/tts";
 
 const config = (patch: Partial<TtsConfig> = {}): TtsConfig => ({ ...DEFAULT_TTS_CONFIG, provider: "bailian", apiHost: "https://real-console-host.example", region: "user-region", apiKey: "fixture-key", ...patch });
 const audio = (data: Uint8Array | number[] = [0, 0, 5, 0], finish: unknown = null) => ({ output: { type: "sentence-synthesis", audio: { data: Buffer.from(data).toString("base64") }, finish_reason: finish } });
@@ -156,17 +156,20 @@ test("an interrupted stream cancels its reader and reports a safe transport fail
   });
 });
 
-test("character and model speech styles stay private to the exact pair and retain global connection identity", () => {
+test("character speech styles stay private to the character, follow her to another model, and retain global connection identity", () => {
   const bound = validateTtsConfig(config({ styleBindings: [{ characterId: "character-a", modelPath: "private-model-a.pmx", voice: "custom_voice", instruction: "本机角色风格。", emotion: "custom", rate: 0.8 }] }));
   const own = effectiveTtsConfig(bound, "character-a", "private-model-a.pmx");
   assert.equal(own.instruction, "本机角色风格。");
   assert.equal(own.voice, "custom_voice");
   assert.equal(own.rate, 0.8);
   assert.equal(own.apiHost, bound.apiHost); assert.equal(own.apiKey, bound.apiKey);
-  for (const [character, model] of [["character-b", "private-model-a.pmx"], ["character-a", "private-model-b.pmx"]]) {
-    const other = effectiveTtsConfig(bound, character, model);
-    assert.equal(other.instruction, ""); assert.equal(other.voice, DEFAULT_TTS_CONFIG.voice);
-  }
+  // Another character never gets her style, on any model.
+  const other = effectiveTtsConfig(bound, "character-b", "private-model-a.pmx");
+  assert.equal(other.instruction, ""); assert.equal(other.voice, DEFAULT_TTS_CONFIG.voice);
+  // The same character on a new model keeps her own voice (after Mumi got her
+ // own model; it used to fall back to the global voice here). docs/claude/2026-11-19-voice-follows-character.md
+  const moved = effectiveTtsConfig(bound, "character-a", "private-model-b.pmx");
+  assert.equal(moved.instruction, "本机角色风格。"); assert.equal(moved.voice, "custom_voice");
   assert.equal(bound.instruction, "");
   const many = validateTtsConfig(config({ styleBindings: Array.from({ length: 80 }, (_, index) => ({ characterId: `character-${index}`, modelPath: "local.pmx", voice: "local_voice", instruction: "x".repeat(3000), emotion: "custom", rate: 9 })) }));
   assert.equal(many.styleBindings?.length, 64);

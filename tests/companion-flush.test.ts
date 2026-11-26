@@ -10,8 +10,8 @@ import assert from 'node:assert/strict';
 import { access, mkdtemp, readdir, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CompanionService } from '../electron/companion';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
+import { CompanionService } from '../electron/brain/companion';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
 
 const provider = { kind: 'claude' as const, baseUrl: 'https://flush.invalid/v1', model: 'fixture' };
 const exists = (file: string) => access(file).then(() => true, () => false);

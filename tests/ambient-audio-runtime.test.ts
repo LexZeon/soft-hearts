@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { AmbientAudioRuntime, type AmbientRuntimeState, type AmbientRuntimeSubmission } from '../electron/ambient-audio-runtime';
-import type { AmbientLanguage, AmbientScope, AmbientTranscript, AmbientTranscriptInput } from '../shared/ambient-audio';
-import type { VoiceInputConfig } from '../shared/contracts';
-import { encodeWav } from '../src/ui/MediaInput';
+import { AmbientAudioRuntime, type AmbientRuntimeState, type AmbientRuntimeSubmission } from '../electron/senses/ambient-audio-runtime';
+import type { AmbientLanguage, AmbientScope, AmbientTranscript, AmbientTranscriptInput } from '../shared/senses/ambient-audio';
+import type { VoiceInputConfig } from '../shared/foundation/settings';
+import { encodeWav } from '../src/senses/MediaInput';
 
 const language: AmbientLanguage = { status: 'detected', language: 'ja', source: 'provider' };
 const tick = async () => { for (let index = 0; index < 12; index++) await Promise.resolve(); };

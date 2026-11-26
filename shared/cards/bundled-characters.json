@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "models": [
+    {
+      "key": "bundled:one",
+      "name": "One",
+      "model": "one/one.vrm",
+      "files": [
+        {
+          "path": "one/one.vrm",
+          "bytes": 16153592,
+          "sha256": "5a6577364823c2b4afa7c245ca8088e5493e87dc7e2db489c41ddbf208fb7d6c"
+        }
+      ]
+    },
+    {
+      "key": "bundled:mumi",
+      "name": "Mumi",
+      "model": "mumi/model.pmx",
+      "files": [
+        {
+          "path": "mumi/model.pmx",
+          "bytes": 2482935,
+          "sha256": "3a1111821c536faf1e04de50717e6a53714f153385f276a8100466a565c52099"
+        },
+        {
+          "path": "mumi/tex/00_01.png",
+          "bytes": 70827,
+          "sha256": "1ca30f44144d6c4de4aa96d55df75f613834276f6ceda3ce5ea30958c95d8f99"
+        },
+        {
+          "path": "mumi/tex/03_02.png",
+          "bytes": 120201,
+          "sha256": "f1a8759a8776522632143ca92319d978e7a59b0945fdc6f9128a498e40798e07"
+        },
+        {
+          "path": "mumi/tex/04_04.png",
+          "bytes": 136079,
+          "sha256": "f3f09d5bfc8852b649b58cfc0a2aa08d4343e0fab8a817bb1af6429f0470858e"
+        },
+        {
+          "path": "mumi/tex/08_06.png",
+          "bytes": 82033,
+          "sha256": "77520789472ae695c1cd075e166a68994617d8fd4e7f9f2c79c4fc3cae7bb794"
+        },
+        {
+          "path": "mumi/tex/09_07.png",
+          "bytes": 11369,
+          "sha256": "83b0dbd5e1565b33940b8480f3157e880b1fd226bfbc21f581d915cef7a4848f"
+        },
+        {
+          "path": "mumi/tex/10_08.png",
+          "bytes": 11310,
+          "sha256": "5d48b5e0da7a537ee834d66ae0d286cf4ba978916978b4ea73f2947a0aee39c9"
+        },
+        {
+          "path": "mumi/tex/11_09.png",
+          "bytes": 50851,
+          "sha256": "456218e7bfa3e9f529b870870a2f4795bb155c5ab0e89d5052da2f06b613e865"
+        },
+        {
+          "path": "mumi/tex/12_10.png",
+          "bytes": 522798,
+          "sha256": "8e18c76d76f9fc3e6febc78a264560698e25af5a5190cb55328101e30330b7c2"
+        },
+        {
+          "path": "mumi/tex/14_12.png",
+          "bytes": 854813,
+          "sha256": "0d2039357078554503113659e6bd68648f002f2c0a5efa883c01260c1badb748"
+        },
+        {
+          "path": "mumi/tex/15_13.png",
+          "bytes": 147087,
+          "sha256": "f09db6e3527e3c2fe383ba0426d672efe0925c3efcfb7bb5204103ed6ab2e008"
+        },
+        {
+          "path": "mumi/tex/16_14.png",
+          "bytes": 2592117,
+          "sha256": "cc5b739d59e42d576cf347988d630add9c2c85665dab23e8d45034ee76483543"
+        },
+        {
+          "path": "mumi/tex/17_15.png",
+          "bytes": 219004,
+          "sha256": "c3008cf8c3665adf86ce97f4acfdc191b996412fb6f7f38d5ac2a7e71ea4d165"
+        },
+        {
+          "path": "mumi/tex/19_16.png",
+          "bytes": 119000,
+          "sha256": "54ebc6f7a841a7a5f006326512ef5bdaa9d4512112c56519f15ee46187f9f93b"
+        },
+        {
+          "path": "mumi/tex/20_17.png",
+          "bytes": 390832,
+          "sha256": "8204cff8a1235e8bd5c1d0ac627ce9ae79c72a668ed4e7e7db1d1a05b83f6ca8"
+        },
+        {
+          "path": "mumi/tex/21_18.png",
+          "bytes": 117802,
+          "sha256": "ca13dbb5b7dbb47fbd24f651d67655e46e37ff6b5c5ebcdbeeb1eb7f8b0c6472"
+        }
+      ]
+    }
+  ]
+}

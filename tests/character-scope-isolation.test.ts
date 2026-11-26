@@ -7,12 +7,12 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CompanionService, memoryProviderScope } from '../electron/companion';
-import { RpsStore } from '../electron/rps/store';
-import { UserProfileManagement } from '../electron/user-profile-management';
-import { UserProfileStore, type UserProfileScope } from '../electron/user-profile';
-import { localDateKey } from '../electron/diary/diary-dates';
-import type { RpsGameRecord } from '../shared/rps-memory';
+import { CompanionService, memoryProviderScope } from '../electron/brain/companion';
+import { RpsStore } from '../electron/initiative/rps/store';
+import { UserProfileManagement } from '../electron/memory/user-profile-management';
+import { UserProfileStore, type UserProfileScope } from '../electron/memory/user-profile';
+import { localDateKey } from '../electron/memory/diary/diary-dates';
+import type { RpsGameRecord } from '../shared/initiative/rps-memory';
 
 const provider = { kind: 'claude' as const, baseUrl: 'https://scope.invalid/v1', model: 'fixture' };
 const providerScope = memoryProviderScope(provider);

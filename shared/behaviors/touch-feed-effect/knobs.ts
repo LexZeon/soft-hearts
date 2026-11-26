@@ -17,7 +17,7 @@
  *    恢复新鲜要多久照卡上的（摸头 5 分钟、点心 30 分钟）；腻得慢的卡腻得浅，恢复得早一点，腻得快的晚一点。
  * 这些都只是试用值，没在真机上看过。
  */
-import type { MoodLabel, MoodTendency } from '../../mood';
+import type { MoodLabel, MoodTendency } from '../../foundation/mood';
 
 export const TOUCH_FEED_KINDS = ['touch', 'food'] as const;
 export type TouchFeedKind = typeof TOUCH_FEED_KINDS[number];
@@ -62,7 +62,7 @@ export const TOUCH_FEED_EFFECT_KNOBS: TouchFeedEffectKnobs = Object.freeze<Touch
       // 怎么调：太常 → base 调小或 mood、now 里的倍数调小；满足得太多 → range 两个数一起调小（上限不能超过 1）
       full: {
         label: '正好挠到心上', base: 1, range: [0.92, 1],
-        mood: { longing: 1.8, sad: 1.6, relieved: 1.4, close: 1.5, concerned: 1.3, content: 1.2, happy: 1.1,
+        mood: { longing: 1.8, sad: 1.6, relieved: 1.4, close: 1.5, concerned: 1.3, afraid: 1.3, content: 1.2, happy: 1.1,
           upset: 0.5, disappointed: 0.6, 'tense-expectation': 0.8 },
         now: { close: 1.4, wistful: 1.4, comfortable: 1.2 }, personality: { close: 0.5 }, moments: { sleepy: 1.2 },
       },
@@ -93,7 +93,7 @@ export const TOUCH_FEED_EFFECT_KNOBS: TouchFeedEffectKnobs = Object.freeze<Touch
       full: {
         label: '吃得很香', base: 1, range: [0.92, 1],
         mood: { happy: 1.4, excited: 1.3, content: 1.3, relieved: 1.3, close: 1.1,
-          upset: 0.7, concerned: 0.7, sad: 0.7, 'tense-expectation': 0.7 },
+          upset: 0.7, concerned: 0.7, afraid: 0.7, sad: 0.7, 'tense-expectation': 0.7 },
         now: { comfortable: 1.4, playful: 1.2 }, personality: { comfortable: 0.5 }, moments: { tired: 0.8, sleepy: 0.6 },
       },
       // 用户可能怎么说：喂点心的效果平时太弱了／太强了（不是某几次，是一直都这样）
@@ -106,7 +106,7 @@ export const TOUCH_FEED_EFFECT_KNOBS: TouchFeedEffectKnobs = Object.freeze<Touch
       // 怎么调：太常 → base 调小或 mood、moments 里的倍数调小；太弱 → range 下限调大
       light: {
         label: '没什么胃口', base: 0.6, range: [0.6, 0.78],
-        mood: { concerned: 1.5, upset: 1.5, disappointed: 1.4, sad: 1.4, 'tense-expectation': 1.5, happy: 0.7, excited: 0.7 },
+        mood: { concerned: 1.5, afraid: 1.5, upset: 1.5, disappointed: 1.4, sad: 1.4, 'tense-expectation': 1.5, happy: 0.7, excited: 0.7 },
         now: { cautious: 1.3 }, personality: { comfortable: -0.4 }, moments: { tired: 1.3, sleepy: 1.6 },
       },
     },

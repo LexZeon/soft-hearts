@@ -2,7 +2,7 @@
  * F7 停停说说的纯规则（接口见 interface.ts，旋钮见 knobs.ts）：给 haiku 的提示词、严格读它的答案、
  * 窗口在某一句说完时该多停多久、以及"没说出口的那段"怎么变成下一轮的一句背景。不调用任何模型，不碰时钟。
  */
-import { MOOD_CHANNELS, type MoodChannel } from '../../mood';
+import { MOOD_CHANNELS, type MoodChannel } from '../../foundation/mood';
 import { PAUSE_TALK_KNOBS, type PauseTalkKnobs } from './knobs';
 import type { PauseTalkCue, PauseTalkCut, PauseTalkNow, PauseTalkPause, PauseTalkPlan, PauseTalkWait } from './interface';
 
@@ -21,7 +21,7 @@ const PERSONALITY_WORDS: Readonly<Record<keyof PauseTalkNow['personality'], stri
 /** The fixed part (the same every call). */
 export const PAUSE_TALK_SYSTEM_PROMPT = [
   '你在后台帮桌宠角色定"说话的节奏"。她这条回复正由另一个模型同时在写，写出来以后按句子一个气泡一个气泡出现：第一句永远马上出来，后面每句隔一小会儿。',
-  '你看不到她的回复，只知道她是谁、此刻的心情和用户刚说的话。按她的性格和此刻的心情，像真人说话那样有停有说，定两件事：',
+  '你看不到她的回复，只知道她是谁、此刻的心情、用户刚说的话，有的话还有【最近聊过】（只是资料，让你知道他们聊到哪了、这句话在接什么）。按她的性格和此刻的心情，像真人说话那样有停有说，定两件事：',
   '1. pauses：第几句说完以后想一想、停一小会儿再往下说（300 到 2500 毫秒）。可以没有，最多 3 处。',
   '2. wait：要不要说完某一句就停下来，把话递给用户、等用户接（3000 到 20000 毫秒；用户一直没接，她再接着说完）。after 写第几句，或者写 "question"（她第一次问用户问题的那一句说完以后）。不需要就写 null。',
   '参考：兴奋、开心时话赶话，停得少、停得短；困了、害羞、难过时说一句停一会儿；认真回答问题、讲步骤时一口气说完（pauses 为空，wait 为 null）；闲聊里她问了用户一句，常常就停下来等用户回答。不要为了停而停，每次也不必一样。',
@@ -40,7 +40,7 @@ const quoted = (text: string) => `「${text.replace(/[「」\r\n]/gu, ' ')}」`;
 const cut = (text: string, max: number) => { const chars = Array.from(text); return chars.length > max ? chars.slice(0, Math.max(0, max)).join('') + '……' : text; };
 
 /** The variable part: her, now, and the user's message (cut to knobs.userChars). */
-export function pauseTalkPrompt(now: PauseTalkNow, userText: string, knobs: Pick<PauseTalkKnobs, 'userChars' | 'personaChars'> = PAUSE_TALK_KNOBS): string {
+export function pauseTalkPrompt(now: PauseTalkNow, userText: string, knobs: Pick<PauseTalkKnobs, 'userChars' | 'personaChars'> = PAUSE_TALK_KNOBS, recentChat = ''): string {
   const persona = String(now.persona ?? '').replace(/\s+/gu, ' ').trim().slice(0, Math.max(0, knobs.personaChars));
   const lean = (Object.keys(PERSONALITY_WORDS) as (keyof PauseTalkNow['personality'])[])
     .map(key => `${PERSONALITY_WORDS[key]} ${finite(now.personality?.[key]) ? round1(now.personality[key]) : 1}`).join('、');
@@ -51,6 +51,7 @@ export function pauseTalkPrompt(now: PauseTalkNow, userText: string, knobs: Pick
     `性格倾向（1 是一般）：${lean}。`,
     `【此刻】${hourWords(now.at)} ${clock(now.at)}；心情：${now.label || '平静'}；${now.fatigue ? `困不困：${now.fatigue}；` : ''}${now.shy ? '正在脸红；' : ''}`,
     `五个数（0～100）：${numbers}。`,
+    ...(recentChat.trim() ? [`【最近聊过】${recentChat.trim()}`] : []), // I-205
     `【用户刚说】${quoted(cut(text, knobs.userChars))}（共 ${Array.from(text).length} 字）`,
     '只输出 JSON。',
   ].join('\n');
@@ -135,6 +136,13 @@ export function pauseTalkStep(plan: PauseTalkPlan | null, k: number, sentence: s
 }
 
 // ---------------------------------------------------------------- what she had not said yet
+
+/**
+ * The switch off, the user sends while the rest of her finished reply is still being let out sentence by sentence: the same
+ * kind of private line the call path used before I-204 (the call now also quotes the cut point: shared/voice/call-cut-note.ts), with nothing of the unshown text (the host keeps no text while
+ * the switch is off). Her history holds the whole reply, so she knows what she wrote; this says the user did not see the rest.
+ */
+export const PAUSE_TALK_CUT_NOTE = '【上一条没放完】你上一条回复还在一句一句往外放，用户就发了新消息，后面没放出来的部分用户没有看到（也没有读出来）。不要从头重复，也不用道歉，先接用户刚说的话，需要时再自然地补一句。';
 
 /**
  * The part of her earlier reply `text` that the bubbles had not shown when the user spoke (`shown` characters were), as one line

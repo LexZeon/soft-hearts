@@ -3,7 +3,7 @@
 // the first message arrives when she has already talked with the user twice today (so she may ask), the second
 // is a plain yes. Whether she asked is read from her reply; whether the host took the yes is read from the
 // second turn's prompt, which reopens with the nickname line only when the host saved it.
-import { NICKNAME_ASK_INSTRUCTION } from '../../shared/relationship';
+import { NICKNAME_ASK_INSTRUCTION } from '../../shared/memory/relationship';
 import { runEval, type EvalRelationship } from './prompt-eval-runner';
 import type { EvalScenario } from './prompt-eval-scenarios';
 import type { TurnRecord } from './prompt-eval-analysis';

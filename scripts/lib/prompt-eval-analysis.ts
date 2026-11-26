@@ -2,14 +2,14 @@
 // the raw text deltas Claude Code streamed (with arrival times) plus this turn's
 // nonce; replay() runs them through the app's own reply protocol again, so a
 // protocol-layer change can be measured on recorded output without new model calls.
-import { MoodReplyProtocol, type MoodAppraisal } from '../../electron/mood-chat';
-import { openingMarker, type OpeningMode } from '../../electron/reply-opening';
-import { asksForEnglish, chatLooksChinese, speakersFromPersona, type DraftDrop } from '../../electron/reply-draft-guard';
-import { parseChatSettingProposal } from '../../electron/chat-settings';
-import { settingViews } from '../../electron/agent-channel/app-tools';
-import { IncrementalReplySegments } from '../../shared/incremental-reply-segments';
-import { splitReplySegments } from '../../shared/reply-segments';
-import { DEFAULT_SETTINGS } from '../../shared/defaults';
+import { MoodReplyProtocol, type MoodAppraisal } from '../../electron/mood/mood-chat';
+import { openingMarker, type OpeningMode } from '../../electron/brain/reply-opening';
+import { asksForEnglish, chatLooksChinese, speakersFromPersona, type DraftDrop } from '../../electron/brain/reply-draft-guard';
+import { parseChatSettingProposal } from '../../electron/brain/chat-settings';
+import { settingViews } from '../../electron/safety/agent-channel/app-tools';
+import { IncrementalReplySegments } from '../../shared/voice/incremental-reply-segments';
+import { splitReplySegments } from '../../shared/voice/reply-segments';
+import { DEFAULT_SETTINGS } from '../../shared/foundation/defaults';
 import { ACTION_CLAIM, type TurnExpectation } from './prompt-eval-scenarios';
 
 export interface TurnUsage {
@@ -133,7 +133,7 @@ const LEAKS: Array<[string, RegExp]> = [
   ['fence', /```/u],
   // A note to itself in English inside a Chinese reply (seen once in the baseline: "Gene initial greeting. Short.").
   ['latin-note', /[A-Za-z]{2,}[ ,.]+[A-Za-z]{2,}[ ,.]+[A-Za-z]{2,}/u],
-  // The pet's bubbles render plain text (textContent): Markdown emphasis or headings show as raw symbols.
+  // The companion's bubbles render plain text (textContent): Markdown emphasis or headings show as raw symbols.
   ['markdown', /\*\*[^*\n]+\*\*|__[^_\n]+__|^#{1,6}\s/mu],
 ];
 export const PERSONA_BREAKS: Array<[string, RegExp]> = [

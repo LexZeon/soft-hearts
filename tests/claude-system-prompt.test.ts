@@ -3,14 +3,17 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CLAUDE_SYSTEM_PROMPT, ClaudeStreamReader, claudeArguments, claudeUsage, streamClaude } from '../electron/claude';
-import { INNER_LOOP_SYSTEM_PROMPT } from '../shared/inner-loop';
+import { CLAUDE_SYSTEM_PROMPT, ClaudeStreamReader, claudeArguments, claudeUsage, streamClaude } from '../electron/brain/claude';
+import { INNER_LOOP_SYSTEM_PROMPT } from '../shared/initiative/inner-loop';
 
 // The exact arguments before the optional system prompt existed (ef71489). Any drift is a behavior change.
 const PINNED = (systemPrompt: string, model?: string) => [
   '-p', '--input-format', 'stream-json', '--output-format', 'stream-json', '--verbose', '--include-partial-messages',
   '--tools', '', '--strict-mcp-config', '--safe-mode', '--disable-slash-commands', '--no-session-persistence',
-  '--setting-sources', '', '--system-prompt', systemPrompt, ...(model ? ['--model', model] : []),
+  '--setting-sources', '',
+  // 2026-11-25: peer messages refused, SendMessage/ListAgents denied (electron/brain/claude-settings.ts).
+  '--settings', '{"permissions":{"deny":["SendMessage","ListAgents"]},"crossSessionInbound":"refuse"}',
+  '--system-prompt', systemPrompt, ...(model ? ['--model', model] : []),
 ];
 
 test('without a custom system prompt the Claude Code arguments are byte-for-byte unchanged', () => {

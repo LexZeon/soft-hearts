@@ -16,7 +16,7 @@
  * Cap: an ask later than SHOW_HOLD_LATEST_ASK_MS after the show began changes nothing (so a show lasts at most 15 s).
  */
 import { SHOW_MS } from './expression-show';
-import type { ExpressionRecipe } from '../../shared/expression-preview';
+import type { ExpressionRecipe } from '../../shared/stage/expression-preview';
 
 /** Where a recipe rests when asked again (show ms): `pauseMs` the flattest point, `releaseMs` where it starts to let go. */
 export const SHOW_HOLD: Readonly<Partial<Record<ExpressionRecipe, { readonly pauseMs: number; readonly releaseMs: number }>>> =

@@ -4,24 +4,24 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, readdir, rm, stat } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CharacterCardStore } from '../electron/character-cards';
-import { CharacterResponseService, CharacterResponseStore } from '../electron/character-response';
-import { CharacterCardUpdater, backupBeforeUpdate, readCharacterCardFile, updateBackupName } from '../electron/character-card-update';
-import { CharacterAvatarStore } from '../electron/character-avatars';
-import { CompanionService, memoryProviderScope } from '../electron/companion';
-import { RpsStore } from '../electron/rps/store';
-import { UserProfileStore, type UserProfileScope } from '../electron/user-profile';
-import { localDateKey } from '../electron/diary/diary-dates';
+import { CharacterCardStore } from '../electron/cards/character-cards';
+import { CharacterResponseService, CharacterResponseStore } from '../electron/cards/character-response';
+import { CharacterCardUpdater, backupBeforeUpdate, readCharacterCardFile, updateBackupName } from '../electron/cards/character-card-update';
+import { CharacterAvatarStore } from '../electron/cards/character-avatars';
+import { CompanionService, memoryProviderScope } from '../electron/brain/companion';
+import { RpsStore } from '../electron/initiative/rps/store';
+import { UserProfileStore, type UserProfileScope } from '../electron/memory/user-profile';
+import { localDateKey } from '../electron/memory/diary/diary-dates';
 import {
   BUNDLED_CHARACTER_MODEL, CHARACTER_CARD_FORMAT, compileCharacterPersona, defaultCharacterMoodTemplate, effectiveCharacterMood,
   type CharacterDraft, type CharacterMoodTemplate,
-} from '../shared/character-cards';
-import { cardUpdateSummaryLines, planCharacterCardUpdate, type CharacterCardFileContent } from '../shared/character-card-update';
-import { CHARACTER_RESPONSE_MOODS, defaultCharacterResponseProfile, defaultCharacterResponseRule, type CharacterResponseProfile } from '../shared/character-response';
-import { DEFAULT_MOOD_PARAMETERS, validateMoodParameters } from '../shared/mood';
-import { readHerNeedSaved } from '../shared/her-needs';
-import { setUiLanguage, t } from '../shared/ui-language';
-import type { RpsGameRecord } from '../shared/rps-memory';
+} from '../shared/cards/character-cards';
+import { cardUpdateSummaryLines, planCharacterCardUpdate, type CharacterCardFileContent } from '../shared/cards/character-card-update';
+import { CHARACTER_RESPONSE_MOODS, defaultCharacterResponseProfile, defaultCharacterResponseRule, type CharacterResponseProfile } from '../shared/cards/character-response';
+import { DEFAULT_MOOD_PARAMETERS, validateMoodParameters } from '../shared/foundation/mood';
+import { readHerNeedSaved } from '../shared/mood/her-needs';
+import { setUiLanguage, t } from '../shared/foundation/ui-language';
+import type { RpsGameRecord } from '../shared/initiative/rps-memory';
 
 const provider = { kind: 'claude' as const, baseUrl: 'https://card-update.invalid/v1', model: 'fixture' };
 const providerScope = memoryProviderScope(provider);
@@ -87,14 +87,16 @@ test('every card format the import reads can update a card, with exactly the imp
 
 const fileOf = (format: CharacterCardFileContent['format'], draft: CharacterDraft, response: CharacterResponseProfile | null = null): CharacterCardFileContent => ({ format, draft, response });
 
-test('the rule: persona text comes from the file; mood, "关系慢慢升温" and reactions only when the format has them', () => {
+test('the rule: persona text comes from the file; mood, "慢慢熟悉" and reactions only when the format has them', () => {
   const current: CharacterDraft = { ...text('阿澄', { description: '旧简介', personality: '旧性格', greeting: '旧开场' }), mood: PLAYFUL_MOOD, slowWarmUp: true };
-  // Version 2: text, mood and the switch from the file; a v2 file without the switch means off (the app exports it only when on).
+  // Version 2: text, mood and the switch from the file; a v2 file without the switch keeps hers (the saved choice wins; a missing field is not an off).
   const v2 = planCharacterCardUpdate(current, reactions(), fileOf('soft-hearts-v2', { ...text('阿澄', { personality: '新性格' }), mood: CALM_MOOD }));
-  assert.deepEqual(v2.draft, { ...text('阿澄', { personality: '新性格' }), mood: CALM_MOOD });
+  assert.deepEqual(v2.draft, { ...text('阿澄', { personality: '新性格' }), mood: CALM_MOOD, slowWarmUp: true });
   assert.deepEqual(v2.summary.changedFields, ['description', 'personality', 'greeting'], 'a field missing from the file is the file\'s (empty)');
   assert.equal(v2.summary.mood, 'replaced');
-  assert.deepEqual(v2.summary.slowWarmUp, { before: true, after: false, part: 'replaced' });
+  assert.deepEqual(v2.summary.slowWarmUp, { before: true, after: true, part: 'same' });
+  // A file that names the switch changes it.
+  assert.deepEqual(planCharacterCardUpdate(current, reactions(), fileOf('soft-hearts-v2', { ...text('阿澄'), mood: CALM_MOOD, slowWarmUp: false })).summary.slowWarmUp, { before: true, after: false, part: 'replaced' });
   assert.equal(v2.summary.response, 'kept', 'a v2 file has no reactions: hers stay');
   assert.equal(v2.response, null);
   assert.equal(v2.summary.name.changed, false);
@@ -311,7 +313,7 @@ test('a file without a mood template keeps hers; a version 3 file also brings it
   assert.deepEqual(responses.get(id).profile, reactions(0.5));
   assert.ok(result.response);
   assert.deepEqual(card().mood, CALM_MOOD);
-  assert.equal(card().slowWarmUp, undefined, 'a v3 file without the switch turns it off');
+  assert.equal(card().slowWarmUp, true, 'a v3 file without the switch keeps hers');
   const files = await readdir(directory);
   const sidecarBackup = files.find(file => file.startsWith('character-response-settings.before-update-'))!;
   assert.ok(sidecarBackup);
@@ -392,14 +394,14 @@ test('the preinstalled Gene card: its persona can be updated in place, and it st
   await assert.rejects(cards.bindModel(geneId, path.join(directory, 'other.pmx'), 'other.pmx'), /预装的 Gene 卡只跟预装 Gene 模型走/);
 }));
 
-test('after an update the export carries no id, model path, picture or private data; a card with "关系慢慢升温" on exports again', async () => withDirectory(async directory => {
+test('after an update the export carries no id, model path, picture or private data; a card with "慢慢熟悉" on exports again', async () => withDirectory(async directory => {
   const { cards, responses, id, service } = await storeFixture(directory);
   await cards.bindModel(id, path.join(directory, 'models', 'acheng.pmx'), 'acheng.pmx');
   await new CharacterAvatarStore(directory).save(id, Uint8Array.from(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64')));
   await responses.save(id, reactions());
   const updater = new CharacterCardUpdater({ cards, responses, directory });
   await updater.update(id, v2File({ ...text('阿澄', { personality: '更新后的性格' }), mood: CALM_MOOD, slowWarmUp: true }), cards.cardFingerprint(id));
-  // Before C3 this export threw: the v3 wrapper did not know "关系慢慢升温" (shared/character-response-portable.ts).
+  // Before C3 this export threw: the v3 wrapper did not know "慢慢熟悉" (shared/cards/character-response-portable.ts).
   const exported = service.export(id);
   const parsed = JSON.parse(exported);
   assert.equal(parsed.version, 3);

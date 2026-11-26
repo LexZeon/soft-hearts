@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import { MoodHost } from '../electron/mood';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
+import { MoodHost } from '../electron/mood/mood';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
 import { FixedBoredomTiming } from '../shared/behaviors/boredom-timing/fake';
 import { FixedTouchFeedEffect } from '../shared/behaviors/touch-feed-effect/fake';
 import { FixedBlush } from '../shared/behaviors/blush/fake';
-import type { MoodInput, MoodView } from '../shared/mood-runtime';
+import type { MoodInput, MoodView } from '../shared/mood/mood-runtime';
 
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;

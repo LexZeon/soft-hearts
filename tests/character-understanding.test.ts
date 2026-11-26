@@ -11,25 +11,25 @@ import {
   CHARACTER_TEXT_LIMITS, EXAMPLES_HEADING, OPENING_VARIETY_RULE, MAX_CHARACTER_PERSONA, MAX_UNDERSTANDING_NOTES, UNDERSTANDING_NOTES_HEADING,
   compileCharacterPersona, defaultCharacterMoodTemplate, validateCharacterDraft,
   type CharacterCard, type CharacterDraft, type CharacterTextDraft,
-} from '../shared/character-cards';
-import { CharacterCardStore, parseCharacterCardText } from '../electron/character-cards';
-import { CharacterCardUpdater, readCharacterCardFile } from '../electron/character-card-update';
-import { CharacterResponseStore } from '../electron/character-response';
-import { cardUpdateSummaryLines, planCharacterCardUpdate } from '../shared/character-card-update';
-import { defaultCharacterResponseProfile } from '../shared/character-response';
-import { exportCharacterWithResponse, parseCharacterResponseImport } from '../shared/character-response-portable';
-import { DEFAULT_MOOD_PARAMETERS, validateMoodParameters, type MoodParameters } from '../shared/mood';
-import { MOOD_TYPICAL_RANGES, moodExtendedValues, moodRangeValue, moodTypicalRange } from '../shared/mood-typical-ranges';
+} from '../shared/cards/character-cards';
+import { CharacterCardStore, parseCharacterCardText } from '../electron/cards/character-cards';
+import { CharacterCardUpdater, readCharacterCardFile } from '../electron/cards/character-card-update';
+import { CharacterResponseStore } from '../electron/cards/character-response';
+import { cardUpdateSummaryLines, planCharacterCardUpdate } from '../shared/cards/character-card-update';
+import { defaultCharacterResponseProfile } from '../shared/cards/character-response';
+import { exportCharacterWithResponse, parseCharacterResponseImport } from '../shared/cards/character-response-portable';
+import { DEFAULT_MOOD_PARAMETERS, validateMoodParameters, type MoodParameters } from '../shared/foundation/mood';
+import { MOOD_TYPICAL_RANGES, moodExtendedValues, moodRangeValue, moodTypicalRange } from '../shared/foundation/mood-typical-ranges';
 import {
   UNDERSTANDING_MAX_ROUNDS, UNDERSTANDING_SYSTEM_PROMPT, applyMoodPlan, parseUnderstandingFinal, parseUnderstandingTurn,
   resolveMoodPlan, understandingPrompt, validateUnderstandingSaveChoices, type UnderstandingView,
-} from '../shared/character-understanding';
-import { CharacterUnderstandingHost, askUnderstanding, characterUnderstandingHandlers, type UnderstandingStream } from '../electron/character-understanding';
-import type { ClaudeTask } from '../electron/claude';
-import { CharacterUnderstandingPanel, type CharacterUnderstandingApi } from '../src/ui/CharacterUnderstanding';
-import { cardWorthDiscussing } from '../src/ui/CharacterPage';
-import { registerUiMessages, setUiLanguage } from '../shared/ui-language';
-import { ENGLISH_CHARACTER_UI_COPY } from '../shared/ui-copy.character.en';
+} from '../shared/cards/character-understanding';
+import { CharacterUnderstandingHost, askUnderstanding, characterUnderstandingHandlers, type UnderstandingStream } from '../electron/cards/character-understanding';
+import type { ClaudeTask } from '../electron/brain/claude';
+import { CharacterUnderstandingPanel, type CharacterUnderstandingApi } from '../src/cards/CharacterUnderstanding';
+import { cardWorthDiscussing } from '../src/cards/CharacterPage';
+import { registerUiMessages, setUiLanguage } from '../shared/foundation/ui-language';
+import { ENGLISH_CHARACTER_UI_COPY } from '../shared/foundation/ui-copy.character.en';
 
 const blank = (name: string, extra: Partial<CharacterTextDraft> = {}): CharacterTextDraft =>
   ({ name, description: '', personality: '', scenario: '', greeting: '', examples: '', systemPrompt: '', ...extra });
@@ -319,7 +319,7 @@ function fakeStream() {
   return { calls, stream };
 }
 const flush = async () => { for (let i = 0; i < 6; i++) await new Promise(resolve => setImmediate(resolve)); };
-function hostFixture(card: CharacterCard = cardOf(LINXI)) {
+function hostFixture(card: CharacterCard = cardOf(LINXI, { slowWarmUp: false })) { // off, so the discussion has a switch to suggest (a card that never named it is)
   const { calls, stream } = fakeStream();
   const published: (UnderstandingView | null)[] = [];
   const saved: { id: string; draft: CharacterDraft; expected: string }[] = [];

@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import catalog from '../shared/motion-catalog.json';
-import bundled from '../shared/bundled-assets.json';
+import catalog from '../shared/actions/motion-catalog.json';
+import bundled from '../shared/actions/bundled-assets.json';
 import { isReviewedDefaultPose } from '../src/stage/default-pose';
 
 test('the exact reviewed local Stand bytes retain their background-pose exception', async () => {

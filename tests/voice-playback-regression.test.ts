@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { VoiceOutput, type VoiceOutputEvent, type VoiceOutputPlaybackState } from '../src/ui/VoiceOutput';
-import { StreamingVoicePlayer } from '../src/ui/EmotionalVoice';
-import { SpeechRuntime } from '../electron/speech-runtime';
-import { ReplySpeechStyles } from '../electron/speech-emotion';
-import { DEFAULT_TTS_CONFIG } from '../shared/tts';
+import { VoiceOutput, type VoiceOutputEvent, type VoiceOutputPlaybackState } from '../src/voice/VoiceOutput';
+import { StreamingVoicePlayer } from '../src/voice/EmotionalVoice';
+import { SpeechRuntime } from '../electron/voice/speech-runtime';
+import { ReplySpeechStyles } from '../electron/mood/speech-emotion';
+import { DEFAULT_TTS_CONFIG } from '../shared/voice/tts';
 
 const flush = async () => { for (let i = 0; i < 60; i++) await Promise.resolve(); };
 const voice = { enabled: true, voiceURI: 'synthetic-zh', rate: 1, volume: 0.6 };

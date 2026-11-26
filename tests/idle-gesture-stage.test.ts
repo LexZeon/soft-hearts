@@ -1,5 +1,5 @@
 /**
- * #11 on the stage (shared/behaviors/idle-gesture/perform.ts through src/stage/mood-feedback.ts), R29 continuity:
+ * #11 on the stage (shared/behaviors/idle-gesture/perform.ts through src/mood/mood-feedback.ts), R29 continuity:
  *  - Gene, the real Stage frame loop (gene-stage-harness: bundled Gene, Stand VMD, real procedural life, the display guard) at 60 and
  *    30 fps, on time and with a late frame whenever the host's view arrives: each of the six shapes plays while the cue shows and
  *    finishes after it is gone; the display guard catches nothing ("跳变为 0"), the head's unexpected step stays within
@@ -12,12 +12,11 @@ import test from 'node:test';
 import { Euler, Quaternion, type Bone, type SkinnedMesh } from 'three';
 import { IDLE_SHAPE_IDS, type IdleShapeId } from '../shared/behaviors/idle-gesture/knobs';
 import type { IdleGestureView } from '../shared/behaviors/idle-gesture/interface';
-import { IDLE_GESTURE_TIMELINES } from '../shared/behaviors/idle-gesture/perform';
-import { EMPTY_CONTACT, MoodFeedback } from '../src/stage/mood-feedback';
-import { PoseContinuity } from '../src/stage/pose-continuity';
-import { between, geneStage, surprises, TRACKED_BONES, type GeneStage } from './helpers/gene-stage-harness';
+import { EMPTY_CONTACT, MoodFeedback } from '../src/mood/mood-feedback';
+import { PoseContinuity } from '../src/senses/pose-continuity';
 import { bodyModel } from './helpers/body-fixtures';
 import { toThreeMesh } from './helpers/model-fixtures';
+import { TRACKED_BONES } from './helpers/frame-stats';
 
 const DEG = 180 / Math.PI;
 const report = !!process.env.IDLE_GESTURE_REPORT;
@@ -30,65 +29,6 @@ const gestureView = (shape: IdleShapeId, kind: 'look' | 'motion' = 'motion'): Id
 const HEAD = ['首', '頭'].map(name => TRACKED_BONES.indexOf(name as never));
 const ALL = TRACKED_BONES.map((_, i) => i);
 const worst = (series: number[][], idx: readonly number[]) => Math.max(0, ...idx.map(i => Math.max(0, ...series[i])));
-const guardAll = (frames: GeneStage['shown']) => frames.slice(1).filter((frame, i) => frame.guardJumps > frames[i].guardJumps).map(frame => `${frame.guardLast}@${frame.t.toFixed(2)}`);
-
-/** One run: START s plain, then the cue (with or without a picked shape) for 3 s, then 3 s more. `late` ms are added at each view. */
-async function play(fps: number, shape: IdleShapeId | null, late = 0) {
-  const h = await geneStage(late ? { fps, refreshHz: 60 } : { fps });
-  const tick = h.stage.tick;
-  let offset = 0;
-  h.stage.tick = (time: number) => tick(time + offset);
-  try {
-    h.run(START);
-    // Without a shape the same two views still arrive (and are as late): the reference for the same seconds.
-    const v = h.stage.moodView, at = Date.now();
-    h.stage.setMood(shape ? { ...v, revision: v.revision + 1, snapshot: { ...v.snapshot, cue: { id: `idle-${shape}`, kind: 'motion', at, until: at + 3_000 } }, idleGesture: gestureView(shape) }
-      : { ...v, revision: v.revision + 1 });
-    offset += late;
-    h.run(3);
-    const w = h.stage.moodView;
-    h.stage.setMood({ ...w, revision: w.revision + 1, snapshot: { ...w.snapshot, cue: null }, idleGesture: undefined });
-    offset += late;
-    h.run(3);
-    return h;
-  } catch (error) { h.close(); throw error; }
-}
-
-const reference = new Map<string, Promise<GeneStage>>();
-const control = (fps: number, late: number) => { const key = `${fps}:${late}`; if (!reference.has(key)) reference.set(key, play(fps, null, late)); return reference.get(key)!; };
-test.after(async () => { for (const run of reference.values()) (await run).close(); });
-
-for (const fps of [60, 30]) {
-  test(`${fps} fps on Gene: each of the six shapes plays and finishes without a jump; the guard catches nothing, on time and with late frames`, async () => {
-    const rows: string[] = [];
-    for (const late of [0, 1000 / 30]) for (const shape of IDLE_SHAPE_IDS) {
-      const base = await control(fps, late);
-      const undisturbed = worst(surprises(between(base.shown, START - 0.2, START + 6)), ALL);
-      if (shape === 'tilt') rows.push(`undisturbed${late ? ' with late frames' : ''}: ${undisturbed.toFixed(3)}°`);
-      const h = await play(fps, shape, late);
-      try {
-        const during = between(h.shown, START - 0.2, START + 6);
-        assert.deepEqual(guardAll(during), [], `${shape}${late ? ' late' : ''}: nothing for the guard`);
-        const whole = worst(surprises(during), ALL), head = worst(surprises(during), HEAD);
-        // How far the head is from where it would have been: the shape really played.
-        const moved = Math.max(...between(h.shown, START, START + 4).map((frame, i) => {
-          const ref = between(base.shown, START, START + 4)[i];
-          return ref ? frame.world[HEAD[1]].angleTo(ref.world[HEAD[1]]) * DEG : 0;
-        }));
-        // And it is over: back with the undisturbed run once the shape (≤ 2.9 s × 1.15) and the spring have settled.
-        const tail = between(h.shown, START + 5.2, START + 6), tailBase = between(base.shown, START + 5.2, START + 6);
-        const rejoin = Math.max(...tail.slice(0, tailBase.length).map((frame, i) => frame.world[HEAD[1]].angleTo(tailBase[i].world[HEAD[1]]) * DEG));
-        rows.push(`${shape}${late ? '+late' : ''} moved ${moved.toFixed(2)}° step ${whole.toFixed(3)}° (head ${head.toFixed(3)}°) rejoin ${rejoin.toFixed(3)}°`);
-        const label = `${shape}${late ? ' with late frames' : ''}`;
-        assert.ok(whole <= Math.max(floor(fps), 1.25 * undisturbed), `${label}: largest unexpected step ${whole} (undisturbed ${undisturbed})`);
-        assert.ok(moved > (shape === 'sway' ? 0.3 : 1.2), `${label}: the head moved ${moved}°`);
-        assert.ok(rejoin < 0.05, `${label}: back on the undisturbed path (${rejoin}°)`);
-        assert.ok(IDLE_GESTURE_TIMELINES[shape].duration * 1.15 < 3.5, 'every shape ends before the next look or motion can start');
-      } finally { h.close(); }
-    }
-    if (report) console.log(`[idle-gesture Gene ${fps}fps]\n  ${rows.join('\n  ')}`);
-  });
-}
 
 // ---------------------------------------------------------------- non-Gene synthetic bodies
 

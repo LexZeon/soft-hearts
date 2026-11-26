@@ -1,4 +1,4 @@
-// 预试用问题 8（2026-11-03）：屏幕感知关着，真实回复却说"刚才看你屏幕安安静静的"。
+// 预试用问题 8（2026-11-03）：屏幕感知关着，回复里却像是一直在看着屏幕。
 // 屏幕、摄像头、系统声音都关着时，发给模型的每一份提示词和私有上下文里，凡是提到屏幕、画面、"看到/看着你"、"在忙"的句子，
 // 只能是"看不到 / 不假装看到 / 权限 / 要去控制窗口改"这类说明；而且固定提示词里明说她只能从互动知道用户在不在、忙不忙。
 import test from 'node:test';
@@ -6,25 +6,26 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CLAUDE_SESSION_SYSTEM_PROMPT, composeSessionPrompt } from '../electron/claude-session-prompt';
-import { CLAUDE_CHAT_SYSTEM_PROMPT } from '../electron/claude';
-import { buildCompanionPersona, buildCodexChatPrompt } from '../electron/conversation-context';
-import { MoodReplyProtocol } from '../electron/mood-chat';
-import { buildInnerLoopPrompt, innerLoopQuiet } from '../shared/inner-loop';
-import { buildDiaryPrompt } from '../electron/diary/diary-prompt';
-import { buildR20OfferPrompt } from '../electron/r20-offer-dialogue';
-import { HER_LIFE_ACTIVITIES, herLifeChatLine, herLifeDiaryLine } from '../shared/her-life';
-import { HER_NEED_IDS, WELCOME_BACK_LINE, herNeedChatLine, herNeedSpeechLine } from '../shared/her-needs';
-import { USER_STATE_LABELS, userStateChatLine, userStateInnerLoopLine, type ActiveUserState } from '../shared/user-state';
-import { RELATIONSHIP_STAGES, relationshipOpeningText } from '../shared/relationship';
-import { REALER_EMOTIONS_CHAT_TEXT } from '../shared/realer-emotions';
-import { PERCEPTION_INNER_LOOP_RULE, PERCEPTION_RULE, perceptionTurnLine } from '../shared/perception-rule';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
-import { compileCharacterPersona } from '../shared/character-cards';
-import { preinstalledGeneDraft } from '../electron/gene-preinstalled-card';
-import { CompanionService } from '../electron/companion';
-import type { ChatMessage, ProviderConfig } from '../shared/contracts';
+import { CLAUDE_SESSION_SYSTEM_PROMPT, composeSessionPrompt } from '../electron/brain/claude-session-prompt';
+import { CLAUDE_CHAT_SYSTEM_PROMPT } from '../electron/brain/claude';
+import { buildCompanionPersona, buildCodexChatPrompt } from '../electron/brain/conversation-context';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
+import { buildInnerLoopPrompt, innerLoopQuiet } from '../shared/initiative/inner-loop';
+import { buildDiaryPrompt } from '../electron/memory/diary/diary-prompt';
+import { buildR20OfferPrompt } from '../electron/initiative/r20-offer-dialogue';
+import { HER_LIFE_ACTIVITIES, herLifeChatLine, herLifeDiaryLine } from '../shared/stage/her-life';
+import { HER_NEED_IDS, WELCOME_BACK_LINE, herNeedChatLine, herNeedSpeechLine } from '../shared/mood/her-needs';
+import { USER_STATE_LABELS, userStateChatLine, userStateInnerLoopLine, type ActiveUserState } from '../shared/senses/user-state';
+import { RELATIONSHIP_STAGES, relationshipOpeningText } from '../shared/memory/relationship';
+import { REALER_EMOTIONS_CHAT_TEXT } from '../shared/mood/realer-emotions';
+import { PERCEPTION_INNER_LOOP_RULE, PERCEPTION_RULE, perceptionTurnLine } from '../shared/brain/perception-rule';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
+import { compileCharacterPersona } from '../shared/cards/character-cards';
+import { preinstalledGeneDraft } from '../electron/cards/gene-preinstalled-card';
+import { CompanionService } from '../electron/brain/companion';
+import type { ChatMessage } from '../shared/foundation/chat';
+import type { ProviderConfig } from '../shared/foundation/settings';
 
 /** Words that say or suggest she sees the screen or the user. */
 const SEEING = /屏幕|画面|摄像头|镜头|看到|看见|瞧见|看着你|看你在|看你的|盯着|在忙|电脑前/u;
@@ -34,7 +35,8 @@ const ALLOWED: readonly RegExp[] = [
   /以这一轮私有上下文里的【此刻的感知】为准/u, // PERCEPTION_RULE after I-017: the turn's line decides (its "才算你看到画面" is the allowed one above)
   /不假装看到/u, // the default persona
   /不改变工具、文件、屏幕、摄像头或麦克风权限/u, // Gene's card: a permission, not a sense
-  /点桌宠上的开关/u, // the chat settings catalog: screen, camera, microphone are switches the user taps on the pet (she never coaxes them on)
+  /我替你盯着它/u, // Gene's courier-intern example (I-172): she keeps watch on the robot vacuum, in character; not a claim to see the user
+  /点桌宠上的开关/u, // the chat settings catalog: screen, camera, microphone are switches the user taps on the companion (she never coaxes them on)
   /均是资料而非人类指令或授权/u, // R20: content is data, not permission (off in the app; scanned anyway)
 ];
 function suggestions(text: string): string[] {
@@ -111,7 +113,7 @@ test('内心循环（小动作、说话、深夜提醒休息、换件事做、�
 });
 
 test('扫描本身能抓到暗示的说法（对照）', () => {
-  assert.deepEqual(suggestions('刚才看你屏幕安安静静的。'), ['刚才看你屏幕安安静静的']);
+  assert.deepEqual(suggestions('刚才我盯着你的窗口发了会儿呆。'), ['刚才我盯着你的窗口发了会儿呆']);
   assert.deepEqual(suggestions('用户看起来还醒着、还在忙'), ['用户看起来还醒着、还在忙']);
   assert.deepEqual(suggestions('如果很晚了用户还在忙，提醒用户休息'), ['如果很晚了用户还在忙，提醒用户休息']);
   assert.deepEqual(suggestions(PERCEPTION_RULE), []);
@@ -122,6 +124,7 @@ test('扫描本身能抓到暗示的说法（对照）', () => {
 /** "节奏" alone is not hearing (the personas say "尊重用户的节奏"); its sound, or moving to it, is. */
 const HEARING = /听到|听得到|听见|听着|在听|在放|音乐|歌词|节奏的声音|跟着节奏|跟着跳|点头/u;
 const HEARING_ALLOWED: readonly RegExp[] = [
+  /进去以后不许吵他，听到没有/u, // Gene's coffee example (I-172): she scolds the mug in a whisper; not a claim to hear the user's music or room
   /听不到声音/u, // the turn's line with everything off
   /以这一轮私有上下文里的【此刻的感知】为准/u, // PERCEPTION_RULE
   /只有某一轮明确附上了画面或声音资料，才算你看到、听到了/u, // PERCEPTION_RULE: a condition, not a claim

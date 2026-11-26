@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { RECORDING_ON_MARKER, UserProfileStore, type UserProfileOptions } from '../electron/user-profile';
+import { RECORDING_ON_MARKER, UserProfileStore, type UserProfileOptions } from '../electron/memory/user-profile';
 
 const scope = { characterId: 'character-a', providerScope: 'provider-a' };
 function deferred() { let resolve!: () => void; const promise = new Promise<void>(r => { resolve = r; }); return { promise, resolve }; }

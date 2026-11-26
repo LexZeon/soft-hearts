@@ -3,13 +3,13 @@ import assert from "node:assert/strict";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
-import { DEFAULT_SETTINGS } from "../shared/defaults";
-import { DEFAULT_TTS_CONFIG, effectiveTtsConfig, type TtsConfig } from "../shared/tts";
-import { AssetRegistry } from "../electron/assets";
-import { KEY_SENTINEL, publicSettings, SettingsStore, type SecretStorage } from "../electron/settings";
-import { validateSettings } from "../electron/validation";
-import { validateTtsConfig } from "../electron/tts";
-import { petViewSettings } from "../electron/pet-view";
+import { DEFAULT_SETTINGS } from "../shared/foundation/defaults";
+import { DEFAULT_TTS_CONFIG, effectiveTtsConfig, type TtsConfig } from "../shared/voice/tts";
+import { AssetRegistry } from "../electron/foundation/assets";
+import { KEY_SENTINEL, publicSettings, SettingsStore, type SecretStorage } from "../electron/settings/settings";
+import { validateSettings } from "../electron/settings/validation";
+import { validateTtsConfig } from "../electron/voice/tts";
+import { petViewSettings } from "../electron/stage/pet-view";
 
 const tts = (patch: Partial<TtsConfig> = {}): TtsConfig => ({ ...DEFAULT_TTS_CONFIG, provider: "bailian", apiHost: "https://user-console-host.example", region: "beijing", apiKey: "fixture-tts-secret", ...patch });
 const secrets: SecretStorage = {

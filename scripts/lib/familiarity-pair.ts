@@ -3,8 +3,8 @@
 // a random order and rates only how familiar each sounds (not how good), one request per pair. A reply that
 // mentions a planted in-joke is counted by plain substring matching, without any request.
 import os from 'node:os';
-import { streamClaude } from '../../electron/claude';
-import { conversationData } from '../../electron/conversation-context';
+import { streamClaude } from '../../electron/brain/claude';
+import { conversationData } from '../../electron/brain/conversation-context';
 import { JUDGE_MODEL, type JudgeCall, type JudgeRunner } from './fidelity-judge';
 import type { FidelityRun } from './fidelity-report';
 import type { CallBudget } from './fidelity-run';

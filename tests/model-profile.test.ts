@@ -4,12 +4,12 @@ import { readFileSync } from 'node:fs';
 import { Bone, Float32BufferAttribute, PerspectiveCamera, ShaderMaterial, SkinnedMesh, Vector3 } from 'three';
 import {
   MORPH_SLOTS, acceptCachedProfile, buildModelProfile, calibratedWeight, profileBindings, summarizeModelProfile,
-  validateStoredModelProfile, type ModelProfile,
-} from '../shared/model-profile';
+  validateStoredModelProfile, WEAK_SLOT_NOTE, type ModelProfile,
+} from '../shared/stage/model-profile';
 import { StageModelProfile, legacyMorphIndices, writeProfiledMorph } from '../src/stage/model-profile';
 import { probeHeadContact } from '../src/stage/head-contact';
 import { probeBlushAnchors } from '../src/stage/procedural-blush';
-import { projectCheekRegions } from '../src/stage/cheek-pinch-region';
+import { projectCheekRegions } from '../src/mood/cheek-pinch-region';
 import { readPmxLite } from './helpers/pmx-lite';
 import { JAPANESE_MORPHS, profileInput, toThreeMesh, toyModel, type ToyMorph } from './helpers/model-fixtures';
 
@@ -41,8 +41,8 @@ test('Gene: every slot maps to the morph the stage already used, verified by whe
   // E1: the raised-brow slot is the morph the frozen surprise preview wrote by index (84).
   assert.equal(geneProfile.morphs.browUp.index, 84);
   assert.ok(MORPH_SLOTS.every(slot => geneProfile.morphs[slot].rejected.length === 0));
-  // Calibration is anchored on Gene: even an unreviewed copy of Gene stays within 0.1% of its reviewed amounts.
-  for (const [, scale] of profileBindings(geneProfile, false).scales) assert.ok(Math.abs(scale - 1) < 1e-3, String(scale));
+  // In proportion: no model is multiplied, an unreviewed copy of Gene included.
+  for (const [, scale] of profileBindings(geneProfile, false).scales) assert.equal(scale, 1);
   const p = geneProfile.proportions;
   assert.equal(p.eyeLineSource, 'bones'); assert.equal(p.mouth.source, 'morph');
   assert.ok(Math.abs(p.mouth.point[1] - 17.13) < 0.05 && Math.abs(p.mouth.point[0]) < 1e-3);
@@ -73,7 +73,7 @@ test('Gene through the real Three adapter: same slots, and every stage write and
         assert.deepEqual(after, before); assert.deepEqual(layers, [{ index: target, value: prior }]);
       }
     const summary = reviewed.summary;
-    assert.equal(summary.reviewed, true); assert.deepEqual(summary.scales, {}); assert.deepEqual(summary.missing, []);
+    assert.equal(summary.reviewed, true); assert.deepEqual(summary.weak, {}); assert.deepEqual(summary.missing, []);
     assert.deepEqual(JSON.parse(JSON.stringify(summary)), summary, 'plain data');
     const unreviewed = new StageModelProfile(mesh, { reviewed: false });
     assert.deepEqual(unreviewed.indices, reviewed.indices);
@@ -113,24 +113,56 @@ test('no blink morph: blink is reported missing, never guessed; a per-eye pair b
   mesh.geometry.dispose();
 });
 
-test('huge and tiny mouth morphs open to a similar visible amount', () => {
-  const visible = (amount: number, lip: number) => {
+// 给多少就是这个模型自己满幅度的多少，不再拿 Gene 的大小去对齐、往上放大。
+// (This replaces "huge and tiny mouth morphs open to a similar visible amount", which pinned the old up-scaling to 4x.)
+test('expressions are in proportion: a huge, a normal and a tiny mouth morph all get the value as given, never scaled', () => {
+  for (const amount of [0.38 * 3, 0.38, 0.38 / 1.4, 0.38 / 10]) {
     const profile = withMorphs([{ name: 'あ', region: 'mouth', amount }, ...without('あ')]);
-    const entry = profile.morphs.a, scales = new Map(profileBindings(profile, false).scales);
-    return { shown: calibratedWeight(scales, entry.index, lip) * entry.amplitude, raw: Math.min(1, lip) * entry.amplitude, scale: entry.scale };
-  };
-  for (const lip of [0.23, 0.45, 0.68]) {
-    const normal = visible(0.38, lip), huge = visible(0.38 * 3, lip), tiny = visible(0.38 / 1.4, lip);
-    assert.ok(Math.abs(huge.raw / normal.raw - 3) < 0.01, 'without calibration the huge mouth opens three times as far');
-    assert.ok(Math.abs(huge.shown / normal.shown - 1) < 0.02, `calibrated huge/normal ${huge.shown / normal.shown}`);
-    assert.ok(Math.abs(tiny.shown / normal.shown - 1) < 0.02, `calibrated tiny/normal ${tiny.shown / normal.shown}`);
+    const entry = profile.morphs.a, bindings = profileBindings(profile, false);
+    assert.equal(entry.scale, 1, `amplitude ${amount}`); assert.deepEqual(bindings.scales, []);
+    const scales = new Map<number, number>(bindings.scales);
+    for (const lip of [0, 0.1, 0.23, 0.6, 1]) assert.equal(calibratedWeight(scales, entry.index, lip), lip);
+    assert.equal(calibratedWeight(scales, entry.index, 1.4), 1); assert.equal(calibratedWeight(scales, entry.index, -0.2), 0);
   }
-  // A morph too small to reach Gene's opening saturates at its own 1.0, never beyond.
-  const minute = withMorphs([{ name: 'あ', region: 'mouth', amount: 0.38 / 10 }, ...without('あ')]);
-  const scales = new Map(profileBindings(minute, false).scales);
-  assert.equal(minute.morphs.a.scale, 4);
-  assert.equal(calibratedWeight(scales, minute.morphs.a.index, 0.68), 1);
-  assert.equal(calibratedWeight(scales, minute.morphs.a.index, 0.1), 0.4);
+  // The amplitude is still measured and kept (the model check reads it), it just stops multiplying anything.
+  const weakProfile = withMorphs([{ name: 'あ', region: 'mouth', amount: 0.38 * 0.4 }, ...without('あ')]);
+  assert.ok(weakProfile.morphs.a.amplitude > 0);
+});
+
+test('through the stage: mouth 0.6 is written as 0.6 on a model whose mouth is small (it used to be scaled up), the reviewed Gene is unchanged', () => {
+  const mesh = toThreeMesh(toyModel({ morphs: [{ name: 'あ', region: 'mouth', amount: 0.38 * 0.4 }, ...without('あ')] }));
+  try {
+    const stage = new StageModelProfile(mesh, { reviewed: false });
+    const mouth = stage.indices.mouth, influences = mesh.morphTargetInfluences!, layers: { index: number; value: number }[] = [];
+    assert.ok(mouth >= 0); assert.equal(stage.scales.size, 0);
+    writeProfiledMorph(influences, layers, stage, mouth, 0.6);
+    assert.equal(influences[mouth], 0.6);
+    // A profile stored before this change holds a multiplier (the dev profiles had 2.52 and 1.73); it must not take effect.
+    const stored = JSON.parse(JSON.stringify(stage.profile));
+    stored.morphs.a.scale = 2.5; stored.morphs.o.scale = 2.1;
+    const old = new StageModelProfile(mesh, { reviewed: false, cached: stored });
+    assert.equal(old.source, 'cache'); assert.equal(old.scales.size, 0, 'the stored multiplier is ignored');
+    const after: number[] = Array.from(influences, () => 0);
+    writeProfiledMorph(after, [], old, old.indices.mouth, 0.6);
+    assert.equal(after[old.indices.mouth], 0.6);
+  } finally { mesh.geometry.dispose(); }
+  const geneMesh = toThreeMesh(gene);
+  try {
+    const reviewed = new StageModelProfile(geneMesh, { reviewed: true }), after: number[] = Array.from({ length: 184 }, () => 0);
+    writeProfiledMorph(after, [], reviewed, reviewed.indices.mouth, 0.6);
+    assert.equal(after[reviewed.indices.mouth], 0.6);
+  } finally { geneMesh.geometry.dispose(); }
+});
+
+test('the model check names weak expressions (under a quarter of Gene) and amplifies nothing', () => {
+  const weak = withMorphs([{ name: 'あ', region: 'mouth', amount: 0.38 * 0.1 }, ...without('あ')]);
+  const summary = summarizeModelProfile(weak, 'computed', false);
+  assert.ok(summary.weak.a !== undefined && summary.weak.a < 0.25, JSON.stringify(summary.weak));
+  assert.equal(profileBindings(weak, false).scales.length, 0);
+  assert.ok(WEAK_SLOT_NOTE.includes('这个表情做得很弱'));
+  const normal = summarizeModelProfile(withMorphs([{ name: 'あ', region: 'mouth', amount: 0.38 * 0.6 }, ...without('あ')]), 'computed', false);
+  assert.equal(normal.weak.a, undefined);
+  assert.deepEqual(summarizeModelProfile(geneProfile, 'computed', true).weak, {});
 });
 
 test('rest pose: T-pose arms are horizontal, the toy A-pose matches Gene', () => {

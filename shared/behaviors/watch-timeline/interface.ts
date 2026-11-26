@@ -7,7 +7,7 @@
  *  2. scheduler.ts：haiku 的活怎么排（排队的人）。优先级、每小时/每几分钟的额度、该作废时全部作废。
  *  3. frame-change.ts：小灰度缩略图比一比，画面变得够大才值得描述；同一个画面不描述两次。
  *  4. knobs.ts：上面所有的数字。
- * 硬盘上的看剧笔记和截图缓存在 electron/watch-notes/；关键词在 shared/memory-keywords/。
+ * 硬盘上的看剧笔记和截图缓存在 electron/senses/watch-notes/；关键词在 shared/memory/memory-keywords/。
  * 这一步没接进任何窗口、没调任何模型；接线是第二步。
  */
 

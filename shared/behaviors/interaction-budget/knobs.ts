@@ -15,7 +15,7 @@
  *  - 硬规则不在这里：没人回应不追着说（角色卡"没人回应最多几句"）、深夜和睡着安静、你在打字时不打扰、每天调用次数这类省额度的保护。
  * 这些都只是试用值，没在真机上看过。
  */
-import type { MoodLabel } from '../../mood';
+import type { MoodLabel } from '../../foundation/mood';
 
 /** 你的真实互动，每种给多少分。 */
 export const BUDGET_CREDIT_KINDS = ['message', 'answer', 'touch', 'food', 'game'] as const;

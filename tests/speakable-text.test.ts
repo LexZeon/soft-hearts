@@ -1,11 +1,11 @@
-// Stage directions are shown, never read (docs/claude/2026-11-03-draft-leak-fix.md): shared/speakable-text.ts, applied to
+// Stage directions are shown, never read (docs/claude/2026-11-03-draft-leak-fix.md): shared/voice/speakable-text.ts, applied to
 // the cloud voice in the host (after the segment was matched against the bubble) and to the system voice in the renderer.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { speakableText } from '../shared/speakable-text';
-import { SpeechRuntime, type SpeechSynthesizer } from '../electron/speech-runtime';
-import { DEFAULT_TTS_CONFIG, type TtsConfig } from '../shared/tts';
-import { perceptionTurnLine, PERCEPTION_RULE } from '../shared/perception-rule';
+import { speakableText } from '../shared/voice/speakable-text';
+import { SpeechRuntime, type SpeechSynthesizer } from '../electron/voice/speech-runtime';
+import { DEFAULT_TTS_CONFIG, type TtsConfig } from '../shared/voice/tts';
+import { perceptionTurnLine, PERCEPTION_RULE } from '../shared/brain/perception-rule';
 
 test('what is read: brackets and single-asterisk actions go, everything else stays', () => {
   assert.equal(speakableText('（低下头）……谢谢你。'), '……谢谢你。');
@@ -14,7 +14,7 @@ test('what is read: brackets and single-asterisk actions go, everything else sta
   assert.equal(speakableText('好呀 (＾▽＾)'), '好呀');
   assert.equal(speakableText('（把脸埋进枕头里）'), '', 'a sentence that is only a stage direction is not read at all');
   assert.equal(speakableText('（小声）……'), '', 'nothing but punctuation left');
-  assert.equal(speakableText('**重要**的事说三遍'), '**重要**的事说三遍', 'bold markers are not an action');
+  assert.equal(speakableText('**重要**的事说三遍'), '重要的事说三遍', 'bold markers are not an action: the words are read, the stars are not (T-250)');
   assert.equal(speakableText('2 * 3 * 4 等于 24'), '2 * 3 * 4 等于 24');
   assert.equal(speakableText('先这样（第一步）再那样'), '先这样 再那样');
   assert.equal(speakableText('今天好累。'), '今天好累。');

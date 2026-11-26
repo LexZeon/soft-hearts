@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MoodTouchChannel } from '../src/ui/mood-touch-channel';
-import { DEFAULT_PET_INTERACTION_CONFIG, type PetInteractionConfig } from '../src/ui/PetInteraction';
+import { MoodTouchChannel } from '../src/mood/mood-touch-channel';
+import { DEFAULT_PET_INTERACTION_CONFIG, type PetInteractionConfig } from '../src/mood/PetInteraction';
 
 class Port {
   onmessage: ((event: MessageEvent) => void) | null = null;

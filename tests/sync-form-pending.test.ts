@@ -1,13 +1,14 @@
-import * as uiCopy from '../src/ui/ui-language';
+import * as uiCopy from '../src/foundation/ui-language';
 const { uiText, uiHtml, uiMarkup, uiTemplate } = uiCopy;
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import ts from 'typescript';
 import {transformSync} from 'esbuild';
-import {WindowVisibilityTracker} from '../src/ui/window-visibility';
+import {WindowVisibilityTracker} from '../src/stage/window-visibility';
+import { rendererSource as readRendererSource } from './helpers/renderer-source'; // overhaul step 5: src/main.ts and src/wiring/*.ts
 const DEFAULT_SETTINGS={provider:{kind:'claude',baseUrl:'http://127.0.0.1:9/v1',model:'fixture',apiKey:''},pet:{visible:true,alwaysOnTop:true,clickThrough:false,followMouse:true,fps:30,breath:0.5},voice:{enabled:false,rate:1,volume:1},voiceInput:{baseUrl:'http://127.0.0.1:9/v1',model:'fixture',language:'zh',apiKey:''}};
-const source=readFileSync(new URL('../src/main.ts',import.meta.url),'utf8');
+const source=readRendererSource();
 const ast=ts.createSourceFile('main.ts',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
 const names=['syncForm','syncAsrEngine','projectPetVisibility','requestPetVisibility','acceptWindowVisibility'];
 const decl=names.map(name=>{const nodes=ast.statements.filter(n=>ts.isFunctionDeclaration(n)&&n.name?.text===name);assert.equal(nodes.length,1);return nodes[0].getText(ast);}).join('\n');

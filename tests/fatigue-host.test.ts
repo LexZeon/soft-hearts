@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import ts from 'typescript';
-import { FatigueHost, SYSTEM_FATIGUE_CLOCK } from '../electron/fatigue-host';
+import { FatigueHost, SYSTEM_FATIGUE_CLOCK } from '../electron/mood/fatigue-host';
 
 const channels = { D: 50, O: 50, E: 50, N: 50, C: 50 };
 const activity = { chat: false, tts: false, manualMotion: false };
@@ -80,7 +80,7 @@ test('wall rollback keeps the persisted high-water mark instead of reusing an of
 
 test('actual MoodHost accepts one contact pulse, excludes assistant appraisal and preserves legacy stored shapes', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'soft-hearts-fatigue-mood-')), c = clockFixture();
-  const base = new URL('../electron/mood.ts', import.meta.url);
+  const base = new URL('../electron/mood/mood.ts', import.meta.url);
   const requireBase = createRequire(base), source = await readFile(base, 'utf8');
   const output = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, esModuleInterop: true } }).outputText;
   const module = { exports: {} as any };

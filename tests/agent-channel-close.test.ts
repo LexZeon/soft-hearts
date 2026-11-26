@@ -7,17 +7,17 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import type { AssetRef } from '../shared/contracts';
-import type { CharacterCardState } from '../shared/character-cards';
-import { MutationQueue } from '../electron/mutation-queue';
-import { AgentConfirmLock, AgentToolRegistry, AGENT_CHANNEL_CLOSED, type AgentToolDefinition } from '../electron/agent-channel/registry';
-import { AgentChannelHost } from '../electron/agent-channel/host';
-import { createAppTools, type CommitResult } from '../electron/agent-channel/app-tools';
-import { createHostBridge, type IpcHandler } from '../electron/agent-channel/bridge';
-import { agentHostActions, type AgentHostActionPorts } from '../electron/agent-channel/host-actions';
-import { argsObject } from '../electron/agent-channel/validate';
-import type { FileSystemPort } from '../electron/agent-channel/validate';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import type { AssetRef } from '../shared/foundation/settings';
+import type { CharacterCardState } from '../shared/foundation/character-card';
+import { MutationQueue } from '../electron/foundation/mutation-queue';
+import { AgentConfirmLock, AgentToolRegistry, AGENT_CHANNEL_CLOSED, type AgentToolDefinition } from '../electron/safety/agent-channel/registry';
+import { AgentChannelHost } from '../electron/safety/agent-channel/host';
+import { createAppTools, type CommitResult } from '../electron/safety/agent-channel/app-tools';
+import { createHostBridge, type IpcHandler } from '../electron/safety/agent-channel/bridge';
+import { agentHostActions, type AgentHostActionPorts } from '../electron/safety/agent-channel/host-actions';
+import { argsObject } from '../electron/safety/agent-channel/validate';
+import type { FileSystemPort } from '../electron/safety/agent-channel/validate';
 
 const tick = () => new Promise(resolve => setImmediate(resolve));
 async function until(check: () => boolean, ms = 3_000): Promise<void> {

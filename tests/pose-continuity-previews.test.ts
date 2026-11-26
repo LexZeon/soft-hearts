@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { Euler, Quaternion, Vector3 } from 'three';
-import { PoseContinuity } from '../src/stage/pose-continuity';
-import { SURPRISE_CLIP, SURPRISE_DURATION_MS, surpriseSample } from '../src/stage/surprise-preview-overlay';
-import { SHY_CLIP_ID } from '../shared/surprise-preview';
+import { PoseContinuity } from '../src/senses/pose-continuity';
+import { SURPRISE_CLIP, SURPRISE_DURATION_MS, surpriseSample } from '../src/mood/surprise-preview-overlay';
+import { SHY_CLIP_ID } from '../shared/initiative/surprise-preview';
 
 // The reviewed surprise/shy timed additive previews (surprise-curves.json,
 // shy-curves.json) run through the guard on top of an authored base with an

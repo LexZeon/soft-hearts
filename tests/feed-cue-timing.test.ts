@@ -4,7 +4,7 @@
  *  2. 第二块点心到嘴边，用的是第二块自己的打算，不是上一块没喂成、没出声的那一份。
  *  3. 切角色的间隙里，旧角色还在等的那一声，不能用新角色（主机已经换过去）的旧打算。
  *
- * 照桌宠窗口的接线（src/main.ts、src/ui/MoodCompanion.ts）：真 PetInteractionTracker（拖点心）、真 FeedSpeechPause、真 ChosenFeedCues、
+ * 照桌宠窗口的接线（src/main.ts、src/mood/MoodCompanion.ts）：真 PetInteractionTracker（拖点心）、真 FeedSpeechPause、真 ChosenFeedCues、
  * 真 MoodHost（隔离临时目录；FeedCueDirector 用固定随机数，两块点心挑出的声音不同）；主机往返、声音播放器都是假的，假时钟一毫秒一跳。
  * 对照：拖走时另外显式取消（cancelCues），本来就不出声、400 ms 后续说。
  */
@@ -13,14 +13,14 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { MoodHost } from '../electron/mood';
+import { MoodHost } from '../electron/mood/mood';
 import { FeedCueDirector } from '../shared/behaviors/feed-cue/choose';
 import type { FeedCueView } from '../shared/behaviors/feed-cue/interface';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
-import type { CueKind } from '../shared/feed-cue';
-import { PetInteractionTracker, type PetHeadRegion } from '../src/ui/PetInteraction';
-import { FeedSpeechPause } from '../src/ui/feed-speech-pause';
-import { ChosenFeedCues } from '../src/ui/feed-cue-choice';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
+import type { CueKind } from '../shared/initiative/feed-cue';
+import { PetInteractionTracker, type PetHeadRegion } from '../src/mood/PetInteraction';
+import { FeedSpeechPause } from '../src/initiative/feed-speech-pause';
+import { ChosenFeedCues } from '../src/initiative/feed-cue-choice';
 
 function fakeClock() {
   let now = 0, nextId = 0;
@@ -41,7 +41,7 @@ function fakeClock() {
 const head: PetHeadRegion = { x: 40, y: 40, radius: 10, mouthX: 40, mouthY: 46, mouthRadius: 8 };
 type Row = Record<string, unknown> & { t: number };
 
-/** The pet window's feeding path; `openDelay(sessionId)`: how late the host hears this snack's 'food-wait' (0: at once). */
+/** The companion window's feeding path; `openDelay(sessionId)`: how late the host hears this snack's 'food-wait' (0: at once). */
 async function feeding(openDelay: (sessionId: string) => number = () => 0) {
   const clock = fakeClock(), trace: Row[] = [], played: { t: number; kind: CueKind; renderer: string; host: string }[] = [];
   const directory = await mkdtemp(path.join(os.tmpdir(), 'soft-feed-timing-'));
@@ -60,7 +60,7 @@ async function feeding(openDelay: (sessionId: string) => number = () => 0) {
     () => Date.UTC(2026, 10, 4, 19, 0) + clock.now(), { feedCue: new FeedCueDirector({ random: () => 0.46 }) });
   host.activate('gene-a', structuredClone(DEFAULT_MOOD_PARAMETERS));
   const submit = (value: Record<string, unknown>) => host.interaction({ token: host.get().token, ...value });
-  // src/ui/MoodCompanion.ts inputState: a new snack's 'food-wait' goes to the host (here, maybe late); idle 220 ms after the snack is gone.
+  // src/mood/MoodCompanion.ts inputState: a new snack's 'food-wait' goes to the host (here, maybe late); idle 220 ms after the snack is gone.
   const tracker = new PetInteractionTracker({
     onFeedback: feedback => pause.feedback(feedback),
     onState(state) {
@@ -81,7 +81,7 @@ async function feeding(openDelay: (sessionId: string) => number = () => 0) {
     clock, trace, played, tracker, pause, host,
     plan: (): FeedCueView | undefined => host.get().feedCue,
     switchHost(role: string) { hostRole = role; host.activate(role, structuredClone(DEFAULT_MOOD_PARAMETERS)); },
-    // src/main.ts applyCharacterCards: the card notice resets the pet's interaction (the snack is gone) and stops speech (cancelCues).
+    // src/main.ts applyCharacterCards: the card notice resets the companion's interaction (the snack is gone) and stops speech (cancelCues).
     switchRenderer(role: string) { renderer = role; tracker.cancel(); pause.cancelCues(); },
     async finish() {
       pause.dispose(); cues.dispose(); await host.flush().catch(() => {});
@@ -153,7 +153,7 @@ test('feed timing 3: switching characters, the old character\'s waiting "啊" ne
     await f.clock.until(270);
     f.tracker.drag(40, 46, 270, head);
     await f.clock.until(280);
-    // The host switches to B first; the pet window still shows A until the card notice at 330 ms.
+    // The host switches to B first; the companion window still shows A until the card notice at 330 ms.
     f.switchHost('gene-b');
     assert.equal(f.plan()?.sessionId, stale, 'B\'s old pick is in the view the pet window now gets');
     await f.clock.until(330);

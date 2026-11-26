@@ -1,5 +1,5 @@
 /**
- * 体验记录 (脸红, docs/claude/2026-11-06-journal-batch1.md): when a NEW blush cue reaches the pet's stage, could the stage show it,
+ * 体验记录 (脸红, docs/claude/2026-11-06-journal-batch1.md): when a NEW blush cue reaches the companion's stage, could the stage show it,
  * and if not, why. Told once per cue (the cue's id), as a closed category; nothing else leaves the stage. The mood model decides
  * whether she blushes at all; this only reports what the stage did with it.
  */

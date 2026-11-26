@@ -2,16 +2,16 @@
 // routes the app's own Claude Code launch to it (scripts/lib/smoke-isolation.mjs installClaudeInterposer).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { spawn as realSpawn } from 'node:child_process';
 import { mkdtemp, mkdir, readFile, readdir, realpath, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createContext, runInContext, type Context } from 'node:vm';
-import type { ChatMessage } from '../shared/contracts';
-import { ClaudeStreamReader, claudeArguments, claudeInput, streamClaude } from '../electron/claude';
-import { ClaudeChatProcess } from '../electron/claude-process';
-import { CLAUDE_FOLLOW_UP_HEADER, CLAUDE_SESSION_SYSTEM_PROMPT, composeSessionPrompt } from '../electron/claude-session-prompt';
+import type { ChatMessage } from '../shared/foundation/chat';
+import { ClaudeStreamReader, claudeArguments, claudeInput, streamClaude } from '../electron/brain/claude';
+import { ClaudeChatProcess } from '../electron/brain/claude-process';
+import { CLAUDE_LAUNCH_HOOK, launchClaudeOffMain, type ClaudeChild, type ClaudeLaunch, type ClaudeLaunchHook } from '../electron/brain/claude-launch';
+import { CLAUDE_FOLLOW_UP_HEADER, CLAUDE_SESSION_SYSTEM_PROMPT, composeSessionPrompt } from '../electron/brain/claude-session-prompt';
 import { FAKE_CLAUDE_MARKER, FAKE_CLAUDE_REPLY, FOLLOW_UP_MARKER, REACTION_JUDGE_OPENING, createFakeClaude, parseConversation, readFakeClaudeLogs, verifyArguments } from '../scripts/lib/fake-claude.mjs';
 import { reactionSystemPrompt } from '../shared/behaviors/reactions/choose';
 
@@ -19,6 +19,10 @@ const helper = await import(new URL('../scripts/lib/smoke-isolation.mjs', import
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const fakeScript = path.join(root, 'scripts', 'lib', 'fake-claude.mjs');
 const reply = FAKE_CLAUDE_REPLY.join('');
+// I-080: with the app's opening marker on, the session's fixed system prompt names <sh-open> and the fake writes it in front of its
+// reply, as the real model is asked to. These checks read the process's raw stream, before the opening gate cuts it.
+const marker = CLAUDE_SESSION_SYSTEM_PROMPT.includes('<sh-open>') ? '<sh-open>' : '';
+const rawReply = marker + reply, rawDeltas = [marker + FAKE_CLAUDE_REPLY[0], ...FAKE_CLAUDE_REPLY.slice(1)];
 const invoke = (context: Context, fn: Function, args = '') => runInContext(`(${fn.toString()})(${args})`, context);
 const user = (content: string): ChatMessage => ({ role: 'user', content });
 const opening = (text: string, history: ChatMessage[] = []) => composeSessionPrompt({ plan: { opening: true, history }, basePersona: '合成角色', turnPersona: '合成角色\n\n本轮心情', current: user(text) });
@@ -86,7 +90,7 @@ test('fake speaks stream-json the real reader accepts: clean init each turn, two
   const first = read(events.slice(0, results[0] + 1)), second = read(events.slice(results[0] + 1), true);
   for (const turn of [first, second]) {
     assert.ok(turn.verdicts.every(verdict => verdict === 'ok') && turn.reader.finished && !turn.reader.failure && !turn.reader.unsafe);
-    assert.equal(turn.reader.output, reply); assert.deepEqual(turn.deltas, [...FAKE_CLAUDE_REPLY]);
+    assert.equal(turn.reader.output, rawReply); assert.deepEqual(turn.deltas, rawDeltas);
   }
   const inits = events.filter(event => event.type === 'system' && event.subtype === 'init');
   assert.equal(inits.length, 2); assert.ok(inits.every(event => event.tools.length === 0 && event.mcp_servers.length === 0 && event.model === 'haiku'));
@@ -121,59 +125,75 @@ test('a fake started with weakened argv refuses every turn with the app\'s updat
   assert.equal(entries[0].argvOk, false); assert.ok(entries.some(entry => entry.event === 'refused'));
 });
 
-interface InterposerRig { context: Context; module: { spawn: Function }; calls: any[][]; expected: Record<string, string> }
-function interposer(original?: (...args: any[]) => unknown, overrides: Record<string, string> = {}): InterposerRig {
-  const calls: any[][] = [];
-  const module = { spawn: original ?? ((...args: any[]) => { calls.push(args); return { pid: 1 }; }) };
+/**
+ * The interposer as the smoke installs it, in another realm. `hook` is how the app reaches it (electron/brain/claude-launch launchClaude:
+ * the installed hook, given the app's off-main launch); `launch` stands for that off-main launch (a recorder, or the real one).
+ */
+interface InterposerRig { context: Context; module: { spawn: Function }; hook: ClaudeLaunch; calls: any[][]; launches: any[][]; expected: Record<string, string> }
+function interposer(launch?: ClaudeLaunch, overrides: Record<string, string> = {}): InterposerRig {
+  const calls: any[][] = [], launches: any[][] = [];
+  const module = { spawn: (...args: any[]) => { calls.push(args); return { pid: 1 }; } };
   const owned = path.join(os.tmpdir(), 'soft-hearts-smoke-synthetic');
   const expected = { marker: 'synthetic-marker', claudePlaceholder: path.join(owned, 'claude-placeholder.exe'), claudeHome: path.join(owned, 'claude-home'),
     fakeLog: path.join(owned, 'fake-claude'), fakeNode: process.execPath, fakeScript, fakeMarker: FAKE_CLAUDE_MARKER, ...overrides };
   const context = createContext({ expected, electron: {}, process: { platform: process.platform, getBuiltinModule: (name: string) =>
     name === 'node:child_process' ? module : name === 'node:path' ? path : name === 'node:module' ? { syncBuiltinESMExports() {} } : undefined } });
   invoke(context, helper.installClaudeInterposer, 'electron,expected');
-  return { context, module, calls, expected };
+  const installed = (context as Record<string, unknown>)[CLAUDE_LAUNCH_HOOK] as ClaudeLaunchHook;
+  assert.equal(typeof installed, 'function', 'The harness installs its hook under the name the app reads (CLAUDE_LAUNCH_HOOK).');
+  const inner: ClaudeLaunch = launch ?? ((...args) => { launches.push(args); return { pid: 2 } as unknown as ClaudeChild; });
+  return { context, module, hook: (file, args, options) => installed(file, args, options, inner), calls, launches, expected };
 }
-const chatOptions = (env: Record<string, string> = {}) => ({ cwd: path.join(os.tmpdir(), 'soft-hearts-claude', 'claude-chat', 'session-abc'), shell: false, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'],
-  env: { PATH: 'synthetic', NO_COLOR: '1', DISABLE_AUTOUPDATER: '1', ...env } });
+const chatOptions = (env: Record<string, string> = {}) => ({ cwd: path.join(os.tmpdir(), 'soft-hearts-claude', 'claude-chat', 'session-abc'), shell: false as const, windowsHide: true as const,
+  stdio: ['pipe', 'pipe', 'pipe'] as ['pipe', 'pipe', 'pipe'], env: { PATH: 'synthetic', NO_COLOR: '1', DISABLE_AUTOUPDATER: '1', ...env } });
 
-test('interposer routes only the placeholder\'s exact chat launch to the fake, unchanged options, sealed', () => {
+test('interposer routes only the placeholder\'s exact chat launch, through the app\'s launch hook, to the fake, unchanged options, sealed', () => {
   const rig = interposer();
   const args = claudeArguments({ model: 'haiku' }, CLAUDE_SESSION_SYSTEM_PROMPT), options = chatOptions({ CLAUDE_CONFIG_DIR: rig.expected.claudeHome });
-  rig.module.spawn(rig.expected.claudePlaceholder, args, options);
-  assert.equal(rig.calls.length, 1);
-  const [file, forwarded, forwardedOptions] = rig.calls[0];
+  rig.hook(rig.expected.claudePlaceholder, args, options);
+  assert.equal(rig.launches.length, 1);
+  const [file, forwarded, forwardedOptions] = rig.launches[0];
   assert.equal(file, process.execPath);
   assert.deepEqual([...forwarded], [fakeScript, FAKE_CLAUDE_MARKER, path.join(rig.expected.fakeLog, 'spawn-0.jsonl'), ...args]);
   assert.equal(forwardedOptions, options, 'The app\'s own options (env, folder, pipes, shell:false) pass through untouched.');
-  // Unrelated launches (taskkill, git, ...) go to the real spawn exactly as called.
-  rig.module.spawn('taskkill.exe', ['/PID', '1', '/T', '/F'], { windowsHide: true });
-  assert.deepEqual(rig.calls[1], ['taskkill.exe', ['/PID', '1', '/T', '/F'], { windowsHide: true }]);
+  assert.equal(rig.calls.length, 0, 'Through the app\'s own off-main launch, never the main thread\'s spawn.');
+  // Unrelated launches (git, ...) go to the main thread's real spawn exactly as called; a Claude Code launch there is refused, even the
+  // placeholder's own chat launch (the app starts Claude Code only through its hook now: step 6, nothing held on the main thread).
+  rig.module.spawn('git.exe', ['status'], { windowsHide: true });
+  assert.deepEqual(rig.calls[0], ['git.exe', ['status'], { windowsHide: true }]);
+  assert.throws(() => rig.module.spawn(rig.expected.claudePlaceholder, args, options), /refused a Claude Code launch: not through the app's launch hook/);
   const evidence = runInContext('globalThis.__safeSmokeClaude', rig.context);
   assert.deepEqual(JSON.parse(JSON.stringify(evidence.spawned)), [{ index: 0, model: 'haiku', findings: { electronRunAsNode: false, sessionVariables: 0, configDirMatches: true,
     noColor: true, noAutoUpdater: true, ownedTurnFolder: true, hidden: true } }]);
-  assert.equal(evidence.passedThrough, 1); assert.deepEqual([...evidence.denied], []);
-  const descriptor = Object.getOwnPropertyDescriptor(rig.module, 'spawn')!;
-  assert.ok(!descriptor.writable && !descriptor.configurable, 'The app cannot restore the real spawn behind the harness.');
+  assert.equal(evidence.passedThrough, 1); assert.deepEqual([...evidence.denied], ['not through the app\'s launch hook']);
+  for (const [owner, name] of [[rig.module, 'spawn'], [rig.context, CLAUDE_LAUNCH_HOOK]] as const) {
+    const descriptor = Object.getOwnPropertyDescriptor(owner, name)!;
+    assert.ok(!descriptor.writable && !descriptor.configurable, `The app cannot put back the real ${name} behind the harness.`);
+  }
   assert.throws(() => invoke(rig.context, helper.installClaudeInterposer, 'electron,expected'), /already installed/);
 });
 
 test('interposer refuses every other Claude Code launch and records leaked session variables', () => {
   const rig = interposer();
   const args = claudeArguments({ model: '' });
-  const refused: Array<[string, string[], Record<string, unknown>]> = [
+  const shellTrue = { ...chatOptions(), shell: true } as unknown as ReturnType<typeof chatOptions>;
+  const refused: Array<[string, string[], ReturnType<typeof chatOptions>]> = [
     [process.platform === 'win32' ? 'C:\\Users\\someone\\.local\\bin\\claude.exe' : '/usr/local/bin/claude', args, chatOptions()],
-    ['claude.cmd', args, { ...chatOptions(), shell: true }],
+    ['claude.cmd', args, shellTrue],
     [rig.expected.claudePlaceholder, ['--version'], chatOptions()],
     [rig.expected.claudePlaceholder, args.map((value, index) => index === args.indexOf('--tools') + 1 ? 'Bash' : value), chatOptions()],
     [rig.expected.claudePlaceholder, args.filter(value => value !== '--strict-mcp-config'), chatOptions()],
-    [rig.expected.claudePlaceholder, args, { ...chatOptions(), shell: true }],
+    [rig.expected.claudePlaceholder, args, shellTrue],
     [process.execPath, ['some-cli.js', '-p', '--output-format', 'stream-json'], chatOptions()],
   ];
-  for (const [file, list, options] of refused) assert.throws(() => rig.module.spawn(file, list, options), /refused a Claude Code launch/);
-  assert.equal(rig.calls.length, 0, 'A refused launch never reaches the real spawn.');
-  assert.equal(runInContext('globalThis.__safeSmokeClaude', rig.context).denied.length, refused.length);
+  for (const [file, list, options] of refused) {
+    assert.throws(() => rig.hook(file, list, options), /refused a Claude Code launch/);
+    assert.throws(() => rig.module.spawn(file, list, options), /refused a Claude Code launch/);
+  }
+  assert.equal(rig.launches.length + rig.calls.length, 0, 'A refused launch never starts anything.');
+  assert.equal(runInContext('globalThis.__safeSmokeClaude', rig.context).denied.length, refused.length * 2);
   // A launch whose environment still carries a parent session is routed to the fake but flagged for the smoke.
-  rig.module.spawn(rig.expected.claudePlaceholder, args, chatOptions({ CLAUDECODE: '1', ELECTRON_RUN_AS_NODE: '1' }));
+  rig.hook(rig.expected.claudePlaceholder, args, chatOptions({ CLAUDECODE: '1', ELECTRON_RUN_AS_NODE: '1' }));
   const [record] = runInContext('globalThis.__safeSmokeClaude', rig.context).spawned;
   assert.deepEqual({ ...record.findings }, { electronRunAsNode: true, sessionVariables: 1, configDirMatches: false, noColor: true, noAutoUpdater: true, ownedTurnFolder: true, hidden: true });
 });
@@ -188,12 +208,13 @@ test('the app\'s persistent Claude Code process drives the real fake through the
     await mkdir(claudeHome); await mkdir(fakeLog);
     for (const key of Object.keys(saved)) delete process.env[key];
     Object.assign(process.env, { CLAUDE_CONFIG_DIR: claudeHome, ...helper.CLAUDE_SESSION_DECOYS });
-    const rig = interposer(realSpawn, { claudePlaceholder: path.join(owned, 'claude-placeholder.exe'), claudeHome, fakeLog });
-    chat = await ClaudeChatProcess.start({ binary: rig.expected.claudePlaceholder, model: 'haiku', systemPrompt: CLAUDE_SESSION_SYSTEM_PROMPT, spawn: rig.module.spawn as typeof realSpawn });
+    // The app's real off-main launch (a worker thread starts the fake) behind the smoke's hook, as in the packaged app.
+    const rig = interposer(launchClaudeOffMain, { claudePlaceholder: path.join(owned, 'claude-placeholder.exe'), claudeHome, fakeLog });
+    chat = await ClaudeChatProcess.start({ binary: rig.expected.claudePlaceholder, model: 'haiku', systemPrompt: CLAUDE_SESSION_SYSTEM_PROMPT, spawn: rig.hook });
     const deltas: string[] = [];
     const emit = (type: string, text: string) => { if (type === 'delta') deltas.push(text); };
-    assert.equal(await chat.run(claudeInput({ prompt: opening('你好') }), new AbortController().signal, emit), reply);
-    assert.deepEqual(deltas, [...FAKE_CLAUDE_REPLY]); assert.ok(chat.verified);
+    assert.equal(await chat.run(claudeInput({ prompt: opening('你好') }), new AbortController().signal, emit), rawReply);
+    assert.deepEqual(deltas, rawDeltas); assert.ok(chat.verified);
     const stop = new AbortController();
     const held = chat.run(claudeInput({ prompt: followUp('WAIT') }), stop.signal, emit);
     const until = async (predicate: () => boolean) => { const end = Date.now() + 20_000; // a real condition; 20 s of margin on a busy machine
@@ -203,7 +224,7 @@ test('the app\'s persistent Claude Code process drives the real fake through the
     await assert.rejects(held, /已停止/);
     await chat.settled();
     assert.ok(chat.alive && !chat.busy, 'The interrupted turn drained; the process stays warm.');
-    assert.equal(await chat.run(claudeInput({ prompt: followUp('新的一句') }), new AbortController().signal, emit), reply);
+    assert.equal(await chat.run(claudeInput({ prompt: followUp('新的一句') }), new AbortController().signal, emit), rawReply);
     // The fake appends its "reply" log line just after it writes the result to stdout; under load the
     // app can read the result first, so wait for the line rather than racing it.
     await until(() => readFakeClaudeLogs(fakeLog).turns.at(-1)?.replies === 1);
@@ -249,7 +270,7 @@ test('only the harness can install the fake: no product source, bundle input or 
     }
   };
   for (const directory of ['electron', 'src', 'shared']) await walk(directory);
-  assert.ok(product.includes('electron/claude.ts') && product.includes('electron/claude-process.ts'));
+  assert.ok(product.includes('electron/brain/claude.ts') && product.includes('electron/brain/claude-process.ts'));
   for (const file of product) {
     const text = await readFile(path.join(root, file), 'utf8');
     for (const needle of ['fake-claude', FAKE_CLAUDE_MARKER, '__safeSmokeClaude', 'installClaudeInterposer', 'smoke-isolation']) assert.ok(!text.includes(needle), `${file} mentions ${needle}`);
@@ -259,9 +280,9 @@ test('only the harness can install the fake: no product source, bundle input or 
   assert.ok(shipped.every((entry: string) => !entry.startsWith('scripts/lib') && !entry.includes('fake-claude') && entry !== 'scripts/**/*'), 'The fake is never packaged.');
   // The harness itself is pinned to the trusted updater's bytes, and changing it never counts as a production change.
   assert.deepEqual(helper.SMOKE_HARNESS_FILES, ['scripts/smoke.mjs', 'scripts/lib/smoke-isolation.mjs', 'scripts/lib/fake-claude.mjs']);
-  const rows = [['electron/claude.ts', 'a'.repeat(64)], ['scripts/lib/fake-claude.mjs', 'b'.repeat(64)]];
+  const rows = [['electron/brain/claude.ts', 'a'.repeat(64)], ['scripts/lib/fake-claude.mjs', 'b'.repeat(64)]];
   helper.assertRuntimeSourceEquivalence(rows, [rows[0], ['scripts/lib/fake-claude.mjs', 'c'.repeat(64)]]);
-  assert.throws(() => helper.assertRuntimeSourceEquivalence(rows, [['electron/claude.ts', 'd'.repeat(64)], rows[1]]));
+  assert.throws(() => helper.assertRuntimeSourceEquivalence(rows, [['electron/brain/claude.ts', 'd'.repeat(64)], rows[1]]));
   // Importing the module (as this test and the harness do) starts nothing: it only runs behind its marker argument.
   assert.notEqual(process.argv[2], FAKE_CLAUDE_MARKER);
 });

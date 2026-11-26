@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {SurprisePreviewHost} from '../electron/surprise-preview-host';
+import {SurprisePreviewHost} from '../electron/initiative/surprise-preview-host';
 
 test('fixed clip and model identity are host-owned, scoped and generation bound',async()=>{
   let now=100;const context={modelKey:'m1',modelUrl:'asset://gene',visible:true};

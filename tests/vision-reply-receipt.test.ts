@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ProactiveVision, type ProactiveVisionMessage } from '../electron/proactive-vision';
-import { ProactiveSpeechGate } from '../electron/proactive-speech-gate';
-import { ReplyPresentation } from '../electron/reply-presentation';
-import { VisionPresentationGuard } from '../electron/vision-presentation-adapter';
-import { prepareVisionDelivery } from '../src/ui/proactive-vision-delivery';
-import { formatVisionPresentation } from '../shared/vision-runtime';
+import { ProactiveVision, type ProactiveVisionMessage } from '../electron/senses/proactive-vision';
+import { ProactiveSpeechGate } from '../electron/initiative/proactive-speech-gate';
+import { ReplyPresentation } from '../electron/brain/reply-presentation';
+import { VisionPresentationGuard } from '../electron/senses/vision-presentation-adapter';
+import { prepareVisionDelivery } from '../src/senses/proactive-vision-delivery';
+import { formatVisionPresentation } from '../shared/senses/vision-runtime';
 
 const flush = async () => { for (let i = 0; i < 8; i++) await Promise.resolve(); };
 function fixture() {

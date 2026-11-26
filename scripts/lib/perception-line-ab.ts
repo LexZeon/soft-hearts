@@ -1,5 +1,5 @@
 // First-token A/B for the sentence at the end of her fixed settings text (docs/claude/2026-11-06-perception-line.md):
-//   A = the sentence before 2026-11-06 ("…屏幕/摄像头/麦克风…请用户到控制窗口自己改。"),
+//   A = the sentence before,
 //   B = the new one (CHAT_SETTINGS_UNLISTED_TEXT).
 // Same card (Gene), same single-turn situations, interleaved in one time window, who goes first swapped every pair. Hard cap on real
 // requests; any failed turn (429, quota, login) stops the run, nothing is retried. Every scenario runs in the runner's own temp data
@@ -13,9 +13,9 @@ import { runEval } from './prompt-eval-runner';
 import type { TurnRecord } from './prompt-eval-analysis';
 import type { EvalScenario } from './prompt-eval-scenarios';
 import { FIDELITY_CARDS, FIDELITY_SCENARIOS, toEvalScenarios } from './fidelity-scenarios';
-import { claudeSessionSystemPrompt } from '../../electron/claude-session-prompt';
-import { CHAT_SETTINGS_UNLISTED_TEXT, CHAT_SETTINGS_UNLISTED_TEXT_BEFORE } from '../../electron/chat-settings';
-import { findClaude } from '../../electron/claude';
+import { claudeSessionSystemPrompt } from '../../electron/brain/claude-session-prompt';
+import { CHAT_SETTINGS_UNLISTED_TEXT, CHAT_SETTINGS_UNLISTED_TEXT_1106, CHAT_SETTINGS_UNLISTED_TEXT_BEFORE } from '../../electron/brain/chat-settings';
+import { findClaude } from '../../electron/brain/claude';
 
 const option = (name: string, fallback = '') => { const i = process.argv.indexOf(`--${name}`); return i >= 0 ? process.argv[i + 1] ?? fallback : fallback; };
 const dry = process.argv.includes('--dry');
@@ -25,7 +25,8 @@ const cap = Math.max(1, Math.min(30, Number(option('cap', '20')) || 20));
 
 const systemB = claudeSessionSystemPrompt();
 if (!systemB.includes(CHAT_SETTINGS_UNLISTED_TEXT)) throw new Error('the new sentence is not in the fixed prompt');
-const systemA = systemB.replace(CHAT_SETTINGS_UNLISTED_TEXT, CHAT_SETTINGS_UNLISTED_TEXT_BEFORE);
+// I-137 (2026-11-15): `--a 1106` compares with the 2026-11-06 sentence that I-137 replaced; the default stays the one before 11-06.
+const systemA = systemB.replace(CHAT_SETTINGS_UNLISTED_TEXT, option('a') === '1106' ? CHAT_SETTINGS_UNLISTED_TEXT_1106 : CHAT_SETTINGS_UNLISTED_TEXT_BEFORE);
 if (systemA === systemB) throw new Error('A and B are the same');
 const variants: Record<string, { label: string; systemPrompt: string }> = { A: { label: 'A', systemPrompt: systemA }, B: { label: 'B', systemPrompt: systemB } };
 

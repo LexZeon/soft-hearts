@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import ts from 'typescript';
-import { MoodViewLifetime } from '../src/ui/mood-view-lifetime';
-import { uiText, uiTemplate } from '../src/ui/ui-language';
+import { MoodViewLifetime } from '../src/mood/mood-view-lifetime';
+import { uiText, uiTemplate } from '../src/foundation/ui-language';
 
-const source = readFileSync(new URL('../src/ui/MoodCompanion.ts', import.meta.url), 'utf8');
+const source = readFileSync(new URL('../src/mood/MoodCompanion.ts', import.meta.url), 'utf8');
 const ast = ts.createSourceFile('MoodCompanion.ts', source, ts.ScriptTarget.Latest, true);
 const klass = ast.statements.find(n => ts.isClassDeclaration(n) && n.name?.text === 'MoodCompanion') as ts.ClassDeclaration;
 const wanted = ['applyView', 'refreshView', 'clearFatigueView', 'reset'];

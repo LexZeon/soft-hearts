@@ -1,10 +1,10 @@
-// "UTF-8 read as GBK" garbage in her reply (shared/mojibake.ts, docs/claude/2026-11-03-mojibake-guard.md).
+// "UTF-8 read as GBK" garbage in her reply (shared/foundation/mojibake.ts, docs/claude/2026-11-03-mojibake-guard.md).
 // On 2026-11-03 a reply came back with runs like "鍙戠敓浜嗕粈涔" and "锛屾垜". The garbled samples below are made the way such
 // text is made (UTF-8 bytes decoded as GBK); the ordinary samples are written for this test (no recorded chat is used).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MojibakeGuard, canStartMojibake, cleanMojibake } from '../shared/mojibake';
-import { MoodReplyProtocol } from '../electron/mood-chat';
+import { MojibakeGuard, canStartMojibake, cleanMojibake } from '../shared/foundation/mojibake';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
 
 const garble = (text: string): string => new TextDecoder('gbk').decode(Buffer.from(text, 'utf8'));
 

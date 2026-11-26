@@ -79,7 +79,7 @@ export async function knobTable(root = REPO_ROOT) {
     '用户说"这里改一下"时照这张表找（I-020"想改哪里，只改一处"）。每一行来自一个旋钮文件里旋钮上面那行"用户可能怎么说"，所以表和代码永远对得上。',
     '',
     '- **改哪里**：旋钮文件和旋钮的名字，改那一个值就生效，别处不变（每个功能都有"一个旋钮"测试）。',
-    '- **用新写法的功能**才在表里：能调的值都在自己文件夹的 `knobs.ts`，"她来挑"见 `shared/she-chooses.ts`。还没搬过来的写死规则见 `docs/claude/2026-11-03-hardcoded-rules-inventory.md`，那些要改时还得去代码里找。',
+    '- **用新写法的功能**才在表里：能调的值都在自己文件夹的 `knobs.ts`，"她来挑"见 `shared/foundation/she-chooses.ts`。还没搬过来的写死规则见 `docs/claude/2026-11-03-hardcoded-rules-inventory.md`，那些要改时还得去代码里找。',
     '',
     '## 各功能用的写法',
     '',

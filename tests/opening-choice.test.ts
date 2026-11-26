@@ -1,6 +1,6 @@
 /**
  * #10 她想找你说话时"这次说什么"由她挑（I-020 第四批，docs/claude/2026-11-04-opening-choice.md；方案第 4 节的安全线、第 7 节的标准）。
- * 守约：真实现（OpeningChoiceDirector）和假实现（FixedOpeningChoice）跑同一组约定；接线：electron/inner-loop/opening-host.ts，
+ * 守约：真实现（OpeningChoiceDirector）和假实现（FixedOpeningChoice）跑同一组约定；接线：electron/brain/opening-host.ts，
  * 用真内心循环、真屏幕主动聊天、真一起听停顿点开口、真共享闸门，截图和模型都是计数的假实现。
  */
 import test from 'node:test';
@@ -9,19 +9,19 @@ import { OpeningChoiceDirector, chooseOpening, openingNow, type OpeningNowInput 
 import { FixedOpeningChoice } from '../shared/behaviors/opening-choice/fake';
 import { OPENING_CANDIDATE_IDS, OPENING_CHOICE_KNOBS, type OpeningChoiceKnobs } from '../shared/behaviors/opening-choice/knobs';
 import type { OpeningCandidateId, OpeningChoiceHost, OpeningNow } from '../shared/behaviors/opening-choice/interface';
-import { OpeningHost, type OpeningClaimants, type OpeningLoop } from '../electron/inner-loop/opening-host';
-import { claimedView } from '../electron/inner-loop/claim';
-import { InnerLoop, type InnerLoopDependencies } from '../electron/inner-loop/inner-loop';
-import { innerLoopPrompt } from '../electron/inner-loop/context';
-import { ProactiveSpeechGate } from '../electron/proactive-speech-gate';
-import { ProactiveVision } from '../electron/proactive-vision';
-import { ListenProactive } from '../electron/listen-together/proactive';
-import { HerNeedsHost } from '../electron/her-needs/host';
-import { buildInnerLoopPrompt, parseInnerLoopDecision, type InnerLoopPromptInput, type InnerLoopQuiet } from '../shared/inner-loop';
-import { SHE_CHOOSES_NO_LEAN } from '../shared/she-chooses';
-import { DEFAULT_MOOD_PARAMETERS, createMoodState, getMoodSnapshot, type MoodCue, type MoodLabel, type MoodTendency } from '../shared/mood';
-import type { MoodView } from '../shared/mood-runtime';
-import type { ListenNote } from '../shared/listen-together';
+import { OpeningHost, type OpeningClaimants, type OpeningLoop } from '../electron/brain/opening-host';
+import { claimedView } from '../electron/initiative/inner-loop/claim';
+import { InnerLoop, type InnerLoopDependencies } from '../electron/initiative/inner-loop/inner-loop';
+import { innerLoopPrompt } from '../electron/initiative/inner-loop/context';
+import { ProactiveSpeechGate } from '../electron/initiative/proactive-speech-gate';
+import { ProactiveVision } from '../electron/senses/proactive-vision';
+import { ListenProactive } from '../electron/senses/listen-together/proactive';
+import { HerNeedsHost } from '../electron/mood/her-needs/host';
+import { buildInnerLoopPrompt, parseInnerLoopDecision, type InnerLoopPromptInput, type InnerLoopQuiet } from '../shared/initiative/inner-loop';
+import { SHE_CHOOSES_NO_LEAN } from '../shared/foundation/she-chooses';
+import { DEFAULT_MOOD_PARAMETERS, createMoodState, getMoodSnapshot, type MoodCue, type MoodLabel, type MoodTendency } from '../shared/foundation/mood';
+import type { MoodView } from '../shared/mood/mood-runtime';
+import type { ListenNote } from '../shared/senses/listen-together';
 
 const rng = (seed: number) => { let s = seed >>> 0 || 1; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 2 ** 32; }; };
 const flush = async () => { for (let i = 0; i < 30; i++) await new Promise<void>(resolve => setImmediate(resolve)); };
@@ -45,7 +45,7 @@ test('contract (real and fake): only what is there now, "这次不说" always, n
   for (const [name, host] of hosts) {
     for (let i = 0; i < 200; i++) {
       const random = rng(i + 7);
-      const available = { listen: random() < 0.5, screen: random() < 0.5, mood: random() < 0.5, play: random() < 0.5 };
+      const available = { listen: random() < 0.5, screen: random() < 0.5, mood: random() < 0.5, play: random() < 0.5, keepsake: random() < 0.5, give: random() < 0.5 };
       const now = moment({ available });
       const chose = host.choose('gene', now);
       assert.ok(chose, `${name}: something is always there ("这次不说")`);
@@ -123,7 +123,7 @@ test('"why" holds only true reasons from this moment', () => {
   assert.ok(!moment({ last: { id: 'quiet', at: 5_000 } }).moments.includes('unanswered'));
 });
 
-// ---------------------------------------------------------------- the host (electron/inner-loop/opening-host.ts)
+// ---------------------------------------------------------------- the host (electron/brain/opening-host.ts)
 
 interface FakeLoop extends OpeningLoop { calls: string[]; take: boolean; can: boolean; sleeping: boolean; reminder: boolean; quiet: InnerLoopQuiet }
 function fakeLoop(): FakeLoop {

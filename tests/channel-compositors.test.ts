@@ -67,3 +67,23 @@ test('mouth: feeding near the mouth wins over speech by its eased weight, speech
   assert.equal(composeMouth(0.5, 0, 0), 0.5, 'no feeding: speech unchanged');
   assert.equal(composeMouth(NaN, NaN, NaN), 0);
 });
+
+// a pat's closure must not be capped by a lid shape that
+// does not cover the same place (a non-reviewed model); the reviewed Gene keeps its cap.
+const patLids = { contact: 0.92, cheek: 0, fatigue: 0, naturalBlink: 0, smileEyes: 0.5 };
+test('a pat closure on a model whose lid shapes do not overlap is written in full (no gap)', () => {
+  const out = new EyelidCompositor().frame(1 / 30, { ...patLids, lidShapesOverlap: false });
+  assert.ok(out.blink >= 0.92 - 1e-9, `got ${out.blink}`);
+});
+
+test('the reviewed Gene keeps its cap: blink never exceeds 1 - smileEyes', () => {
+  for (const overlap of [true, undefined]) {
+    const out = new EyelidCompositor().frame(1 / 30, { ...patLids, lidShapesOverlap: overlap });
+    assert.ok(out.blink <= 0.5 + 1e-9, `got ${out.blink}`);
+  }
+});
+
+test('without a pat leading the lids, a non-overlapping model still caps by the lid shape', () => {
+  const out = new EyelidCompositor().frame(1 / 30, { contact: 0, cheek: 0, fatigue: 0.9, naturalBlink: 0, smileEyes: 0.5, lidShapesOverlap: false });
+  assert.ok(out.blink <= 0.5 + 1e-9, `got ${out.blink}`);
+});

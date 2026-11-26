@@ -5,25 +5,26 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import type { ChatMessage, ProviderConfig } from '../shared/contracts';
-import { REALER_EMOTIONS_CHAT_TEXT, REALER_EMOTIONS_CONSENT, REALER_EMOTIONS_INNER_LOOP_RULE } from '../shared/realer-emotions';
-import { COMPANION_RULES } from '../shared/companion-rules';
-import { CLAUDE_SESSION_SYSTEM_PROMPT, composeSessionPrompt, planSessionTurn } from '../electron/claude-session-prompt';
-import { CLAUDE_CHAT_SYSTEM_PROMPT } from '../electron/claude';
-import { buildCodexChatPrompt } from '../electron/conversation-context';
-import { CompanionService, withRealerEmotions } from '../electron/companion';
-import { buildInnerLoopPrompt, INNER_LOOP_MISSING_RULE, type InnerLoopPromptInput } from '../shared/inner-loop';
-import { innerLoopPrompt, type InnerLoopContextSources } from '../electron/inner-loop/context';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
-import { validateCharacterDraft, type CharacterDraft } from '../shared/character-cards';
-import { CharacterCardStore, parseCharacterCardText } from '../electron/character-cards';
-import { exportCharacterWithResponse } from '../shared/character-response-portable';
-import { realerEmotionsDialogOptions, realerEmotionsRequest } from '../electron/realer-emotions-host';
-import { createAppTools, realerEmotionsConfirmation, settingViews, type AgentAppBridge } from '../electron/agent-channel/app-tools';
-import { AgentToolRegistry, type AgentConfirmRequest } from '../electron/agent-channel/registry';
-import { AGENT_SETTINGS, agentSetting } from '../shared/agent-channel';
-import { chatSettingsSystemText, mentionsSettings, parseChatSettingProposal } from '../electron/chat-settings';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
+import type { ChatMessage } from '../shared/foundation/chat';
+import type { ProviderConfig } from '../shared/foundation/settings';
+import { REALER_EMOTIONS_CHAT_TEXT, REALER_EMOTIONS_CONSENT, REALER_EMOTIONS_INNER_LOOP_RULE } from '../shared/mood/realer-emotions';
+import { COMPANION_RULES } from '../shared/brain/companion-rules';
+import { CLAUDE_SESSION_SYSTEM_PROMPT, composeSessionPrompt, planSessionTurn } from '../electron/brain/claude-session-prompt';
+import { CLAUDE_CHAT_SYSTEM_PROMPT } from '../electron/brain/claude';
+import { buildCodexChatPrompt } from '../electron/brain/conversation-context';
+import { CompanionService, withRealerEmotions } from '../electron/brain/companion';
+import { buildInnerLoopPrompt, INNER_LOOP_MISSING_RULE, type InnerLoopPromptInput } from '../shared/initiative/inner-loop';
+import { innerLoopPrompt, type InnerLoopContextSources } from '../electron/initiative/inner-loop/context';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
+import { validateCharacterDraft, type CharacterDraft } from '../shared/cards/character-cards';
+import { CharacterCardStore, parseCharacterCardText } from '../electron/cards/character-cards';
+import { exportCharacterWithResponse } from '../shared/cards/character-response-portable';
+import { realerDurationLine, realerEmotionsDialogOptions, realerEmotionsRequest } from '../electron/mood/realer-emotions-host';
+import { createAppTools, realerEmotionsConfirmation, settingViews, type AgentAppBridge } from '../electron/safety/agent-channel/app-tools';
+import { AgentToolRegistry, type AgentConfirmRequest } from '../electron/safety/agent-channel/registry';
+import { AGENT_SETTINGS, agentSetting } from '../shared/safety/agent-channel';
+import { chatSettingsSystemText, mentionsSettings, parseChatSettingProposal } from '../electron/brain/chat-settings';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
 import { checkHardRules } from '../scripts/lib/fidelity-rules';
 import { buildJudgePrompt, GUILT_LINE, JUDGE_SYSTEM_PROMPT, REALER_GUILT_LINE, judgeSystemPrompt } from '../scripts/lib/fidelity-judge';
 import { FIDELITY_CARDS, FIDELITY_SCENARIOS, scenarioById } from '../scripts/lib/fidelity-scenarios';
@@ -128,7 +129,7 @@ test('on: the inner loop swaps exactly one line; off is the prompt without the f
 
 test('the realer texts keep the two protections, stay her (not malicious), and name the user as 用户 / 你', () => {
   for (const text of [REALER_EMOTIONS_CHAT_TEXT, REALER_EMOTIONS_INNER_LOOP_RULE]) {
-    for (const part of ['更重', '闹别扭', '不一定先', '吃醋', '仍然偏心用户', '不羞辱', '不威胁', '不拿伤害自己吓用户', '本来就难过', '不加码', '不让用户内疚'])
+    for (const part of ['更重', '闹别扭', '不一定先', '吃醋', '仍然偏心用户', '不羞辱', '不威胁', '不拿伤害自己吓用户', '非常难过', '接近想轻生', '不加码'])
       assert.ok(text.includes(part), `${part}: ${text.slice(0, 20)}`);
     assert.doesNotMatch(text, /[他她]/u, 'the user is 用户 or 你');
   }
@@ -140,12 +141,10 @@ test('the realer texts keep the two protections, stay her (not malicious), and n
   assert.equal(REALER_EMOTIONS_CONSENT.accept, '我知道了，打开');
 });
 
-test('关于愧疚 in the companion rules: a pout is care, the big line stays, she makes up first', () => {
+test('I-206: the companion rules no longer carry the guilt / leaving lines; rule 2 holds the one safety net', () => {
   const two = COMPANION_RULES.split('\n').find(line => line.startsWith('2. '))!;
-  for (const part of ['撒娇、小小闹个别扭', '“你都不理我”', '那是在乎', '不拿愧疚控制或惩罚用户', '不让用户不敢离开', '“你走了我会难过死”', '“你要是在乎我就别去”',
-    '不越闹越大', '不翻旧账', '用户本来就难过、受委屈时，不再让用户内疚', '闹完由你先给台阶、先和好'])
-    assert.ok(two.includes(part), part);
-  assert.doesNotMatch(two, /不让用户内疚（不说“你都不理我”/u, 'the old absolute wording is gone');
+  assert.ok(two.includes('用户非常难过、接近想轻生的程度时，你先陪着，不加码'));
+  assert.doesNotMatch(two, /撒娇|你都不理我|愧疚|内疚|不敢离开|翻旧账|先和好/u);
 });
 
 // ---- The card -----------------------------------------------------------------------------------------
@@ -198,10 +197,10 @@ test('the editor\'s request: on shows what it does first and saves only on "我�
   assert.equal((await request(id, true)).cards[0].realerEmotions, undefined, 'declined: nothing saved');
   assert.deepEqual(saves, []);
   assert.equal(asked.length, 1);
-  assert.deepEqual(asked[0].buttons, ['先不打开', '我知道了，打开']);
+  assert.deepEqual(asked[0].buttons, ['先不打开', '打开一天', '打开一周（推荐）', '打开一个月', '一直开着']);
   assert.equal(asked[0].defaultId, 0, 'the safe button is the default');
   assert.match(asked[0].message, /阿棠/);
-  assert.equal(asked[0].detail, REALER_EMOTIONS_CONSENT.detail);
+  assert.ok(asked[0].detail.startsWith(REALER_EMOTIONS_CONSENT.detail) && asked[0].detail.includes('开多久'));
   answer = true;
   assert.equal((await request(id, true)).cards[0].realerEmotions, true);
   assert.deepEqual(saves, [[id, true]]);
@@ -232,7 +231,7 @@ test('chat and the agent channel: realer_emotions is a card setting; turning it 
   assert.deepEqual(calls, []);
   assert.equal(asked.length, 1);
   assert.deepEqual(asked[0].buttons, ['先不打开', '我知道了，打开']);
-  assert.equal(asked[0].detail, REALER_EMOTIONS_CONSENT.detail);
+  assert.equal(asked[0].detail, `${REALER_EMOTIONS_CONSENT.detail}\n\n${realerDurationLine('week')}`);
   assert.match(asked[0].title, /阿棠/);
   allow = true;
   assert.equal((await registry.call('set_setting', { id: 'realer_emotions', value: true })).ok, true);
@@ -240,7 +239,7 @@ test('chat and the agent channel: realer_emotions is a card setting; turning it 
   assert.equal((await registry.call('set_setting', { id: 'realer_emotions', value: false })).ok, true);
   assert.deepEqual(calls, [true, false]);
   assert.equal(asked.length, 2, 'off never asks');
-  assert.deepEqual(realerEmotionsConfirmation(cards()), { title: REALER_EMOTIONS_CONSENT.message('阿棠'), detail: REALER_EMOTIONS_CONSENT.detail, buttons: ['先不打开', '我知道了，打开'] });
+  assert.deepEqual(realerEmotionsConfirmation(cards()), { title: REALER_EMOTIONS_CONSENT.message('阿棠'), detail: `${REALER_EMOTIONS_CONSENT.detail}\n\n${realerDurationLine('week')}`, buttons: ['先不打开', '我知道了，打开'] });
   // The catalog, the chat's settings text and the card proposal.
   assert.ok(AGENT_SETTINGS.some(spec => spec.id === 'realer_emotions'));
   assert.match(chatSettingsSystemText(), /realer_emotions：当前角色更真实的情绪/);

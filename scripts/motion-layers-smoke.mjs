@@ -14,7 +14,7 @@ const output = path.join(workspace, ".local/motion-layers-smoke");
 await mkdir(output, { recursive: true });
 const profile = await mkdtemp(path.join(output, "profile-"));
 const settingsFile = path.join(profile, "settings.json");
-const catalog = JSON.parse(await readFile(path.join(appDirectory, "shared/motion-catalog.json"), "utf8"));
+const catalog = JSON.parse(await readFile(path.join(appDirectory, "shared/actions/motion-catalog.json"), "utf8"));
 // No chat: Claude Code is only an inert placeholder with an empty config folder; Codex is a missing path.
 const claude = await createClaudeIsolation();
 const env = claude.environment({ ...process.env, MMD_DESK_USER_DATA: profile });

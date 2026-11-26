@@ -3,7 +3,7 @@
  * is the analysis itself; these render it as readable Markdown, and build the
  * cross-model summary (JSON and Markdown). Pure text, no file access.
  */
-import { MORPH_SLOTS } from '../../shared/model-profile';
+import { MORPH_SLOTS, WEAK_SLOT_NOTE } from '../../shared/stage/model-profile';
 import type { Clearance, LabMotionResult, ModelReport } from './analyze';
 
 export interface SummaryRow {
@@ -113,14 +113,14 @@ export function renderModelMarkdown(report: ModelReport, generatedAt: string): s
     out.push(`- 特性：IK ${yes(f.ik)}，足 IK ${yes(f.legIk)}，腕捩 ${yes(f.armTwist)}，手捩 ${yes(f.wristTwist)}，グルーブ ${yes(f.groove)}，眼骨 ${f.eyes}`, '');
 
     out.push('## 2. 表情槽（15 个语义槽）', '');
-    out.push(table(['槽', 'morph', '类型', '幅度/头高', '写入倍数', '被否掉的候选'], MORPH_SLOTS.map(slot => {
+    out.push(table(['槽', 'morph', '类型', '幅度/头高', '被否掉的候选'], MORPH_SLOTS.map(slot => {
       const entry = profile.morphs[slot];
-      return [slot, entry.name ?? '（缺）', entry.policy, entry.index >= 0 ? entry.amplitude : '—', entry.index >= 0 ? entry.scale : '—',
+      return [slot, entry.name ?? '（缺）', entry.policy, entry.index >= 0 ? entry.amplitude : '—',
         entry.rejected.length ? entry.rejected.map(rejected => `${rejected.name}：${rejected.reason}`).join('；') : ''];
     })), '');
-    const bindings = profile.bindings, scaled = Object.entries(bindings.scales).filter(([, scale]) => Math.abs(scale - 1) >= 0.005);
+    const bindings = profile.bindings, weak = Object.entries(bindings.weak);
     out.push(`- 舞台实际写入：口型 ${bindings.mouth ?? '（无）'}，眨眼 ${bindings.blink ?? '（无）'}${bindings.blinkPartner ? ` + ${bindings.blinkPartner}` : ''}，`
-      + `笑 ${bindings.smile ?? '（无）'}，困眉 ${bindings.sad ?? '（无）'}；校准倍数 ${scaled.length ? scaled.map(([name, scale]) => `${name}×${scale}`).join('，') : '都约为 1'}`, '');
+      + `笑 ${bindings.smile ?? '（无）'}，困眉 ${bindings.sad ?? '（无）'}；表情按比例写入（不放大）；很弱的表情 ${weak.length ? weak.map(([slot, share]) => `${slot}（只有 Gene 的 ${share}）`).join('，') + `。${WEAK_SLOT_NOTE}` : '无'}`, '');
 
     const p = profile.proportions, r = profile.relativeToGene, pose = profile.restPose;
     out.push('## 3. 初始姿势与比例', '');

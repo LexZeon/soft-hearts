@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { fatiguePanelView, fatigueRestLine } from '../src/ui/fatigue-panel-view';
-import { MoodPanel } from '../src/ui/MoodPanel';
+import { fatiguePanelView, fatigueRestLine } from '../src/mood/fatigue-panel-view';
+import { MoodPanel } from '../src/mood/MoodPanel';
 
 test('missing, invalid version and later disconnection have no invented zero', () => {
   const absent = fatiguePanelView(undefined);

@@ -1,10 +1,10 @@
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { setUiLanguage } from '../shared/ui-language';
-import { CLAUDE_FAILURE_KINDS } from '../shared/claude-failure';
-import { ENGLISH_UI_COPY } from '../shared/ui-copy.en';
-import { ENGLISH_OUTAGE_UI_COPY } from '../shared/ui-copy.outage.en';
-import { OUTAGE_LINE_KINDS, describeOutage, formatResumeTime, genericOutageLine, outageDisplayText } from '../shared/chat-availability';
+import { setUiLanguage } from '../shared/foundation/ui-language';
+import { CLAUDE_FAILURE_KINDS } from '../shared/brain/claude-failure';
+import { ENGLISH_UI_COPY } from '../shared/foundation/ui-copy.en';
+import { ENGLISH_OUTAGE_UI_COPY } from '../shared/foundation/ui-copy.outage.en';
+import { OUTAGE_LINE_KINDS, describeOutage, formatResumeTime, genericOutageLine, outageDisplayText } from '../shared/brain/chat-availability';
 
 afterEach(() => setUiLanguage('zh-CN'));
 const NOW = Date.UTC(2026, 10, 2, 18, 0); // 02:00 on Nov 3 in Shanghai

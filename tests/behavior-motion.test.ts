@@ -5,8 +5,8 @@ import {
   isBehaviorFaceBindingId, isBehaviorSemantic, selectBehaviorReaction, selectBehaviorState,
   type BehaviorFaceBindingId, type BehaviorSemantic,
   type BehaviorStateSelection,
-} from '../shared/behavior-motion';
-import { createMoodState, getMoodSnapshot, MOOD_CHANNELS, type MoodLabel, type MoodSnapshot } from '../shared/mood';
+} from '../shared/actions/behavior-motion';
+import { createMoodState, getMoodSnapshot, MOOD_CHANNELS, type MoodLabel, type MoodSnapshot } from '../shared/foundation/mood';
 import { IDLE_GESTURE_KNOBS, IDLE_FACE_IDS } from '../shared/behaviors/idle-gesture/knobs';
 import { idleGestureNow } from '../shared/behaviors/idle-gesture/choose';
 
@@ -14,7 +14,7 @@ const snapshot = (): MoodSnapshot => getMoodSnapshot(createMoodState(1_000), 1_0
 const withCue = (kind: NonNullable<MoodSnapshot['cue']>['kind'] = 'satisfied'): MoodSnapshot => {
   const value = snapshot(); value.cue = { id: 'accepted-event', kind, at: 1_000, until: 5_000 }; return value;
 };
-const labels: MoodLabel[] = ['calm', 'close', 'content', 'happy', 'excited', 'concerned', 'disappointed', 'upset', 'longing', 'sad', 'relieved', 'tense-expectation'];
+const labels: MoodLabel[] = ['calm', 'close', 'content', 'happy', 'excited', 'concerned', 'disappointed', 'upset', 'longing', 'sad', 'relieved', 'tense-expectation', 'afraid'];
 function deepFreeze(value: unknown): void {
   if (!value || typeof value !== 'object' || Object.isFrozen(value)) return;
   Object.freeze(value);
@@ -25,7 +25,7 @@ test('semantic coverage distinguishes current channel levels, continuous trends 
   const groups = {
     mood: labels,
     modifier: ['playful', 'close', 'comfortable', 'cautious', 'wistful'],
-    context: ['neutral', 'positive', 'support', 'concern', 'disappointment', 'offense'],
+    context: ['neutral', 'positive', 'support', 'concern', 'disappointment', 'offense', 'fright'],
     phase: ['idle', 'rua-hover', 'rua', 'food-wait', 'food-ready', 'food-eating'],
     event: ['rua', 'food', 'chat', 'appraisal', 'phase', 'attention'],
     cue: ['satisfied', 'reunion', 'look', 'motion', 'speech'],
@@ -90,7 +90,7 @@ test('all twelve main feelings have a deliberate face selection or calm procedur
   const expected: Record<MoodLabel, BehaviorFaceBindingId | null> = {
     calm: null, close: 'face.embarrassed-smile', content: 'face.smile', happy: 'face.happy', excited: 'face.laugh',
     concerned: 'face.compassion', disappointed: 'face.disappointed', upset: 'face.in-trouble', longing: 'face.sentimental',
-    sad: 'face.sad', relieved: 'face.smile', 'tense-expectation': 'face.in-trouble',
+    sad: 'face.sad', relieved: 'face.smile', 'tense-expectation': 'face.in-trouble', afraid: 'face.in-trouble',
   };
   for (const primary of labels) {
     const mood = snapshot(); mood.primary = primary;

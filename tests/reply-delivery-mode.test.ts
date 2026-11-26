@@ -6,7 +6,7 @@ import ts from 'typescript';
 
 
 test('actual Claude stdout consumer labels first completed-only text and preserves real update deltas without launching CLI',()=>{
-  const raw=fs.readFileSync(new URL('../electron/codex.ts',import.meta.url),'utf8'),tree=ts.createSourceFile('codex.ts',raw,ts.ScriptTarget.Latest,true);
+  const raw=fs.readFileSync(new URL('../electron/safety/codex.ts',import.meta.url),'utf8'),tree=ts.createSourceFile('codex.ts',raw,ts.ScriptTarget.Latest,true);
   const matches:ts.Expression[]=[];
   function visit(node:ts.Node){if(ts.isVariableDeclaration(node)&&node.name.getText(tree)==='consume'&&node.initializer)matches.push(node.initializer);ts.forEachChild(node,visit);}visit(tree);
   assert.equal(matches.length,1);const code=ts.transpileModule('('+matches[0].getText(tree)+')',{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText;

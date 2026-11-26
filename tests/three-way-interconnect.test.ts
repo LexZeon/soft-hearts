@@ -1,5 +1,5 @@
 // I-014 "三方互通": on by default, remembered once turned off; with it on the user's own Claude acts
-// without a second dialog (notice, backup, undo), the pet's chat still asks, deletions wait in a recycle bin, and the
+// without a second dialog (notice, backup, undo), the companion's chat still asks, deletions wait in a recycle bin, and the
 // user's Claude Code is connected once. docs/claude/2026-11-03-three-way-interconnect.md.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -7,28 +7,28 @@ import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import type { AppSettings } from '../shared/contracts';
-import type { CharacterCardState } from '../shared/character-cards';
-import { AGENT_NEVER_EXPOSED, AGENT_TOOLS, type AgentChannelNotice } from '../shared/agent-channel';
-import { REALER_EMOTIONS_CONSENT } from '../shared/realer-emotions';
-import { AgentToolRegistry, type AgentAuditEntry, type AgentConfirmRequest, type AgentConfirmText, type AgentToolDefinition } from '../electron/agent-channel/registry';
-import { argsObject, noArgs, type FileSystemPort } from '../electron/agent-channel/validate';
-import { createAppTools, type AgentAppBridge, type PerceptionFacts } from '../electron/agent-channel/app-tools';
-import { AgentChannelHost, type AgentChannelHostOptions } from '../electron/agent-channel/host';
-import { INTERCONNECT_FILE, InterconnectStore } from '../electron/agent-channel/interconnect';
-import { AGENT_CREDENTIALS_FILE } from '../electron/agent-channel/credentials';
-import { autoLinkAllowed, linkClaudeCode, listedInClaudeCode, spawnClaudeRunner } from '../electron/agent-channel/claude-code-link';
-import { registrationArguments, setupSnippets } from '../electron/agent-channel/setup-text';
-import { createHostBridge, recordAgentOperations, AGENT_PET_OPERATIONS, type IpcHandler } from '../electron/agent-channel/bridge';
-import { createMemoryBridge } from '../electron/agent-channel/memory-bridge';
-import { chatSettingApplier } from '../electron/chat-settings';
-import { realerEmotionsRequest } from '../electron/realer-emotions-host';
-import { MemoryRecycleBin, RECYCLE_DEFAULT_DAYS } from '../electron/memory-recycle-bin';
-import { forgetRecoverably, restoreRecoverably } from '../electron/recoverable-forget';
-import { MemoryStore } from '../electron/memory';
-import { UserProfileStore } from '../electron/user-profile';
-import { localDateKey } from '../electron/diary/diary-dates';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import type { AppSettings } from '../shared/foundation/settings';
+import type { CharacterCardState } from '../shared/foundation/character-card';
+import { AGENT_NEVER_EXPOSED, AGENT_TOOLS, type AgentChannelNotice } from '../shared/safety/agent-channel';
+import { REALER_EMOTIONS_CONSENT } from '../shared/mood/realer-emotions';
+import { AgentToolRegistry, type AgentAuditEntry, type AgentConfirmRequest, type AgentConfirmText, type AgentToolDefinition } from '../electron/safety/agent-channel/registry';
+import { argsObject, noArgs, type FileSystemPort } from '../electron/safety/agent-channel/validate';
+import { createAppTools, type AgentAppBridge, type PerceptionFacts } from '../electron/safety/agent-channel/app-tools';
+import { AgentChannelHost, type AgentChannelHostOptions } from '../electron/safety/agent-channel/host';
+import { INTERCONNECT_FILE, InterconnectStore } from '../electron/safety/agent-channel/interconnect';
+import { AGENT_CREDENTIALS_FILE } from '../electron/safety/agent-channel/credentials';
+import { autoLinkAllowed, linkClaudeCode, listedInClaudeCode, spawnClaudeRunner } from '../electron/safety/agent-channel/claude-code-link';
+import { registrationArguments, setupSnippets } from '../electron/safety/agent-channel/setup-text';
+import { createHostBridge, recordAgentOperations, AGENT_PET_OPERATIONS, type IpcHandler } from '../electron/safety/agent-channel/bridge';
+import { createMemoryBridge } from '../electron/safety/agent-channel/memory-bridge';
+import { chatSettingApplier } from '../electron/brain/chat-settings';
+import { realerEmotionsRequest } from '../electron/mood/realer-emotions-host';
+import { MemoryRecycleBin, RECYCLE_DEFAULT_DAYS } from '../electron/memory/memory-recycle-bin';
+import { forgetRecoverably, restoreRecoverably } from '../electron/memory/recoverable-forget';
+import { MemoryStore } from '../electron/memory/memory';
+import { UserProfileStore } from '../electron/memory/user-profile';
+import { localDateKey } from '../electron/memory/diary/diary-dates';
 
 const CARD_A = '0f8fad5b-d9cb-469f-a165-70867728950e', CARD_B = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
 const DAY = 86_400_000;
@@ -176,7 +176,8 @@ test('the never list keeps keys, commands, files, other permissions and permanen
   for (const word of ['密钥', '运行命令', '任意读写文件', '权限', '永久删除']) assert.match(never, new RegExp(word));
   for (const tool of AGENT_TOOLS) assert.doesNotMatch(tool.name, /key|secret|token|shell|exec|command|file_(read|write)|permission|purge|empty_bin/);
   const interconnectOnly = AGENT_TOOLS.filter(tool => tool.interconnectOnly).map(tool => tool.name).sort();
-  assert.deepEqual(interconnectOnly, ['delete_memories', 'list_recycle_bin', 'restore_memories', 'set_perception']);
+  assert.deepEqual(interconnectOnly, ['clear_song_memory', 'delete_character', 'delete_memories', 'list_recycle_bin', 'restore_memories', 'set_character_voice', 'set_perception']); // 2026-11-24: any character's own voice (a paid one: the words and the dialog)
+  // I-173: deleting a card goes into the bin too; // I-077 step 2: clearing her songs is a delete, with the user's words
 });
 
 // ---------------------------------------------------------------- the app's own tools
@@ -210,6 +211,7 @@ function bridgeFixture(options: { mutual?: boolean; tts?: Partial<NonNullable<Ap
       calls.push(['perception', kind, enabled, ...purposes]);
       if (kind === 'system_audio') for (const purpose of purposes) perception.systemAudio[purpose] = enabled;
       else if (kind === 'camera_images') perception.cameraImages = enabled; else if (kind === 'camera_pose') perception.cameraPose = enabled;
+      else if (kind === 'face_check') perception.faceCheck = enabled; // I-135
       else perception[kind] = enabled;
     },
   };
@@ -227,24 +229,28 @@ function appRegistry(f: ReturnType<typeof bridgeFixture>, mutual: () => boolean)
   return { reg, asked, notices, informed, undo: () => undo };
 }
 
-test('app tools with 三方互通 on: import, model, realer emotions run without dialogs; notices name what happened; off they ask again', async () => {
+test('app tools with 三方互通 on: realer emotions runs without a dialog, import and model (files) still ask with the words; notices name what happened; off they ask again', async () => {
   const f = bridgeFixture();
   const r = appRegistry(f, () => f.bridge.interconnected!());
   assert.equal((await r.reg.call('import_character_card', { path: 'C:\\cards\\aoi.json', userWords: '导入 aoi' })).ok, true);
   assert.equal((await r.reg.call('load_model', { path: 'C:\\m\\aoi.pmx', userWords: '换成 aoi 的模型' })).ok, true);
+  // 敏感操作弹窗: loading files asks in the dialog even with the words, and shows them.
+  assert.deepEqual((r.asked as AgentConfirmRequest[]).map(request => request.title), ['Claude 请求导入一张角色卡', 'Claude 请求载入一个模型（MMD 或 VRM）']);
+  assert.ok((r.asked as AgentConfirmRequest[])[0].detail.includes('你在 Claude 里说：「导入 aoi」'));
+  assert.ok((r.asked as AgentConfirmRequest[])[1].detail.includes('你在 Claude 里说：「换成 aoi 的模型」'));
   const realer = await r.reg.call('set_setting', { id: 'realer_emotions', value: true, userWords: '让她情绪更真实一点' });
   assert.equal(realer.ok, true);
-  assert.deepEqual(r.asked, [], 'no confirmation dialog while 三方互通 is on');
+  assert.equal(r.asked.length, 2, 'realer emotions (behavior only): no confirmation dialog while 三方互通 is on');
   assert.equal(r.informed.length, 1, 'the realer-emotions explanation is still shown once');
-  assert.equal(r.informed[0].detail, REALER_EMOTIONS_CONSENT.detail);
+  assert.ok(r.informed[0].detail.startsWith(REALER_EMOTIONS_CONSENT.detail) && r.informed[0].detail.includes('这次会开一周'));
   assert.match(r.informed[0].title, /小桃/);
   assert.deepEqual(r.notices, ['导入角色卡：aoi.json', '载入模型：aoi.pmx', '调整设置：「当前角色更真实的情绪」改为 更真实']);
   assert.deepEqual(f.calls.filter(call => call[0] !== 'renderer').map(call => call[0]), ['import', 'load', 'realer']);
   f.setMutual(false);
   await r.reg.call('set_setting', { id: 'realer_emotions', value: false });
   await r.reg.call('set_setting', { id: 'realer_emotions', value: true });
-  assert.equal(r.asked.length, 1, 'off: the consent dialog is back');
-  assert.equal((r.asked as AgentConfirmRequest[])[0].buttons?.[1], REALER_EMOTIONS_CONSENT.accept);
+  assert.equal(r.asked.length, 3, 'off: the consent dialog is back');
+  assert.equal((r.asked as AgentConfirmRequest[])[2].buttons?.[1], REALER_EMOTIONS_CONSENT.accept);
   assert.equal(r.informed.length, 1);
 });
 
@@ -267,7 +273,7 @@ test('the settings window: with 三方互通 on a click turns 更真实的情绪
     save: async (_id, value) => { saved.push(value); (cards.cards[0] as any).realerEmotions = value; return structuredClone(cards); } });
   await request(CARD_A, true);
   assert.deepEqual(saved, [true]); assert.deepEqual(asked, []);
-  assert.equal(shown.length, 1); assert.equal(shown[0].detail, REALER_EMOTIONS_CONSENT.detail); assert.deepEqual(shown[0].buttons, ['知道了']);
+  assert.equal(shown.length, 1); assert.ok(shown[0].detail.startsWith(REALER_EMOTIONS_CONSENT.detail) && shown[0].detail.includes('这次会开一周')); assert.deepEqual(shown[0].buttons, ['知道了']);
   await request(CARD_A, false);
   mutual = false;
   await request(CARD_A, true);
@@ -319,6 +325,18 @@ test('set_perception: only with 三方互通 on, only with the pet showing, the 
   assert.deepEqual(images, { ok: true, result: { kind: 'camera_images', label: '摄像头发图片', on: true } });
   assert.deepEqual(f.calls.at(-1), ['perception', 'camera_images', true]);
   assert.equal(r.undo()!.label, '关掉摄像头发图片');
+  // I-135 认出是不是你: the same gate (words + the dialog to open, nothing to close); the dialog says what is stored and where.
+  const unaskedFace = await r.reg.call('set_perception', { kind: 'face_check', state: 'on' });
+  assert.equal(!unaskedFace.ok && unaskedFace.error.code, 'needs_user_words');
+  assert.equal(f.perception.faceCheck, undefined);
+  const asked = r.asked.length;
+  const face = await r.reg.call('set_perception', { kind: 'face_check', state: 'on', userWords: '打开认出是不是你' });
+  assert.deepEqual(face, { ok: true, result: { kind: 'face_check', label: '认出是不是你（Beta）', on: true } });
+  assert.deepEqual(f.calls.at(-1), ['perception', 'face_check', true]);
+  assert.equal(r.asked.length, asked + 1, 'a privacy switch: the dialog as well, after the words');
+  assert.match(r.asked.at(-1)!.detail ?? '', /一串数字不是照片.*加密.*一键删除/);
+  assert.ok((await r.reg.call('set_perception', { kind: 'face_check', state: 'off' })).ok, 'closing needs no words');
+  assert.equal(f.perception.faceCheck, false);
   assert.ok((await r.reg.call('set_perception', { kind: 'camera_pose', state: 'off' })).ok, 'closing 姿势识别 needs no words');
   assert.deepEqual(f.calls.at(-1), ['perception', 'camera_pose', false]);
   await r.reg.call('set_perception', { kind: 'camera_images', state: 'off' });
@@ -602,7 +620,7 @@ test('the host links once, a little after startup, only with 三方互通 on, an
   await assert.rejects(f.host.relinkClaudeCode());
 });
 
-// ---------------------------------------------------------------- the pet-frame operations
+// ---------------------------------------------------------------- the companion-frame operations
 
 test('bridge: perception switches go through the pet window\'s own handlers as its main frame, nothing else does', async () => {
   const ipc: { handle(channel: string, handler: IpcHandler): void } = { handle: () => {} };
@@ -618,9 +636,10 @@ test('bridge: perception switches go through the pet window\'s own handlers as i
   const bridge = createHostBridge({ version: () => 't', controls: () => win(1), pet: () => win(2), operations, admit: (_guard: unknown, run: () => unknown) => run(),
     replyLatency: () => [], broadcast: () => {}, interconnected: () => true } as any);
   // I-036: the camera's two switches as well as "either is on".
-  assert.deepEqual(bridge.perception!(), { camera: true, cameraImages: false, cameraPose: true, microphone: false, screen: false, systemAudio: { music: false, movie: true } });
+  // I-135: 认出是不是你 reads false when the control window's handler is not there.
+  assert.deepEqual(bridge.perception!(), { camera: true, cameraImages: false, cameraPose: true, faceCheck: false, microphone: false, screen: false, systemAudio: { music: false, movie: true } });
   await bridge.setPerception!('microphone', true, [], () => {});
-  // I-036: 「发图片」 and 「姿势识别」 are the pet window's own two switches; `camera` stays the old single one.
+  // I-036: 「发图片」 and 「姿势识别」 are the companion window's own two switches; `camera` stays the old single one.
   await bridge.setPerception!('camera_images', true, [], () => {});
   await bridge.setPerception!('camera_pose', false, [], () => {});
   await bridge.setPerception!('camera', false, [], () => {});
@@ -633,7 +652,7 @@ test('bridge: perception switches go through the pet window\'s own handlers as i
     ['setAudioReadingIntent', 2, { source: 'system-audio', purpose: 'music', enabled: false }],
     ['setAudioReadingIntent', 2, { source: 'system-audio', purpose: 'movie', enabled: false }],
   ]);
-  assert.deepEqual([...AGENT_PET_OPERATIONS].sort(), ['setAudioReadingIntent', 'setRuntimeState']);
+  assert.deepEqual([...AGENT_PET_OPERATIONS].sort(), ['setAudioReadingIntent', 'setRuntimeState', 'setVoiceCall']); // I-091: starting / hanging up a call is the companion window's own button too
   let closed = false;
   await assert.rejects(bridge.setPerception!('camera', true, [], () => { if (closed) throw new Error('channel_off'); closed = true; throw new Error('channel_off'); }));
   assert.equal(seen.filter(entry => entry[0] === 'setRuntimeState').length, 4, 'a closed channel never reaches the handler');

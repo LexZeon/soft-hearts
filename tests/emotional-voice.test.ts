@@ -1,9 +1,9 @@
-import { registerUiMessages, setUiLanguage } from '../shared/ui-language';
-import { ENGLISH_SETTINGS_UI_COPY } from '../shared/ui-copy.settings.en';
+import { registerUiMessages, setUiLanguage } from '../shared/foundation/ui-language';
+import { ENGLISH_SETTINGS_UI_COPY } from '../shared/foundation/ui-copy.settings.en';
 import assert from "node:assert/strict";
 import test, { type TestContext } from "node:test";
-import { DEFAULT_TTS_CONFIG, type TtsConfig } from "../shared/tts";
-import { EmotionalVoiceControls, StreamingVoicePlayer, emotionalVoiceIssue, type EmotionalVoicePlaybackState, type VoicePlaybackEvent } from "../src/ui/EmotionalVoice";
+import { DEFAULT_TTS_CONFIG, type TtsConfig } from "../shared/voice/tts";
+import { EmotionalVoiceControls, StreamingVoicePlayer, emotionalVoiceIssue, type EmotionalVoicePlaybackState, type VoicePlaybackEvent } from "../src/voice/EmotionalVoice";
 
 const flush = async () => { for (let index = 0; index < 18; index++) await Promise.resolve(); };
 const base64 = (bytes: number[]) => Buffer.from(bytes).toString("base64");

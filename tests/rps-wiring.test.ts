@@ -1,15 +1,15 @@
 /** G1 猜拳: the inner loop's "邀请玩猜拳" option, the small model her game lines use, and the diary hand-off. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ProactiveSpeechGate } from '../electron/proactive-speech-gate';
-import { InnerLoop, type InnerLoopDependencies, type InnerLoopMessage } from '../electron/inner-loop/inner-loop';
-import { buildInnerLoopPrompt, parseInnerLoopDecision, type InnerLoopQuiet } from '../shared/inner-loop';
-import { DEFAULT_MOOD_PARAMETERS, type MoodCue } from '../shared/mood';
-import { DiaryWriter } from '../electron/diary/diary-writer';
-import { userProfileScopeId } from '../electron/user-profile';
-import { buildDiaryPrompt } from '../electron/diary/diary-prompt';
-import { rpsDiaryLine, rpsHabits } from '../shared/rps-memory';
-import { quickLineWithClaude, decideWithClaude, INNER_LOOP_MODEL } from '../electron/inner-loop/model';
+import { ProactiveSpeechGate } from '../electron/initiative/proactive-speech-gate';
+import { InnerLoop, type InnerLoopDependencies, type InnerLoopMessage } from '../electron/initiative/inner-loop/inner-loop';
+import { buildInnerLoopPrompt, parseInnerLoopDecision, type InnerLoopQuiet } from '../shared/initiative/inner-loop';
+import { DEFAULT_MOOD_PARAMETERS, type MoodCue } from '../shared/foundation/mood';
+import { DiaryWriter } from '../electron/memory/diary/diary-writer';
+import { userProfileScopeId } from '../electron/memory/user-profile';
+import { buildDiaryPrompt } from '../electron/memory/diary/diary-prompt';
+import { rpsDiaryLine, rpsHabits } from '../shared/initiative/rps-memory';
+import { quickLineWithClaude, decideWithClaude, INNER_LOOP_MODEL } from '../electron/initiative/inner-loop/model';
 
 const flush = async () => { for (let i = 0; i < 20; i++) await Promise.resolve(); };
 const awake: InnerLoopQuiet = { asleep: false, drowsy: false, night: false, quiet: false };
@@ -18,7 +18,8 @@ test('the invite option appears only on a speech opportunity that may speak, whe
   const base = { persona: '角色', mood: '心情', weights: DEFAULT_MOOD_PARAMETERS.weights, intensity: DEFAULT_MOOD_PARAMETERS.intensity, localMinute: 900,
     minutesSinceInteraction: 30, cue: 'speech' as const, allowSpeech: true, quiet: awake };
   assert.match(buildInnerLoopPrompt({ ...base, play: true }), /invite（邀请用户玩猜拳）/u);
-  assert.match(buildInnerLoopPrompt({ ...base, play: true }), /不让用户内疚/u);
+  assert.match(buildInnerLoopPrompt({ ...base, play: true }), /用户不玩也完全没关系/u);
+  assert.doesNotMatch(buildInnerLoopPrompt({ ...base, play: true }), /内疚|施压/u);
   assert.doesNotMatch(buildInnerLoopPrompt({ ...base }), /invite/u);
   assert.doesNotMatch(buildInnerLoopPrompt({ ...base, play: true, allowSpeech: false }), /invite/u);
   assert.doesNotMatch(buildInnerLoopPrompt({ ...base, play: true, cue: 'motion' }), /invite/u);

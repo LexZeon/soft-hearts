@@ -1,5 +1,5 @@
 import { Quaternion, type Bone, type SkinnedMesh } from 'three';
-import type { BodyPoseProperty } from '../../shared/personalize-body';
+import type { BodyPoseProperty } from '../../shared/stage/personalize-body';
 
 /**
  * Applies a static, already-qualified FK property set over the current frame.

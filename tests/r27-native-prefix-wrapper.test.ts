@@ -1,9 +1,9 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import ts from 'typescript';
-import {CompletedPrefixProof} from '../electron/completed-prefix-proof';import {ReplyPresentation} from '../electron/reply-presentation';
-const raw=readFileSync(new URL('../electron/reply-window.ts',import.meta.url),'utf8'),ast=ts.createSourceFile('reply-window.ts',raw,ts.ScriptTarget.Latest,true);
+import {CompletedPrefixProof} from '../electron/voice/completed-prefix-proof';import {ReplyPresentation} from '../electron/brain/reply-presentation';
+const raw=readFileSync(new URL('../electron/brain/reply-window.ts',import.meta.url),'utf8'),ast=ts.createSourceFile('reply-window.ts',raw,ts.ScriptTarget.Latest,true);
 const cls=ast.statements.find((n):n is ts.ClassDeclaration=>ts.isClassDeclaration(n)&&n.name?.text==='PetReplyWindow');assert.ok(cls);
 const property=cls.members.find((n):n is ts.PropertyDeclaration=>ts.isPropertyDeclaration(n)&&n.name.getText(ast)==='completedPrefixProof');assert.ok(property?.initializer);
-const names=['waitForCompletedPrefix','isCompletedPrefixCurrent','waitForPresentation','isPresentationCurrent','proofCurrent'];
+const names=['waitForCompletedPrefix','isCompletedPrefixCurrent','holdCurrent','waitForPresentation','isPresentationCurrent','proofCurrent'];
 const methods=names.map(name=>{const n=cls.members.find((n):n is ts.MethodDeclaration=>ts.isMethodDeclaration(n)&&n.name.getText(ast)===name);assert.ok(n);return n.getText(ast);}).join('\n');
 const code=ts.transpileModule('return class Excerpt {constructor(deps){Object.assign(this,deps);this.completedPrefixProof='+property.initializer.getText(ast)+';}\n'+methods+'}',{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None}}).outputText;
 const Excerpt=new Function('CompletedPrefixProof','REPLY_URL',code)(CompletedPrefixProof,'exact-native-reply-url');

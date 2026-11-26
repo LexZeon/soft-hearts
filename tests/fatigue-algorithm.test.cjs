@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict');
 const {test}=require('node:test');
 // The model now imports its rhythm (I-022, shared/behaviors/sleep-rhythm/), so it is loaded through the test runner's own loader.
-const {createFatigue,advanceFatigue,acceptWakeEvent,fatigueSnapshot,DEFAULT_FATIGUE_PARAMETERS:P}=require('../shared/fatigue.ts');
+const {createFatigue,advanceFatigue,acceptWakeEvent,fatigueSnapshot,DEFAULT_FATIGUE_PARAMETERS:P}=require('../shared/mood/fatigue.ts');
 // The two offline tests below pin the behaviour before I-022 (A/F frozen off screen, at most 2 hours): its parameters are the fake.
 const {originalFatigueParameters}=require('../shared/behaviors/sleep-rhythm/fake.ts');
 const O=originalFatigueParameters(P);

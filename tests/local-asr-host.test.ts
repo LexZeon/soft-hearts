@@ -1,4 +1,4 @@
-// The local recognizer host (electron/asr/host.ts) and its inference process (electron/asr/worker.ts), with a fake store,
+// The local recognizer host (electron/senses/asr/host.ts) and its inference process (electron/senses/asr/worker.ts), with a fake store,
 // fake utilityProcess and fake onnxruntime. Covers: the refusal and question when the component is missing, one request at
 // a time with a text answer, failures by category, a stuck process replaced, and the process releasing its session and
 // exiting by itself (killed only after the grace time if it does not).
@@ -8,13 +8,13 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { EXIT_GRACE_MS, IDLE_STOP_MS, LocalAsrError, LocalAsrHost, RECOGNIZE_TIMEOUT_MS, type AsrWorkerHandle } from '../electron/asr/host';
-import { startAsrWorker } from '../electron/asr/worker';
-import { asrLanguage, type AsrOrtLike, type AsrOrtSession } from '../electron/asr/engine';
-import type { LocalAsrView } from '../shared/local-asr';
-import { encodeWav } from '../src/ui/MediaInput';
+import { EXIT_GRACE_MS, IDLE_STOP_MS, LocalAsrError, LocalAsrHost, RECOGNIZE_TIMEOUT_MS, type AsrWorkerHandle } from '../electron/senses/asr/host';
+import { startAsrWorker } from '../electron/senses/asr/worker';
+import { asrLanguage, type AsrOrtLike, type AsrOrtSession } from '../electron/senses/asr/engine';
+import type { LocalAsrView } from '../shared/senses/local-asr';
+import { encodeWav } from '../src/senses/MediaInput';
 import { onnxWithMetadata, senseVoiceMetadata } from './helpers/onnx-proto';
-import { ASR_MODEL_FILES } from '../electron/asr/manifest';
+import { ASR_MODEL_FILES } from '../electron/foundation/asr-manifest';
 
 const flush = async () => { for (let i = 0; i < 20; i++) await Promise.resolve(); };
 

@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import { MoodHost } from '../electron/mood';
+import { MoodHost } from '../electron/mood/mood';
 import { advanceMood, applyMoodEvent, canRequestAmbientSpeech, createMoodState, DEFAULT_MOOD_PARAMETERS, getMoodAttentionCandidate,
-  getMoodSnapshot, serializeMoodState, validateAmbientSpeechObservation, type AmbientSpeechObservation, type MoodEvent, type MoodState } from '../shared/mood';
+  getMoodSnapshot, serializeMoodState, validateAmbientSpeechObservation, type AmbientSpeechObservation, type MoodEvent, type MoodState } from '../shared/foundation/mood';
+import { speechIntervalAfterUnanswered as STRETCH } from '../shared/behaviors/busy-chat/unanswered'; // the mood host passes busy chat's stretch to the gate (overhaul parts 3); direct calls here do too
 
 const now = 1_000_000;
 const observation = (sessionId = 'session', sequence = 1): AmbientSpeechObservation => ({ kind: 'ambient', sessionId, observationId: `${sessionId}:${sequence}` });
@@ -37,8 +38,8 @@ test('shared acceptance atomically rechecks phase, existing cues, reunion and al
     if (blocked === 'unanswered') { input.unansweredSpeech = 1; input.lastSpeechAt = now - 31 * 60_000; } // I-039: no hard stop, but 3 x the interval
     if (blocked === 'disabled-hour') parameters.frequency.speechPerHour = 0;
     if (blocked === 'disabled-unanswered') parameters.frequency.speechWithoutReply = 0;
-    assert.equal(canRequestAmbientSpeech(input, observation(), now, parameters), false, blocked);
-    const denied = applyMoodEvent(input, event(), now, parameters);
+    assert.equal(canRequestAmbientSpeech(input, observation(), now, parameters, STRETCH), false, blocked);
+    const denied = applyMoodEvent(input, event(), now, parameters, STRETCH);
     assert.equal(denied.lastSpeechAt, input.lastSpeechAt, blocked);
     assert.deepEqual(denied.speechTimes, input.speechTimes, blocked); assert.equal(denied.unansweredSpeech, input.unansweredSpeech, blocked);
     assert.equal(denied.recentEventIds.includes('attention'), false, 'an unaccepted readiness does not consume its identity');

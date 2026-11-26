@@ -27,9 +27,21 @@
  *  - One lease per scope: busy while it shows and for FACE_EXCLUSIVE_COOLDOWN_S after; a request never queues. A different
  *    scope key (character, conversation) releases it; a hidden window or another mesh cuts it (nothing on screen).
  * With no request, frame() writes nothing and owned() is null: the stage's output is exactly what it was without this.
+ *
+ * Round 2 of the twitch. Two things
+ * made the face drop its expression and snap it back around every small shape:
+ *  - Ownership ran ahead of the clip. w reached 1 in 0.08 s (eyelids) / 0.2 s (mouth) while the wink's own keys take 0.2 s and
+ *    the pout's 0.73 s to arrive: for a moment the base was gone and the shape not there yet (smile → neutral → pout). Now w also
+ *    follows the clip's own progress P(t) (its tracks' sum against their peak; 1 from the first peak to the last): the base hands
+ *    over at the clip's pace, like key frames, and comes back as the clip lets go. P is C1 (the keys' clamped Hermite), so
+ *    w = E·P·r stays C1, and P = 1 in the hold: the hold is exactly the clip, as before.
+ *  - The whole group was taken, also what lies outside the shape's own region: a bilateral smile-eye left BOTH eyes for a
+ *    one-eyed wink. face-keep.ts keeps that outside part with morphs that leave the owned region alone (the other eye's own
+ *    morph): each kept base morph i adds w·s·B_i to its partners. The owned region still shows only the shape (no double closure).
  */
 import { KeyframeInterpolant } from './keyframe-interpolation';
-import type { HerFaceScope } from '../../shared/her-actions';
+import type { HerFaceScope } from '../../shared/actions';
+import { FaceKeep, type KeepPart } from './face-keep';
 
 export type FaceScope = HerFaceScope;
 export interface FaceTiming { readonly enter: number; readonly exit: number; readonly cancel: number }
@@ -95,6 +107,24 @@ interface Lease {
   id: string; scope: FaceScope; key: string; duration: number; delay: number; timing: FaceTiming;
   tracks: Track[]; group: number[]; target: Float64Array; calibrate: (index: number, value: number) => number;
   clock: number; releaseAt: number | null; reason: string | null; weight: number; rate: number;
+  /** Round 2: the clip's own morphs (never kept, never partners), this frame's base, partners per base morph, everything written. */
+  targets: number[]; own: Set<number>; base: Float64Array; keeps: Map<number, readonly KeepPart[]>; touched: Set<number>;
+  /** Round 2: the clip's summed peak, and the first and last time it is reached (P = 1 between). */
+  progress: { peak: number; first: number; last: number };
+}
+
+/**
+ * Round 2: the clip's summed peak and when it is first and last reached, from its keys (evaluated through the stage's
+ * interpolation, as P(t) reads them). Nothing above 0: P stays 1 (the old ownership).
+ */
+function progressOf(tracks: readonly Track[], duration: number): Lease['progress'] {
+  const times = [...new Set(tracks.flatMap(track => Array.from(track.interpolant.parameterPositions as ArrayLike<number>)))]
+    .filter(time => time >= 0 && time <= duration + 0.05).sort((a, b) => a - b);
+  const sums = times.map(time => tracks.reduce((sum, track) => sum + clamp01((track.interpolant.evaluate(time) as unknown as ArrayLike<number>)[0]), 0));
+  const peak = Math.max(0, ...sums);
+  if (!(peak > 1e-9)) return { peak: 0, first: 0, last: 0 };
+  const at = times.filter((_, k) => sums[k] >= peak * (1 - 1e-6));
+  return { peak, first: at[0], last: at.at(-1)! };
 }
 
 /** The face writes of this module: exact (not max), remembered once per frame so the stage's restoreLayers undoes them. */
@@ -110,13 +140,19 @@ export class FaceExclusive {
   private readonly ids = new Set<string>();
   private readonly displacedCache = new Map<number, Int32Array>();
   private readonly groupCache = new Map<string, number[]>();
+  private readonly keeper: FaceKeep;
   /** Groups owned this frame (followed, not judged, by the display guard); `tail`: one more frame after an end. */
   private ownedNow: number[] | null = null;
   private tail: number[] | null = null;
   private now = 0;
   private ended: FaceExclusiveState['ended'] = null;
 
-  constructor(private readonly mesh: FaceMesh) {}
+  constructor(private readonly mesh: FaceMesh) {
+    this.keeper = new FaceKeep(mesh, index => this.displaced(index));
+    // Round 2: read every morph's moved vertices now, with the model load, not on the frame a first wink starts (Gene: ~20 ms
+    // once here; the first keep search for the smile-eye then takes ~6 ms instead of ~17 ms).
+    for (let index = 0; index < (mesh.morphTargetInfluences?.length ?? 0); index++) this.displaced(index);
+  }
 
   /** This mesh's vertex indices that morph `index` displaces (cached; empty for a non-vertex morph). */
   displaced(index: number): Int32Array {
@@ -202,10 +238,17 @@ export class FaceExclusive {
     const group = this.conflictGroup(targets);
     for (const track of tracks) track.slot = group.indexOf(track.index);
     const delay = Number.isFinite(input.delay) ? Math.min(FACE_EXCLUSIVE_START_WAIT_S, Math.max(0, input.delay!)) : 0;
-    this.leases[input.scope] = { id: input.id, scope: input.scope, key: String(input.key ?? ''), duration: input.duration, delay,
+    const own = [...new Set(targets)].sort((a, b) => a - b);
+    const lease: Lease = { id: input.id, scope: input.scope, key: String(input.key ?? ''), duration: input.duration, delay,
       timing: FACE_EXCLUSIVE_TIMING[input.scope], tracks, group, target: new Float64Array(group.length),
       calibrate: typeof input.calibrate === 'function' ? input.calibrate : (_index, value) => value,
-      clock: 0, releaseAt: null, reason: null, weight: 0, rate: 0 };
+      clock: 0, releaseAt: null, reason: null, weight: 0, rate: 0,
+      targets: own, own: new Set(own), base: new Float64Array(group.length), keeps: new Map(), touched: new Set(group),
+      progress: progressOf(tracks, input.duration) };
+    this.leases[input.scope] = lease;
+    // What shows now most likely needs keeping: read its partners from the geometry before the shape shows anything.
+    const shown = this.mesh.morphTargetInfluences ?? [];
+    for (const index of group) if (!lease.own.has(index) && (shown[index] ?? 0) > 0) this.keepOf(lease, index);
     return true;
   }
 
@@ -260,20 +303,32 @@ export class FaceExclusive {
       const released = lease.releaseAt !== null && lease.clock - lease.releaseAt >= lease.timing.cancel;
       if (t >= lease.duration || released) {
         this.end(lease, released ? 'released' : 'completed', lease.reason);
-        (any ??= new Set()); for (const index of lease.group) any.add(index);
-        this.tail = [...(this.tail ?? []), ...lease.group];
+        (any ??= new Set()); for (const index of lease.touched) any.add(index);
+        this.tail = [...(this.tail ?? []), ...lease.touched];
         continue;
       }
       const weight = this.weight(lease);
       lease.rate = dt > 0 ? (weight - lease.weight) / dt : lease.rate;
       lease.weight = weight;
-      (any ??= new Set()); for (const index of lease.group) any.add(index);
+      const seen: Set<number> = (any ??= new Set());
+      for (const index of lease.touched) seen.add(index);
       if (!influences || weight <= 0) continue;
       this.sample(lease, Math.min(Math.max(t, 0), lease.duration));
       for (let k = 0; k < lease.group.length; k++) {
-        const index = lease.group[k], base = influences[index] ?? 0;
+        const index = lease.group[k], base = lease.base[k] = influences[index] ?? 0;
         // (1 − w)·B + w·A: exactly B at w = 0 and exactly A at w = 1 (no rounding below 0 or above the clip).
         writeExactMorph(influences, layers, index, (1 - weight) * base + weight * lease.target[k]);
+      }
+      // Round 2: what the group took outside the shape's own region comes back on partners that leave that region alone.
+      let adds: Map<number, number> | null = null;
+      for (let k = 0; k < lease.group.length; k++) {
+        const index = lease.group[k], base = lease.base[k];
+        if (!(base > 0) || lease.own.has(index)) continue;
+        for (const part of this.keepOf(lease, index)) (adds ??= new Map()).set(part.index, (adds.get(part.index) ?? 0) + weight * part.scale * base);
+      }
+      if (adds) for (const [index, add] of adds) {
+        writeExactMorph(influences, layers, index, Math.min(1, (influences[index] ?? 0) + add));
+        lease.touched.add(index); seen.add(index);
       }
     }
     this.ownedNow = any ? [...any].sort((a, b) => a - b) : null;
@@ -294,12 +349,31 @@ export class FaceExclusive {
     return { mouth: view(this.leases.mouth), eyelids: view(this.leases.eyelids), ended: this.ended };
   }
 
-  /** The ownership at the lease's clock: in and natural exit (smootherstep), times the release once cancelled. */
+  /** Round 2: the partners that keep base morph `index` outside this shape's region (face-keep.ts; cached per mesh). */
+  private keepOf(lease: Lease, index: number): readonly KeepPart[] {
+    let parts = lease.keeps.get(index);
+    if (!parts) { parts = this.keeper.keep(lease.targets, index, lease.own); lease.keeps.set(index, parts); }
+    return parts;
+  }
+
+  /** Round 2: how far the clip itself has arrived: its tracks' sum against their peak; 1 from the first peak to the last. */
+  private progress(lease: Lease, t: number): number {
+    const { peak, first, last } = lease.progress;
+    if (!(peak > 0) || (t >= first && t <= last)) return 1;
+    let sum = 0;
+    for (const track of lease.tracks) sum += clamp01((track.interpolant.evaluate(t) as unknown as ArrayLike<number>)[0]);
+    return clamp01(sum / peak);
+  }
+
+  /**
+   * The ownership at the lease's clock: in and natural exit (smootherstep), times the clip's own progress (round 2: the base hands
+   * over as the clip arrives, never ahead of it), times the release once cancelled.
+   */
   private weight(lease: Lease): number {
     const t = lease.clock - lease.delay;
     if (t <= 0 || t >= lease.duration) return 0;
     const { enter, exit, cancel } = lease.timing;
-    const envelope = smoother(t / enter) * smoother((lease.duration - t) / exit);
+    const envelope = smoother(t / enter) * smoother((lease.duration - t) / exit) * this.progress(lease, t);
     return lease.releaseAt === null ? envelope : envelope * (1 - smoother((lease.clock - lease.releaseAt) / cancel));
   }
 
@@ -322,8 +396,8 @@ export class FaceExclusive {
   }
 }
 
-// The face-shape lookup is shared with the model profile and the card (one rule): shared/face-morphs.ts.
-export { resolveFaceMorphs, type FaceApproximation, type FaceMorphLookup, type FaceWrite } from '../../shared/face-morphs';
+// The face-shape lookup is shared with the model profile and the card (one rule): shared/foundation/face-morphs.ts.
+export { resolveFaceMorphs, type FaceApproximation, type FaceMorphLookup, type FaceWrite } from '../../shared/senses';
 
 /**
  * The request's tracks for these writes (resolveFaceMorphs): each write's clip keys onto its morph, times its gain. A write at

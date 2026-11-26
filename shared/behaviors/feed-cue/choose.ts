@@ -10,14 +10,15 @@
  *    1.5 秒以内；声音只从对的那一组里来。
  *    抽出来的不过这一关，这一份就按原来的（"啊～""嗯～"、照常吃）。
  */
-import { sheChooses, type SheChoosesCandidate, type SheChoosesReason, type SheChose } from '../../she-chooses';
-import { MOOD_LABELS } from '../../mood-runtime';
-import { MOOD_TENDENCY_MIN, tendencyNow } from '../../mood-tendency';
-import type { MoodLabel, MoodParameters, MoodSnapshot, MoodTendency } from '../../mood';
-import type { FatiguePhase } from '../../fatigue';
-import { FEED_EAT_SOUND_IDS, FEED_OPEN_SOUND_IDS, type FeedEatSoundId, type FeedOpenSoundId } from '../../feed-cue';
+import { sheChooses, type SheChoosesCandidate, type SheChoosesReason, type SheChose } from '../../brain';
+import { MOOD_LABELS } from '../../mood';
+import { MOOD_TENDENCY_MIN, tendencyNow } from '../../foundation/mood-tendency';
+import type { MoodLabel, MoodParameters, MoodSnapshot, MoodTendency } from '../../foundation/mood';
+import type { FatiguePhase } from '../../mood';
+import { FEED_EAT_SOUND_IDS, FEED_OPEN_SOUND_IDS, type FeedEatSoundId, type FeedOpenSoundId } from '../../initiative/feed-cue';
 import { freshnessLeft, tireFactor, tiredFreshness } from '../touch-feed-effect/choose';
-import { TOUCH_FEED_EFFECT_KNOBS, type TouchFeedLandingId } from '../touch-feed-effect/knobs';
+import { TOUCH_FEED_EFFECT_KNOBS } from '../touch-feed-effect/knobs';
+import type { TouchFeedLandingId } from '../../mood';
 import { FEED_CUE_KNOBS, type FeedCueKnobs, type FeedCueMoment, type FeedQuietKnob, type FeedSoundKnob, type FeedTaste } from './knobs';
 import type { FeedCueHost, FeedCueNow, FeedCueView, FeedCueWhy, FeedEatPlan, FeedOpenPlan } from './interface';
 import { readFeedCueView } from './perform';
@@ -52,7 +53,7 @@ const KEEP = 3;
 /** 咬下去以后这么久，视图里不再给这一份的打算；开始了这么久还没咬，也不再给。 */
 export const FEED_CUE_VIEW_AFTER_BITE_MS = 60_000;
 export const FEED_CUE_VIEW_BEFORE_BITE_MS = 120_000;
-/** "这会儿……"至少要这么强才算（各功能共用 shared/mood-tendency.ts 的同一个门槛）。 */
+/** "这会儿……"至少要这么强才算（各功能共用 shared/foundation/mood-tendency.ts 的同一个门槛）。 */
 export const FEED_CUE_TENDENCY_MIN = MOOD_TENDENCY_MIN;
 
 const finite = (value: unknown, fallback: number): number => typeof value === 'number' && Number.isFinite(value) ? value : fallback;
@@ -143,7 +144,7 @@ const weightLine = (chose: SheChose<string> | null) => chose ? chose.weights.map
 interface SoundDraw<Id extends string> { readonly id: Id; readonly label: string; readonly why: readonly string[]; readonly weights: string }
 
 /**
- * 从一组里挑一声：分量 = base × 此刻理由的倍数（shared/she-chooses.ts），上一次的那一声这次不出（只有它合适时除外），
+ * 从一组里挑一声：分量 = base × 此刻理由的倍数（shared/foundation/she-chooses.ts），上一次的那一声这次不出（只有它合适时除外），
  * 上上次的分量 × recentBefore。正好取 1 个随机数。
  */
 function drawSound<Id extends string>(choices: readonly Id[], family: Readonly<Record<Id, ChoiceKnob>>, now: Readonly<FeedCueNow>,

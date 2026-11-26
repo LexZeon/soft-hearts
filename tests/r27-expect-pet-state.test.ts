@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { PetReplyAnchor, PetReplyUpdate } from '../shared/contracts';
-import { PetUI } from '../src/ui/PetUI';
-import { ReplySpeechState } from '../src/ui/reply-speech';
+import type { PetReplyAnchor, PetReplyUpdate } from '../shared/foundation/pet-reply';
+import { PetUI } from '../src/stage/PetUI';
+import { ReplySpeechState } from '../src/voice/reply-speech';
 
 class Classes {
   private readonly values = new Set<string>();

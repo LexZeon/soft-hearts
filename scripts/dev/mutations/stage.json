@@ -1,0 +1,1869 @@
+[
+ {
+  "id": "P1-pointer-any-window",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "if (!pet || pet.isDestroyed() || sender !== pet.webContents.id) throw new Error('只有桌宠窗口可以调整自身的鼠标接收。');",
+  "replace": "if (!pet || pet.isDestroyed()) throw new Error('只有桌宠窗口可以调整自身的鼠标接收。');",
+  "what": "鼠标接收的请求，不是桌宠窗口发来的也接受",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "P2-pointer-flag",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "        return petPointerInput.request(receive);\n      }, false);",
+  "replace": "        return petPointerInput.request(receive);\n      }, true);",
+  "what": "鼠标接收的处理函数改成只认控制窗口（桌宠自己反而不能调）",
+  "tests": [
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "P3-apply-settings-skipped",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "    applyPetWindowSettings(pet, unbound?.petSettings(s.pet) ?? s.pet, petPointerInput); // the same path at startup and on every change (electron/stage/pet-window-settings.ts)\n",
+  "replace": "",
+  "what": "设置同步时跳过 applyPetWindowSettings（点穿、置顶、鼠标接收不跟设置）",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "P4-apply-settings-no-unbound",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "applyPetWindowSettings(pet, unbound?.petSettings(s.pet) ?? s.pet, petPointerInput);",
+  "replace": "applyPetWindowSettings(pet, s.pet, petPointerInput);",
+  "what": "同步时不看 Unbound（她出去时桌宠窗口照常点不穿、照常置顶）",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "P5-gone-pointer-kept",
+  "part": "stage",
+  "file": "electron/wiring/stage-cleanup-wiring.ts",
+  "find": "petWindowDrag?.cancel(); petPointerInput.reset(); stopSystemAudio(); cancelCompletedReply('window'); }",
+  "replace": "petWindowDrag?.cancel(); stopSystemAudio(); cancelCompletedReply('window'); }",
+  "what": "桌宠渲染进程挂掉后不重置鼠标接收",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/window-events-order.test.ts"
+  ]
+ },
+ {
+  "id": "P6-gone-drag-kept",
+  "part": "stage",
+  "file": "electron/wiring/stage-cleanup-wiring.ts",
+  "find": "petWindowDrag?.cancel(); petPointerInput.reset(); stopSystemAudio(); cancelCompletedReply('window'); }",
+  "replace": "petPointerInput.reset(); stopSystemAudio(); cancelCompletedReply('window'); }",
+  "what": "桌宠渲染进程挂掉后不取消拖动",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/window-events-order.test.ts"
+  ]
+ },
+ {
+  "id": "P7-hide-pointer-kept",
+  "part": "stage",
+  "file": "electron/stage/companion-hidden.ts",
+  "find": "  ports.resetPointer();\n",
+  "replace": "",
+  "what": "桌宠藏起来或最小化时不重置鼠标接收",
+  "tests": [
+   "tests/i171-step-away.test.ts"
+  ]
+ },
+ {
+  "id": "D1-operation-any-window",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "if (!pet || pet.isDestroyed() || sender !== pet.webContents.id) throw new Error('只有桌宠窗口可以调整自身窗口。');",
+  "replace": "if (!pet || pet.isDestroyed()) throw new Error('只有桌宠窗口可以调整自身窗口。');",
+  "what": "窗口拖动或缩放的请求，不是桌宠窗口发来的也接受",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "D2-operation-unfocused",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "if (!pet.isVisible() || pet.isMinimized() || !pet.isFocused()) throw new Error('请先激活桌宠窗口。');",
+  "replace": "if (!pet.isVisible() || pet.isMinimized()) throw new Error('请先激活桌宠窗口。');",
+  "what": "桌宠没激活（没聚焦）也能开始拖动",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "D3-stale-finish",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "  await mutate(async () => {\n    if (revision !== windowOperationRevision) return;\n",
+  "replace": "  await mutate(async () => {\n",
+  "what": "过期的拖动结束（恢复或隐藏之后才到）照样写进设置",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "D4-closed-drag-kept",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "      pet.on('closed', () => petWindowDrag?.cancel());\n",
+  "replace": "",
+  "what": "桌宠窗口关掉时不取消拖动",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "D5-recover-revision",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "petWindowDrag?.cancel(); windowOperationRevision++; // A stale drag finish",
+  "replace": "petWindowDrag?.cancel(); // A stale drag finish",
+  "what": "找回桌宠时不让进行中的拖动过期",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "D6-hide-drag-kept",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "if (!s.pet.visible && petWindowDrag?.active) { windowOperationRevision++; petWindowDrag.cancel(); }",
+  "replace": "",
+  "what": "设置把她藏起来时不取消正在进行的拖动",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "T1-topmost-not-stopped",
+  "part": "stage",
+  "file": "electron/wiring/stage-wiring.ts",
+  "find": " pet.on('closed', () => topmostGuard.stop());",
+  "replace": "",
+  "what": "桌宠窗口关掉时置顶守护不停",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "T2-topmost-not-started",
+  "part": "stage",
+  "file": "electron/wiring/stage-wiring.ts",
+  "find": "topmostGuard.start(); ",
+  "replace": "",
+  "what": "置顶守护没启动",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "T3-topmost-any-window",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "if (!caller || (caller !== controls && caller !== pet)) throw new Error(\"请求来源未授权。\");",
+  "replace": "if (!caller) throw new Error(\"请求来源未授权。\");",
+  "what": "置顶开关任何窗口都能改（不核对是控制窗口或桌宠）",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "T4-own-moment-lost",
+  "part": "stage",
+  "file": "electron/wiring/stage-wiring.ts",
+  "find": "pet.on('focus', ownMoment); ",
+  "replace": "",
+  "what": "她被点、被拖、显示时不回到置顶带的最上面",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "E1-cues-not-disposed",
+  "part": "stage",
+  "file": "electron/wiring/stage-cleanup-wiring.ts",
+  "find": "singleEmojiCues?.dispose(); singleEmojiWindow?.dispose();",
+  "replace": "singleEmojiWindow?.dispose();",
+  "what": "退出时不清理单 emoji 的提示",
+  "tests": [
+   "tests/quit-order.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "E2-window-not-disposed",
+  "part": "stage",
+  "file": "electron/wiring/stage-cleanup-wiring.ts",
+  "find": "singleEmojiCues?.dispose(); singleEmojiWindow?.dispose();",
+  "replace": "singleEmojiCues?.dispose();",
+  "what": "退出时不关单 emoji 窗口",
+  "tests": [
+   "tests/quit-order.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "E3-cues-while-dragging",
+  "part": "stage",
+  "file": "electron/wiring/stage-wiring.ts",
+  "find": "&& !!store.current.model && !petWindowDrag?.active; }",
+  "replace": "&& !!store.current.model; }",
+  "what": "拖动她时也弹单 emoji",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "E4-hide-cue-kept",
+  "part": "stage",
+  "file": "electron/wiring/stage-wiring.ts",
+  "find": "      pet.on('hide', () => singleEmojiCues?.invalidate());\n",
+  "replace": "",
+  "what": "桌宠藏起来时不作废单 emoji",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "E5-context-no-generation",
+  "part": "stage",
+  "file": "electron/wiring/stage-wiring.ts",
+  "find": "store.current.model?.url ?? null, bodyModelGeneration, companion.mood.get().token",
+  "replace": "store.current.model?.url ?? null, companion.mood.get().token",
+  "what": "单 emoji 的上下文不含身体模型的代数（换模型后旧的还能弹）",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/user-profile-chat-wiring.test.ts"
+  ]
+ },
+ {
+  "id": "E6-chat-no-invalidate",
+  "part": "stage",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "if (!readoutControl) { singleEmojiCues?.invalidate(); r20ProactiveOffers?.cancel();",
+  "replace": "if (!readoutControl) { r20ProactiveOffers?.cancel();",
+  "what": "用户发消息时不作废单 emoji",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/user-profile-chat-wiring.test.ts"
+  ]
+ },
+ {
+  "id": "C1-preview-from-pet",
+  "part": "stage",
+  "file": "electron/wiring/stage-model-wiring.ts",
+  "find": "host('previewModelCapability', id => capabilities().preview.request(id));",
+  "replace": "host('previewModelCapability', id => capabilities().preview.request(id), false);",
+  "what": "「试一下」桌宠窗口也能发起（本应只有控制窗口）",
+  "tests": [
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "C2-report-control-only",
+  "part": "stage",
+  "file": "electron/wiring/stage-model-wiring.ts",
+  "find": "scopedHost('reportModelCapabilityPreview', (sender, requestId, ok) => capabilities().preview.report(sender, requestId, ok), false);",
+  "replace": "scopedHost('reportModelCapabilityPreview', (sender, requestId, ok) => capabilities().preview.report(sender, requestId, ok));",
+  "what": "「试一下」的结果只有控制窗口能报（桌宠反而不能）",
+  "tests": [
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "C3-preview-hidden-pet",
+  "part": "stage",
+  "file": "electron/wiring/stage-model-wiring.ts",
+  "find": "if (!pet || pet.isDestroyed() || !pet.isVisible() || pet.isMinimized()) return false;\n          pet.webContents.send('desk:model-capability-preview', request);",
+  "replace": "if (!pet || pet.isDestroyed()) return false;\n          pet.webContents.send('desk:model-capability-preview', request);",
+  "what": "「试一下」发给藏着或最小化的桌宠",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "C4-preview-sender",
+  "part": "stage",
+  "file": "electron/wiring/stage-model-wiring.ts",
+  "find": "return pet && !pet.isDestroyed() ? pet.webContents.id : null; },",
+  "replace": "const { controls } = needs; return controls && !controls.isDestroyed() ? controls.webContents.id : null; },",
+  "what": "「试一下」的结果不核对是桌宠窗口报的",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/wiring-skeleton.test.ts"
+  ]
+ },
+ {
+  "id": "C5-save-visual-from-pet",
+  "part": "stage",
+  "file": "electron/wiring/stage-body-wiring.ts",
+  "find": "scopedHost('saveVisualBehavior',(sender,request)=>mutate(()=>visualAuthoring!.save(sender,request)));",
+  "replace": "scopedHost('saveVisualBehavior',(sender,request)=>mutate(()=>visualAuthoring!.save(sender,request)),false);",
+  "what": "个性化的保存，桌宠窗口也能调",
+  "tests": [
+   "tests/personalize-visual-host.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "C6-choice-from-pet",
+  "part": "stage",
+  "file": "electron/wiring/stage-model-wiring.ts",
+  "find": "host('setModelCapabilityChoice', (modelKey, id, choice) => capabilities().host.setChoice(modelKey, id, choice));",
+  "replace": "host('setModelCapabilityChoice', (modelKey, id, choice) => capabilities().host.setChoice(modelKey, id, choice), false);",
+  "what": "模型体检的开关，桌宠窗口也能改",
+  "tests": [
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "C7-body-research-from-pet",
+  "part": "stage",
+  "file": "electron/wiring/stage-body-wiring.ts",
+  "find": "scopedHost('researchBody',(sender,request)=>bodyAuthoring!.research(sender,request));",
+  "replace": "scopedHost('researchBody',(sender,request)=>bodyAuthoring!.research(sender,request),false);",
+  "what": "身体姿态研究，桌宠窗口也能调",
+  "tests": [
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "C8-capability-read-control-only",
+  "part": "stage",
+  "file": "electron/wiring/stage-model-wiring.ts",
+  "find": "host('getModelCapabilities', () => capabilities().host.view(), false);",
+  "replace": "host('getModelCapabilities', () => capabilities().host.view());",
+  "what": "模型体检的读取只有控制窗口能读（桌宠拿不到）",
+  "tests": [
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "H1-life-token",
+  "part": "stage",
+  "file": "electron/wiring/stage-wiring.ts",
+  "find": "if (typeof token !== 'string' || view.token !== token || !herLifeMotionAllowed(motionId, view))",
+  "replace": "if (typeof token !== 'string' || !herLifeMotionAllowed(motionId, view))",
+  "what": "她的生活动作不核对心情的 token（换了状态后旧的动作还会播）",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "H2-life-late-check",
+  "part": "stage",
+  "file": "electron/wiring/stage-wiring.ts",
+  "find": "        const asset = await assets.register(resource.path);\n        current();\n",
+  "replace": "        const asset = await assets.register(resource.path);\n",
+  "what": "她的生活动作在登记资源之后不再核对（中途换了状态也照样交出）",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "H3-life-allowed",
+  "part": "stage",
+  "file": "electron/wiring/stage-wiring.ts",
+  "find": " || !herLifeMotionAllowed(motionId, view)) throw new Error('这段动作已结束或角色已切换。');",
+  "replace": ") throw new Error('这段动作已结束或角色已切换。');",
+  "what": "她的生活动作不核对是不是这个状态钉住的那段",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "H4-life-path",
+  "part": "stage",
+  "file": "electron/wiring/stage-wiring.ts",
+  "find": "        const { path: _localPath, ...metadata } = resource;\n        return { ...metadata, url: asset.url };",
+  "replace": "        return { ...resource, url: asset.url };",
+  "what": "她的生活动作把本地路径交给窗口",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "X1-preview-one-window",
+  "part": "stage",
+  "file": "electron/wiring/stage-wiring.ts",
+  "find": "send: value => broadcast('desk:expression-preview', value),",
+  "replace": "send: value => pet?.webContents.send('desk:expression-preview', value),",
+  "what": "表情预览只发给桌宠一个窗口（本应发给每个窗口的舞台）",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/unbound-read-aloud.test.ts"
+  ]
+ },
+ {
+  "id": "X2-preview-visible",
+  "part": "stage",
+  "file": "electron/wiring/stage-wiring.ts",
+  "find": "petVisible: () => !!pet && !pet.isDestroyed() && pet.isVisible() && !pet.isMinimized() });",
+  "replace": "petVisible: () => true });",
+  "what": "表情预览不看桌宠在不在屏幕上（藏着也说放了）",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "X3-preview-control-only",
+  "part": "stage",
+  "file": "electron/wiring/stage-wiring.ts",
+  "find": "host('playExpressionPreview', recipe => playExpressionPreview(recipe), false);",
+  "replace": "host('playExpressionPreview', recipe => playExpressionPreview(recipe));",
+  "what": "表情预览只有控制窗口能发",
+  "tests": [
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "S1-reply-not-synced",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "    petReply?.sync();\n    singleEmojiWindow?.sync();",
+  "replace": "    singleEmojiWindow?.sync();",
+  "what": "设置同步时回复气泡窗口不跟",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "S2-emoji-not-synced",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "    petReply?.sync();\n    singleEmojiWindow?.sync();",
+  "replace": "    petReply?.sync();",
+  "what": "设置同步时单 emoji 窗口不跟",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "S3-receipt-kept",
+  "part": "stage",
+  "file": "electron/wiring/stage-body-wiring.ts",
+  "find": "    bodyModelKey = bodyKey;\n    visualGeneReceipt = null;",
+  "replace": "    bodyModelKey = bodyKey;",
+  "what": "换身体模型时 Gene 的凭据不作废",
+  "tests": [
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "S4-visibility-not-published",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "  for (const win of windows()) win.webContents.send(\"desk:visibility\", nativeVisibility(win));",
+  "replace": "",
+  "what": "设置同步时不告诉窗口它们的可见性",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "S5-taskbar",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "    if (!petWindowDrag?.active) keepPetInWorkArea(pet, screen); // never over the taskbar strip\n",
+  "replace": "",
+  "what": "设置同步后不把她挪出任务栏",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "B1-body-pose-bypassed",
+  "part": "stage",
+  "file": "electron/wiring/initiative-publish-wiring.ts",
+  "find": "broadcast('desk:mood',withBodyPose(visibleView));",
+  "replace": "broadcast('desk:mood',visibleView);",
+  "what": "发布的心情不带身体姿态（绕过 withBodyPose）",
+  "tests": [
+   "tests/mood-gates.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "B2-getmood-bypassed",
+  "part": "stage",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "return withBodyPose(companion.mood.get()); }, false);",
+  "replace": "return companion.mood.get(); }, false);",
+  "what": "窗口读心情时不带身体姿态",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "B3-pose-generation",
+  "part": "stage",
+  "file": "electron/wiring/stage-body-wiring.ts",
+  "find": "!!receipt&&receipt.generation===bodyModelGeneration&&receipt.path===model.path",
+  "replace": "!!receipt&&receipt.path===model.path",
+  "what": "身体姿态不核对 Gene 凭据的代数",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "B4-pose-retired",
+  "part": "stage",
+  "file": "electron/wiring/stage-body-wiring.ts",
+  "find": "&&!retiredBodyPoseCues.has(`${view.token}:${pose.cueId}`)?pose:null",
+  "replace": "?pose:null",
+  "what": "改过的身体姿态，旧的那一下还会发出去",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "B5-pose-blocked",
+  "part": "stage",
+  "file": "electron/wiring/stage-body-wiring.ts",
+  "find": "bodyPose:pose&&!bodyPosePublishingBlocked&&",
+  "replace": "bodyPose:pose&&",
+  "what": "正在改身体姿态时也发",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/unbound-read-aloud.test.ts"
+  ]
+ },
+ {
+  "id": "M1-haiku-writable",
+  "part": "stage",
+  "file": "electron/wiring/stage-model-wiring.ts",
+  "find": "ask: (prompt, systemPrompt, signal) => quickLineWithClaude(prompt, systemPrompt, signal),",
+  "replace": "ask: (prompt, systemPrompt, signal) => quickLineWithClaude(prompt, systemPrompt, signal, (task, s, emit) => streamClaude({ ...task, writable: true }, s, emit)),",
+  "what": "模型体检的 haiku 调用改成可写",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "M2-haiku-tools",
+  "part": "stage",
+  "file": "electron/wiring/stage-model-wiring.ts",
+  "find": "ask: (prompt, systemPrompt, signal) => quickLineWithClaude(prompt, systemPrompt, signal),",
+  "replace": "ask: (prompt, systemPrompt, signal) => quickLineWithClaude(prompt, systemPrompt, signal, (task, s, emit) => streamClaude({ ...task, kind: 'agent' }, s, emit)),",
+  "what": "模型体检的 haiku 调用改成带工具的任务调用",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "M3-haiku-available",
+  "part": "stage",
+  "file": "electron/wiring/stage-model-wiring.ts",
+  "find": "        available: () => chatAvailability.isAvailable(),\n        ask:",
+  "replace": "        available: () => true,\n        ask:",
+  "what": "模型体检不看 Claude 能不能用",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "M4-authoring-writable",
+  "part": "stage",
+  "file": "electron/wiring/stage-body-wiring.ts",
+  "find": "writable:false,prompt,\n            imageDataUrls:[]},signal,(type,text)=>{if(type==='delta')append(text);});",
+  "replace": "writable:true,prompt,\n            imageDataUrls:[]},signal,(type,text)=>{if(type==='delta')append(text);});",
+  "what": "个性化的文字组合调用改成可写",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "W1-held-not-on-screen",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "|| (win === pet && petHeld()));",
+  "replace": "));",
+  "what": "她在 Unbound 里时桌宠窗口不算在屏幕上（感知被关）",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "W2-herOnScreen-bubble",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "pet.isVisible() && !pet.isMinimized()) || !!unbound?.readAloud.canShow(); }",
+  "replace": "pet.isVisible() && !pet.isMinimized()); }",
+  "what": "她在 Unbound 里时不算能说话",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/unbound-read-aloud.test.ts",
+   "tests/wiring-skeleton.test.ts"
+  ]
+ },
+ {
+  "id": "W3-surface-always-pet",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "return unbound?.state === 'unbound' ? unbound.readAloud : petReply; }",
+  "replace": "return petReply; }",
+  "what": "朗读的显示证明永远找桌宠的气泡（她在外面也是）",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/unbound-read-aloud.test.ts"
+  ]
+ },
+ {
+  "id": "W4-visibility-unknown",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "        if (!win) throw new Error(\"窗口尚未就绪。\");\n",
+  "replace": "",
+  "what": "不认识的窗口也能读可见性",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "R1-reply-any-window",
+  "part": "stage",
+  "file": "electron/wiring/stage-wiring.ts",
+  "find": "if (sender !== pet?.webContents.id) throw new Error('只有桌宠窗口可以显示回答气泡。');",
+  "replace": "",
+  "what": "回复气泡的更新，不是桌宠窗口发来的也接受",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "R2-memorial-not-told",
+  "part": "stage",
+  "file": "electron/wiring/stage-wiring.ts",
+  "find": "&&patch.text?.trim())textMemorialHost?.displayTextChanged(patch.text);return linger;",
+  "replace": "&&patch.text?.trim()){}return linger;",
+  "what": "回复气泡显示的字不告诉文字纪念",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/text-memorial-question-binding.test.ts"
+  ]
+ },
+ {
+  "id": "V1-show-not-armed",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "        if (visible) petPresentation.arm('show');\n",
+  "replace": "",
+  "what": "「显示桌宠」之后不守住呈现",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "V2-report-any-window",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "if (sender !== pet?.webContents.id) throw new Error(\"请求来源未授权。\"); petPresentation.noteRenderer(sample);",
+  "replace": "petPresentation.noteRenderer(sample);",
+  "what": "呈现的样本，不是桌宠窗口发来的也收",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "V3-notes-lost",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "      for (const name of ['show', 'hide', 'minimize', 'restore', 'close'] as const) pet.on(name as 'show', () => petPresentation.note(name));\n",
+  "replace": "",
+  "what": "桌宠窗口的显示、隐藏等事件不记给呈现",
+  "tests": [
+   "tests/i139-moving-memory-review.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "V4-startup-not-armed",
+  "part": "stage",
+  "file": "electron/main.ts",
+  "find": "      petPresentation.arm('startup');\n",
+  "replace": "",
+  "what": "启动时不守住呈现",
+  "tests": [
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "V5-not-disposed",
+  "part": "stage",
+  "file": "electron/wiring/stage-cleanup-wiring.ts",
+  "find": "petWindowDrag?.cancel(); petPresentation.dispose();",
+  "replace": "petWindowDrag?.cancel();",
+  "what": "退出时呈现不停",
+  "tests": [
+   "tests/quit-order.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "G1-gone-generation",
+  "part": "stage",
+  "file": "electron/wiring/stage-cleanup-wiring.ts",
+  "find": "if (owner === \"pet\") { bumpBodyModelGeneration(); companion?.mood.cancelBodyPresentation(); petWindowDrag?.cancel();",
+  "replace": "if (owner === \"pet\") { companion?.mood.cancelBodyPresentation(); petWindowDrag?.cancel();",
+  "what": "桌宠渲染进程挂掉后身体模型的代数不变（旧凭据和预览还算数）",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/window-events-order.test.ts"
+  ]
+ },
+ {
+  "id": "G2-bump-noop",
+  "part": "stage",
+  "file": "electron/wiring/stage-body-wiring.ts",
+  "find": "export function bumpBodyModelGeneration(): void {\n  bodyModelGeneration++;\n}",
+  "replace": "export function bumpBodyModelGeneration(): void {\n}",
+  "what": "让旧凭据过期的那一步什么也不做",
+  "tests": [
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "K1-area-listeners-kept",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "pet.on('closed', () => { screen.removeListener('display-metrics-changed', keepInArea); screen.removeListener('display-removed', keepInArea); });",
+  "replace": "",
+  "what": "桌宠关掉后任务栏的监听不撤",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "F1-pointer-follow",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "if (!store.current.pet.followMouse || !pet) return { x: 0, y: 0 };",
+  "replace": "if (!pet) return { x: 0, y: 0 };",
+  "what": "没开「跟随鼠标」也报告鼠标位置",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "Y1-toggle-clickthrough",
+  "part": "stage",
+  "file": "electron/wiring/stage-window-wiring.ts",
+  "find": "        clickThrough: false,\n      },\n    }),",
+  "replace": "      },\n    }),",
+  "what": "显示/隐藏桌宠时不关掉点穿（点穿的她可能再也点不到）",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "Z1-publish-step-dropped",
+  "part": "stage",
+  "file": "electron/wiring/stage-wiring.ts",
+  "find": "export function publishEmojiContext(): void {\n  refreshSingleEmojiContext();\n}",
+  "replace": "export function publishEmojiContext(): void {\n}",
+  "what": "心情发布的舞台那一步不再刷新单 emoji（publishEmojiContext 空了）",
+  "tests": [
+   "tests/stage-gates.test.ts",
+   "tests/mood-gates.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "Z2-refresh-not-kept",
+  "part": "stage",
+  "file": "electron/wiring/stage-wiring.ts",
+  "find": "  keepForSteps(refreshSingleEmojiContext);\n",
+  "replace": "",
+  "what": "wireStage 不把单 emoji 的刷新交给步骤（keepForSteps 没调）",
+  "tests": [
+   "tests/stage-gates.test.ts"
+  ]
+ },
+ {
+  "id": "R01-braid-weight-ceiling",
+  "part": "stage",
+  "file": "src/stage/physics-rig.ts",
+  "find": "export const MAX_BODY_WEIGHT = 1e20;",
+  "replace": "export const MAX_BODY_WEIGHT = 10_000;",
+  "what": "重量超过一万的刚体又被丢掉（长辫子整条不进物理，僵硬地跟着头）",
+  "tests": [
+   "tests/physics-lab-fixes.test.ts"
+  ]
+ },
+ {
+  "id": "R01-mass-range",
+  "part": "stage",
+  "file": "src/stage/physics-rig.ts",
+  "find": "const power = range > MAX_MASS_RATIO ? Math.log(MAX_MASS_RATIO) / Math.log(range) : 1;",
+  "replace": "const power = 1;",
+  "what": "不压缩过大的质量差（单精度的 Bullet 解不动，辫子炸开、往上飘）",
+  "tests": [
+   "tests/physics-lab-fixes.test.ts"
+  ]
+ },
+ {
+  "id": "R01-boneless-helper",
+  "part": "stage",
+  "file": "src/stage/physics-rig.ts",
+  "find": "          if (!candidates.has(other) && helper(other, index)) candidates.add(other);\n",
+  "replace": "",
+  "what": "没有骨头的动态辅助刚体又变成冻在世界里的运动学刚体（胸部被钉住）",
+  "tests": [
+   "tests/physics-lab-fixes.test.ts"
+  ]
+ },
+ {
+  "id": "R01-chest-interpolation",
+  "part": "stage",
+  "file": "src/stage/model-physics.ts",
+  "find": "      blend = Math.min(1, runtime.sinceSolve * MODEL_PHYSICS_BUDGETS[this.settings.quality].updateHz);",
+  "replace": "      blend = 1;",
+  "what": "胸部在两次物理求解之间不插值（60 帧时隔一帧才动一下，卡）",
+  "tests": [
+   "tests/physics-lab-fixes.test.ts"
+  ]
+ },
+ {
+  "id": "R01-aligned-substep",
+  "part": "stage",
+  "file": "src/stage/model-physics.ts",
+  "find": "const steps = Math.max(1, Math.ceil(quantum / runtime.tuned.unitStep - 1e-9)), unitStep = quantum / steps * (1 - 1e-4);",
+  "replace": "const steps = 1, unitStep = runtime.tuned.unitStep;",
+  "what": "物理子步不再整除求解间隔（每次求解前进 2 步或 3 步，结果抖）",
+  "tests": [
+   "tests/physics-lab-fixes.test.ts"
+  ]
+ },
+ {
+  "id": "T251-skinless-helper",
+  "part": "stage",
+  "file": "src/stage/physics-rig.ts",
+  "find": "      return regionAt(candidate.boneIndex) >= 1 && !drives(candidate.boneIndex);",
+  "replace": "      return false;",
+  "what": "挂在没有蒙皮的骨头上的胸部辅助刚体又变成跟着动画的运动学刚体（胸部两头被钉住）",
+  "tests": [
+   "tests/physics-rest-headroom.test.ts"
+  ]
+ },
+ {
+  "id": "T251-helper-own-skin",
+  "part": "stage",
+  "file": "src/stage/physics-rig.ts",
+  "find": "      return regionAt(candidate.boneIndex) >= 1 && !drives(candidate.boneIndex);",
+  "replace": "      return regionAt(candidate.boneIndex) >= 1;",
+  "what": "带自己蒙皮的刚体（缎带、衣服）也被拉进胸部物理里看不见地晃",
+  "tests": [
+   "tests/physics-rest-headroom.test.ts"
+  ]
+ },
+ {
+  "id": "T251-chest-rotation-rest",
+  "part": "stage",
+  "file": "src/stage/model-physics.ts",
+  "find": "boundAroundRest(targetRotation, layer.restRotation, layer.maxAngle, layer.targetRotation);",
+  "replace": "layer.targetRotation.copy(capAngle(targetRotation, layer.maxAngle));",
+  "what": "胸部的转角又相对动画姿势限幅（静止转角占满余量，晃动被削掉）",
+  "tests": [
+   "tests/physics-rest-headroom.test.ts"
+  ]
+ },
+ {
+  "id": "T251-cap-alias",
+  "part": "stage",
+  "file": "src/stage/physics-rest-split.ts",
+  "find": "value.slerp(IDENTITY, 1 - cap / angle)",
+  "replace": "value.slerpQuaternions(IDENTITY, value, cap / angle)",
+  "what": "超过上限的转角又被变成零（头发甩过 0.7 弧度时一下弹回动画姿势）",
+  "tests": [
+   "tests/physics-rest-headroom.test.ts"
+  ]
+ },
+ {
+  "id": "R01-lab-developer-mode",
+  "part": "stage",
+  "file": "electron/stage/physics-lab-guard.ts",
+  "find": "  if (developerMode !== true) throw new Error('物理调参台只在开发者模式里可用。');",
+  "replace": "",
+  "what": "物理调参台不在开发者模式里也能打开、能保存",
+  "tests": [
+   "tests/physics-tuning.test.ts"
+  ]
+ },
+ {
+  "id": "R01-lab-own-frame",
+  "part": "stage",
+  "file": "electron/stage/physics-lab-guard.ts",
+  "find": "  return !!window && !window.isDestroyed() && sender === window.webContents && senderFrame === window.webContents.mainFrame;",
+  "replace": "  return !!window;",
+  "what": "物理调参台的请求不再只认它自己窗口的主框架",
+  "tests": [
+   "tests/physics-tuning.test.ts"
+  ]
+ },
+ {
+  "id": "R01-tuning-clamp",
+  "part": "stage",
+  "file": "shared/stage/physics-tuning.ts",
+  "find": "      damping: clamp(own(ammo, \"damping\"), b.damping, 1), spring: clamp(own(ammo, \"spring\"), b.spring, 1),",
+  "replace": "      damping: Number(own(ammo, \"damping\") ?? 1), spring: clamp(own(ammo, \"spring\"), b.spring, 1),",
+  "what": "物理调参的阻尼倍率不再限幅（文件或页面可以送任意数给 Bullet）",
+  "tests": [
+   "tests/physics-tuning.test.ts"
+  ]
+ },
+ {
+  "id": "R01-tuning-not-inherited",
+  "part": "stage",
+  "file": "shared/stage/model-physics.ts",
+  "find": "  const tuning = normalizeModelPhysicsTuning(ownField(input, \"tuning\"));",
+  "replace": "  const tuning = normalizeModelPhysicsTuning(ownField(input, \"tuning\") ?? ownField(previous, \"tuning\"));",
+  "what": "恢复原样之后旧的物理调参还留在舞台上（从上一次的设置继承）",
+  "tests": [
+   "tests/physics-tuning.test.ts"
+  ]
+ },
+ {
+  "id": "R01-switches-file-no-tuning",
+  "part": "stage",
+  "file": "electron/stage/model-physics-settings.ts",
+  "find": "          next = normalizeModelPhysicsSettings(settings);\n          // The lab's per-model tuning has its own sidecar (physics-tuning-store.ts); this file never carries one.\n          delete next.tuning;",
+  "replace": "          next = normalizeModelPhysicsSettings(settings);",
+  "what": "物理开关的文件里混进物理调参（不按模型区分，换模型也带着）",
+  "tests": [
+   "tests/physics-tuning.test.ts"
+  ]
+ },
+ {
+  "id": "R01-sidecar-in-data-map",
+  "part": "stage",
+  "file": "electron/foundation/data-map-rows-character.ts",
+  "find": ", 'library/motions/**', 'physics-tuning.json'],",
+  "replace": ", 'library/motions/**'],",
+  "what": "物理调参的侧车文件不在数据地图里（不知道它会不会进角色卡导出、备份和删除）",
+  "tests": [
+   "tests/physics-tuning.test.ts"
+  ]
+ },
+ {
+  "id": "J1-follow-bound",
+  "part": "stage",
+  "file": "src/stage/jelly/follow-through.ts",
+  "find": "const angle = this.gain * max * Math.tanh(length / max);",
+  "replace": "const angle = this.gain * length;",
+  "what": "全身果冻第 2 层：跟随晃动的旋转不再有上限（软限幅去掉，大动作时可以甩出很大的角度）",
+  "tests": [
+   "tests/jelly-follow.test.ts"
+  ]
+ },
+ {
+  "id": "J4-follow-clamp",
+  "part": "stage",
+  "file": "shared/stage/jelly-tuning.ts",
+  "find": "      maxDeg: clamp(own(raw, \"maxDeg\"), b.maxDeg, base.maxDeg) };",
+  "replace": "      maxDeg: Number(own(raw, \"maxDeg\") ?? base.maxDeg) };",
+  "what": "全身果冻：跟随晃动的最大角度不再限幅（文件或页面可以送任意角度）",
+  "tests": [
+   "tests/jelly-tuning.test.ts"
+  ]
+ },
+ {
+  "id": "J5-follow-reset",
+  "part": "stage",
+  "file": "src/stage/jelly/follow-through.ts",
+  "find": "reset(): void { for (const s of this.states) { s.hasQ = false; s.hasW = false; } }",
+  "replace": "reset(): void {}",
+  "what": "全身果冻：硬切（守卫重置）时不清速度历史，切过去的那一下变成一脚踢",
+  "tests": [
+   "tests/jelly-follow.test.ts"
+  ]
+ },
+ {
+  "id": "J6-follow-remove-own",
+  "part": "stage",
+  "file": "src/stage/jelly/follow-through.ts",
+  "find": "if (s.bone.quaternion.equals(s.written)) s.bone.quaternion.copy(s.saved);",
+  "replace": "s.bone.quaternion.copy(s.saved);",
+  "what": "全身果冻：撤掉跟随晃动时把别人之后写的值也盖掉",
+  "tests": [
+   "tests/jelly-follow.test.ts"
+  ]
+ },
+ {
+  "id": "J7-follow-fade-out",
+  "part": "stage",
+  "file": "src/stage/jelly/follow-through.ts",
+  "find": "this.tuning = tuning ? structuredClone(tuning) : this.tuning ? { ...this.tuning, enabled: false } : null;",
+  "replace": "this.tuning = tuning ? structuredClone(tuning) : null;",
+  "what": "全身果冻：关掉跟随晃动时偏移一下子没了（瞬移），不是淡出",
+  "tests": [
+   "tests/jelly-follow.test.ts"
+  ]
+ },
+ {
+  "id": "J8-soft-bound",
+  "part": "stage",
+  "file": "src/stage/jelly/soft-jelly.ts",
+  "find": "s.shown.copy(s.x).multiplyScalar(amount * max * Math.tanh(length / max) / length);",
+  "replace": "s.shown.copy(s.x).multiplyScalar(amount);",
+  "what": "全身果冻第 3 层：顶点果冻的位移不再有上限（软限幅去掉）",
+  "tests": [
+   "tests/jelly-soft.test.ts"
+  ]
+ },
+ {
+  "id": "J9-soft-vertex-average",
+  "part": "stage",
+  "file": "src/stage/jelly/soft-shader.ts",
+  "find": "  transformed += shJellySum > 1.0 ? shJellyMove / shJellySum : shJellyMove;",
+  "replace": "  transformed += shJellyMove;",
+  "what": "全身果冻第 3 层：一个顶点同时属于几个区域时位移相加，可以超过上限",
+  "tests": [
+   "tests/jelly-soft.test.ts"
+  ]
+ },
+ {
+  "id": "J10-soft-off-restores-hook",
+  "part": "stage",
+  "file": "src/stage/jelly/soft-shader.ts",
+  "find": "      if (entry.ownHook) target.onBeforeCompile = entry.onBeforeCompile; else delete target.onBeforeCompile;\n",
+  "replace": "",
+  "what": "全身果冻第 3 层：关掉后材质的着色器钩子不还原（关着也不再和今天一样）",
+  "tests": [
+   "tests/jelly-soft.test.ts"
+  ]
+ },
+ {
+  "id": "J11-soft-captured-hook-transparent",
+  "part": "stage",
+  "file": "src/stage/jelly/soft-shader.ts",
+  "find": "      if (!state.live) return;\n",
+  "replace": "",
+  "what": "全身果冻第 3 层：红晕、眼泪这些层克隆材质时抓走的钩子，关掉后还在注入果冻代码",
+  "tests": [
+   "tests/jelly-soft.test.ts"
+  ]
+ },
+ {
+  "id": "J12-soft-attribute-removed",
+  "part": "stage",
+  "file": "src/stage/jelly/soft-jelly.ts",
+  "find": "    if (geometry.getAttribute(JELLY_REGION_ATTRIBUTE)) { geometry.deleteAttribute(JELLY_REGION_ATTRIBUTE); geometry.deleteAttribute(JELLY_WEIGHT_ATTRIBUTE); }\n",
+  "replace": "",
+  "what": "全身果冻第 3 层：关掉后加在模型几何上的区域数据不拿掉",
+  "tests": [
+   "tests/jelly-soft.test.ts"
+  ]
+ },
+ {
+  "id": "J13-soft-clamp",
+  "part": "stage",
+  "file": "shared/stage/jelly-tuning.ts",
+  "find": "      maxOffset: clamp(own(raw, \"maxOffset\"), b.maxOffset, base.maxOffset), radius: clamp(own(raw, \"radius\"), b.radius, base.radius),",
+  "replace": "      maxOffset: Number(own(raw, \"maxOffset\") ?? base.maxOffset), radius: clamp(own(raw, \"radius\"), b.radius, base.radius),",
+  "what": "全身果冻：顶点果冻的最大位移不再限幅（文件或页面可以送任意位移）",
+  "tests": [
+   "tests/jelly-tuning.test.ts"
+  ]
+ },
+ {
+  "id": "J14-soft-mask",
+  "part": "stage",
+  "file": "src/stage/jelly/soft-regions.ts",
+  "find": "      if (mask[r] <= 1e-4) continue;\n",
+  "replace": "      if (mask[r] <= 1e-4) mask[r] = 1;\n",
+  "what": "全身果冻第 3 层：遮罩不看蒙皮权重（离区域中心近的顶点不管属于哪根骨都跟着动）",
+  "tests": [
+   "tests/jelly-soft.test.ts"
+  ]
+ },
+ {
+  "id": "J15-soft-cut",
+  "part": "stage",
+  "file": "src/stage/jelly/soft-jelly.ts",
+  "find": "|| s.velocity.length() > 20 * this.scale) s.hasVelocity = false; // a cut",
+  "replace": ") s.hasVelocity = false; // a cut",
+  "what": "全身果冻第 3 层：模型一下子瞬移（硬切）也当成运动，给果冻一脚",
+  "tests": [
+   "tests/jelly-soft.test.ts"
+  ]
+ },
+ {
+  "id": "PULL1-no-hard-cap",
+  "part": "stage",
+  "file": "shared/behaviors/pull/knobs.ts",
+  "find": "    out[key] = typeof raw === 'number' && Number.isFinite(raw) ? Math.min(max, Math.max(min, raw)) : PULL_KNOBS[key];",
+  "replace": "    out[key] = typeof raw === 'number' && Number.isFinite(raw) ? raw : PULL_KNOBS[key];",
+  "what": "拉她的上限（倾身、头、手臂、膝、跟随速度）不再过硬上限，改数就能把她扯得很夸张",
+  "tests": [
+   "tests/pull-session.test.ts"
+  ]
+ },
+ {
+  "id": "PULL3-asleep-accepted",
+  "part": "stage",
+  "file": "shared/behaviors/pull/gates.ts",
+  "find": "  if (gates.asleep) return 'asleep';\n",
+  "replace": "",
+  "what": "她睡着时按她也算拉",
+  "tests": [
+   "tests/pull-session.test.ts"
+  ]
+ },
+ {
+  "id": "PULL4-peeking-accepted",
+  "part": "stage",
+  "file": "shared/behaviors/pull/gates.ts",
+  "find": "  if (gates.peeking) return 'peeking';\n",
+  "replace": "",
+  "what": "她凑到镜头前时按她也算拉",
+  "tests": [
+   "tests/pull-session.test.ts"
+  ]
+ },
+ {
+  "id": "PULL5-hand-busy-pulled",
+  "part": "stage",
+  "file": "shared/behaviors/pull/gates.ts",
+  "find": "  if (gates.handBusy && group === 'arm') return 'hand-busy';\n",
+  "replace": "",
+  "what": "她正伸手牵你或正牵着时，按她的手变成拉（抢了牵手）",
+  "tests": [
+   "tests/pull-session.test.ts"
+  ]
+ },
+ {
+  "id": "PULL6-touch-soft-ignores-switch",
+  "part": "stage",
+  "file": "src/stage/jelly/soft-jelly.ts",
+  "find": "  press(point: Vector3, into: Vector3): number { return this.pressRegion(this.touch.enabled ? this.regionAt(point) : -1, into); }",
+  "replace": "  press(point: Vector3, into: Vector3): number { this.touch.enabled = true; return this.pressRegion(this.regionAt(point), into); }",
+  "what": "「碰了才软」关着时，碰她也会打补丁、陷下去",
+  "tests": [
+   "tests/jelly-touch.test.ts"
+  ]
+ },
+ {
+  "id": "PULL10-attitude-ignores-mood",
+  "part": "stage",
+  "file": "shared/behaviors/pull/attitude.ts",
+  "find": "  const willing = clamp(0.5 + knobs.close * close - knobs.tense * Math.max(0, tense) + knobs.joy * (joy + 0.5 * playful));",
+  "replace": "  const willing = 0.5 + 0 * (close + tense + joy + playful);",
+  "what": "被拉时她的身体态度（顺着、站稳、往回拽、挣开）不读心情，谁拉都一样",
+  "tests": [
+   "tests/pull-attitude.test.ts"
+  ]
+ },
+ {
+  "part": "stage",
+  "id": "T253-S1-check-while-dragging",
+  "file": "electron/stage/companion-step-aside.ts",
+  "find": "    if (!this.ports.enabled()) { this.cancelMove(); return; }\n    if (this.ports.dragging()) { this.sawDrag = true; this.forget(); return; }\n",
+  "replace": "    if (!this.ports.enabled()) { this.cancelMove(); return; }\n",
+  "what": "让位：用户正拖着她时也开始自动挪",
+  "tests": [
+   "tests/companion-step-aside.test.ts",
+   "tests/control-avoid-wiring.test.ts"
+  ]
+ },
+ {
+  "part": "stage",
+  "id": "T253-S2-tick-while-dragging",
+  "file": "electron/stage/companion-step-aside.ts",
+  "find": "    if (this.ports.dragging() || !this.ports.enabled()) {",
+  "replace": "    if (!this.ports.enabled()) {",
+  "what": "让位：挪到一半用户开始拖，还接着挪（从用户手里抢窗口）",
+  "tests": [
+   "tests/companion-step-aside.test.ts"
+  ]
+ },
+ {
+  "part": "stage",
+  "id": "T253-S3-unbounded",
+  "file": "electron/stage/companion-step-aside.ts",
+  "find": "    if (distance < 1 || distance > STEP_ASIDE.maxStep || coversRegion(win, region, clickThrough)) continue;",
+  "replace": "    if (distance < 1 || coversRegion(win, region, clickThrough)) continue;",
+  "what": "让位：不限距离，可能一下挪到屏幕另一头",
+  "tests": [
+   "tests/companion-step-aside.test.ts"
+  ]
+ },
+ {
+  "part": "stage",
+  "id": "T253-S4-no-return",
+  "file": "electron/stage/companion-step-aside.ts",
+  "find": "  return { target: base, home };\n}",
+  "replace": "  return { target: current, home };\n}",
+  "what": "让位：控制窗口走了她不回原位",
+  "tests": [
+   "tests/companion-step-aside.test.ts",
+   "tests/control-avoid-wiring.test.ts"
+  ]
+ },
+ {
+  "part": "stage",
+  "id": "T253-S5-user-drop-ignored",
+  "file": "electron/stage/companion-step-aside.ts",
+  "find": "    if (this.sawDrag) { this.sawDrag = false; this.home = null; this.suppressKey = region ? rectKey(region) : null; }",
+  "replace": "    if (this.sawDrag) { this.sawDrag = false; this.home = null; }",
+  "what": "让位：用户亲手把她放在输入区上，松手就被挪走",
+  "tests": [
+   "tests/companion-step-aside.test.ts"
+  ]
+ },
+ {
+  "part": "stage",
+  "id": "T253-S6-any-touch-covers",
+  "file": "electron/stage/companion-step-aside.ts",
+  "find": "  return overlapX >= STEP_ASIDE.minOverlap && overlapY >= STEP_ASIDE.minOverlap;",
+  "replace": "  return overlapX > 0 && overlapY > 0;",
+  "what": "让位：\"真的挡住\"的门槛没了，擦个边也挪",
+  "tests": [
+   "tests/companion-step-aside.test.ts"
+  ]
+ },
+ {
+  "part": "stage",
+  "id": "T253-S7-window-not-body",
+  "file": "electron/stage/companion-step-aside.ts",
+  "find": "  if (!clickThrough) return { ...win };\n  return {",
+  "replace": "  return { ...win };\n  return {",
+  "what": "让位：点穿开着时也按整个透明窗口算（她身边的空地也算挡住）",
+  "tests": [
+   "tests/companion-step-aside.test.ts"
+  ]
+ },
+ {
+  "part": "stage",
+  "id": "T253-S8-other-mover-ignored",
+  "file": "electron/stage/companion-step-aside.ts",
+  "find": "    if (this.expected && !near(current, this.expected)) this.forget();",
+  "replace": "",
+  "what": "让位：别人（找回桌宠、改大小）挪过她后，还走回旧位置",
+  "tests": [
+   "tests/companion-step-aside.test.ts"
+  ]
+ },
+ {
+  "part": "stage",
+  "id": "T253-S9-tick-over-other-mover",
+  "file": "electron/stage/companion-step-aside.ts",
+  "find": "    if (this.expected && !near(win.getBounds(), this.expected)) { this.forget(); return; }",
+  "replace": "",
+  "what": "让位：挪到一半别人改了位置，还接着按旧路线挪",
+  "tests": [
+   "tests/companion-step-aside.test.ts"
+  ]
+ },
+ {
+  "part": "stage",
+  "id": "T253-S10-minimized-counts",
+  "file": "electron/stage/companion-step-aside.ts",
+  "find": "  if (!win || win.isDestroyed() || !win.isVisible() || win.isMinimized()) return null;",
+  "replace": "  if (!win || win.isDestroyed() || !win.isVisible()) return null;",
+  "what": "控制窗口最小化了，气泡和她还在躲它",
+  "tests": [
+   "tests/companion-step-aside.test.ts",
+   "tests/control-avoid-wiring.test.ts"
+  ]
+ },
+ {
+  "part": "stage",
+  "id": "T253-S11-wiring-drag",
+  "file": "electron/wiring/stage-avoid-wiring.ts",
+  "find": "    dragging: () => !!windowDrag?.active,",
+  "replace": "    dragging: () => false,",
+  "what": "让位接线：不看用户是否正在拖她",
+  "tests": [
+   "tests/control-avoid-wiring.test.ts"
+  ]
+ },
+ {
+  "part": "stage",
+  "id": "T253-S12-wiring-unbound",
+  "file": "electron/wiring/stage-avoid-wiring.ts",
+  "find": " && !companion.isMinimized() && !outInUnbound(),",
+  "replace": " && !companion.isMinimized(),",
+  "what": "让位接线：她在 Unbound 外面时还挪她的桌宠窗口",
+  "tests": [
+   "tests/control-avoid-wiring.test.ts"
+  ]
+ },
+ {
+  "part": "stage",
+  "id": "T253-S13-wiring-avoid-source",
+  "file": "electron/wiring/stage-avoid-wiring.ts",
+  "find": "  reply.setAvoidSource(() => { const shown = shownWindowRect(needs.controls), band",
+  "replace": "  reply.setAvoidSource(() => { const shown = needs.controls?.getBounds() ?? null, band",
+  "what": "气泡接线：控制窗口藏了、最小化了也照样躲",
+  "tests": [
+   "tests/control-avoid-wiring.test.ts"
+  ]
+ },
+ {
+  "id": "draw-order-blush-clone-place",
+  "part": "stage",
+  "file": "src/stage/procedural-blush.ts",
+  "find": "        keepDrawPlace(clone, original);\n",
+  "replace": "\n",
+  "what": "程序红晕换上的脸部材质副本不再占原来的绘制位置：脸皮排到眉毛、眼线和头发之后，透明处把脸挖空（眉眼上方漏出桌面，闭眼看得见眼珠）",
+  "tests": [
+   "tests/draw-order.test.ts",
+   "tests/unbound-vrm-face.test.ts"
+  ]
+ },
+ {
+  "id": "draw-order-tears-clone-place",
+  "part": "stage",
+  "file": "src/mood/procedural-tears.ts",
+  "find": "        keepDrawPlace(clone, original); // drawn where the face skin was (src/foundation/draw-order.ts)\n",
+  "replace": "\n",
+  "what": "泪水换上的脸部材质副本不再占原来的绘制位置（同上，哭的时候脸被挖空）",
+  "tests": [
+   "tests/draw-order.test.ts",
+   "tests/unbound-vrm-face.test.ts"
+  ]
+ },
+ {
+  "id": "draw-order-sort-reads-id",
+  "part": "stage",
+  "file": "src/foundation/draw-order.ts",
+  "find": "const placeA = drawPlace(a.material), placeB = drawPlace(b.material);",
+  "replace": "const placeA = a.material.id, placeB = b.material.id;",
+  "what": "不透明物体的排序回到按材质编号：换上的副本排到最后",
+  "tests": [
+   "tests/draw-order.test.ts"
+  ]
+ },
+ {
+  "id": "draw-order-window-renderer",
+  "part": "stage",
+  "file": "src/unbound/window-mode/window-stage.ts",
+  "find": "this.renderer = fileOrderRenderer(new WebGLRenderer(",
+  "replace": "this.renderer = (new WebGLRenderer(",
+  "what": "桌宠窗口的 Unbound 引擎不按文件顺序画材质",
+  "tests": [
+   "tests/draw-order.test.ts"
+  ]
+ },
+ {
+  "id": "BF-S1-cap-applied",
+  "part": "stage",
+  "file": "src/stage/PetUI.ts",
+  "find": "if (cap !== null) text = text.slice(0, cap);",
+  "replace": "",
+  "what": "I-165 桌宠气泡不等声音（字先出来）",
+  "tests": [
+   "tests/bubble-follow-window.test.ts"
+  ]
+ },
+ {
+  "id": "BF-S2-held-not-emptied",
+  "part": "stage",
+  "file": "src/stage/PetUI.ts",
+  "find": "if (this.held && update.text === undefined && update.state !== undefined && update.state !== 'hidden') {",
+  "replace": "if (false) {",
+  "what": "I-165 \"……\" 被\"等朗读\"\"读完了\"的状态清空",
+  "tests": [
+   "tests/bubble-follow-window.test.ts"
+  ]
+ },
+ {
+  "id": "BF-S3-no-revival",
+  "part": "stage",
+  "file": "src/stage/PetUI.ts",
+  "find": "if (last?.id === id && this.replySpeech.matches(id) && this.replyState !== 'hidden')",
+  "replace": "if (last?.id === id)",
+  "what": "I-165 已经收起或换掉的气泡被迟到的放开重新显示",
+  "tests": [
+   "tests/bubble-follow-window.test.ts"
+  ]
+ },
+ {
+  "id": "BF-S4-never-hide-again",
+  "part": "stage",
+  "file": "src/stage/reply-voice-cap.ts",
+  "find": "if (cap !== null && textAlreadyShown) { this.refused = id; this.state = null; return false; }",
+  "replace": "",
+  "what": "I-165 已经显示了字的回复又被藏回\"……\"",
+  "tests": [
+   "tests/bubble-follow-window.test.ts"
+  ]
+ },
+ {
+  "part": "stage",
+  "id": "VS1-placed-not-carried",
+  "file": "src/stage/vrm-spring/vrm-springs.ts",
+  "find": "else if (gap || this.placed(chain, scale)) this.carry(chain, gap);",
+  "replace": "else if (gap) this.carry(chain, gap);",
+  "what": "I-152 第 3 步 VRM 物理：她被放到别处时弹簧链不跟着搬，头发和下摆从原处甩过来",
+  "tests": [
+   "tests/vrm-springs.test.ts"
+  ]
+ },
+ {
+  "part": "stage",
+  "id": "VS2-spin-unbounded",
+  "file": "src/stage/vrm-spring/vrm-springs.ts",
+  "find": "if (moved > limit) {",
+  "replace": "if (moved > Infinity) {",
+  "what": "I-152 第 3 步 VRM 物理：弹簧的转速不再有上限（输入再猛也不会爆的那道界）",
+  "tests": [
+   "tests/vrm-springs.test.ts"
+  ]
+ },
+ {
+  "part": "stage",
+  "id": "VS3-colliders-ignored",
+  "file": "src/stage/vrm-spring/vrm-springs.ts",
+  "find": "        if (away >= radius) continue;\n",
+  "replace": "        continue;\n",
+  "what": "I-152 第 3 步 VRM 物理：碰撞体不再挡住弹簧（下摆穿进腿里、头发穿进头）",
+  "tests": [
+   "tests/vrm-springs.test.ts"
+  ]
+ },
+ {
+  "part": "stage",
+  "id": "VS4-switch-ignored",
+  "file": "src/stage/vrm-spring/vrm-springs.ts",
+  "find": "private requested(part: SpringPart): boolean { const s = this.settings[part]; return s.enabled && s.strength > 0; }",
+  "replace": "private requested(part: SpringPart): boolean { const s = this.settings[part]; return s.strength > 0; }",
+  "what": "I-152 第 3 步 VRM 物理：关掉「头发物理」/「胸部弹性」后 VRM 的弹簧照样在动",
+  "tests": [
+   "tests/vrm-springs.test.ts"
+  ]
+ },
+ {
+  "part": "stage",
+  "id": "VS5-no-body-colliders",
+  "file": "src/stage/vrm-spring/spring-rig.ts",
+  "find": "if (options.bodyColliders !== false && hangsBelowHips(",
+  "replace": "if (false && hangsBelowHips(",
+  "what": "I-152 第 3 步 VRM 物理：没有自带腿部碰撞体的大衣、裙摆不再补上她腿上的胶囊（走路时下摆穿进腿里）",
+  "tests": [
+   "tests/vrm-springs.test.ts"
+  ]
+ },
+ {
+  "part": "stage",
+  "id": "VS6-own-collider-loses",
+  "file": "src/stage/vrm-spring/spring-rig.ts",
+  "find": "          if (fileColliders.some(index => colliders[index].bone === bone)) continue; // the model's own collider wins\n",
+  "replace": "",
+  "what": "I-152 第 3 步 VRM 物理：模型自己在腿上放了碰撞体时，我们补的胶囊也照样加上（模型自己的不再优先）",
+  "tests": [
+   "tests/vrm-springs.test.ts"
+  ]
+ },
+ {
+  "id": "talk-calm-life-head",
+  "part": "stage",
+  "file": "src/stage/procedural-life.ts",
+  "find": "const a = p.amplitude * w * this.headCalm, act = this.act;",
+  "replace": "const a = p.amplitude * w, act = this.act;",
+  "what": "聊天时程序小动作里头的漂移和随意歪头收到三成（点头、音乐、她自己的动作不收）",
+  "tests": [
+   "tests/i170-calm-head.test.ts"
+  ]
+ },
+ {
+  "id": "I171-hide-keeps-reply",
+  "part": "stage",
+  "file": "shared/foundation/step-away.ts",
+  "find": " && !minimizedAway(win); } catch { return true; }",
+  "replace": "; } catch { return true; }",
+  "what": "藏到托盘（不是最小化）时也不再结束她正在说的回复",
+  "tests": [
+   "tests/i171-step-away.test.ts"
+  ]
+ },
+ {
+  "id": "I171-minimize-ends-reply",
+  "part": "stage",
+  "file": "electron/stage/companion-hidden.ts",
+  "find": "if (hideEndsReply(win)) ports.cancelCompletedReply();",
+  "replace": "ports.cancelCompletedReply();",
+  "what": "最小化也结束她正在说的回复（朗读被取消）",
+  "tests": [
+   "tests/i171-step-away.test.ts"
+  ]
+ },
+ {
+  "id": "I171-page-minimize-stops",
+  "part": "stage",
+  "file": "shared/foundation/step-away.ts",
+  "find": "  return herHere({ exists: true, visible: hostVisible, minimized });",
+  "replace": "  return hostVisible;",
+  "what": "页面把最小化当成藏起来：回复、朗读、气泡都被收掉",
+  "tests": [
+   "tests/i171-step-away.test.ts"
+  ]
+ },
+ {
+  "id": "I171-vision-identity-minimize",
+  "part": "stage",
+  "file": "shared/foundation/step-away.ts",
+  "find": "visible: i.visible || away,",
+  "replace": "visible: i.visible,",
+  "what": "开着屏幕查看时最小化改变看屏幕的身份，结束了这一轮回复（被标成已停止）",
+  "tests": [
+   "tests/i171-step-away.test.ts"
+  ]
+ },
+ {
+  "id": "I171-host-record-minimized",
+  "part": "stage",
+  "file": "electron/stage/window-visibility.ts",
+  "find": "minimized !== (this.current.minimized === true)",
+  "replace": "false",
+  "what": "窗口可见记录不再带\"只是最小化\"，页面分不出最小化和藏起来",
+  "tests": [
+   "tests/i171-step-away.test.ts"
+  ]
+ },
+ {
+  "id": "I171-page-record-minimized",
+  "part": "stage",
+  "file": "src/stage/window-visibility.ts",
+  "find": "return this.current?.minimized === true && !this.current.visible;",
+  "replace": "return false;",
+  "what": "页面读不到\"只是最小化\"",
+  "tests": [
+   "tests/i171-step-away.test.ts"
+  ]
+ },
+ {
+  "id": "I171-page-hide-branch",
+  "part": "stage",
+  "file": "src/wiring/chat-wiring.ts",
+  "find": "if (!windowVisibility.minimized) hideWaitingPresentation(); /* I-171",
+  "replace": "hideWaitingPresentation(); /* I-171",
+  "what": "页面在窗口最小化时也收掉等待气泡并停掉正在朗读的句子",
+  "tests": [
+   "tests/conversation-flow.test.ts"
+  ]
+ },
+ {
+  "id": "I171-page-answer-kept",
+  "part": "stage",
+  "file": "src/stage/PetUI.ts",
+  "find": "if (!minimized) this.hideAnswer();",
+  "replace": "this.hideAnswer();",
+  "what": "最小化时桌宠页面也把她的回答气泡收掉",
+  "tests": [
+   "tests/hover-zones.test.ts"
+  ]
+ },
+ {
+  "id": "I171-page-host-told",
+  "part": "stage",
+  "file": "src/wiring/chat-wiring.ts",
+  "find": "hostVisible, windowVisibility.minimized);",
+  "replace": "hostVisible);",
+  "what": "页面没把\"只是最小化\"告诉她的回答气泡",
+  "tests": [
+   "tests/conversation-flow.test.ts"
+  ]
+ },
+ {
+  "id": "I171-close-keeps-rule",
+  "part": "stage",
+  "file": "shared/foundation/step-away.ts",
+  "find": "closing.owner === 'controls' && herOnScreen;",
+  "replace": "closing.owner === 'controls' && false;",
+  "what": "关掉控制窗口保留回复的规则失效（总是中止）",
+  "tests": [
+   "tests/i171-step-away.test.ts"
+  ]
+ },
+ {
+  "id": "I171-leave-clears-vision",
+  "part": "stage",
+  "file": "shared/foundation/step-away.ts",
+  "find": "return owner === 'controls' ? !herOnScreen : !minimizedAway(win);",
+  "replace": "return true;",
+  "what": "窗口离开屏幕（最小化、控制窗口藏起）总是结束看屏幕的上下文，把这一轮回复停掉",
+  "tests": [
+   "tests/i171-step-away.test.ts"
+  ]
+ },
+ {
+  "id": "I174-touchable-hidden",
+  "part": "stage",
+  "file": "src/mood/touchable.ts",
+  "find": "  return state.model && state.shown && !state.hidden && !state.blocked;",
+  "replace": "  return state.model && state.shown && !state.blocked;",
+  "what": "页面藏起来时也能碰她（窗口和全屏共用的“能不能碰”）",
+  "tests": [
+   "tests/i174-touchable.test.ts"
+  ]
+ },
+ {
+  "id": "I174-touchable-window-blocked",
+  "part": "stage",
+  "file": "src/mood/touchable.ts",
+  "find": "blocked: s.cameraEditing || s.interactionBlocked || s.composing });",
+  "replace": "blocked: s.cameraEditing || s.interactionBlocked });",
+  "what": "窗口里输入法正在选字时也能碰她",
+  "tests": [
+   "tests/i174-touchable.test.ts"
+  ]
+ },
+ {
+  "id": "I174-here-covered",
+  "part": "stage",
+  "file": "shared/foundation/step-away.ts",
+  "find": "  return f.minimized ? 'covered' : 'gone';",
+  "replace": "  return 'gone';",
+  "what": "最小化又算“她走了”：说话、朗读停下，热进程按“藏起来”3 分钟关",
+  "tests": [
+   "tests/i174-here.test.ts"
+  ]
+ },
+ {
+  "id": "I174-here-document-hidden",
+  "part": "stage",
+  "file": "shared/foundation/step-away.ts",
+  "find": "  return herHere({ exists: true, visible: hostVisible, minimized });",
+  "replace": "  return herHere({ exists: true, visible: hostVisible, minimized }) && (minimized || !_documentHidden);",
+  "what": "页面只是被别的窗口或截图遮罩盖住（文档变 hidden）就又停掉回复和朗读",
+  "tests": [
+   "tests/i174-here.test.ts",
+   "tests/i171-step-away.test.ts"
+  ]
+ },
+ {
+  "id": "I174-unbound-follow-covered",
+  "part": "stage",
+  "file": "electron/unbound/read-aloud.ts",
+  "find": "  followingText(): string | null { return this.isHere() && this.bubble ?",
+  "replace": "  followingText(): string | null { return this.canShow() && this.bubble ?",
+  "what": "全屏时全屏程序挡住（省电隐藏）她的朗读又在下一句停下",
+  "tests": [
+   "tests/i174-here.test.ts"
+  ]
+ },
+ {
+  "id": "I174-reply-window-follow-minimized",
+  "part": "stage",
+  "file": "electron/brain/reply-window.ts",
+  "find": "    if(this.ownerAway())return this.text||(this.waiting?'':null); // I-174 item 9: minimized, her voice goes on; the bubble shows it on restore\n",
+  "replace": "",
+  "what": "最小化时朗读又在句子边界停下（用户选的是说完、念完）",
+  "tests": [
+   "tests/reply-presentation-window.test.ts"
+  ]
+ },
+ {
+  "id": "MR1-mouth-reading-whitelist",
+  "part": "stage",
+  "file": "shared/stage/journal-entries.ts",
+  "find": "        sentences.push({ word: s.word, peak: round(s.peak, 2), floor: s.floor, ceiling: s.ceiling });",
+  "replace": "        sentences.push(s as never);",
+  "what": "2026-11-22 嘴型记录：每一段原样写进体验记录，窗口塞进来的别的字段（比如一句话）也会进记录",
+  "tests": [
+   "tests/mouth-reading-journal.test.ts"
+  ]
+ },
+ {
+  "id": "GPU5-lost-context-restored",
+  "part": "stage",
+  "file": "src/stage/context-recovery.ts",
+  "find": "    event.preventDefault();\n    if (this.disposed || this.lostNow) return;",
+  "replace": "    if (this.disposed || this.lostNow) return;",
+  "what": "丢掉的 WebGL 画面不再被要回来（没有 preventDefault，浏览器不会恢复上下文），显卡重置后她一直看不见",
+  "tests": [
+   "tests/gpu-reset-stage.test.ts"
+  ]
+ },
+ {
+  "id": "GPU6-restore-forgets-old-context",
+  "part": "stage",
+  "file": "src/stage/context-recovery.ts",
+  "find": "    this.call(this.ports.restored);\n",
+  "replace": "\n",
+  "what": "画面恢复后舞台还拿着旧上下文的读回缓冲（点击穿透的像素读回从此失效）",
+  "tests": [
+   "tests/gpu-reset-stage.test.ts"
+  ]
+ },
+ {
+  "id": "GPU7-message-only-when-stuck",
+  "part": "stage",
+  "file": "src/stage/context-recovery.ts",
+  "find": "    }, this.knobs.stuckMs);",
+  "replace": "    }, 0);",
+  "what": "显卡一闪就恢复了，也马上弹出\"显卡上下文已丢失，请重新打开窗口\"（改前的样子）",
+  "tests": [
+   "tests/gpu-reset-stage.test.ts"
+  ]
+ },
+ {
+  "id": "GPU8-texture-canvas-survives",
+  "part": "stage",
+  "file": "src/stage/textures.ts",
+  "find": "  const context = canvas.getContext(\"2d\", { willReadFrequently: true });",
+  "replace": "  const context = canvas.getContext(\"2d\");",
+  "what": "缩小过的贴图画布又放回显卡上：显卡驱动重置时画布被清空，画面恢复后她整个变透明、看不见（2026-11-22 实测）",
+  "tests": [
+   "tests/stage-textures.test.ts"
+  ]
+ },
+ {
+  "id": "JELLY-second-touch-uses-first-uniforms",
+  "part": "stage",
+  "file": "src/stage/jelly/soft-shader.ts",
+  "find": "  let uniforms = uniformsOfMesh.get(owner);\n  if (!uniforms) uniformsOfMesh.set(owner, uniforms = createJellyUniforms());",
+  "replace": "  let uniforms: JellyUniforms | undefined;\n  if (!uniforms) uniformsOfMesh.set(owner, uniforms = createJellyUniforms());",
+  "what": "每次碰都给果冻一份新的 uniform 对象：three 不会再调材质的编译回调，材质一直绑着第一次碰的那份，第二次碰起不再变软",
+  "tests": [
+   "tests/jelly-uniforms-reuse.test.ts"
+  ]
+ },
+ {
+  "id": "music-nod-told-only-shown",
+  "part": "stage",
+  "file": "src/stage/music-presence.ts",
+  "find": "  return (told.music === 'nod' ? shown.nod : shown.dance) >= MUSIC_SHOWN_MIN ? told : { ...told, music: 'still' };",
+  "replace": "  return told;",
+  "what": "听歌时说在点头，身上不动：她选了点头但身上没在点（让位给说话、摸头，强度 0，还没跟上拍子）时，告诉她的话照样写\"你正跟着点头\"",
+  "tests": [
+   "tests/music-nod-window.test.ts",
+   "tests/music-nod-full.test.ts"
+  ]
+ },
+ {
+  "id": "music-nod-on-the-kick",
+  "part": "stage",
+  "file": "src/stage/music-nod-beat.ts",
+  "find": "      this.pendingShift = -NOD_BEAT.gain * error;",
+  "replace": "      this.pendingShift = 0;",
+  "what": "点头不跟拍子：听到鼓点不再把点头的相位拉到鼓点上，低头的时候和鼓点错开",
+  "tests": [
+   "tests/music-nod-window.test.ts"
+  ]
+ },
+ {
+  "id": "music-nod-lag-on-the-kick",
+  "part": "stage",
+  "file": "src/stage/music-nod.ts",
+  "find": "    const dip = this.beat.dip(followerLagCycles(MUSIC_NOD_FOLLOW, period)) * this.beat.share;",
+  "replace": "    const dip = this.beat.dip(0) * this.beat.share;",
+  "what": "点头不跟拍子：不补平滑跟随的滞后，下巴最低点落在鼓点之后约 90 毫秒",
+  "tests": [
+   "tests/music-nod-window.test.ts",
+   "tests/music-nod-full.test.ts"
+  ]
+ },
+ {
+  "id": "music-nod-strength",
+  "part": "stage",
+  "file": "src/stage/music-nod.ts",
+  "find": "      headX: clampSigned(amount * envelope * (MUSIC_NOD_PITCH",
+  "replace": "      headX: clampSigned(envelope * (MUSIC_NOD_PITCH",
+  "what": "音乐律动强度对点头不起作用（调到 0 她照样点头）",
+  "tests": [
+   "tests/music-nod-window.test.ts",
+   "tests/music-nod-full.test.ts"
+  ]
+ },
+ {
+  "id": "gpu-software-not-reported",
+  "part": "stage",
+  "file": "shared/foundation/gpu-kind.ts",
+  "find": "  if (SOFTWARE_WORDS.test(text)) return { kind: 'software', vendor: 'other' };",
+  "replace": "",
+  "what": "画面其实是处理器软件渲染（SwiftShader 之类），启动记录和开发读数却说是硬件",
+  "tests": [
+   "tests/gpu-choice.test.ts"
+  ]
+ },
+ {
+  "id": "gpu-fell-back-not-flagged",
+  "part": "stage",
+  "file": "electron/foundation/gpu-choice/plan.ts",
+  "find": "fellBack: seen.kind === 'software' && (chips ?? 0) >= 1 };",
+  "replace": "fellBack: false };",
+  "what": "电脑上明明有显卡，画面却是软件渲染，启动记录不标出来",
+  "tests": [
+   "tests/gpu-choice.test.ts"
+  ]
+ },
+ {
+  "id": "gpu-high-performance-not-asked",
+  "part": "stage",
+  "file": "electron/foundation/gpu-choice/plan.ts",
+  "find": "[] : [GPU_CHOICE_SWITCH] };",
+  "replace": "[] : [] };",
+  "what": "启动时不向 Chromium 要高性能显卡（两块显卡的笔记本落在集显）",
+  "tests": [
+   "tests/gpu-choice.test.ts"
+  ]
+ },
+ {
+  "id": "head-pat-one-half",
+  "part": "stage",
+  "file": "src/stage/pull/stage-pull.ts",
+  "find": "names, this.aboveEyes(mesh, chain.find(bone => partOfBoneName(bone.name) === 'head'), found.point))",
+  "replace": "names, null)",
+  "what": "摸头只算头的一半：头顶和两侧的头发、额头不再算头（右侧头发骨按\"头发\"报，一按变成拉头发）",
+  "tests": [
+   "tests/head-pat-side.test.ts"
+  ]
+ },
+ {
+  "id": "head-hair-stroke-pull",
+  "part": "stage",
+  "file": "shared/mood/touch-part.ts",
+  "find": "if (touch.part !== 'hair' && touch.part !== 'face') return touch;",
+  "replace": "if (touch.part !== 'face') return touch;",
+  "what": "头上的头发（眼线以上）不算头：在头发骨上摸头变成拉头发",
+  "tests": [
+   "tests/head-pat-side.test.ts"
+  ]
+ },
+ {
+  "id": "ct-hidden-ui-still-catches",
+  "part": "stage",
+  "file": "src/stage/pointer-passthrough.ts",
+  "find": "return shown(element) && paintedAt(element, view, isRoot) ? 'ui' : 'stage';",
+  "replace": "return shown(element) ? 'ui' : 'stage';",
+  "what": "穿透：藏着的、只是透明方框的界面元素仍然挡住鼠标（空白处被聊天框外层等挡住）",
+  "tests": [
+   "tests/click-through-tight.test.ts"
+  ]
+ }
+]

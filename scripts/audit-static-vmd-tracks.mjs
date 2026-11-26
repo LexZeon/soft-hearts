@@ -5,11 +5,11 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MMDParser } from 'three/examples/jsm/libs/mmdparser.module.js';
-import { stripDefaultVmdTracks } from '../src/stage/vmd-tracks.ts';
-import { readableVmdHeader } from '../src/stage/vmd.ts';
+import { stripDefaultVmdTracks } from '../src/foundation/vmd-tracks.ts';
+import { readableVmdHeader } from '../src/foundation/vmd.ts';
 
 const workspace = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const catalog = JSON.parse(await readFile(path.join(workspace, 'shared/motion-catalog.json'), 'utf8'));
+const catalog = JSON.parse(await readFile(path.join(workspace, 'shared/actions/motion-catalog.json'), 'utf8'));
 const parser = new MMDParser.Parser();
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const motions = [];

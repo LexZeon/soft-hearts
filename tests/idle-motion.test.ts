@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { IDLE_CLOCK_GAP_MS, IDLE_DWELL_MAX_MS, IDLE_DWELL_MIN_MS, IDLE_MAX_RECIPES,
   IDLE_MAX_START_AGE_MS, IDLE_OWNER_MAX_LENGTH, IdleMotionScheduler, type IdleMotionCandidate, type IdleMotionCue,
-  type IdleMotionDecision, type IdleMotionGates, type IdleMotionTick } from '../shared/idle-motion';
+  type IdleMotionDecision, type IdleMotionGates, type IdleMotionTick } from '../shared/actions/idle-motion';
 
 const gates = (): IdleMotionGates => ({ enabled: true, visible: true, targetVerified: true, manualPose: false, manualGesture: false, dynamicPose: false,
   manualExpression: false, manualHead: false, directContact: false, speaking: false, waitingForReply: false, music: false,

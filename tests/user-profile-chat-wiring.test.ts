@@ -1,63 +1,67 @@
-import { lookOfferAllowed, perceptionTurnLine, perceptionTurnState } from '../shared/perception-rule';
-import { LookTurns } from '../electron/look-turns';
-import { LookAttachments } from '../electron/look-attachments';
-import { NO_LISTEN_ASK } from '../electron/listen-together/core';
-import { scanBreathRequest } from '../shared/breath-request';
-import { ReplyRhythmHost } from '../electron/reply-rhythm-host';
+import { ownLineYields } from '../shared/behaviors/interrupt/own-line';
+import { i139ChatEdge } from '../electron/brain/i139-chat';
+import { interconnectTurnLine } from '../electron/brain/interconnect-line';
+import { lookOfferFor, perceptionTurnLine, perceptionTurnState } from '../shared/brain/perception-rule';
+import { lookOfferTarget } from '../shared/senses/look-request';
+import { LookTurns } from '../electron/senses/look-turns';
+import { LookAttachments } from '../electron/senses/look-attachments';
+import { textFirstTurn } from '../electron/brain/text-first-turn';
+import { NO_LISTEN_ASK } from '../electron/senses/listen-together/core';
+import { scanBreathRequest } from '../shared/actions/breath-request';
+import { ReplyRhythmHost } from '../electron/brain/reply-rhythm-host';
 import test from 'node:test';
 import { createHash, randomUUID } from 'node:crypto';
-import { CompanionCommandHost } from '../electron/companion-command-host';
-import { classifyCompanionCommand, formatCompanionCommandReceipt } from '../electron/companion-command-intent';
+import { CompanionCommandHost } from '../electron/settings/companion-command-host';
+import { classifyCompanionCommand, formatCompanionCommandReceipt } from '../electron/settings/companion-command-intent';
 import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, readdir, rename, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
 import ts from 'typescript';
-import { CompanionService, memoryProviderScope, type CompanionTurn } from '../electron/companion';
-import { UserProfileStore } from '../electron/user-profile';
-import { UserProfileManagement } from '../electron/user-profile-management';
-import { UserProfileContext } from '../electron/user-profile-context';
-import { UserProfileSource } from '../electron/user-profile-source';
-import { UserProfileReplyCollector } from '../electron/user-profile-reply';
-import { VisualSelfRuntime } from '../electron/visual-self-runtime';
-import { validateChatRequest } from '../electron/validation';
-import { validateUserProfileExpected } from '../shared/user-profile-ui';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { DEFAULT_TTS_CONFIG } from '../shared/tts';
+import { CompanionService, memoryProviderScope, type CompanionTurn } from '../electron/brain/companion';
+import { UserProfileStore } from '../electron/memory/user-profile';
+import { UserProfileManagement } from '../electron/memory/user-profile-management';
+import { UserProfileContext } from '../electron/memory/user-profile-context';
+import { UserProfileSource } from '../electron/memory/user-profile-source';
+import { UserProfileReplyCollector } from '../electron/memory/user-profile-reply';
+import { VisualSelfRuntime } from '../electron/senses/visual-self-runtime';
+import { validateChatRequest } from '../electron/settings/validation';
+import { admitHandedLine } from '../electron/brain/handed-line-gate'; // 2026-11-23: the chat handler's full-screen line gate
+import { stageTurn } from '../electron/brain/turn-owner/stage-turn'; // I-209 step 3: whose turn (the chat handler's one name for it)
+import { sharedSight } from '../electron/brain/stage-chat/perceive'; // I-209 step 4: one screen description for everyone on stage
+import { validateUserProfileExpected } from '../shared/memory/user-profile-ui';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { DEFAULT_TTS_CONFIG } from '../shared/voice/tts';
 import type { ChatRequest, StreamEvent } from '../shared/contracts';
-import { TextMemorialHost } from '../electron/text-memorial-host';
-import { MemoryStore } from '../electron/memory';
-import { textMemorialReplyContext } from '../electron/text-memorials';
-import { ProactiveSpeechGate } from '../electron/proactive-speech-gate';
-import type { TextMemorialPresented } from '../shared/text-memorials';
-import { CompletedReplySpeech } from '../electron/completed-reply-speech';
-import { freezeTurnSpeechStyle, ReplySpeechStyles } from '../electron/speech-emotion';
-import { buildCodexChatPrompt } from '../electron/conversation-context';
-import { ChatSettingProposals } from '../electron/chat-settings';
-import { scanFramingRequest } from '../shared/framing-request';
-import { scanStopReadoutRequest } from '../shared/stop-readout-request';
-import { SingleEmojiCues, type SingleEmojiCue } from '../electron/single-emoji-cues';
-import { DEFAULT_EMOJI_SETTINGS, readEmojiSettings } from '../shared/single-emoji';
+import { TextMemorialHost } from '../electron/memory/text-memorial-host';
+import { MemoryStore } from '../electron/memory/memory';
+import { textMemorialReplyContext } from '../electron/memory/text-memorials';
+import { ProactiveSpeechGate } from '../electron/initiative/proactive-speech-gate';
+import type { TextMemorialPresented } from '../shared/memory/text-memorials';
+import { CompletedReplySpeech } from '../electron/voice/completed-reply-speech';
+import { freezeTurnSpeechStyle, ReplySpeechStyles } from '../electron/mood/speech-emotion';
+import { buildCodexChatPrompt } from '../electron/brain/conversation-context';
+import { ChatSettingProposals } from '../electron/brain/chat-settings';
+import { TakeMeThere } from '../electron/initiative/take-me-there';
+import { scanFramingRequest } from '../shared/stage/framing-request';
+import { scanStopReadoutRequest } from '../shared/voice/stop-readout-request';
+import { SingleEmojiCues, type SingleEmojiCue } from '../electron/stage/single-emoji-cues';
+import { DEFAULT_EMOJI_SETTINGS, readEmojiSettings } from '../shared/stage/single-emoji';
+import { WIRING_PRELUDE, wiringFunction, wiringHandler, wiringRegistration } from './helpers/wiring-source';
+import { SpeechBeatsHost } from '../electron/brain/speech-beats/host';
+import { SpeechBeatArchive } from '../electron/brain/speech-beats/archive';
 
 type Mode = 'complete' | 'partial-error' | 'stop' | 'late-model';
-const source = await readFile(new URL('../electron/main.ts', import.meta.url), 'utf8');
-const ast = ts.createSourceFile('main.ts', source, ts.ScriptTarget.ES2022, true, ts.ScriptKind.TS);
-const expressions: string[] = [];
-function visit(node: ts.Node) {
-  if (ts.isCallExpression(node) && node.expression.getText(ast) === 'scopedHost'
-    && ts.isStringLiteral(node.arguments[0]) && node.arguments[0].text === 'chat') {
-    assert.equal(node.arguments[2]?.getText(ast), 'false');
-    expressions.push(node.arguments[1].getText(ast));
-  }
-  ts.forEachChild(node, visit);
-}
-visit(ast); assert.equal(expressions.length, 1);
+// Wiring rewrite step 4h: the chat turn is 大脑's (electron/wiring/brain-chat-wiring.ts); read across main.ts and electron/wiring/*.ts,
+// still exactly one registration, either window (false); what it reads from 大脑's needs comes from this fixture's names (WIRING_PRELUDE).
+assert.match(wiringRegistration('chat'), /,\s*false,?\s*\);?$/);
+const expressions: string[] = [wiringHandler('chat')];
+// Wiring rewrite step 4: the companion command helpers are the settings part's (electron/wiring/settings-wiring.ts), read there,
+// still exactly one (wiringFunction); what they read from its needs comes from this fixture's names (WIRING_PRELUDE below).
 const helpers = ['currentProfileMessage', 'acceptProfileMessage', 'visualSelfData', 'chatContextData',
   'companionCommandContext', 'companionCommandTarget', 'noteCompanionTopmostWrite', 'commitCompanionTopmost', 'cancelProactiveVision', 'noteVisionUserActivity',
-  'singleEmojiContext', 'refreshSingleEmojiContext'].map(name => {
-  const found = ast.statements.filter((node): node is ts.FunctionDeclaration => ts.isFunctionDeclaration(node) && node.name?.text === name);
-  assert.equal(found.length, 1); return found[0].getText(ast);
-});
+  'singleEmojiContext', 'refreshSingleEmojiContext'].map(name => wiringFunction(name));
+helpers.unshift(WIRING_PRELUDE);
 // The accepted chat route now uses the real command admission before ordinary chat.
 // Extract its actual helpers and retain the real ledger/classifier; ordinary-profile
 // cases have no native windows. An unexpected published command fails this fixture.
@@ -156,19 +160,20 @@ async function fixture(run: (f: {
     singleEmojiCues:SingleEmojiCues; singleEmojiContext():string; refreshSingleEmojiContext():void;
     setEmojiModelGeneration(value:number):void;
   };
-  const env = {
+  const env = { ownLineYields, // I-174 item 3: the rule noteVisionUserActivity asks
     createHash, randomUUID, CompanionCommandHost, classifyCompanionCommand, formatCompanionCommandReceipt, scanBreathRequest, scanFramingRequest, scanStopReadoutRequest, pet: null,
     SingleEmojiCues, emojiSettings, emojiBoundary,
-    r20ProactiveOffers:null, rps: { host: { chatTurn: () => null, chatDone: () => {} } }, moduleRouter: { userTurn: () => {} }, moodJudge: { host: { userText: () => {} } }, reactions: { userTurn: () => {}, firstChar: () => {}, host: { asking: () => false } }, senseRouter: { userTurn() {}, cancel() {}, firstChar() {}, hint: () => '', replyDone() {} }, pauseTalk: { userTurn: () => null, delta() {}, cancel() {} }, journalCharacterId: () => null, textMemorialHost:memorial,textMemorialReplyContext,
+    r20ProactiveOffers:null, rps: { host: { chatTurn: () => null, chatDone: () => {} } }, moduleRouter: { userTurn: () => {} }, moodJudge: { host: { userText: () => {} } }, reactions: { userTurn: () => {}, firstChar: () => {}, host: { asking: () => false } }, selfLook: { hint: () => '', afterMessage: () => false, typed() {}, cancel() {}, mediaChanged() {} }, seeAndSay: null, senseRouter: { userTurn() {}, cancel() {}, firstChar() {}, hint: () => '', replyDone() {} }, unboundNoticedLine: () => '', unboundOutsideTurnLine: () => '', pauseTalk: { userTurn: () => null, delta() {}, cancel() {} }, journalCharacterId: () => null, textMemorialHost:memorial,textMemorialReplyContext,
     // 识图第 1 步 (electron/main.ts chat handler): this turn's perception line and her offer to look; sharing off here.
-    media: { state: { screenSharing: false, cameraSharing: false }, revision: 0 }, perceptionTurnState, perceptionTurnLine, lookOfferAllowed, lookScope: () => '', lookTurns: new LookTurns(), herState: { chatTurn: () => undefined }, turnAwareness: { line: () => '' },
+    media: { state: { screenSharing: false, cameraSharing: false }, revision: 0, sharesCameraFrames: () => false }, perceptionTurnState, perceptionTurnLine, lookOfferFor, lookOfferTarget, cameraLookJournal: { turn() {}, sensed() {} }, lookScope: () => '', lookTurns: new LookTurns(), herState: { chatTurn: () => undefined }, turnAwareness: { line: () => '' },
     roughForTurn: () => undefined, // 屏幕只读大概: sharing off here, so nothing about what the user does
+    textFirstTurn, watchTogether: null, lookState: () => ({ screen: false, camera: false, scope: '' }), // I-085 第 3 步: nothing on, so no text line and no journal row
     // 关掉之后的旧帧: the chat handler asks which attachments may still go (none are shared frames here).
     lookAttachments: new LookAttachments(new LookTurns(), { noteActivity() {}, state: () => ({ screen: false, camera: false, scope: '' }), sharesCameraFrames: () => false,
       revision: () => 0, generation: () => 0, opening: () => 0, captureScreen: async () => null, captureCamera: async () => null }),
     listenTogether: null, // I-016 一起听: not started in this fixture (a question about what she heard adds nothing)
     NO_LISTEN_ASK, // I-021: what a turn gets without 一起听 (tests/listen-late-window.test.ts)
-    validateChatRequest, UserProfileReplyCollector, userProfiles: profiles, userProfileManagement: management,
+    validateChatRequest, admitHandedLine, stageTurn, sharedSight, stageIds: () => [], UserProfileReplyCollector, userProfiles: profiles, userProfileManagement: management,
     userProfileContext: context, userProfileSource: new UserProfileSource(), companion: service,
     visualSelfRuntime, refreshVisualSelfContext: () => {},
     store: { current: settings, directory }, pending, structuredClone, Date,
@@ -176,6 +181,7 @@ async function fixture(run: (f: {
     visionPresentation:{clear:()=>{notices.push('vision-proof-cleared');}},proactiveVision:{cancel:()=>{notices.push('visual-initiative-cancelled');}},
     cameraSamples:{cancel:()=>{notices.push('camera-broker-cancelled');}},cancelAmbientPlayback:()=>{notices.push('ambient-cancelled');},
     syncFatigueActivity:()=>{notices.push('fatigue-observed');},
+    speechBeatsFor: () => new SpeechBeatsHost('tmp', new SpeechBeatArchive('tmp', async () => {}, () => { throw new Error('none'); })), gateEnabled: () => false, // 边说边演: off here
     launchTask(id: string, _kind: string, _sender: number,
       operation: (signal: AbortSignal, emit: (type: StreamEvent['type'], text: string) => void) => Promise<void>, onStarted: () => void) {
       const controller = new AbortController(); pending.set(id, { controller });
@@ -206,15 +212,23 @@ async function fixture(run: (f: {
     } },
     freezeTurnSpeechStyle, buildCodexChatPrompt, path, app: { getPath: () => directory }, PROFILE_FOLDER: 'synthetic-profile',
     chatSettings: new ChatSettingProposals({ settings: () => settings, send: () => { throw Error('Settings cards are outside this target'); } }),
+    takeMeThere: new TakeMeThere({ send: () => {}, open: () => { throw Error('Take-me-there is outside this target'); } }),
+    herFolder: { beginTurn: async () => null, offer: () => false, beginHint: () => null, hintDone: () => false }, // I-050/I-056: her folder is outside this target (off: no turn, no write, no mention)
+    faceTurnFor: async () => ({ visitor: false, line: null }), faceCheck: undefined, // I-135: no face check in this target
+    interconnectTurnLine, agentInterconnected: () => true, // I-137: the 三方互通 fact line (the real one)
+    i139Chat: i139ChatEdge({ on: () => false, card: () => null }), // I-139: its switch off here (the real edge)
+    specialDay: { beginHint: () => null, hintDone: () => false }, joinHintLines: (...lines: (string | null | undefined)[]) => lines.filter(Boolean).join('\n') || undefined, // I-059: no special day in this target
     streamCodex: () => { throw Error('Claude execution forbidden in this target'); },
     memoryProviderScope, voiceHost: { history: null, capture: undefined }, cancelReplyStyle: () => {},
     characterCards: { getActive: () => ({ id: 'synthetic-character' }) }, personalizeLanguage: undefined,
-    effectiveTtsConfig: () => DEFAULT_TTS_CONFIG, DEFAULT_TTS_CONFIG,
+    effectiveTtsConfig: () => DEFAULT_TTS_CONFIG, characterTtsConfig: () => DEFAULT_TTS_CONFIG, DEFAULT_TTS_CONFIG,
     composeSpeechConfig: () => DEFAULT_TTS_CONFIG, characterSpeechPersona: () => '', completedFatigueFeeling: () => undefined,
     completedReplySpeech: speechPlan ?? { beginCommit: () => ({}), append: () => {}, cancelPending: () => {},
       record: () => { throw Error('Voice is outside this target'); } },
-    // R27 developer-mode timing probe (electron/reply-latency.ts) is outside this target.
+    // R27 developer-mode timing probe (electron/brain/reply-latency.ts) is outside this target.
     replyLatency: { begin() {}, delta() {}, complete() {}, end() {} },
+    LONG_CHAT: { enabled: false }, // I-134 new chat off in this target: the renderer's window, as before
+    getPromptSwitches: () => ({}), movingMemory: undefined, // I-139 A3: the relaxed prompts are off in this target (no opening memory)
     suspendAmbientSpeech: () => { if(!options.voice)throw Error('Voice is outside this target');notices.push('ordinary-speech-planned'); },
     speechRuntime: { stop: () => {} }, clearReplySpeech: () => {}, windows: () => [], ownerFor: () => 'controls',
     broadcast: (channel: string) => { notices.push(channel); },

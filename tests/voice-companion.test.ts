@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CompanionService } from '../electron/companion';
-import { MemoryStore } from '../electron/memory';
-import type { VoiceTextLeg, VoiceTextSettlement } from '../electron/voice-text-continuation';
+import { CompanionService } from '../electron/brain/companion';
+import { MemoryStore } from '../electron/memory/memory';
+import type { VoiceTextLeg, VoiceTextSettlement } from '../electron/voice/voice-text-continuation';
 
 const provider = { kind: 'claude' as const, baseUrl: 'https://voice-fixture.invalid/v1', model: 'fixture' };
 async function fixture(run: (service: CompanionService, directory: string) => Promise<void>) {

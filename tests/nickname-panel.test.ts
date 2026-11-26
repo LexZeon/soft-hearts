@@ -2,8 +2,8 @@ import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { readFileSync } from 'node:fs';
 import { transformSync } from 'esbuild';
-import { uiText, uiTemplate } from '../src/ui/ui-language';
-import { ProfileViewGate } from '../src/ui/ProfileViewGate';
+import { uiText, uiTemplate } from '../src/foundation/ui-language';
+import { ProfileViewGate } from '../src/memory/ProfileViewGate';
 
 // Same light DOM stand-in as tests/diary-panel.test.ts.
 class Element {
@@ -18,7 +18,7 @@ const find = (root: Element, p: (e: Element) => boolean): Element | undefined =>
 const texts = (root: Element): string => [root.textContent, ...root.children.map(texts)].join('|');
 const tick = async () => { for (let i = 0; i < 6; i++) await Promise.resolve(); };
 function PanelCtor() {
-  const source = readFileSync(new URL('../src/ui/UserProfilePanel.ts', import.meta.url), 'utf8').replace(/^import .*;\s*$/gm, '').replace('export class UserProfilePanel', 'class UserProfilePanel');
+  const source = readFileSync(new URL('../src/memory/UserProfilePanel.ts', import.meta.url), 'utf8').replace(/^import .*;\s*$/gm, '').replace('export class UserProfilePanel', 'class UserProfilePanel');
   const js = transformSync(source, { loader: 'ts', target: 'es2022' }).code;
   return new Function('ProfileViewGate', 'uiText', 'uiTemplate', `${js};return UserProfilePanel`)(ProfileViewGate, uiText, uiTemplate);
 }
@@ -29,7 +29,7 @@ function mount(options: { nickname?: string | null; offer?: boolean; fail?: bool
   const calls: Array<string | null> = [];
   const api: Record<string, unknown> = { onUserProfileChanged: () => () => {}, getUserProfile: async () => view,
     setUserProfileEnabled: async () => { throw Error('unexpected'); }, editUserProfile: async () => { throw Error('unexpected'); }, deleteUserProfile: async () => { throw Error('unexpected'); },
-    editUserDiary: async () => { throw Error('unexpected'); }, deleteUserDiary: async () => { throw Error('unexpected'); }, clearUserDiary: async () => { throw Error('unexpected'); } };
+    editUserDiary: async () => { throw Error('unexpected'); }, deleteUserDiary: async () => { throw Error('unexpected'); }, clearUserDiary: async () => { throw Error('unexpected'); }, deleteUserUpcoming: async () => { throw Error('unexpected'); }, clearUserUpcoming: async () => { throw Error('unexpected'); } };
   if (options.offer !== false) {
     api.getRelationshipNickname = async () => nickname;
     api.setRelationshipNickname = async (value: string | null) => {

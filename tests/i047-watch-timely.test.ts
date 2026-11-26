@@ -3,22 +3,22 @@
  * fake haiku. What it pins: the "talking about the show" window starts on a local ask match and on haiku's `transcript` answer,
  * renews, and ends on a refusal / 一起听 off / another character or conversation / the user's clear / its five minutes; while open
  * every turn carries the last 90 seconds of the heard words (capped, labeled) and haiku's young summary, added synchronously;
- * the refusal rules of shared/listen-ask.ts still win; the judgment sees the last few exchanges; nothing is written to disk.
+ * the refusal rules of shared/senses/listen-ask.ts still win; the judgment sees the last few exchanges; nothing is written to disk.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { ListenKindHost, type ListenKind } from '../shared/listen-kind';
-import { listenWatchRefuses, matchListenAsk } from '../shared/listen-ask';
-import { SENSE_ROUTER_KNOBS, senseBlock, senseJudgePrompt, type SenseOn } from '../shared/sense-router';
-import { WATCH_TIMELY_KNOBS, judgeContextBlock, recentExchanges, watchBlock, mentionsShow, everydayShowQuestion } from '../shared/watch-timely';
-import { ListenTogetherCore, type ListenFile } from '../electron/listen-together/core';
-import { ListenStore } from '../electron/listen-together/store';
-import { WatchWindow } from '../electron/listen-together/watch-window';
-import { SenseRouterHost, type SenseRouterPorts } from '../electron/sense-router/host';
-import { createSenseRouter } from '../electron/sense-router/wiring';
+import { ListenKindHost, type ListenKind } from '../shared/senses/listen-kind';
+import { listenWatchRefuses, matchListenAsk } from '../shared/senses/listen-ask';
+import { SENSE_ROUTER_KNOBS, senseBlock, senseJudgePrompt, type SenseOn } from '../shared/senses/sense-router';
+import { WATCH_TIMELY_KNOBS, judgeContextBlock, recentExchanges, watchBlock, mentionsShow, everydayShowQuestion } from '../shared/senses/watch-timely';
+import { ListenTogetherCore, type ListenFile } from '../electron/senses/listen-together/core';
+import { ListenStore } from '../electron/senses/listen-together/store';
+import { WatchWindow } from '../electron/senses/listen-together/watch-window';
+import { SenseRouterHost, type SenseRouterPorts } from '../electron/senses/sense-router/host';
+import { createSenseRouter } from '../electron/senses/sense-router/wiring';
 
 const SEC = 1_000, MIN = 60_000;
 const OLD_LINE = '合成台词甲：很久以前这座城里住着一位修钟表的老人，他每天清晨都会擦一遍橱窗';

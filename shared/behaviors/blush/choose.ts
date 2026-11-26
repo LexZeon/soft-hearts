@@ -8,11 +8,11 @@
  *    （红起来 0.1～5 秒、停 0～20 秒、退 0.1～10 秒）。抽出来的不过这一关，这一次就按卡上的形状（= 原来的做法）。
  *  - 什么时候红还是心情模型的 maybeBlush 定，这里只换交给它的参数；"说了暖心的话"那一条门槛是模型里的固定数，不动。
  */
-import { sheChooses, type SheChoosesCandidate, type SheChose } from '../../she-chooses';
-import { MOOD_LABELS } from '../../mood-runtime';
-import { MOOD_TENDENCY_MIN, tendencyNow } from '../../mood-tendency';
-import type { MoodBlushParameters, MoodLabel, MoodSnapshot, MoodTendency } from '../../mood';
-import type { FatiguePhase } from '../../fatigue';
+import { sheChooses, type SheChoosesCandidate, type SheChose } from '../../foundation/she-chooses';
+import { MOOD_LABELS } from '../../mood/mood-runtime';
+import { MOOD_TENDENCY_MIN, tendencyNow } from '../../foundation/mood-tendency';
+import type { MoodBlushParameters, MoodLabel, MoodSnapshot, MoodTendency } from '../../foundation/mood';
+import type { FatiguePhase } from '../../mood/fatigue';
 import { BLUSH_KNOBS, BLUSH_LOOK_IDS, type BlushKnobs, type BlushLookId, type BlushLookKnob, type BlushMoment, type BlushTrigger } from './knobs';
 import type { BlushChance, BlushContact, BlushHost, BlushNow, BlushOutcome, BlushPrepared, BlushWhy } from './interface';
 
@@ -30,7 +30,7 @@ const PERSONALITY_WORDS: Readonly<Record<MoodTendency, readonly [string, string]
 export const BLUSH_CONTACT_WORDS: Readonly<Record<BlushContact, string>> = { pat: '被摸头', pinch: '被捏脸', words: '你说了暖心的话' };
 /** 前几次留几次（只在内存）。 */
 const KEEP = 4;
-/** "这会儿……"至少要这么强才算（回到基线时那一丝不算；各功能共用 shared/mood-tendency.ts 的同一个门槛，想改只改那里）。 */
+/** "这会儿……"至少要这么强才算（回到基线时那一丝不算；各功能共用 shared/foundation/mood-tendency.ts 的同一个门槛，想改只改那里）。 */
 export const BLUSH_TENDENCY_MIN = MOOD_TENDENCY_MIN;
 const EPS = 1e-9;
 

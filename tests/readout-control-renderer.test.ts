@@ -1,14 +1,17 @@
-import { scanBreathRequest } from '../shared/breath-request';
+import { scanBreathRequest } from '../shared/actions/breath-request';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import fs from 'node:fs';
 import ts from 'typescript';
-import { scanFramingRequest } from '../shared/framing-request';
-import { scanStopReadoutRequest } from '../shared/stop-readout-request';
-import { appendReplyHistory, outgoingChatMessages } from '../src/ui/reply-history';
+import { scanFramingRequest } from '../shared/stage/framing-request';
+import { scanStopReadoutRequest } from '../shared/voice/stop-readout-request';
+import { appendReplyHistory, outgoingChatMessages } from '../src/brain/reply-history';
+import { rendererSource as readRendererSource } from './helpers/renderer-source'; // overhaul step 5: src/main.ts and src/wiring/*.ts
+import { testSendGuard } from './helpers/send-guard'; // 2026-11-22: sendChat's guard (src/brain/send-guard.ts)
+const clock = { now: 0 };
 
-const text = fs.readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
+const text = readRendererSource();
 const ast = ts.createSourceFile('src/main.ts', text, ts.ScriptTarget.ES2022, true, ts.ScriptKind.TS);
 const names = ['sendChat', 'beginReadoutControl', 'receiveReadoutControl', 'onStream'];
 const functions = new Map(ast.statements.filter((n): n is ts.FunctionDeclaration => ts.isFunctionDeclaration(n)
@@ -22,7 +25,7 @@ class Node {
 function fixture() {
   const input = { value: '请停止当前朗读' }, root = new Node(), requests: any[] = [], failures: unknown[] = [];
   const forbidden = () => { throw Error('Readout control touched ordinary audio/media/settings/presentation'); };
-  const context: any = { activeChat: null, pendingReadoutControl: null, attachments: [], history: [], isPet: false,
+  const context: any = { activeChat: null, sendGuard: testSendGuard({ now: () => clock.now }), attachments: [], history: [], isPet: false,
     commandMessageRows: new Map(), readoutControlTurns: new Map(),
     scanBreathRequest, scanFramingRequest, scanStopReadoutRequest, appendReplyHistory, outgoingChatMessages, crypto: { randomUUID: () => 'control-id' },
     $: (id: string) => id === 'chat-input' ? input : root,
@@ -46,21 +49,21 @@ test('actual renderer send preserves audio and submits only literal chat, with n
     assert.equal(h.requests.length, 1); const request = h.requests[0];
     assert.equal(request.id, 'control-id'); assert.equal(request.messages.at(-1).content, text);
     assert.deepEqual(Array.from(request.attachments), []); assert.equal(h.input.value, '');
-    assert.equal(h.context.pendingReadoutControl, 'control-id'); assert.deepEqual(h.failures, []);
+    assert.equal(h.context.sendGuard.pending, 'control-id'); assert.deepEqual(h.failures, []);
     await h.context.sendChat(); assert.equal(h.requests.length, 1, 'pending control does not submit a duplicate');
   }
 });
 
 test('actual control presentation and stream consume once without touching normal reply, queue or audio', () => {
   const h = fixture(); h.context.activeChat = 'unrelated-text-generation';
-  h.context.pendingReadoutControl = 'control-id';
+  h.context.sendGuard.hold('control-id');
   const chat = { id: 'control-id', readoutControl: true, owner: 'controls', messages: [{ role: 'user', content: '停止朗读' }] };
   h.context.beginReadoutControl(chat); h.context.beginReadoutControl(chat);
   assert.equal(h.root.children.length, 1); assert.equal(h.context.commandMessageRows.size, 1);
   h.context.onStream({ id: 'control-id', kind: 'chat', type: 'delta', text: '已停止本次回复朗读。' });
   h.context.onStream({ id: 'control-id', kind: 'chat', type: 'done', text: '' });
   h.context.onStream({ id: 'control-id', kind: 'chat', type: 'done', text: '' });
-  assert.equal(h.context.activeChat, 'unrelated-text-generation'); assert.equal(h.context.pendingReadoutControl, null);
+  assert.equal(h.context.activeChat, 'unrelated-text-generation'); assert.equal(h.context.sendGuard.pending, null);
   assert.equal(h.context.history.length, 2); assert.equal(h.context.history[1].content, '已停止本次回复朗读。');
   assert.equal(h.root.children[0].children[1].textContent, '已停止本次回复朗读。');
 });

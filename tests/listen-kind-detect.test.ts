@@ -1,7 +1,7 @@
 /**
  * I-016 A (docs/claude/2026-11-03-listen-kind.md): "is it music", the fast layer (src/stage/music-likeness.ts), on synthetic sound
  * only (tests/helpers/listen-audio.ts: program-made songs, drumless pads, speech-like syllables, laughter, noise; turned into the
- * capture's own samples by the same analyser maths as src/ui/SystemAudio.ts). The SAPI-voice evaluation is
+ * capture's own samples by the same analyser maths as src/senses/SystemAudio.ts). The SAPI-voice evaluation is
  * scripts/listen-kind/eval.ts; numbers in the record.
  */
 import assert from 'node:assert/strict';
@@ -70,13 +70,14 @@ test('dialogue over quiet background music is not music; the same speech over a 
   assert.ok(listen(of(mix(drumSong(40, { bpm: 100, seed: 9 }), words, -2))).after(10) > 0.6, 'a voice over a beat as loud as it: music');
 });
 
-test('a show: the opening song is music, the dialogue after it stops being music within a few seconds and stays so', () => {
+test('a show: the opening song is music, the dialogue after it stops being music within about 9 seconds and stays so', () => {
   const opening = drumSong(15, { bpm: 120, seed: 10 }), dialogue = mix(speechLike(30, { seed: 11 }), ambientPad(30, { seed: 12 }), -15);
   const run = listen(of(concat(opening, dialogue)));
   assert.ok(run.first !== null && run.first < 6, `the opening song: music after ${run.first} s`);
   const off = run.verdicts.find(v => v.t > 15 && !v.music)?.t ?? Infinity;
-  assert.ok(off - 15 <= 4, `the dialogue: not music ${(off - 15).toFixed(1)} s after it began`);
-  assert.ok(run.verdicts.filter(v => v.t > 20).every(v => !v.music), 'and stays not music through the dialogue');
+  // I-053: a song that has been music for 10 s is remembered, so dialogue right after it takes up to about 9 s to stop counting (the user accepted this in the plan; it was 4 s).
+  assert.ok(off - 15 <= 9.5, `the dialogue: not music ${(off - 15).toFixed(1)} s after it began`);
+  assert.ok(run.verdicts.filter(v => v.t > off + 0.5).every(v => !v.music), 'and stays not music through the dialogue');
 });
 
 test('the verdict has hysteresis: a short break inside a song does not end it; a new song after silence is recognized again', () => {
@@ -124,7 +125,7 @@ test('time going back, a long gap or a bad sample start over (not music), and re
 });
 
 test('the score: nothing decided below the minimum of sound; each part is 0..1; the developer line names them', () => {
-  const quiet: LikenessFeatures = { soundS: LIKENESS_MIN_SOUND_S - 0.1, beatPeak: 1, period: 0.5, periodStable: 1, gridLock: 1, ioiCv: 0, slowPeak: 1, dipShare: 0, flutter: 1, swing: 6, tilt: -20, onsetRate: 2, recentDips: 0 };
+  const quiet: LikenessFeatures = { soundS: LIKENESS_MIN_SOUND_S - 0.1, beatPeak: 1, period: 0.5, periodStable: 1, gridLock: 1, ioiCv: 0, slowPeak: 1, dipShare: 0, flutter: 1, swing: 6, tilt: -20, onsetRate: 2, recentDips: 0, tempoMatch: 0 };
   assert.deepEqual(likenessScore(quiet), { score: 0, beat: 0, sustain: 0, speech: 0 });
   const beat = likenessScore({ ...quiet, soundS: 8 });
   assert.ok(beat.score > 0.9 && beat.beat > 0.9);
@@ -134,6 +135,7 @@ test('the score: nothing decided below the minimum of sound; each part is 0..1; 
   const m = new MusicLikeness();
   assert.equal(likenessLine(m.getState()), '像音乐 0.00（声音不够，先不判断）→ 不是音乐');
   for (const sample of of(drumSong(8, { bpm: 120, seed: 18 }))) m.update(sample);
-  assert.match(likenessLine(m.getState()), /^像音乐 0\.\d\d（节拍 \d\.\d\d（周期 \d\.\d\d s，稳 \d\.\d\d，对齐 \d\.\d\d） · 持续 \d\.\d\d · 像说话 \d\.\d\d）→ 认出是音乐$/);
+  // I-072: with the unsmoothed onsets a clean synthetic beat can score a full 1.00.
+  assert.match(likenessLine(m.getState()), /^像音乐 [01]\.\d\d（节拍 \d\.\d\d（周期 \d\.\d\d s，稳 \d\.\d\d，对齐 \d\.\d\d） · 持续 \d\.\d\d · 像说话 \d\.\d\d）→ 认出是音乐$/);
   assert.equal(likenessLine(undefined), '像音乐：还没收到声音');
 });

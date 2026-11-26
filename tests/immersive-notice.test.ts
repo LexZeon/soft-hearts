@@ -1,11 +1,8 @@
-import * as uiCopy from '../src/ui/ui-language';
-const { uiText, uiHtml, uiMarkup, uiTemplate } = uiCopy;
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {ImmersiveNotice} from '../src/ui/ImmersiveNotice';
-import {readFileSync} from 'node:fs';
-import ts from 'typescript';
-import {transformSync} from 'esbuild';
+import {ImmersiveNotice} from '../src/stage/ImmersiveNotice';
+import { installPetWindow } from './helpers/pet-window-dom'; // no-pet-ok: the existing helper's names
+import { PetUI, renderPet } from '../src/stage/PetUI'; // no-pet-ok: the existing file and class names
 
 class Element {
   textContent=''; hidden=false; private names=new Set<string>(); private events=new Map<string,()=>void>();
@@ -38,17 +35,21 @@ test('ordinary notices stay quiet, failures retain explicit text details and dev
   } finally { globalThis.setTimeout=oldSet;globalThis.clearTimeout=oldClear; }
 });
 
-test('actual PetUI developer toggle controls the status visibility class',()=>{
-  const source=readFileSync(new URL('../src/ui/PetUI.ts',import.meta.url),'utf8');
-  const ast=ts.createSourceFile('PetUI.ts',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
-  const klass=ast.statements.find(n=>ts.isClassDeclaration(n)&&n.name?.text==='PetUI');assert.ok(klass&&ts.isClassDeclaration(klass));
-  const methods=klass.members.filter(n=>ts.isMethodDeclaration(n)&&n.name.getText(ast)==='setDeveloperMode');assert.equal(methods.length,1);
-  const code=transformSync(`class Fixture{${methods[0].getText(ast)}}`,{loader:'ts',target:'es2022'}).code;
-  const button={attrs:{} as Record<string,string>,dataset:{} as Record<string,string>,setAttribute(k:string,v:string){this.attrs[k]=v;}};
-  const classes=new Set<string>(),old=globalThis.document;
-  Object.assign(globalThis,{document:{body:{classList:{toggle:(name:string,enabled:boolean)=>enabled?classes.add(name):classes.delete(name)}},getElementById:()=>button}});
-  try{const Ctor=new Function('uiText','uiHtml','uiMarkup','uiTemplate',code+'\nreturn Fixture').bind(null, uiText, uiHtml, uiMarkup, uiTemplate)();const f=new Ctor();f.setDeveloperMode(true);assert.ok(classes.has('developer-mode'));assert.equal(button.attrs['aria-pressed'],'true');f.setDeveloperMode(false);assert.equal(classes.has('developer-mode'),false);assert.equal(button.attrs['aria-pressed'],'false');}
-  finally{Object.assign(globalThis,{document:old});}
+// 2026-11-22 (I-190): drives the real class on the fake companion window instead of evaluating a slice of its source (the toolbar's buttons
+// moved to src/stage/companion-toolbar.ts).
+test('actual PetUI developer toggle controls the status visibility class', t => { // no-pet-ok: the existing class name
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  // no-pet-ok: the existing helper's and host calls' names
+  const dom = installPetWindow(t, { openControls: async () => {}, updatePetReply: async () => undefined, setPetWindowOperation: async () => undefined });
+  renderPet(dom.app as unknown as HTMLElement); // no-pet-ok: the existing function name
+  const ui = new PetUI({ edit() {}, feature() {}, send() {}, stop() {}, error: message => { throw Error(message); }, // no-pet-ok: the existing class name
+    popups: { 'screen-sharing-options': { isOpen: () => false, close() {} }, 'mood-companion': { isOpen: () => false, close() {} } } });
+  dom.beforeClose(() => ui.dispose());
+  const button = dom.byId('pet-developer-mode'); // no-pet-ok: an existing element id
+  ui.setDeveloperMode(true);
+  assert.ok(dom.document.body.classList.contains('developer-mode')); assert.equal(button.getAttribute('aria-pressed'), 'true');
+  ui.setDeveloperMode(false);
+  assert.equal(dom.document.body.classList.contains('developer-mode'), false); assert.equal(button.getAttribute('aria-pressed'), 'false');
 });
 
 test('pet window in ordinary mode shows no failure notice; the latest one appears once developer mode is on', () => {

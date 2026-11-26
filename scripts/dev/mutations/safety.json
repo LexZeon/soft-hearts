@@ -1,0 +1,1001 @@
+[
+ {
+  "id": "S1-ipc-source",
+  "part": "safety",
+  "file": "electron/wiring/ipc-wiring.ts",
+  "find": "!allowed ||\n      event.senderFrame !== event.sender.mainFrame ||",
+  "replace": "event.senderFrame !== event.sender.mainFrame ||",
+  "what": "窗口接口不查来源是不是我们的窗口",
+  "tests": [
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "S2-ipc-mainframe",
+  "part": "safety",
+  "file": "electron/wiring/ipc-wiring.ts",
+  "find": "      event.senderFrame !== event.sender.mainFrame ||\n      (controlOnly",
+  "replace": "      (controlOnly",
+  "what": "窗口接口不查来源是不是主框架",
+  "tests": [
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "S3-ipc-controlonly",
+  "part": "safety",
+  "file": "electron/wiring/ipc-wiring.ts",
+  "find": "(controlOnly && allowed !== guardControls())",
+  "replace": "(false)",
+  "what": "窗口接口的“只给控制窗口”不起作用",
+  "tests": [
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "S4-clipboard-check",
+  "part": "safety",
+  "file": "electron/wiring/shell-wiring.ts",
+  "find": "if (allowsClipboardWrite(permission, details.isMainFrame, !!webContents && windows().some((win) => win.webContents.id === webContents.id)))",
+  "replace": "if (permission === 'clipboard-sanitized-write')",
+  "what": "权限检查处理：剪贴板不问规则",
+  "tests": [
+   "tests/clipboard-permission.test.ts",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "S5-clipboard-request",
+  "part": "safety",
+  "file": "electron/wiring/shell-wiring.ts",
+  "find": "if (allowsClipboardWrite(permission, details.isMainFrame, windows().some((win) => win.webContents.id === webContents.id))) {",
+  "replace": "if (permission === 'clipboard-sanitized-write') {",
+  "what": "权限请求处理：剪贴板不问规则",
+  "tests": [
+   "tests/clipboard-permission.test.ts",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "Y5-select-directory-either",
+  "part": "safety",
+  "file": "electron/wiring/safety-wiring.ts",
+  "find": "        return directory;\n      });",
+  "replace": "        return directory;\n      }, false);",
+  "what": "桌宠窗口也能选 Claude 任务的工作目录",
+  "tests": [
+   "tests/wiring-golden.test.mjs",
+   "tests/app-identity.test.ts",
+   "tests/app-session.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/brain-gates.test.ts",
+   "tests/bundle-inputs.test.mjs",
+   "tests/camera-two-switches.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/clipboard-permission.test.ts",
+   "tests/companion-breath.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/companion-framing.test.ts",
+   "tests/desktop-entry-chain.test.ts",
+   "tests/i084-look-at-me.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/layer-check.test.mjs",
+   "tests/listen-late-window.test.ts",
+   "tests/look-stale-frame.test.ts",
+   "tests/media-input.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/model-physics-wiring.test.ts",
+   "tests/mood-gates.test.ts",
+   "tests/motion-track-coverage.test.ts",
+   "tests/motion-weights-ipc.test.ts",
+   "tests/music-settings-wiring.test.ts",
+   "tests/part-table.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/pet-always-on-top-host.test.ts",
+   "tests/pose-privacy.test.ts",
+   "tests/public-snapshot.test.mjs",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r20-proactive-offer-ui.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/reply-speech-native-receipt.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/senses-privacy-gates.test.ts",
+   "tests/size-check.test.mjs",
+   "tests/sleep-entry-ready.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/structure-inventory.test.mjs",
+   "tests/surprise-preview-wiring.test.ts",
+   "tests/test-affected.test.mjs",
+   "tests/test-command-wiring.test.ts",
+   "tests/test-parts.test.mjs",
+   "tests/text-invitation-archive.test.ts",
+   "tests/text-memorial-question-binding.test.ts",
+   "tests/ui-language-entry.test.ts",
+   "tests/unbound-read-aloud.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/user-profile-host-wiring.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/wiring-skeleton.test.ts"
+  ]
+ },
+ {
+  "id": "S6-bind-direct",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/characters.ts",
+  "find": "name: 'bind_current_model_to_character', title: title('bind_current_model_to_character'), tier: 'confirm',",
+  "replace": "name: 'bind_current_model_to_character', title: title('bind_current_model_to_character'), tier: 'reversible',",
+  "what": "内部通道：关联模型从“要用户原话”降成直接做",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S7-bundled-direct",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/stage.ts",
+  "find": "name: 'use_bundled_model', title: title('use_bundled_model'), tier: 'confirm',",
+  "replace": "name: 'use_bundled_model', title: title('use_bundled_model'), tier: 'reversible',",
+  "what": "内部通道：换回预装模型从“要用户原话”降成直接做",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S8-perception-tier",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/senses.ts",
+  "find": "tierFor: (input: { enabled: boolean }) => input.enabled ? 'confirm' : 'reversible',",
+  "replace": "tierFor: (input: { enabled: boolean }) => 'reversible',",
+  "what": "内部通道：打开感知不再要用户原话",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S9-setting-tier",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/settings.ts",
+  "find": "tierFor: (input: { spec: AgentSettingSpec; value: AgentSettingValue }) => settingNeedsConsent(input.spec, input.value, via) ? 'confirm' : input.spec.tier,",
+  "replace": "tierFor: (input: { spec: AgentSettingSpec; value: AgentSettingValue }) => input.spec.tier,",
+  "what": "内部通道：要同意的设置值（麦克风、付费语音、下载）不再要用户原话",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S10-read-tier",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/status.ts",
+  "find": "name: 'get_her_state', title: title('get_her_state'), tier: 'read',",
+  "replace": "name: 'get_her_state', title: title('get_her_state'), tier: 'reversible',",
+  "what": "内部通道：只读工具改成了“会改东西”的一档",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S11-delete-no-dialog",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/memory.ts",
+  "find": "name: 'delete_memories', title: title('delete_memories'), tier: 'confirm', interconnectOnly: true, alwaysConfirm: true,",
+  "replace": "name: 'delete_memories', title: title('delete_memories'), tier: 'confirm', interconnectOnly: true,",
+  "what": "内部通道：删除记忆带了原话就不弹窗",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S12-songs-no-dialog",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/memory.ts",
+  "find": "name: 'clear_song_memory', title: title('clear_song_memory'), tier: 'confirm', interconnectOnly: true, alwaysConfirm: true,",
+  "replace": "name: 'clear_song_memory', title: title('clear_song_memory'), tier: 'confirm', interconnectOnly: true,",
+  "what": "内部通道：清除她记得的歌带了原话就不弹窗",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S13-import-no-dialog",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/characters.ts",
+  "find": "name: 'import_character_card', title: title('import_character_card'), tier: 'confirm', touchesFiles: true, alwaysConfirm: true,",
+  "replace": "name: 'import_character_card', title: title('import_character_card'), tier: 'confirm', touchesFiles: true,",
+  "what": "内部通道：导入角色卡文件带了原话就不弹窗",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S14-perception-no-dialog",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/senses.ts",
+  "find": "alwaysConfirmFor: (input: { enabled: boolean }) => input.enabled,",
+  "replace": "alwaysConfirmFor: (input: { enabled: boolean }) => false,",
+  "what": "内部通道：打开摄像头、麦克风、屏幕带了原话就不弹窗",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S15-preview-no-dialog",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/voice.ts",
+  "find": "alwaysConfirmFor: (provider: PaidVoice) => provider !== 'system',",
+  "replace": "alwaysConfirmFor: (provider: PaidVoice) => false,",
+  "what": "内部通道：付费试听带了原话就不弹窗",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S16-setting-no-dialog",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/settings.ts",
+  "find": "alwaysConfirmFor: (input: { spec: AgentSettingSpec }) => settingAlwaysDialog(input.spec),",
+  "replace": "alwaysConfirmFor: (input: { spec: AgentSettingSpec }) => false,",
+  "what": "内部通道：敏感设置（付费语音、麦克风、下载）带了原话就不弹窗",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S17-always-list",
+  "part": "safety",
+  "file": "shared/safety/agent-channel.ts",
+  "find": "'delete_memories', 'clear_song_memory', 'set_perception', 'convert_character_language', 'delete_character',\n",
+  "replace": "'clear_song_memory', 'set_perception', 'convert_character_language', 'delete_character',\n",
+  "what": "目录里“总要弹窗”的清单漏了删除记忆",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S18-key-in-status",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/status.ts",
+  "find": "readAloud: settings.voice.enabled, volumePercent: Math.round(settings.voice.volume * 100) },",
+  "replace": "readAloud: settings.voice.enabled, volumePercent: Math.round(settings.voice.volume * 100), key: settings.tts?.apiKey ?? null },",
+  "what": "内部通道：读取状态时带出了百炼密钥字段",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S19-handbook-path",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/handbook.ts",
+  "find": "if (!isHandbookDocIdShape(args.doc)) throw new AgentToolError('invalid_input',",
+  "replace": "if (typeof args.doc !== 'string') throw new AgentToolError('invalid_input',",
+  "what": "内部通道：手册接受文件名或路径",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S20-model-stat-early",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/stage.ts",
+  "find": "name: 'load_model', title: title('load_model'), tier: 'confirm', touchesFiles: true, alwaysConfirm: true,",
+  "replace": "name: 'load_model', title: title('load_model'), tier: 'confirm', alwaysConfirm: true,",
+  "what": "内部通道：没有原话时也先去看模型文件（大小、时间）",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S21-never-list",
+  "part": "safety",
+  "file": "shared/safety/agent-channel-catalog.json",
+  "find": "    \"运行命令、脚本或任务执行（R20）\",\n",
+  "replace": "",
+  "what": "目录的“永远不开放”里少了运行命令",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S22-catalog-words",
+  "part": "safety",
+  "file": "shared/safety/agent-channel-catalog.json",
+  "find": "只在用户本人明确要求删除时调用；",
+  "replace": "",
+  "what": "给用户的 Claude 看的删除记忆说明少了“只在用户本人明确要求时调用”",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S23-delete-off",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/memory.ts",
+  "find": "name: 'delete_memories', title: title('delete_memories'), tier: 'confirm', interconnectOnly: true, alwaysConfirm: true,",
+  "replace": "name: 'delete_memories', title: title('delete_memories'), tier: 'confirm', alwaysConfirm: true,",
+  "what": "内部通道：三方互通关着时也开放删除记忆",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S24-recycle-off",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/memory.ts",
+  "find": "name: 'list_recycle_bin', title: title('list_recycle_bin'), tier: 'read', interconnectOnly: true,",
+  "replace": "name: 'list_recycle_bin', title: title('list_recycle_bin'), tier: 'read',",
+  "what": "内部通道：三方互通关着时也能看回收站",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S25-words-empty-sensitive",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/registry.ts",
+  "find": "    if (sensitive && !userWords) return finish('denied', failure('needs_user_words', AGENT_USER_WORDS_MISSING));\n",
+  "replace": "",
+  "what": "内部通道：敏感操作没带原话也弹窗（原话是空的）",
+  "tests": [
+   "tests/agent-channel-gates.test.ts",
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S26-words-empty-direct",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/registry.ts",
+  "find": "      if (!userWords) return finish('denied', failure('needs_user_words', AGENT_USER_WORDS_MISSING));\n      approval = 'user-words';",
+  "replace": "      approval = 'user-words';",
+  "what": "内部通道：要原话的操作没带原话也直接做",
+  "tests": [
+   "tests/agent-channel-gates.test.ts",
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S27-words-blank",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/registry.ts",
+  "find": "return { args: rest, words: plainUserWords(userWords) ? userWords.trim() : '' };",
+  "replace": "return { args: rest, words: userWords };",
+  "what": "内部通道：只有空格的原话也算原话",
+  "tests": [
+   "tests/agent-channel-gates.test.ts",
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S28-words-length",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/registry.ts",
+  "find": "  if ([...userWords].length > AGENT_USER_WORDS_LIMIT) throw new AgentToolError('invalid_input', `userWords 太长了（最多 ${AGENT_USER_WORDS_LIMIT} 字），只填用户说的那一句。`);\n",
+  "replace": "",
+  "what": "内部通道：原话不查长度",
+  "tests": [
+   "tests/agent-channel-gates.test.ts",
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S29-dialog-words-length",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/registry.ts",
+  "find": "    if (sensitive && [...plainUserWords(userWords)].length > AGENT_DIALOG_WORDS_LIMIT) return finish('denied', failure('invalid_input', AGENT_SENSITIVE_WORDS_TOO_LONG));\n",
+  "replace": "",
+  "what": "内部通道：弹窗里的原话不查长度（太长会被截掉）",
+  "tests": [
+   "tests/agent-channel-gates.test.ts",
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S30-file-before-words",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/registry.ts",
+  "find": "      if (definition.touchesFiles === true && definition.tier === 'confirm' && !userWords && this.interconnected && this.options.alwaysConfirm !== true)\n        return finish('denied', failure('needs_user_words', AGENT_USER_WORDS_MISSING));\n",
+  "replace": "",
+  "what": "内部通道：没有原话时也先去看文件",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S31-readaloud-no-undo",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/voice.ts",
+  "find": "if (readAloud !== previous) context.offerUndo({ label: previous ? '重新打开朗读' : '关掉朗读',",
+  "replace": "if (false) context.offerUndo({ label: previous ? '重新打开朗读' : '关掉朗读',",
+  "what": "内部通道：改朗读没有记下撤回",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S32-delete-no-undo",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/memory.ts",
+  "find": "if (outcome.entries.length) context.offerUndo({ label: `把「${target.name}」删掉的记忆放回去`",
+  "replace": "if (false) context.offerUndo({ label: `把「${target.name}」删掉的记忆放回去`",
+  "what": "内部通道：删除记忆没有记下撤回",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S33-model-no-undo",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/stage.ts",
+  "find": "        const now = bridge.settings().model;\n        if (previous && now && previous.path !== now.path) context.offerUndo({ label: `换回模型「${previous.name}」`, run: async guard => {\n          if (bridge.settings().model?.path !== now.path) throw unavailable('模型之后又换过了，没有撤回。');\n          await bridge.loadModel(previous.path, guard);\n        } });\n        return { model: { name: loaded.name },",
+  "replace": "        const now = bridge.settings().model;\n        return { model: { name: loaded.name },",
+  "what": "内部通道：载入模型没有记下撤回",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S34-sense-undo-reopens",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/senses.ts",
+  "find": "if (after !== before && !before) context.offerUndo({ label: `关掉${PERCEPTION_LABELS[input.kind]}`",
+  "replace": "if (after !== before) context.offerUndo({ label: `关掉${PERCEPTION_LABELS[input.kind]}`",
+  "what": "内部通道：撤回会重新打开感知（要原话的事）",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S35-setting-undo-consent",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/settings.ts",
+  "find": "if (previous !== null && value !== previous && !settingValueNeedsConsent(spec, previous) && !(spec.id === 'unbound_default_place' && previous === 'default')) context.offerUndo(",
+  "replace": "if (previous !== null && value !== previous && !(spec.id === 'unbound_default_place' && previous === 'default')) context.offerUndo(",
+  "what": "内部通道：撤回会把设置改回要同意的值（麦克风、付费语音）",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S36-status-writes",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/status.ts",
+  "find": "const provider = paidVoice(settings);\n        return {\n          app: 'soft hearts',",
+  "replace": "const provider = paidVoice(settings);\n        void bridge.setPetVisible(true, () => {});\n        return {\n          app: 'soft hearts',",
+  "what": "内部通道：读取状态时顺手改了桌宠显示",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S37-settings-writes",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/settings.ts",
+  "find": "const more = extras();\n        return {\n          settings: settingViews(",
+  "replace": "const more = extras();\n        void bridge.saveSettings(bridge.settings(), () => {});\n        return {\n          settings: settingViews(",
+  "what": "内部通道：列设置时顺手保存了一次设置",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S38-twice",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/stage.ts",
+  "find": "name: 'recover_pet', title: title('recover_pet')",
+  "replace": "name: 'show_pet', title: title('recover_pet')",
+  "what": "内部通道：同一个名字登记了两次",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "S39-renamed",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/stage.ts",
+  "find": "name: 'show_pet', title: title('show_pet')",
+  "replace": "name: 'show_pet_window', title: title('show_pet')",
+  "what": "内部通道：工具换了名字（用户的 Claude 找不到）",
+  "tests": [
+   "tests/app-tools-golden.test.ts",
+   "tests/agent-channel-registry.test.ts",
+   "tests/assistant.test.ts",
+   "tests/capability-registry.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/t239-channel-fixes.test.ts",
+   "tests/three-way-interconnect.test.ts"
+  ]
+ },
+ {
+  "id": "VRM-S1-model-list-glb",
+  "part": "safety",
+  "file": "shared/foundation/model-format.ts",
+  "find": "Object.freeze(['.pmx', '.pmd', '.vrm'])",
+  "replace": "Object.freeze(['.pmx', '.pmd', '.vrm', '.glb'])",
+  "what": "收模型文件的地方（内部通道 load_model、资源地址白名单、模型身份、文件选择）多认了 .glb",
+  "tests": [
+   "tests/vrm-native-safety.test.ts"
+  ]
+ },
+ {
+  "id": "VRM-S2-load-model-no-dialog",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/stage.ts",
+  "find": "name: 'load_model', title: title('load_model'), tier: 'confirm', touchesFiles: true, alwaysConfirm: true,",
+  "replace": "name: 'load_model', title: title('load_model'), tier: 'confirm', touchesFiles: true,",
+  "what": "内部通道：有原话时载入模型（含 .vrm）不再弹窗由用户点",
+  "tests": [
+   "tests/vrm-native-safety.test.ts",
+   "tests/sensitive-always-dialog.test.ts"
+  ]
+ },
+ {
+  "id": "I173-1-delete-dialog",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/characters.ts",
+  "find": "name: 'delete_character', title: title('delete_character'), tier: 'confirm', interconnectOnly: true, alwaysConfirm: true,",
+  "replace": "name: 'delete_character', title: title('delete_character'), tier: 'confirm', interconnectOnly: true,",
+  "what": "删除角色卡带了用户原话就不弹窗（删除没有由用户点的弹窗）",
+  "tests": [
+   "tests/i173-channel-voice-delete.test.ts",
+   "tests/app-tools-golden.test.ts",
+   "tests/sensitive-always-dialog.test.ts"
+  ]
+ },
+ {
+  "id": "I173-2-delete-tier",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/characters.ts",
+  "find": "name: 'delete_character', title: title('delete_character'), tier: 'confirm',",
+  "replace": "name: 'delete_character', title: title('delete_character'), tier: 'reversible',",
+  "what": "删除角色卡不要用户原话（档降成直接执行）",
+  "tests": [
+   "tests/i173-channel-voice-delete.test.ts",
+   "tests/app-tools-golden.test.ts"
+  ]
+ },
+ {
+  "id": "I173-3-delete-active",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/characters.ts",
+  "find": "  if (state.activeId === target.id) throw unavailable(",
+  "replace": "  if (false) throw unavailable(",
+  "what": "能删掉正在陪着用户的角色（不先换走）",
+  "tests": [
+   "tests/i173-channel-voice-delete.test.ts",
+   "tests/app-tools-golden.test.ts"
+  ]
+ },
+ {
+  "id": "I173-4-delete-recheck",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/characters.ts",
+  "find": "        refuseDeleting(bridge.characters(), target); // the active card or the card count may have changed while the dialog was open\n",
+  "replace": "",
+  "what": "弹窗开着时她变成了当前角色，点允许后照样删",
+  "tests": [
+   "tests/i173-channel-voice-delete.test.ts",
+   "tests/app-tools-golden.test.ts"
+  ]
+ },
+ {
+  "id": "I173-5-file-voice",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/characters.ts",
+  "find": "const takeVoice = request.useFileVoice === true && request.plan.summary.voice === 'replaced';",
+  "replace": "const takeVoice = request.plan.summary.voice !== undefined;",
+  "what": "用角色卡文件更新时，用户没要求也换成文件里的声音",
+  "tests": [
+   "tests/i173-channel-voice-delete.test.ts",
+   "tests/app-tools-golden.test.ts"
+  ]
+ },
+ {
+  "id": "I173-6-file-voice-dialog",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/characters.ts",
+  "find": "        if (request.useFileVoice && plan.summary.voice === 'offered') plan = { ...plan, summary: { ...plan.summary, voice: 'replaced' } };\n",
+  "replace": "",
+  "what": "换文件里的声音时，第二个弹窗不写明（写的还是“保留她现在的”），用户点的不是真要做的",
+  "tests": [
+   "tests/i173-channel-voice-delete.test.ts",
+   "tests/app-tools-golden.test.ts"
+  ]
+ },
+ {
+  "id": "I173-7-own-voice-provider",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/voice.ts",
+  "find": "return voice?.provider === 'fish' ? structuredClone(voice) : null;",
+  "replace": "return voice ? structuredClone(voice) : null;",
+  "what": "她自己的声音不是 Drama 3 时，set_voice_style 也改她的声音（替用户换了服务商的声音）",
+  "tests": [
+   "tests/i173-channel-voice-delete.test.ts",
+   "tests/app-tools-golden.test.ts"
+  ]
+ },
+ {
+  "id": "I173-8-item-page-mismatch",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/control-page.ts",
+  "find": "    if (page !== undefined && page !== place.destination) throw",
+  "replace": "    if (false) throw",
+  "what": "open_control_page 的 item 和 page 对不上也照开（带去的不是那一项）",
+  "tests": [
+   "tests/app-tools-golden.test.ts"
+  ]
+ },
+ {
+  "id": "I173-9-character-only-delete",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/control-page.ts",
+  "find": "    if (!CARD_PAGES.includes(page!)) throw",
+  "replace": "    if (false) throw",
+  "what": "open_control_page 在别的页也接受角色卡 id",
+  "tests": [
+   "tests/app-tools-golden.test.ts"
+  ]
+ },
+ {
+  "id": "CVS-1-limit-no-dialog",
+  "part": "safety",
+  "file": "shared/safety/agent-channel.ts",
+  "find": "  return spec.tier === 'confirm' || !!spec.confirmWhen?.length;",
+  "replace": "  return !!spec.confirmWhen?.length;",
+  "what": "Drama 3 每月上限通过内部通道改时不弹窗（只要原话）",
+  "tests": [
+   "tests/channel-voice-spend.test.ts",
+   "tests/sensitive-always-dialog.test.ts",
+   "tests/app-tools-golden.test.ts"
+  ]
+ },
+ {
+  "id": "CVS-2-limit-no-words",
+  "part": "safety",
+  "file": "shared/safety/agent-channel.ts",
+  "find": "  return spec.tier === 'confirm' || !!spec.confirmWhen?.some(item => item === value);",
+  "replace": "  return !!spec.confirmWhen?.some(item => item === value);",
+  "what": "Drama 3 每月上限通过内部通道直接改（不要原话，不弹窗）",
+  "tests": [
+   "tests/channel-voice-spend.test.ts",
+   "tests/app-tools-golden.test.ts"
+  ]
+ },
+ {
+  "id": "CVS-3-key-address-args",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/voice.ts",
+  "find": "  const args = argsObject(raw, ['id', 'provider', 'voiceId']);",
+  "replace": "  const args = argsObject(raw, ['id', 'provider', 'voiceId', 'apiKey', 'fishApiKey', 'apiHost', 'region']);",
+  "what": "set_character_voice 接受密钥和连接地址参数（密钥、地址变得能经内部通道传进来）",
+  "tests": [
+   "tests/channel-voice-spend.test.ts",
+   "tests/app-tools-golden.test.ts"
+  ]
+ },
+ {
+  "id": "CVS-4-fish-page-operation",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/bridge.ts",
+  "find": "  'getTtsBudget',\n]);",
+  "replace": "  'getTtsBudget', 'openFishApiKeys',\n]);",
+  "what": "内部通道能调用打开 Fish Audio 密钥页的主机操作",
+  "tests": [
+   "tests/channel-voice-spend.test.ts"
+  ]
+ },
+ {
+  "id": "CVS-5-paid-voice-no-words",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/voice.ts",
+  "find": "      tierFor: (request: CharacterVoiceRequest) => characterVoiceSpends(request) ? 'confirm' : 'reversible',",
+  "replace": "      tierFor: (request: CharacterVoiceRequest) => 'reversible',",
+  "what": "不带用户原话也能给角色换成百炼或 Drama 3（付费声音）",
+  "tests": [
+   "tests/channel-voice-spend.test.ts",
+   "tests/app-tools-golden.test.ts"
+  ]
+ },
+ {
+  "id": "CVS-6-paid-voice-no-dialog",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/voice.ts",
+  "find": "      alwaysConfirmFor: (request: CharacterVoiceRequest) => characterVoiceSpends(request),",
+  "replace": "      alwaysConfirmFor: (request: CharacterVoiceRequest) => false,",
+  "what": "给角色换付费声音只要原话、不弹窗",
+  "tests": [
+   "tests/channel-voice-spend.test.ts",
+   "tests/app-tools-golden.test.ts"
+  ]
+ },
+ {
+  "id": "CVS-7-paid-voice-undo",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/voice.ts",
+  "find": "        if (request.changed && !isPaidProvider(request.previousProvider)) context.offerUndo({",
+  "replace": "        if (request.changed) context.offerUndo({",
+  "what": "撤回会把角色的声音改回付费声音（不要原话就回到花钱的选择）",
+  "tests": [
+   "tests/channel-voice-spend.test.ts",
+   "tests/app-tools-golden.test.ts"
+  ]
+ },
+ {
+  "id": "CVS-8-unchanged-writes",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/tools/voice.ts",
+  "find": "        if (request.changed) await bridge.saveCharacterVoice!(",
+  "replace": "        await bridge.saveCharacterVoice!(",
+  "what": "没有变化（因此没问原话）的 set_character_voice 也写了角色卡",
+  "tests": [
+   "tests/channel-voice-spend.test.ts",
+   "tests/app-tools-golden.test.ts"
+  ]
+ },
+ {
+  "id": "PEER-5-task-settings",
+  "part": "safety",
+  "file": "electron/safety/claude-tasks/process.ts",
+  "find": "    ...claudeSettingsArguments(taskSettings()),\n",
+  "replace": "    '--settings', JSON.stringify(taskSettings()),\n",
+  "what": "任务进程的 --settings 绕过共用设置，不再拒收别的 Claude 会话发来的消息",
+  "tests": [
+   "tests/claude-peer-refuse.test.ts",
+   "tests/claude-tasks-policy.test.ts"
+  ]
+ },
+ {
+  "id": "S20-manual-list-ignored",
+  "part": "safety",
+  "file": "shared/safety/handbook-docs.ts",
+  "find": "  if (!kind || !/^[A-Za-z0-9][A-Za-z0-9._/-]*\\.md$/.test(file)",
+  "replace": "  if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*\\.md$/.test(file)",
+  "what": "手册不再只认名单上的页（开发手册、没写给用户的页也能被读到）",
+  "tests": [
+   "tests/assistant-handbook.test.ts",
+   "tests/user-manuals.test.ts"
+  ]
+ },
+ {
+  "id": "S21-handbook-bundled",
+  "part": "safety",
+  "file": "package.json",
+  "find": "\"release-notes/v0.2.0.md\"] }",
+  "replace": "\"release-notes/v0.2.0.md\"] },\n      { \"from\": \"handbook\", \"to\": \"assistant-docs/handbook\", \"filter\": [\"*.md\"] }",
+  "what": "软件包又把整个开发手册（含想法页里的用户原话）打进 assistant-docs",
+  "tests": [
+   "tests/user-manuals.test.ts",
+   "tests/assistant-handbook.test.ts"
+  ]
+ },
+ {
+  "id": "RM2-diagnostics-model-unchecked",
+  "part": "safety",
+  "file": "electron/safety/agent-channel/bridge.ts",
+  "find": "chatModel = reportedModelId(wiring.chatModel?.());",
+  "replace": "chatModel = (wiring.chatModel?.() ?? null) as string | null;",
+  "what": "内部通道的诊断把大脑报的模型原样给出去，不过“短、只含模型名字符”的检查",
+  "tests": [
+   "tests/reported-model-diagnostics.test.ts"
+  ]
+ }
+]

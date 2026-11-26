@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { composeSpeechConfig, ReplySpeechStyles } from '../electron/speech-emotion';
-import { TtsError } from '../electron/tts';
-import { DEFAULT_TTS_CONFIG } from '../shared/tts';
-import type { FatiguePhase } from '../shared/fatigue';
+import { composeSpeechConfig, ReplySpeechStyles } from '../electron/mood/speech-emotion';
+import { TtsError } from '../electron/voice/tts';
+import { DEFAULT_TTS_CONFIG } from '../shared/voice/tts';
+import type { FatiguePhase } from '../shared/mood/fatigue';
 
 const config = () => ({ ...DEFAULT_TTS_CONFIG, instruction: '保持轻缓。', emotion: 'custom' as const });
 const mood = () => ({ context: 'neutral' as const, primary: 'calm' as const });

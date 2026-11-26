@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
-import { ClaudeFailureError } from '../electron/claude';
+import { ClaudeFailureError } from '../electron/brain/claude';
 import { buildJudgePrompt, claudeJudge, JUDGE_MODEL, JUDGE_SYSTEM_PROMPT, parseJudgeOutput, type JudgeRunner } from '../scripts/lib/fidelity-judge';
 import { FIDELITY_CARDS, FIDELITY_SCENARIOS, PASS_SCORE, fidelityCalls, scenarioById, toEvalScenarios, type FidelityScenario } from '../scripts/lib/fidelity-scenarios';
 import { CallBudget, overall, runFidelity, verdictFor, type CaseResult } from '../scripts/lib/fidelity-run';
@@ -10,7 +10,7 @@ import { mannWhitneyP, median, quantile } from '../scripts/lib/fidelity-stats';
 import { checkHardRules } from '../scripts/lib/fidelity-rules';
 import { RUN_CAP, rescored } from '../scripts/lib/fidelity-cli';
 import { runAb } from '../scripts/lib/fidelity-ab';
-import { claudeSessionSystemPrompt } from '../electron/claude-session-prompt';
+import { claudeSessionSystemPrompt } from '../electron/brain/claude-session-prompt';
 import type { TurnRecord } from '../scripts/lib/prompt-eval-analysis';
 
 // The "像不像她" fidelity suite, offline: a fake Claude Code answers both the chat and the scoring requests.

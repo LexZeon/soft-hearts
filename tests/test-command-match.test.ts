@@ -4,9 +4,9 @@
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { asksTestCommand, normalizeTestText, parseTestCommand, TEST_COMMAND_MAX_BODY } from '../shared/test-command';
-import { matchTestEntry, testHelpLines } from '../electron/test-commands/match';
-import { buildTestEntries } from '../electron/test-commands/entries';
+import { asksTestCommand, normalizeTestText, parseTestCommand, TEST_COMMAND_MAX_BODY } from '../shared/safety/test-command';
+import { matchTestEntry, testHelpLines } from '../electron/safety/test-commands/match';
+import { buildTestEntries } from '../electron/safety/test-commands/entries';
 import { fakeTestDeps } from './helpers/test-command-fixtures';
 
 const { entries } = buildTestEntries(fakeTestDeps().deps);
@@ -133,14 +133,14 @@ test('the first batch is exactly these features, and nothing that deletes, sends
     'F3.new', 'F3.warming', 'F3.familiar', 'F3.close', 'F3.old', 'F3.reset', 'F2.tired', 'F2.annoyed', 'F2.low', 'F2.happy', 'F2.excited', 'F2.clear',
     'MOOD.calm', 'MOOD.content', 'MOOD.close', 'MOOD.happy', 'MOOD.excited', 'MOOD.concerned', 'MOOD.disappointed', 'MOOD.upset', 'MOOD.longing',
     'MOOD.sad', 'MOOD.relieved', 'MOOD.tense', 'MOOD.drowsy', 'MOOD.sleepy', 'MOOD.asleep', 'MOOD.reset',
-    'L4.lonely', 'L4.dream', 'L4.lowEnergy', 'L4.chatty', 'M1.rejudge', 'E1.surprise', 'E1.shy', 'G1.invite', 'G1.start', 'L3.diary',
-    'P1.yawn', 'P1.stretch', 'P1.wave', 'P1.sat', 'P1.arrive', 'I006.busy', 'I006.pause', 'I006.video', 'I006.game', 'I006.clear',
+    'L4.lonely', 'L4.dream', 'L4.lowEnergy', 'L4.chatty', 'M1.rejudge', 'E1.surprise', 'E1.shy', 'G1.invite', 'G1.start', 'L3.diary', 'P001.add', 'P001.due', 'I059.birthday', 'I059.anniversary',
+    'P1.yawn', 'P1.stretch', 'P1.wave', 'P1.sat', 'P1.arrive', 'I006.busy', 'I006.pause', 'I006.video', 'I006.game', 'I066.away', 'I066.back', 'I066.meeting', 'I006.clear',
     'ACT.hello', 'ACT.goodbye', 'ACT.nod', 'ACT.shake', 'ACT.tilt', 'ACT.lean', 'ACT.coverFace', 'ACT.hideLaugh', 'ACT.openArms', 'ACT.hug', 'ACT.clap',
     'ACT.cheer', 'ACT.bow', 'ACT.apology', 'ACT.heart', 'ACT.point', 'ACT.akimbo', 'ACT.yawnCover', 'ACT.eat',
     'ACT.cheekPuff', 'ACT.pout', 'ACT.wink', 'ACT.tongue',
   ]);
   const features = new Set(entries.map(entry => entry.id.split('.')[0]));
-  assert.deepEqual([...features].sort(), ['ACT', 'E1', 'F2', 'F3', 'G1', 'I006', 'L1', 'L2', 'L3', 'L4', 'M1', 'MOOD', 'P1']);
+  assert.deepEqual([...features].sort(), ['ACT', 'E1', 'F2', 'F3', 'G1', 'I006', 'I059', 'I066', 'L1', 'L2', 'L3', 'L4', 'M1', 'MOOD', 'P001', 'P1']);
   // L4 (她也会需要你) came onto main while this was being made: one entry per small need.
   assert.equal(features.has('L4'), true);
   const text = entries.flatMap(entry => [entry.id, entry.name, entry.summary, ...entry.aliases]).join('\n');

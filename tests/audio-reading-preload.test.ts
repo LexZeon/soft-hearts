@@ -3,16 +3,17 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { EventEmitter } from 'node:events';
 import ts from 'typescript';
+import { desktopApiSource } from './helpers/desktop-api-source';
 
 const names = [
   'getAudioReadingView', 'setAudioReadingIntent', 'onAudioReadingView', 'getAudioCaptureState',
   'onAudioCaptureState', 'ackAudioCapture', 'submitAudioReadingPcm', 'setAudioDanceIntent',
   'setAudioDanceSourceIntent', 'submitAudioDanceSample', 'onAudioDanceSample',
 ] as const;
-const preloadText = readFileSync(new URL('../electron/preload.ts', import.meta.url), 'utf8');
-const contractText = readFileSync(new URL('../shared/contracts.ts', import.meta.url), 'utf8');
+const preloadText = readFileSync(new URL('../electron/safety/preload.ts', import.meta.url), 'utf8');
+const contractText = desktopApiSource(); // DesktopAPI across its per-part slices (shared/contracts.ts extends shared/<part>/desktop-api.ts)
 const parse = (name: string, text: string) => ts.createSourceFile(name, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-const preload = parse('electron/preload.ts', preloadText), contracts = parse('shared/contracts.ts', contractText);
+const preload = parse('electron/safety/preload.ts', preloadText), contracts = parse('shared/contracts.ts', contractText);
 function variable(name: string): ts.VariableStatement {
   const found = preload.statements.filter((node): node is ts.VariableStatement => ts.isVariableStatement(node)
     && node.declarationList.declarations.some(value => ts.isIdentifier(value.name) && value.name.text === name));

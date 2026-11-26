@@ -1,16 +1,16 @@
 import assert from 'node:assert/strict';
 import test, { type TestContext } from 'node:test';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { DEFAULT_TTS_CONFIG, type ApprovedReplySpeechSegment } from '../shared/tts';
-import type { MoodContext, MoodLabel } from '../shared/mood';
-import type { FatiguePhase } from '../shared/fatigue';
-import { DEFAULT_MOOD_VOICE_INFLUENCE, SPEECH_TONE_RANGE, speechToneFor, systemVoiceScale, validSpeechTone, type SpeechTone } from '../shared/speech-mood-tone';
-import { validateSpeechDiagnosticRecord, type SpeechDiagnosticRecord } from '../shared/speech-diagnostics';
-import { ReplySpeechStyles, freezeTurnSpeechStyle } from '../electron/speech-emotion';
-import { validateSettings } from '../electron/validation';
-import { VoiceOutput } from '../src/ui/VoiceOutput';
-import { SpeechOutput } from '../src/ui/speech';
-import { CompletedReplySpeechQueue } from '../src/ui/completed-reply-speech-queue';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { DEFAULT_TTS_CONFIG, type ApprovedReplySpeechSegment } from '../shared/voice/tts';
+import type { MoodContext, MoodLabel } from '../shared/foundation/mood';
+import type { FatiguePhase } from '../shared/mood/fatigue';
+import { DEFAULT_MOOD_VOICE_INFLUENCE, SPEECH_TONE_RANGE, speechToneFor, systemVoiceScale, validSpeechTone, type SpeechTone } from '../shared/voice/speech-mood-tone';
+import { validateSpeechDiagnosticRecord, type SpeechDiagnosticRecord } from '../shared/voice/speech-diagnostics';
+import { ReplySpeechStyles, freezeTurnSpeechStyle } from '../electron/mood/speech-emotion';
+import { validateSettings } from '../electron/settings/validation';
+import { VoiceOutput } from '../src/voice/VoiceOutput';
+import { SpeechOutput } from '../src/voice/speech';
+import { CompletedReplySpeechQueue } from '../src/voice/completed-reply-speech-queue';
 import { flush } from './helpers/r02-audio-world';
 import { pausableEngine } from './helpers/feed-pause-audio';
 

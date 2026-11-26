@@ -4,11 +4,11 @@ import { createHash, randomUUID } from 'node:crypto';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import { CharacterCardStore } from '../electron/character-cards';
-import { atomicWriteFile, type AtomicFileWriter } from '../electron/atomic-file';
-import { GENE_PRESET_FILE, GENE_PRESET_KEY, GENE_PRESET_DEFINITION_SHA256, inspectGeneProfile, preinstalledGeneDraft } from '../electron/gene-preinstalled-card';
-import { BUNDLED_CHARACTER_MODEL, MAX_CHARACTER_CARDS, defaultCharacterMoodTemplate } from '../shared/character-cards';
-import { DEFAULT_MOOD_PARAMETERS, createMoodState } from '../shared/mood';
+import { CharacterCardStore } from '../electron/cards/character-cards';
+import { atomicWriteFile, type AtomicFileWriter } from '../electron/foundation/atomic-file';
+import { GENE_PRESET_FILE, GENE_PRESET_KEY, GENE_PRESET_DEFINITION_SHA256, inspectGeneProfile, preinstalledGeneDraft } from '../electron/cards/gene-preinstalled-card';
+import { BUNDLED_CHARACTER_MODEL, MAX_CHARACTER_CARDS, defaultCharacterMoodTemplate } from '../shared/cards/character-cards';
+import { DEFAULT_MOOD_PARAMETERS, createMoodState } from '../shared/foundation/mood';
 
 async function fixture(run: (directory: string) => Promise<void>): Promise<void> {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'soft-gene-preset-'));
@@ -43,15 +43,17 @@ test('truly fresh profile directly starts with the complete Gene preset and host
   const { cards, state, profile } = await open(directory);
   assert.equal(profile.fresh, true); assert.equal(state.cards.length, 1);
   assert.equal(state.cards[0].name, 'Gene'); assert.equal(state.activeId, state.cards[0].id);
-  assert.deepEqual(state.cards[0].mood?.parameters, DEFAULT_MOOD_PARAMETERS);
+  // I-172: Gene carries her own brighter mood block now (the neutral reference is DEFAULT_MOOD_PARAMETERS; tests/gene-v2-card.test.ts pins the values).
+  assert.deepEqual(state.cards[0].mood?.parameters, preinstalledGeneDraft().mood!.parameters);
+  assert.notDeepEqual(state.cards[0].mood?.parameters, DEFAULT_MOOD_PARAMETERS);
   assert.equal(cards.getActive().modelPath, BUNDLED_CHARACTER_MODEL);
   assert.equal((await readLedger(directory)).status, 'installed');
   assert.equal((await readLedger(directory)).cardId, state.activeId);
   const exported = JSON.parse(cards.export(state.activeId));
-  assert.equal(exported.version, 2); assert.deepEqual(Object.keys(exported.card).sort(), Object.keys(preinstalledGeneDraft()).sort());
+  assert.equal(exported.version, 2); assert.deepEqual(Object.keys(exported.card).sort(), [...Object.keys(preinstalledGeneDraft()), 'slowWarmUp'].sort());
   for (const key of ['id','modelPath','modelName','presetKey','values','boredom','longing','history']) assert.equal(Object.hasOwn(exported.card, key), false);
   const initial = createMoodState(1000, exported.card.mood.parameters);
-  assert.deepEqual(initial.values, DEFAULT_MOOD_PARAMETERS.baseline); assert.equal(initial.boredom, 0); assert.equal(initial.longing, 0);
+  assert.deepEqual(initial.values, preinstalledGeneDraft().mood!.parameters.baseline); assert.equal(initial.boredom, 0); assert.equal(initial.longing, 0);
 }));
 
 test('existing same-name private card, active identity, exact original fields and unrelated state stay untouched', async () => fixture(async directory => {

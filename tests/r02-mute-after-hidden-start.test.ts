@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import test, { type TestContext } from 'node:test';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { DEFAULT_TTS_CONFIG, type TtsConfig, type TtsStreamEvent } from '../shared/tts';
-import type { SpeechDiagnosticRecord } from '../shared/speech-diagnostics';
-import { StreamingVoicePlayer } from '../src/ui/EmotionalVoice';
-import { VoiceOutput, type VoiceOutputEvent } from '../src/ui/VoiceOutput';
-import { AUDIO_OUTPUT_START_TIMEOUT_MS, SharedAudioOutput } from '../src/ui/audio-output';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { DEFAULT_TTS_CONFIG, type TtsConfig, type TtsStreamEvent } from '../shared/voice/tts';
+import type { SpeechDiagnosticRecord } from '../shared/voice/speech-diagnostics';
+import { StreamingVoicePlayer } from '../src/voice/EmotionalVoice';
+import { VoiceOutput, type VoiceOutputEvent } from '../src/voice/VoiceOutput';
+import { AUDIO_OUTPUT_START_TIMEOUT_MS, SharedAudioOutput } from '../src/voice/audio-output';
 import { flush, pcm, world } from './helpers/r02-audio-world';
 
 /*
- * 2026-11-04 (stable a9ad29f): "她不会朗读……嘴也没有动". Started with the pet window hidden,
+ * 2026-11-04 (stable a9ad29f): she did not read aloud and her mouth did not move. Started with the companion window hidden,
  * her first reply's PCM arrived in 911 ms but the output device never ran: no device mark, no
  * scheduled sample, cancelled after 84 s, and no later reply left a record at all. A device start
  * (AudioContext.resume) that never settles used to be shared by every later playback forever.
@@ -142,7 +142,7 @@ test('mute bug: a device start that never settles no longer keeps this and every
 test('mute bug: a start begun while the window was hidden is asked again when it is shown, for the reply that waits on it', LIMIT, async t => {
   const h = harness(t, { hidden: true });
   h.stickWhileHidden();
-  h.output.prewarm(); // the device is asked for while the pet window is hidden
+  h.output.prewarm(); // the device is asked for while the companion window is hidden
   await h.w.advance(3000);
   assert.equal(h.listening, 1, 'a waiting start watches the window visibility');
   h.show();

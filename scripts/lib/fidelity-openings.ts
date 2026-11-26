@@ -3,7 +3,7 @@
 //   - how many replies contain one of the card's example lines word for word (a line of at least 8 characters)
 // Pure functions over recorded reply text and the card's persona; no requests.
 
-import { EXAMPLES_HEADING, OPENING_VARIETY_RULE } from '../../shared/character-cards';
+import { EXAMPLES_HEADING, OPENING_VARIETY_RULE } from '../../shared/cards/character-cards';
 
 /** A card's persona as it was compiled before this change (the "before" side of a measurement): plain 对话示例 heading, no variety rule. */
 export function legacyPersona(persona: string): string {

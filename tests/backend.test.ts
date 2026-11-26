@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { mkdtemp, readFile, rm, writeFile, mkdir } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { AssetRegistry } from "../electron/assets";
-import { DEFAULT_SETTINGS } from "../shared/defaults";
+import { AssetRegistry } from "../electron/foundation/assets";
+import { DEFAULT_SETTINGS } from "../shared/foundation/defaults";
 import {
   validateAgentModel,
   validateChatRequest,
@@ -12,20 +12,20 @@ import {
   validateServiceBaseUrl,
   validateSettings,
   validateVoiceInput,
-} from "../electron/validation";
+} from "../electron/settings/validation";
 import {
   KEY_SENTINEL,
   publicSettings,
   resolveVoiceInputKey,
   SettingsStore,
-} from "../electron/settings";
-import { memoryProviderScope } from "../electron/companion";
-import type { AppSettings } from "../shared/contracts";
+} from "../electron/settings/settings";
+import { memoryProviderScope } from "../electron/brain/companion";
+import type { AppSettings } from "../shared/foundation/settings";
 import {
   codexArguments,
   codexEnvironment,
   chatCatalog,
-} from "../electron/codex";
+} from "../electron/safety/codex";
 
 test("local asset paths stay inside the explicitly selected directory", async () => {
   const tmp = await mkdtemp(path.join(os.tmpdir(), "mmd-assets-"));

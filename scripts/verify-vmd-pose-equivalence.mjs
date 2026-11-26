@@ -7,12 +7,12 @@ import { fileURLToPath } from 'node:url';
 import { AnimationMixer, Bone, BufferGeometry, LoopOnce, MeshBasicMaterial, Skeleton, SkinnedMesh } from 'three';
 import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
 import { MMDParser } from 'three/examples/jsm/libs/mmdparser.module.js';
-import { readableVmdHeader } from '../src/stage/vmd.ts';
-import { stripDefaultVmdTracks } from '../src/stage/vmd-tracks.ts';
+import { readableVmdHeader } from '../src/foundation/vmd.ts';
+import { stripDefaultVmdTracks } from '../src/foundation/vmd-tracks.ts';
 
 const workspace = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const catalog = JSON.parse(await readFile(path.join(workspace, 'shared/motion-catalog.json'), 'utf8'));
-const manifest = JSON.parse(await readFile(path.join(workspace, 'shared/bundled-assets.json'), 'utf8'));
+const catalog = JSON.parse(await readFile(path.join(workspace, 'shared/actions/motion-catalog.json'), 'utf8'));
+const manifest = JSON.parse(await readFile(path.join(workspace, 'shared/actions/bundled-assets.json'), 'utf8'));
 const parser = new MMDParser.Parser();
 const modelBytes = await readFile(path.join(workspace, 'assets/bundled', manifest.root, manifest.model.relativePath));
 const arrayBuffer = bytes => bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);

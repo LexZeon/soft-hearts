@@ -1,5 +1,5 @@
 /**
- * D2 / I-008: the wiring (electron/test-commands/wiring.ts) against the REAL companion service, mood host, her-life host and
+ * D2 / I-008: the wiring (electron/safety/test-commands/wiring.ts) against the REAL companion service, mood host, her-life host and
  * user-state store: a "测试：…" message in developer mode changes exactly what its entry says, and in normal mode changes nothing.
  */
 import assert from 'node:assert/strict';
@@ -7,10 +7,11 @@ import test from 'node:test';
 import { mkdtemp, rm, readFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CompanionService } from '../electron/companion';
-import { createTestCommands, type TestCommandPorts } from '../electron/test-commands/wiring';
-import { CUE_BLOCKERS, cueBlocker, type CueGateState } from '../electron/test-commands/cue-gate';
-import type { TestCommandNote, TestEffect } from '../shared/test-command';
+import { CompanionService } from '../electron/brain/companion';
+import { createTestCommands, type TestCommandPorts } from '../electron/safety/test-commands/wiring';
+import { CUE_BLOCKERS, cueBlocker, type CueGateState } from '../electron/safety/test-commands/cue-gate';
+import type { TestCommandNote, TestEffect } from '../shared/safety/test-command';
+import { rendererSource as readRendererSource } from './helpers/renderer-source'; // overhaul step 5: src/main.ts and src/wiring/*.ts
 
 const settle = () => new Promise<void>(resolve => setTimeout(resolve, 20));
 /** Waits for something that needs real time (the waiting entry's poll, the log file's appends); a busy machine just waits longer. */
@@ -86,7 +87,7 @@ test('developer mode: each message changes what its entry says, through the real
   assert.match(await ask('测试：清除状态'), /已清除/u);
   assert.equal(service.userState.current('gene'), null);
 
-  assert.match(await ask('测试：熟悉度老朋友'), /熟悉度临时设成“老朋友”.*没开“慢慢熟起来”/su, 'the plain card is told it will show no difference');
+  assert.match(await ask('测试：熟悉度老朋友'), /熟悉度临时设成“非常熟”.*没开“慢慢熟悉”/su, 'the plain card is told it will show no difference');
   assert.match(await ask('测试：有点闷'), /她现在有点闷/u);
   assert.equal(service.herNeeds.view('gene')?.id, 'lonely');
   assert.equal(service.herNeeds.view('gene')?.usedToday, 0, 'the day\'s counts are untouched');
@@ -160,26 +161,28 @@ async function sendWith(options: { developer: boolean; content: string; handled?
   const { readFileSync } = await import('node:fs');
   const ts = (await import('typescript')).default;
   const { transformSync } = await import('esbuild');
-  const { asksTestCommand } = await import('../shared/test-command');
-  const { lookHint, turnAttachments } = await import('../src/look-send');
-  const { pauseCutForSend } = await import('../src/ui/pause-talk-send');
-  const source = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
+  const { asksTestCommand } = await import('../shared/safety/test-command');
+  const { lookHint, turnAttachments } = await import('../src/senses/look-send');
+  const { pauseCutForSend } = await import('../src/brain/pause-talk-send');
+  const { SendGuard } = await import('../src/brain/send-guard');
+  const source = readRendererSource();
   const ast = ts.createSourceFile('main.ts', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   const declaration = ast.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === 'sendChat');
   assert.ok(declaration);
   const js = transformSync(declaration.getText(ast), { loader: 'ts', target: 'es2022' }).code;
   const log: string[] = [], requests: unknown[] = [], shown: unknown[] = [], notices: string[] = [];
   const input = { value: options.content };
-  const wrapper = `const claudeTasksOffered=()=>false;let activeChat=null,pendingReadoutControl=null,attachments=initialAttachments,history=[],reply='',activeUser=null,assistantNode=null;`
-    + `const isPet=false,settings={provider:{kind:'claude'},voice:{}},characterState=null;const replyPresentation={interrupt(){throw new Error('F7: off, the reveal is never touched')}};const crypto={randomUUID:()=>'guard-id'};const $=()=>input;const speech={stop(){},prewarm(){}};`
-    + `const syncBodyInputGate=()=>{},setChatBusy=()=>{},renderAttachments=()=>{};const userProfilePanel={messageExpectation:()=>null};const save=async()=>true;`
+  const wrapper = `const claudeTasksOffered=()=>false;let activeChat=null,attachments=initialAttachments,history=[],reply='',activeUser=null,assistantNode=null;`
+    + `const isPet=false,settings={provider:{kind:'claude'},voice:{}},characterState=null;const replyPresentation={interrupt(){return null}};const crypto={randomUUID:()=>'guard-id'};const $=()=>input;const speech={stop(){},prewarm(){}};`
+    + `const syncBodyInputGate=()=>{},setChatBusy=()=>{},renderAttachments=()=>{};const userProfilePanel={messageExpectation:()=>null};const saveBeforeSend=async()=>true;`
     + `const onStream=event=>log.push('stream:'+event.type);const window={desktop:{noteUserInput:async()=>{log.push('noteUserInput')},sharedAttachments:async()=>[],`
-    + `runTestCommand:async text=>{log.push('runTestCommand');if(rejects)throw new Error('ipc down');return {handled,id:'cmd-1'}},chat:async value=>{requests.push(value)}}};${js};return {send:()=>sendChat(true),pending:()=>pendingReadoutControl};`;
+    + `runTestCommand:async text=>{log.push('runTestCommand');if(rejects)throw new Error('ipc down');return {handled,id:'cmd-1'}},chat:async value=>{requests.push(value)}}};${js};return {send:()=>sendChat(true),pending:()=>sendGuard.pending};`;
   const api = new Function('input', 'log', 'requests', 'initialAttachments', 'handled', 'rejects', 'immersiveDeveloperMode', 'asksTestCommand', 'testNotes', 'notify',
-    'outgoingChatMessages', 'scanStopReadoutRequest', 'scanFramingRequest', 'scanBreathRequest', 'lookHint', 'turnAttachments', 'pauseCutForSend', wrapper)(
+    'outgoingChatMessages', 'scanStopReadoutRequest', 'scanFramingRequest', 'scanBreathRequest', 'lookHint', 'turnAttachments', 'pauseCutForSend', 'sendGuard', wrapper)(
     input, log, requests, options.attachments ?? [], options.handled === true, options.rejects === true, options.developer, asksTestCommand,
     { begin: (id: string, text: string) => shown.push([id, text]) }, (message: string) => notices.push(message),
-    (history: unknown[], user: unknown) => [...history, user], () => 'none', () => 'none', () => ({ kind: 'none' }), lookHint, turnAttachments, pauseCutForSend);
+    (history: unknown[], user: unknown) => [...history, user], () => 'none', () => 'none', () => ({ kind: 'none' }), lookHint, turnAttachments, pauseCutForSend,
+    new SendGuard({ now: () => 0, from: () => 'controls', notify: text => { notices.push(text); }, journal: () => {} })); // 2026-11-22: sendChat's guard (src/brain/send-guard.ts)
   await api.send();
   return { log, requests, shown, notices, input, pending: api.pending() };
 }
@@ -221,17 +224,23 @@ test('the window: if asking the host fails, the user is told and nothing is sent
 
 test('the process wiring: one IPC for the window\'s ask, the host decides; the windows get only note and effect events', async () => {
   const { readFile: read } = await import('node:fs/promises');
-  const main = await read(new URL('../electron/main.ts', import.meta.url), 'utf8');
-  const preload = await read(new URL('../electron/preload.ts', import.meta.url), 'utf8');
-  // A test command also answers her "要我凑近看看吗" (Codex T-112 round 030; electron/look-turns.ts userTurn).
-  assert.match(main, /scopedHost\('runTestCommand', \(sender, text\) => \{ lookTurns\.userTurn\(\); return testCommands\.accept\(sender, text\); \}, false\)/u);
-  assert.match(main, /webContents\.send\('desk:test-note', note\)/u);
-  assert.match(main, /broadcast\('desk:test-effect', effect\)/u);
+  const preload = await read(new URL('../electron/safety/preload.ts', import.meta.url), 'utf8');
+  // Wiring rewrite step 4: the handler is registered by electron/wiring/safety-wiring.ts; the ports (note, effect) are still built in
+  // electron/main.ts. Read across main.ts and electron/wiring/*.ts.
+  const { wiringSource } = await import('./helpers/wiring-source');
+  const wiring = wiringSource();
+  // A test command also answers her "要我凑近看看吗" (Codex T-112 round 030; electron/senses/look-turns.ts userTurn).
+  assert.match(wiring, /scopedHost\('runTestCommand', \(sender, text\) => \{ lookTurns\.userTurn\(\); return testCommands\.accept\(sender, text\); \}, false\)/u);
+  assert.match(wiring, /webContents\.send\('desk:test-note', note\)/u);
+  assert.match(wiring, /broadcast\('desk:test-effect', effect\)/u);
   assert.match(preload, /runTestCommand: text => invoke\('runTestCommand', text\)/u);
   assert.match(preload, /onTestNote: callback => subscribe\('desk:test-note', callback\)/u);
   assert.match(preload, /onTestEffect: callback => subscribe\('desk:test-effect', callback\)/u);
   // The chat handler is not touched: it does not know the test commands.
-  const chat = main.slice(main.indexOf('scopedHost(\r\n    "chat"'), main.indexOf('"cancel"'));
-  assert.ok(chat.length > 1000);
+  // (wiring rewrite step 4h: the chat turn is 大脑's, electron/wiring/brain-chat-wiring.ts; read across the wiring)
+  const chatAt = wiring.search(/scopedHost\(\s*"chat"/u);
+  const chat = wiring.slice(chatAt, wiring.indexOf('"cancel"', chatAt)); // any line ending (main.ts is LF since 2026-11-17)
+  assert.ok(chatAt >= 0 && chat.length > 1000);
+  assert.ok(!/testCommand/u.test(chat), 'the chat turn does not know the test commands');
   assert.equal(/testCommands|test-command|TestCommand/u.test(chat), false);
 });

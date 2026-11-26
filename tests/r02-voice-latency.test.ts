@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import test, { type TestContext } from 'node:test';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { DEFAULT_TTS_CONFIG, type SpeechRequestContext, type TtsConfig, type TtsStreamEvent } from '../shared/tts';
-import { synthesizeBailianSpeech } from '../electron/tts';
-import { SpeechRuntime } from '../electron/speech-runtime';
-import { EmotionalVoiceControls, StreamingVoicePlayer, type EmotionalVoicePlaybackState } from '../src/ui/EmotionalVoice';
-import { VoiceOutput, type VoiceOutputEvent } from '../src/ui/VoiceOutput';
-import { SharedAudioOutput } from '../src/ui/audio-output';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { DEFAULT_TTS_CONFIG, type SpeechRequestContext, type TtsConfig, type TtsStreamEvent } from '../shared/voice/tts';
+import { synthesizeBailianSpeech } from '../electron/voice/tts';
+import { SpeechRuntime } from '../electron/voice/speech-runtime';
+import { EmotionalVoiceControls, StreamingVoicePlayer, type EmotionalVoicePlaybackState } from '../src/voice/EmotionalVoice';
+import { VoiceOutput, type VoiceOutputEvent } from '../src/voice/VoiceOutput';
+import { SharedAudioOutput } from '../src/voice/audio-output';
 
 /*
  * R02 · "首个音频包 1281 ms · 开始播放约 9507 ms". These tests replay that

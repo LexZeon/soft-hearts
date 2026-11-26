@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { TextMemorialPanel } from '../src/ui/TextMemorialPanel';
-import { registerUiMessages, setUiLanguage } from '../shared/ui-language';
-import { ENGLISH_SETTINGS_UI_COPY } from '../shared/ui-copy.settings.en';
+import { TextMemorialPanel } from '../src/memory/TextMemorialPanel';
+import { registerUiMessages, setUiLanguage } from '../shared/foundation/ui-language';
+import { ENGLISH_SETTINGS_UI_COPY } from '../shared/foundation/ui-copy.settings.en';
 
 class Element {
   children: Element[] = []; textContent='';value='';className='';type='';disabled=false;

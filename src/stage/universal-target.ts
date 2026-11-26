@@ -2,9 +2,9 @@
  * I-038 part A (docs/claude/2026-11-06-i038-universal-part-a.md): the loaded model as a target of things authored on Gene.
  *
  * Every library motion, the mood's body motions, the personal pose and brow/eye picks were authored on the bundled Gene, whose
- * rest pose is the universal skeleton's standard pose (shared/universal-skeleton.ts). So "authored on Gene" means "written in the
+ * rest pose is the universal skeleton's standard pose (shared/foundation/universal-skeleton.ts). So "authored on Gene" means "written in the
  * standard vocabulary": a Gene bone or morph name stands for a standard part. This module turns that vocabulary into the loaded
- * model's own names, and back, from the stage's retarget plan (src/stage/motion-retarget.ts, shared/motion-retarget.ts):
+ * model's own names, and back, from the stage's retarget plan (src/actions/motion-retarget.ts, shared/actions/motion-retarget.ts):
  *
  * - The reviewed Gene: everything is the identity, so its paths stay exactly as they were (callers keep their old code for it).
  * - Any other model with a plan: standard bones and finger joints by slot, morphs by profile slot (with the plan's amplitude
@@ -14,8 +14,8 @@
  * A static rotation authored on Gene goes through the very same retargeting as a motion (`convertRotations`): a one-frame motion
  * of those rotations, retargeted, read back. Nothing here touches the model or any file.
  */
-import { LINEAR_INTERPOLATION, morphSlotRoute, retargetVmd, type RetargetPlan, type VmdLike } from '../../shared/motion-retarget';
-import type { FingerSlot, MorphSlot, StandardBone } from '../../shared/universal-skeleton';
+import { LINEAR_INTERPOLATION, morphSlotRoute, retargetVmd, type RetargetPlan, type VmdLike } from '../../shared/actions';
+import type { FingerSlot, MorphSlot, StandardBone } from '../../shared/actions';
 
 export type Quat4 = [number, number, number, number];
 export interface UniversalTarget {

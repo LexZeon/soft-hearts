@@ -1,8 +1,8 @@
 // I-024 模型体检卡: what the stage may turn on for a model, from its profile, haiku's matches and the user's choice.
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { capabilityEnabled, deriveModelCapabilities, MODEL_CAPABILITY_IDS } from '../shared/model-capability';
-import type { ModelProfile, MorphSlot, StandardBone } from '../shared/model-profile';
+import { capabilityEnabled, deriveModelCapabilities, MODEL_CAPABILITY_IDS } from '../shared/stage/model-capability';
+import type { ModelProfile, MorphSlot, StandardBone } from '../shared/stage/model-profile';
 
 /** Only the parts the card reads: which slots and bones the profile found. */
 function profile(morphs: MorphSlot[], bones: StandardBone[]): ModelProfile {

@@ -1,38 +1,43 @@
-import * as uiCopy from '../src/ui/ui-language';
+import * as uiCopy from '../src/foundation/ui-language';
 const { uiText, uiHtml, uiMarkup, uiTemplate } = uiCopy;
 import test from 'node:test';
-import {conciseFailure} from '../src/notice-policy';
-import { WindowVisibilityTracker } from '../src/ui/window-visibility';
+import {conciseFailure} from '../src/settings/notice-policy';
+import { WindowVisibilityTracker } from '../src/stage/window-visibility';
+import { replyMayRun } from '../shared/foundation/step-away';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import ts from 'typescript';
 import { transformSync } from 'esbuild';
 import type { ChatMessage, StreamEvent } from '../shared/contracts';
-import type { VoiceConversationEvent } from '../shared/voice-conversation';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { ReplyPresentationState } from '../src/ui/reply-presentation';
-import { ImmersiveNotice } from '../src/ui/ImmersiveNotice';
-import { formatReplySegments } from '../src/ui/reply-segments';
-import { appendReplyHistory, appendVoiceReply, trimReplyHistory } from '../src/ui/reply-history';
-import { buildCodexChatPrompt } from '../electron/conversation-context';
-import { validateChatRequest } from '../electron/validation';
-import { MoodReplyProtocol } from '../electron/mood-chat';
+import type { VoiceConversationEvent } from '../shared/voice/voice-conversation';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { ReplyPresentationState } from '../src/brain/reply-presentation';
+import { ImmersiveNotice } from '../src/stage/ImmersiveNotice';
+import { formatReplySegments } from '../src/brain/reply-segments';
+import { SpeechBeatsView } from '../src/brain/speech-beats-view';
+import { speechBeatShownText } from '../shared/behaviors/speech-beats/history';
+import { appendReplyHistory, appendVoiceReply, trimReplyHistory } from '../src/brain/reply-history';
+import { buildCodexChatPrompt } from '../electron/brain/conversation-context';
+import { validateChatRequest } from '../electron/settings/validation';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
 
-import { PetUI } from '../src/ui/PetUI';
-import { ReplyReader } from '../src/ui/ReplyReader';
-import { ReplySpeechState } from '../src/ui/reply-speech';
-import { VoiceDraftInput } from '../src/ui/VoiceDraftInput';
-import { VoiceContinuationStatus } from '../src/ui/VoiceContinuationStatus';
-import { CompletedReplySpeechQueue } from '../src/ui/completed-reply-speech-queue';
-import { splitReplySegments } from '../shared/reply-segments';
-import { draftAfterClear } from '../src/look-send';
+import { PetUI } from '../src/stage/PetUI';
+import { ReplyReader } from '../src/brain/ReplyReader';
+import { ReplySpeechState } from '../src/voice/reply-speech';
+import { VoiceDraftInput } from '../src/voice/VoiceDraftInput';
+import { VoiceContinuationStatus } from '../src/voice/VoiceContinuationStatus';
+import { CompletedReplySpeechQueue } from '../src/voice/completed-reply-speech-queue';
+import { splitReplySegments } from '../shared/voice/reply-segments';
+import { reportReadingDropped, speechDropWhy } from '../src/voice/reading-dropped';
+import { draftAfterClear } from '../src/senses/look-send';
+import { rendererSource as readRendererSource } from './helpers/renderer-source'; // overhaul step 5: src/main.ts and src/wiring/*.ts
 // Execute the actual checked-in handler declarations, not a copied simulation.
 // Only their UI/IPC collaborators are replaced; no app or browser is launched.
-const mainSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
+const mainSource = readRendererSource();
 const mainSha256 = createHash('sha256').update(mainSource).digest('hex');
 const ast = ts.createSourceFile('src/main.ts', mainSource, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-const names = ['renderReadout', 'syncBodyInputGate', 'onStream', 'receiveChat', 'receiveVoiceConversation', 'stopChat', 'hideWaitingPresentation', 'beginChat', 'clearChat', 'endReplySpeech', 'addMessage',
+const names = ['shown', 'renderReadout', 'syncBodyInputGate', 'onStream', 'receiveChat', 'receiveVoiceConversation', 'setHistory', 'setVoiceSpeechReady', 'stopChat', 'hideWaitingPresentation', 'beginChat', 'clearChat', 'endReplySpeech', 'addMessage',
   'replySpeechContext', 'kickCompletedReply', 'startStreamingReplySpeech', 'reportReplySpeechError', 'prepareReplySpeechPresentation', 'finishReplySpeechPresentation', 'acceptWindowVisibility', 'projectPetVisibility', 'displayFailure', 'clearCommandMessageRows', 'receiveReadoutControl'];
 const declarations = names.map(name => {
   const found = ast.statements.filter(statement => ts.isFunctionDeclaration(statement) && statement.name?.text === name);
@@ -61,14 +66,21 @@ assert.equal(callbackSources.host.length, 1); assert.equal(callbackSources.docum
 const transpiled = transformSync(`function createFlow(deps: any) {
   const {document,window,$,petUI,speech:speechOutput,chatChannel,chatContext,text,notify,setChatBusy,
     renderReplyWaiting,renderAttachments,showCharacterGreeting,replyPresentation,
-    formatReplySegments,appendReplyHistory,appendVoiceReply,trimReplyHistory,isPet,windowKind,settings,stage,HTMLElement,VoiceDraftInput,characterName,CompletedReplySpeechQueue,splitReplySegments} = deps;
+    formatReplySegments,appendReplyHistory,appendVoiceReply,trimReplyHistory,isPet,windowKind,settings,stage,HTMLElement,VoiceDraftInput,characterName,CompletedReplySpeechQueue,splitReplySegments,reportReadingDropped,speechDropWhy} = deps;
   let {activeChat,activeUser,reply,history,assistantNode,chatOwner,hostVisible,awaitingChatState} = deps.initial;
+  // 边说边演 (src/wiring/speech-beats-wiring.ts): this window's view (it performs nothing here) and the history cleaner.
+  const speechBeatsView = new SpeechBeatsView({ now: () => 0, setTimer: () => 0, clearTimer() {}, pacing: () => 'shown' });
+  const bubbleFollow = () => ({ engage() {}, over() {}, heard() {}, segment() {} }); // I-165: not followed in this fixture
+  const speechBeats = () => speechBeatsView, shownReplyText = (content: string) => speechBeatShownText(content).text;
+  // 边说边演 (grey lines of a reloaded conversation): none in this fixture.
+  const rememberRefilledRows = (_base: unknown, _rows: unknown) => {}, refilledRowsFor = (_history: unknown) => undefined, cleanChatRows = (_value: unknown) => null, drawChatRows = (_rows: unknown) => {};
   ${commandRowsDeclaration}
-  const readoutControlTurns = new Map(); let pendingReadoutControl = null;
+  const readoutControlTurns = new Map(); const sendGuard = { release() {} }; // src/brain/send-guard.ts (its own tests: tests/typed-line-drops.test.ts)
   const voiceUiGroups = new Map<string, { epoch: string; seq: number; message: ChatMessage; node: HTMLElement }>();
   const voiceReplyIds = new Set<string>();
   const voiceDraftInput = new VoiceDraftInput();
   const voiceContinuationStatus = deps.voiceContinuationStatus;
+  const callControls = null; // I-091: no call in this fixture
   const voiceDraftRecords = new Map<string, { root: HTMLElement; text: HTMLTextAreaElement }>();
   ${voiceReadyDeclaration}
   let releaseReplySpeech = null, initiativeGeneration = 0, chatRefillGeneration = 0, provisionalInitiative = null,
@@ -80,6 +92,9 @@ const transpiled = transformSync(`function createFlow(deps: any) {
   const textMemorialOffer = null; let activeMemorialSpeechId = null;
   const windowVisibility = new deps.WindowVisibilityTracker();
   windowVisibility.accept({windowId:1,revision:0,visible:true,petVisible:true});
+  // I-171: the document handler asks the host whether a hidden document was a minimize; here the host's last word, answered at once. no-pet-ok: petVisible is the contract's field name
+  let lastHostState: unknown = {windowId:1,revision:0,visible:true,petVisible:true}; const replyMayRun = deps.replyMayRun;
+  if (window?.desktop) window.desktop.getWindowVisibility = () => ({ then: (ok: (state: unknown) => void) => { ok(lastHostState); } });
   let visibilityRevision = 0, pendingPetVisibility = false;
   const characterState = {activeId:'fixture-character'};
   const conciseFailure=deps.conciseFailure;
@@ -108,12 +123,12 @@ const transpiled = transformSync(`function createFlow(deps: any) {
   return {onStream,receiveChat,receiveVoiceConversation,stopChat,hideWaitingPresentation,beginChat,clearChat,
     state: () => ({activeChat,activeUser,reply,history:[...history],assistantNode,chatOwner,hostVisible,awaitingChatState}),
     visible(value: boolean) { hostVisible=value; document.hidden=!value; },
-    hostVisibility(value: boolean) { hostVisibilityCallback({windowId:1,revision:++visibilityRevision,visible:value,petVisible:true}); },
+    hostVisibility(value: boolean) { hostVisibilityCallback(lastHostState = {windowId:1,revision:++visibilityRevision,visible:value,petVisible:true}); },
     documentVisibility(hidden: boolean) { document.hidden=hidden; documentVisibilityCallback(); }
   };
 }`, { loader: 'ts', target: 'es2022' }).code;
-// clearChat keeps the user's own draft snapshots when sharing is turned off (src/look-send.ts, Codex T-205 round 4).
-const createFlow = new Function('uiText','uiHtml','uiMarkup','uiTemplate','draftAfterClear',`${transpiled}\nreturn createFlow;`).bind(null, uiText, uiHtml, uiMarkup, uiTemplate, draftAfterClear)() as (deps: Record<string, unknown>) => {
+// clearChat keeps the user's own draft snapshots when sharing is turned off (src/senses/look-send.ts, Codex T-205 round 4).
+const createFlow = new Function('uiText','uiHtml','uiMarkup','uiTemplate','draftAfterClear','SpeechBeatsView','speechBeatShownText',`${transpiled}\nreturn createFlow;`).bind(null, uiText, uiHtml, uiMarkup, uiTemplate, draftAfterClear, SpeechBeatsView, speechBeatShownText)() as (deps: Record<string, unknown>) => {
   onStream(event: StreamEvent): void;
   receiveChat(message: Record<string, unknown>): void;
   receiveVoiceConversation(event: VoiceConversationEvent): void;
@@ -174,7 +189,7 @@ function fixture(options: { developer?: boolean; isPet?: boolean; accepted?: boo
   const api = createFlow({
     voiceContinuationStatus:new VoiceContinuationStatus(voiceStatus as unknown as HTMLElement),
     document: { hidden: false, activeElement: null, createElement: () => new StubNode(), getElementById: () => null },
-    WindowVisibilityTracker, conciseFailure, developerMode: options.developer, immersiveNotice: options.notice,
+    WindowVisibilityTracker, replyMayRun, conciseFailure, developerMode: options.developer, immersiveNotice: options.notice,
     HTMLElement: StubNode, stage: { setBodyInputBlocked: (blocked: boolean) => record('body-input', blocked), setVisible: (visible: boolean) => record('stage-visible', visible) },
     window: { desktop: { cancel: async (cancelled: string) => { record('cancel', cancelled); },
       acknowledgeReplySpeechReady:async(replyId:string)=>{record('speech-ready',replyId);return true;},cancelReplySpeech:async(replyId:string)=>{record('speech-queue-cancel',replyId);} } },
@@ -183,7 +198,7 @@ function fixture(options: { developer?: boolean; isPet?: boolean; accepted?: boo
     text: (key: string, value: string) => { record('text', key, value); const node = nodes.get(key); if (node) node.textContent = value; },
     notify: (...args: unknown[]) => record('toast', ...args), setChatBusy: (...args: unknown[]) => record('busy', ...args),
     renderReplyWaiting: (...args: unknown[]) => record('waiting-state', ...args), renderAttachments() {}, showCharacterGreeting() {},
-    replyPresentation: state, formatReplySegments, appendReplyHistory, appendVoiceReply, trimReplyHistory, VoiceDraftInput, CompletedReplySpeechQueue,splitReplySegments,record,characterName: '桌面伙伴', isPet, windowKind: isPet ? 'pet' : 'controls', settings,
+    replyPresentation: state, formatReplySegments, appendReplyHistory, appendVoiceReply, trimReplyHistory, VoiceDraftInput, CompletedReplySpeechQueue,splitReplySegments,reportReadingDropped,speechDropWhy,record,characterName: '桌面伙伴', isPet, windowKind: isPet ? 'pet' : 'controls', settings,
     initial: { activeChat: options.active === false ? null : id, activeUser: options.active === false ? null : user, reply: body,
       history: options.history ?? [], assistantNode: options.accepted === false || options.active === false ? null : answer,
       chatOwner: options.owner ?? (isPet ? 'pet' : 'controls'), hostVisible: true, awaitingChatState: options.active === false },

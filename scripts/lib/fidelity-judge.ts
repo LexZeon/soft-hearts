@@ -6,8 +6,8 @@
 //   - one request per scenario, strict JSON back. Anything that is not that JSON is "无法评分"
 //     and is NOT retried (each request counts against the quota ledger).
 import os from 'node:os';
-import { streamClaude, type ClaudeUsage } from '../../electron/claude';
-import { conversationData } from '../../electron/conversation-context';
+import { streamClaude, type ClaudeUsage } from '../../electron/brain/claude';
+import { conversationData } from '../../electron/brain/conversation-context';
 import { DIMENSION_LABELS, groupOf, REALER_STILL_OUT, type Dimension, type FidelityCard, type FidelityScenario, type ScenarioGroup } from './fidelity-scenarios';
 
 export const JUDGE_MODEL = 'opus';

@@ -5,10 +5,10 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { AnimationClip, Bone, BufferGeometry, MeshBasicMaterial, NumberKeyframeTrack, QuaternionKeyframeTrack, Skeleton, SkinnedMesh, type KeyframeTrack } from 'three';
 import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
-import { BEHAVIOR_FACE_BINDING_IDS, type BehaviorFaceBindingId, type BehaviorMotionCue, type BehaviorMotionPlan, type BehaviorMotionResource, type BehaviorSemantic } from '../shared/behavior-motion';
+import { BEHAVIOR_FACE_BINDING_IDS, type BehaviorFaceBindingId, type BehaviorMotionCue, type BehaviorMotionPlan, type BehaviorMotionResource, type BehaviorSemantic } from '../shared/actions/behavior-motion';
 import { BehaviorMotionPlayer, type BehaviorMotionGates } from '../src/stage/behavior-motion';
 import { LayeredMmdAnimation } from '../src/stage/motion-layers';
-import { createVmdParser } from '../src/stage/vmd';
+import { createVmdParser } from '../src/foundation/vmd';
 
 const OPEN: BehaviorMotionGates = { enabled: true, visible: true, faceBlocked: false, directContact: false, windowAdjusting: false, cameraAdjusting: false };
 const semantic: Record<BehaviorFaceBindingId, BehaviorSemantic> = {
@@ -326,8 +326,8 @@ test('a real advancing MMD base retains its Action identity and time through res
 });
 
 test('all eleven real Gene recipes sample only audited face properties without touching source bytes or the body', async () => {
-  const catalog = JSON.parse(await readFile('shared/motion-catalog.json', 'utf8'));
-  const manifest = JSON.parse(await readFile('shared/bundled-assets.json', 'utf8'));
+  const catalog = JSON.parse(await readFile('shared/actions/motion-catalog.json', 'utf8'));
+  const manifest = JSON.parse(await readFile('shared/actions/bundled-assets.json', 'utf8'));
   const parserModule = 'three/examples/jsm/libs/mmdparser.module.js'; const { MMDParser } = await import(parserModule);
   const bytes = await readFile(join('assets/bundled', manifest.root, manifest.model.relativePath));
   const data = new MMDParser.Parser().parsePmx(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), true);

@@ -6,23 +6,23 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test, { type TestContext } from 'node:test';
-import { ChatActionHost } from '../electron/chat-actions-host';
-import { FatigueHost } from '../electron/fatigue-host';
+import { ChatActionHost } from '../electron/brain/chat-actions-host';
+import { FatigueHost } from '../electron/mood/fatigue-host';
 import {
   BlushJournal, JournalExtras, ReadingJournal, VoiceTimeJournal, blushMomentInput, blushStageInput, draftFilterInput, fatiguePhaseInput, gestureAnswerOf,
   herGestureInput, topmostFixInput, wavSeconds, READING_IDLE_MS, type BlushMoment,
-} from '../electron/journal/extras';
-import { MoodHost } from '../electron/mood';
-import { PetTopmostGuard, type TopmostWindow } from '../electron/pet-topmost';
-import { buildJournalEntry, describeJournalEntry, readJournalLine, type JournalEntry, type JournalInput } from '../shared/journal';
-import { ENGLISH_UI_COPY } from '../shared/ui-copy.en';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
+} from '../electron/memory/journal/extras';
+import { MoodHost } from '../electron/mood/mood';
+import { PetTopmostGuard, type TopmostWindow } from '../electron/stage/pet-topmost';
+import { buildJournalEntry, describeJournalEntry, readJournalLine, type JournalEntry, type JournalInput } from '../shared/memory/journal';
+import { ENGLISH_UI_COPY } from '../shared/foundation/ui-copy.en';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
 import { BlushSeen } from '../src/stage/blush-seen';
-import { VoiceCaptureStats } from '../src/ui/voice-capture-stats';
+import { VoiceCaptureStats } from '../src/voice/voice-capture-stats';
 
 // ---------------------------------------------------------------- helpers
 
-/** What the real writer does with the switch (electron/journal/writer.ts): keep a built line while on, nothing while off. */
+/** What the real writer does with the switch (electron/memory/journal/writer.ts): keep a built line while on, nothing while off. */
 async function writerOn(_t: TestContext) {
   const on = { value: true }, entries: JournalEntry[] = [];
   const writer = { record: (input: JournalInput) => { if (!on.value) return null; const entry = buildJournalEntry(input, Date.now()); if (entry) entries.push(entry); return entry; },
@@ -106,6 +106,16 @@ test('first-char keeps working without the split (older callers) and with it', (
   assert.deepEqual([split.contentMs, split.bubbleMs, split.sinceStartMs, split.sinceLastMs], [700, 800, 5000, undefined], 'a negative span is dropped');
 });
 
+test('first-char measuring (2026-11-09): which process, the turn, Claude\'s first delta and the sizes; anything else is dropped', () => {
+  const entry = buildJournalEntry({ type: 'first-char', characterId: 'gene', ms: 2400, pauseTalk: false, carried: false,
+    process: 'cold', turn: 1, deltaMs: 2300, inputChars: 7345, sessionChars: 0 }, 1) as Extract<JournalEntry, { type: 'first-char' }>;
+  assert.deepEqual([entry.process, entry.turn, entry.deltaMs, entry.inputChars, entry.sessionChars], ['cold', 1, 2300, 7345, 0]);
+  const odd = buildJournalEntry({ type: 'first-char', characterId: 'gene', ms: 2400, pauseTalk: false, carried: false,
+    process: 'hot', turn: -1, inputChars: 'many', sessionChars: 1e12 } as never, 1) as Extract<JournalEntry, { type: 'first-char' }>;
+  assert.deepEqual([odd.process, odd.turn, odd.inputChars, odd.sessionChars], [undefined, undefined, undefined, undefined]);
+  assert.deepEqual(Object.keys(odd).filter(key => !['v', 'at', 'time', 'reason', 'type', 'characterId', 'ms', 'pauseTalk', 'carried'].includes(key)), []);
+});
+
 // ---------------------------------------------------------------- 1. reading time
 
 test('reading: one line per reply with first-sound time, wait, characters, voice kind and how it ended', async t => {
@@ -124,7 +134,7 @@ test('reading: one line per reply with first-sound time, wait, characters, voice
   reading.segment(segment(0, 'error')); reading.flush();
   const rest = writer.recent().slice(1) as Array<Extract<JournalEntry, { type: 'reading-time' }>>;
   assert.deepEqual(rest.map(e => [e.result, e.why, e.firstSinceStart]), [['partial', 'cancelled', false], ['unread', 'cancelled', false], ['unread', 'failed', false]]);
-  // Not read at all: reading off / pet window hidden.
+  // Not read at all: reading off / companion window hidden.
   reading.unread('off'); reading.unread('hidden');
   assert.deepEqual((writer.recent().slice(4) as typeof rest).map(e => [e.result, e.why, e.chars]), [['unread', 'off', 0], ['unread', 'hidden', 0]]);
   // Off: nothing at all, and nothing from the off time appears after switching on.
@@ -175,7 +185,7 @@ test('voice timing: end of speech to text, the recognition alone, the clip lengt
   assert.equal(wavSeconds(new ArrayBuffer(10)), null);
 });
 
-// ---------------------------------------------------------------- the capture numbers (user: "只显示正在聆听，提示没有声音")
+// ---------------------------------------------------------------- the capture numbers
 
 test('capture numbers: chunks, peak, RMS, gate, sample rate, device kind and the speaking pause; nothing else', async t => {
   const stats = new VoiceCaptureStats();
@@ -190,7 +200,7 @@ test('capture numbers: chunks, peak, RMS, gate, sample rate, device kind and the
   const quiet = new VoiceCaptureStats(); quiet.begin(false);
   assert.equal(quiet.report('stopped', 0.01), null, 'a capture that heard nothing and never failed says nothing');
   assert.equal(quiet.report('failed', 0.01)?.chunks, 0, 'a failed capture is always told');
-  // Through the host: only the pet or any window, numbers only; a bad value is dropped; the switch decides.
+  // Through the host: only the companion or any window, numbers only; a bad value is dropped; the switch decides.
   const { writer, on } = await writerOn(t);
   const extras = new JournalExtras({ sink: writer, characterId: () => 'gene', engine: () => 'local', uptimeMs: () => 5000, blushStage: () => {} });
   assert.equal(extras.fact('voice-capture', report, false), true);
@@ -260,8 +270,9 @@ test('her small action: the word and the stage answer, a pick that waited, a dro
   const lines: Array<[string | null, string | null, boolean]> = [];
   const fake = timers();
   let speaking = false;
+  let clock = 0; // half a minute between reads: one pick each, not the face-shape spacing (tests/face-twitch-round2.test.ts)
   const host = new ChatActionHost({ modelPath: () => 'm', read: async () => null, play: async () => ({ status: 'played', missing: [], detail: '' }), speaking: () => speaking,
-    timers: fake, journal: (word, answer, waited) => { lines.push([word, answer, waited]); } });
+    timers: fake, journal: (word, answer, waited) => { lines.push([word, answer, waited]); }, now: () => (clock += 30_000) });
   host.request('wink');
   return Promise.resolve().then(() => Promise.resolve()).then(() => {
     assert.deepEqual(lines, [['wink', 'played', false]]);
@@ -309,9 +320,10 @@ test('topmost repairs: one line per repair that put the style back, with the cou
     setAlwaysOnTop(flag: boolean) { this.top = flag; } moveTop() {}
   }
   const win = new Win();
-  const guard = new PetTopmostGuard({ window: () => win, wanted: () => true, journal: (outcome, visible, nth) => { calls.push([outcome, visible, nth]); } });
+  let now = 0;
+  const guard = new PetTopmostGuard({ window: () => win, wanted: () => true, now: () => now, journal: (outcome, visible, nth) => { calls.push([outcome, visible, nth]); } });
   guard.check(); assert.deepEqual(calls, []);
-  win.top = false; guard.check(); win.top = false; guard.check();
+  win.top = false; guard.check(); win.top = false; now += 2000; guard.check(); // the second repair after the 2 s back-off (I-062)
   assert.deepEqual(calls, [['applied', true, 1], ['applied', true, 2]]);
   assert.ok(buildJournalEntry(topmostFixInput('gene', 'applied', true, 2), 1));
 });
@@ -332,7 +344,7 @@ test('draft filter: counts per group and the whole-reply flag, nothing when noth
   assert.deepEqual([entry.english, entry.plan, entry.format, entry.garbled, entry.chars, entry.whole], [2, 1, 1, 1, 151, true]);
 });
 
-// ---------------------------------------------------------------- the pet window's blush stage state, and the first-character split
+// ---------------------------------------------------------------- the companion window's blush stage state, and the first-character split
 
 test('stage state of a blush cue is told once per cue, with the reason it cannot be shown', () => {
   const seen = new BlushSeen(), base = { path: 'procedural' as const, faceBlocked: false, off: false, size: 50 };
@@ -352,4 +364,7 @@ test('first-character split: content and bubble times from the record, the time 
   assert.equal(first.contentMs, 700); assert.equal(first.bubbleMs, undefined); assert.ok(first.sinceStartMs >= 90_000 - 5); assert.equal(first.sinceLastMs, undefined);
   const second = extras.firstChar({ firstContentMs: 650, firstBubbleMs: 700 });
   assert.ok(second.sinceLastMs !== undefined && second.sinceLastMs >= 0);
+  assert.equal(second.process, undefined, 'no Claude timing: no process fields');
+  const claude = extras.firstChar({ firstContentMs: 650, firstBubbleMs: 700, claude: { process: 'warm', sessionTurn: 4, firstDeltaMs: 610, inputChars: 2274, sessionChars: 9100 } });
+  assert.deepEqual([claude.process, claude.turn, claude.deltaMs, claude.inputChars, claude.sessionChars], ['warm', 4, 610, 2274, 9100]);
 });

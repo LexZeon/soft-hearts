@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { proceduralBlushDepth } from '../shared/behaviors/blush/choose';
 import { BLUSH_KNOBS } from '../shared/behaviors/blush/knobs';
-import { DEFAULT_MOOD_PARAMETERS, getBlushAmount } from '../shared/mood';
+import { DEFAULT_MOOD_PARAMETERS, getBlushAmount } from '../shared/foundation/mood';
 
 test('the painted blush (models without their own blush morph, like Gene): a light blush is drawn clearly deeper, a deep one stays', () => {
   assert.equal(BLUSH_KNOBS.procedural.boost, 2);

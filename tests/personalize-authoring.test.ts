@@ -1,7 +1,7 @@
 import test from 'node:test'; import assert from 'node:assert/strict'; import { randomUUID } from 'node:crypto';
-import { PersonalizeAuthoring, languageResearchPrompt } from '../electron/personalize-authoring';
-import { parseLanguageStudy, AUTHORING_OUTPUT_LIMIT, type LanguageResearchRequest } from '../shared/personalize-authoring';
-import { emptyLanguageRules } from '../shared/personalize-language';
+import { PersonalizeAuthoring, languageResearchPrompt } from '../electron/cards/personalize-authoring';
+import { parseLanguageStudy, AUTHORING_OUTPUT_LIMIT, type LanguageResearchRequest } from '../shared/cards/personalize-authoring';
+import { emptyLanguageRules } from '../shared/cards/personalize-language';
 const study = (tone = '短句，温和') => ({ observations:[{quote:'你好呀',finding:'有亲切的句尾语气'}],inferences:['可能偏好温和短句，仍待确认'],questions:['这个语气是日常习惯还是特定场景？'],insufficient:'单句无法判断完整语言习惯',rules:{...emptyLanguageRules(),tone} });
 const deferred = () => { let resolve!:()=>void; const promise = new Promise<void>(done=>{resolve=done;});return{promise,resolve}; };
 function fixture() {

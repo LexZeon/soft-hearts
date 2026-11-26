@@ -131,7 +131,7 @@ async function completed(turn, allowError = false) {
   return events;
 }
 async function ready() {
-  // Outside developer mode the pet status reads only 模型已就绪 (R38 default immersive, src/main.ts updateStageStatus).
+  // Outside developer mode the companion status reads only 模型已就绪 (R38 default immersive, src/main.ts updateStageStatus).
   await poll(pet, () => /模型已就绪|VMD 播放中/.test(document.querySelector('#pet-status')?.textContent ?? '')
     && JSON.parse(document.querySelector('#stage canvas')?.dataset.chatGesture ?? '{}').blocked === false, undefined, 60_000);
   await pet.waitForTimeout(350);
@@ -186,7 +186,7 @@ async function play(label, gesture, context = 'neutral', options = {}) {
 }
 
 try {
-  const catalog = JSON.parse(await readFile(path.join(appDirectory, 'shared/motion-catalog.json'), 'utf8'));
+  const catalog = JSON.parse(await readFile(path.join(appDirectory, 'shared/actions/motion-catalog.json'), 'utf8'));
   for (const fixture of Object.values(fixtures)) {
     const pack = catalog.packs.find(pack => pack.id === fixture.packId), motion = pack?.motions.find(motion => motion.id === fixture.motionId);
     assert.equal(motion?.sha256, fixture.sha256);
@@ -225,9 +225,9 @@ try {
     if (!controls || !pet) await pause(100);
   }
   assert.ok(controls && pet); controls.setDefaultTimeout(20_000); pet.setDefaultTimeout(20_000);
-  // A fresh profile gets the preinstalled Gene, so an ordinary start shows only the pet and keeps the controls closed
-  // (electron/initial-controls.ts, R37). Wait for both windows to finish loading with the pet shown, then open the
-  // controls the way a user does (the pet's settings button). The old check waited for a visible controls window.
+  // A fresh profile gets the preinstalled Gene, so an ordinary start shows only the companion and keeps the controls closed
+  // (electron/foundation/initial-controls.ts, R37). Wait for both windows to finish loading with the companion shown, then open the
+  // controls the way a user does (the companion's settings button). The old check waited for a visible controls window.
   for (let i = 0; ; i++) {
     const stable = await instance.evaluate(({ BrowserWindow }) => {
       const pages = BrowserWindow.getAllWindows().filter(win => /\/index\.html(?:\?|$)/.test(win.webContents.getURL()));

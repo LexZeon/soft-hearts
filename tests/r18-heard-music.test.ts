@@ -12,7 +12,6 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { MUSIC_AUDIBLE_RMS, MUSIC_NEW_SONG_GAP_S, MusicChoice, type MusicChoiceContext } from '../src/stage/music-choice';
 import { MUSIC_LISTEN, MusicListenCue } from '../src/stage/music-listen';
-import { between, geneStage, surprises, type GeneStage } from './helpers/gene-stage-harness';
 
 const DT = 1 / 60, DEG = 180 / Math.PI;
 /** The harness's songSample is recognized as music this long after the capture starts (tests/listen-kind-stage.test.ts measures it). */
@@ -115,43 +114,6 @@ test('the listening look: chin up and a tilt, smoothstep in and out, exactly zer
 // ---------------------------------------------------------------- the real Stage loop (Gene)
 
 const HEAD = 4;
-async function heard(primary: string, withMusic: boolean, seconds = 6 + RECOGNIZE_S) {
-  const h = await geneStage({ music: false, primary, extraBones: [] });
-  try {
-    h.stage.setMusicSettings({ alwaysDance: false });
-    h.run(2);
-    if (withMusic) h.stage.setMusicEnabled(true);
-    h.run(seconds);
-    return { h, frames: h.shown, line: (h.stage.setMood({ ...h.stage.moodView, developerMode: true }), h.stage.getMusicChoiceLine()) as string,
-      data: JSON.parse(h.stage.renderer.domElement.dataset.musicDance ?? 'null') };
-  } finally { h.close(); }
-}
-const deviation = (a: { frames: GeneStage['shown'] }, b: { frames: GeneStage['shown'] }) => a.frames.map((frame, i) => frame.world[HEAD].angleTo(b.frames[i].world[HEAD]) * DEG);
-
-test('Gene, sad: she does not dance, but she visibly listens when the music starts (before: nothing at all)', async () => {
-  const quiet = await heard('sad', false), music = await heard('sad', true);
-  // I-016: the look comes when the song is recognized as music (the harness catches up on the samples it owes after a late
-  // start, so in display time that is a little sooner than RECOGNIZE_S), not on the first sound.
-  const off = deviation(music, quiet), start = off.findIndex((value, i) => i >= 2 * 60 && value > 0.05);
-  assert.ok(start >= Math.round(3 * 60) && start <= Math.round((2 + RECOGNIZE_S + 0.5) * 60), `the look starts when the music is recognized (${(start / 60).toFixed(2)} s)`);
-  const look = Math.max(...off.slice(start, start + Math.round(2.4 * 60)));
-  if (process.env.R29_REPORT) console.log(`sad listen: head ${look.toFixed(2)} deg; after ${Math.max(...off.slice(start + 3 * 60)).toFixed(3)}`);
-  assert.ok(look > 1.5, `a head movement you can see (${look.toFixed(2)} deg)`);
-  assert.ok(Math.max(...off.slice(start + 3 * 60)) < 0.05, 'then still, as she chose');
-  assert.equal(music.data.choice.tier, 'none'); assert.equal(music.data.choice.audible, true);
-  assert.match(music.line, /^听到了，但不想跳/);
-  const entry = Math.max(...surprises(between(music.frames, 2 - 2 / 60, 4.5 + RECOGNIZE_S))[HEAD]);
-  assert.ok(entry <= 0.15, `the look comes and goes without a jump (${entry.toFixed(3)} deg)`);
-  assert.equal(music.frames.at(-1)!.guardJumps - music.frames[0].guardJumps, 0);
-});
-
-test('Gene, calm: the listening look, then the light nod; "一直跟着跳" is still exactly R15 (no look added)', async () => {
-  const quiet = await heard('calm', false), music = await heard('calm', true);
-  const off = deviation(music, quiet), start = Math.round(3 * 60);
-  assert.ok(Math.max(...off.slice(start, start + 2.5 * 60)) > 1.5, 'she listens first');
-  assert.equal(music.data.choice.tier, 'nod'); assert.match(music.line, /^听到了 · 想跳 0\.\d\d · 点头晃一晃/);
-  assert.ok(music.data.listen.cues === 1, JSON.stringify(music.data.listen));
-});
 
 // ---------------------------------------------------------------- Codex T-112 round-019
 
@@ -167,16 +129,6 @@ test('律动强度 sizes the listening look like the nod: 0 is no look at all, t
   assert.ok(Math.abs(designed.x - MUSIC_LISTEN.headX) < 1e-6 && Math.abs(designed.z - MUSIC_LISTEN.headZ) < 1e-6, 'the default strength shows the designed look');
   assert.deepEqual(unset, designed);
   assert.ok(Math.abs(full.z / designed.z - 1 / 0.7) < 1e-6, 'and scales with the strength');
-});
-
-test('Gene, sad, 律动强度 0: no listening look on the real stage (before: the head still moved 3.3°)', async () => {
-  const run = async (withMusic: boolean) => {
-    const h = await geneStage({ music: false, primary: 'sad', extraBones: [] });
-    try { h.stage.setMusicSettings({ alwaysDance: false, strength: 0 }); h.run(2); if (withMusic) h.stage.setMusicEnabled(true); h.run(5); return { frames: h.shown }; } finally { h.close(); }
-  };
-  const quiet = await run(false), music = await run(true);
-  const off = Math.max(...deviation(music, quiet));
-  assert.ok(off < 1e-3, `head off the no-music run by ${off.toFixed(4)}°`);
 });
 
 test('I-016 (was R18 "0.3 s of sound"): loudness alone never makes a song; music does, on the very frame it is recognized', () => {

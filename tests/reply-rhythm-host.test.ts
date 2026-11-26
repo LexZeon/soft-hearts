@@ -1,15 +1,15 @@
-// F7 说话节奏 in the host (electron/reply-rhythm-host.ts): frozen once per reply from the voice's snapshot, and the developer panel's
+// F7 说话节奏 in the host (electron/brain/reply-rhythm-host.ts): frozen once per reply from the voice's snapshot, and the developer panel's
 // readout. By default (兜底 off) nothing goes to the windows or the journal: the panel only shows what the
 // fallback would have done. The tests marked 兜底（待定） turn it on to check its mechanics (sent with the reply's id, one journal
 // line of numbers and categories, the voice listening trial), not final numbers.
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { ReplyRhythmHost, type ReplyRhythmTurn } from '../electron/reply-rhythm-host';
-import { buildJournalEntry, describeJournalEntry, type JournalInput } from '../shared/journal';
-import { formatRhythmMultiplier, type ReplyRhythmPacing } from '../shared/reply-rhythm';
-import { formatReplyRhythmLine } from '../src/ui/MoodPanel';
-import { setUiLanguage } from '../shared/ui-language';
-import { uiText } from '../src/ui/ui-language';
+import { ReplyRhythmHost, type ReplyRhythmTurn } from '../electron/brain/reply-rhythm-host';
+import { buildJournalEntry, describeJournalEntry, type JournalInput } from '../shared/memory/journal';
+import { formatRhythmMultiplier, type ReplyRhythmPacing } from '../shared/brain/reply-rhythm';
+import { formatReplyRhythmLine } from '../src/mood/MoodPanel';
+import { setUiLanguage } from '../shared/foundation/ui-language';
+import { uiText } from '../src/foundation/ui-language';
 
 const plain = (source: string, ...items: readonly unknown[]) => source.replace(/\{(\d+)\}/g, (_, i: string) => String(items[Number(i)]));
 type Snapshot = ReplyRhythmTurn['snapshot'];

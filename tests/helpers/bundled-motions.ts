@@ -1,8 +1,8 @@
 /** Read-only access to the bundled (CC BY) library VMDs and Gene for retarget tests. */
 import { readFileSync } from 'node:fs';
-import catalog from '../../shared/motion-catalog.json';
-import bundled from '../../shared/bundled-assets.json';
-import { stripDefaultVmdTracks } from '../../src/stage/vmd-tracks';
+import catalog from '../../shared/actions/motion-catalog.json';
+import bundled from '../../shared/actions/bundled-assets.json';
+import { stripDefaultVmdTracks } from '../../src/foundation/vmd-tracks';
 import { readPmxLite } from './pmx-lite';
 import { readVmdLite, type VmdLite } from './vmd-lite';
 

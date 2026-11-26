@@ -1,0 +1,5 @@
+/* 一部分关了 (overhaul step 7): the banner takes .chat-availability's place and style (src/brain/chat-availability.css); these are its lines
+   and the note beside a switch whose part is off. */
+.part-health-lines p { margin: 2px 0 0; }
+.part-off { opacity: 0.6; }
+.part-off-note { display: block; margin-top: 4px; font-size: 12px; color: #e8c97a; }

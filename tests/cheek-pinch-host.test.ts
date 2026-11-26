@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import { MoodHost } from '../electron/mood';
-import { DEFAULT_MOOD_PARAMETERS, restoreMoodState } from '../shared/mood';
-import type { MoodView } from '../shared/mood-runtime';
+import { MoodHost } from '../electron/mood/mood';
+import { DEFAULT_MOOD_PARAMETERS, restoreMoodState } from '../shared/foundation/mood';
+import type { MoodView } from '../shared/mood/mood-runtime';
 import { FixedTouchFeedEffect } from '../shared/behaviors/touch-feed-effect/fake';
 
 async function withHost(run: (context: {

@@ -4,8 +4,8 @@ import { lstat, mkdir, mkdtemp, readFile, readdir, realpath, rm, symlink, writeF
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test, { type TestContext } from "node:test";
-import { MotionLibrary } from "../electron/motion-library";
-import type { MotionCatalog, MotionDownloadFile, MotionPack } from "../shared/motion-library";
+import { MotionLibrary } from "../electron/actions/motion-library";
+import type { MotionCatalog, MotionDownloadFile, MotionPack } from "../shared/actions/motion-library";
 
 const digest = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 

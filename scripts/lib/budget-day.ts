@@ -1,25 +1,25 @@
 // I-010 互动余额: one simulated day (08:00–24:00) on the real MoodHost (boredom, speech cues, the "没人回应最多几句" quota), the real
-// opening choice (electron/inner-loop/opening-host.ts, her pick), the real 她也会需要你 host and the real 猜拳 invitation rule, with and
+// opening choice (electron/brain/opening-host.ts, her pick), the real 她也会需要你 host and the real 猜拳 invitation rule, with and
 // without the interaction budget, on a fake clock. Nothing calls a model: when the opening choice gives her a speech cue she always
 // says her line (an upper bound, the same on both sides). Used by tests/interaction-budget-day.test.ts and
 // scripts/interaction-budget-day.ts (the numbers in docs/claude/2026-11-05-i010-interaction-budget.md).
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { MoodHost } from '../../electron/mood';
-import { OpeningHost, type OpeningLoop } from '../../electron/inner-loop/opening-host';
-import { innerLoopQuietAt } from '../../electron/inner-loop/context';
-import { HerNeedsHost } from '../../electron/her-needs/host';
-import { InteractionBudgetHost, openingBudget } from '../../electron/interaction-budget/host';
+import { MoodHost } from '../../electron/mood/mood';
+import { OpeningHost, type OpeningLoop } from '../../electron/brain/opening-host';
+import { innerLoopQuietAt } from '../../electron/initiative/inner-loop/context';
+import { HerNeedsHost } from '../../electron/mood/her-needs/host';
+import { InteractionBudgetHost, openingBudget } from '../../electron/initiative/interaction-budget/host';
 import type { InteractionBudgetKnobs } from '../../shared/behaviors/interaction-budget/knobs';
-import { budgetCreditKind } from '../../electron/companion';
+import { budgetCreditKind } from '../../electron/brain/companion';
 import { OpeningChoiceDirector } from '../../shared/behaviors/opening-choice/choose';
 import { FixedBoredomTiming } from '../../shared/behaviors/boredom-timing/fake';
-import { rpsInviteVerdict, rpsPlayfulness } from '../../shared/rps-personality';
-import { advanceFatigue, createFatigue, DEFAULT_FATIGUE_PARAMETERS, type FatigueState } from '../../shared/fatigue';
-import type { MoodCue, MoodParameters } from '../../shared/mood';
-import type { MoodView } from '../../shared/mood-runtime';
-import type { InnerLoopFocus } from '../../shared/inner-loop';
+import { rpsInviteVerdict, rpsPlayfulness } from '../../shared/initiative/rps-personality';
+import { advanceFatigue, createFatigue, DEFAULT_FATIGUE_PARAMETERS, type FatigueState } from '../../shared/mood/fatigue';
+import type { MoodCue, MoodParameters } from '../../shared/foundation/mood';
+import type { MoodView } from '../../shared/mood/mood-runtime';
+import type { InnerLoopFocus } from '../../shared/initiative/inner-loop';
 
 const MINUTE = 60_000;
 const STEP = 5_000;
@@ -171,7 +171,7 @@ export async function runBudgetDay(options: BudgetDayOptions): Promise<BudgetDay
           rps.invites.push({ at: clock.now, date: '2026-11-05' });
           result.lines++; result.lineAt.push(Math.round(minuteOf(clock.now)));
           const accepted = userRandom() < options.user.accept;
-          // "来！" answers her invitation (electron/rps/host.ts respond: counted once per invitation, not a mood event).
+          // "来！" answers her invitation (electron/initiative/rps/host.ts respond: counted once per invitation, not a mood event).
           if (accepted) later(1, () => { if (budget?.credit(characterId, 'answer', `rps-answer:${++serial}`)) result.interactions++; });
           if (accepted) later(2, () => {
             result.games++;

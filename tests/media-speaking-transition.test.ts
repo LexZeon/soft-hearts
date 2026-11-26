@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MediaInput } from '../src/ui/MediaInput';
-import { MicrophoneInput } from '../src/ui/MicrophoneInput';
-import { AudioCaptureHost } from '../electron/audio-capture-host';
-import { MediaRuntime } from '../electron/runtime';
-import type { VoicePcmReceipt } from '../shared/voice-segments';
+import { MediaInput } from '../src/senses/MediaInput';
+import { MicrophoneInput } from '../src/senses/MicrophoneInput';
+import { AudioCaptureHost } from '../electron/senses/audio-capture-host';
+import { MediaRuntime } from '../electron/senses/media-runtime';
+import type { VoicePcmReceipt } from '../shared/voice/voice-segments';
 
 interface Ports { media: MediaInput; feed(value: number): void; at(ms: number): void; waves: ArrayBuffer[]; signals: string[]; ownership(): { acquisitions: number; stops: number; owner: string | null }; }
 async function fixture(run: (ports: Ports) => Promise<void>): Promise<void> {

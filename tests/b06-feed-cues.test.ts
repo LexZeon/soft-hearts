@@ -1,16 +1,16 @@
 import assert from 'node:assert/strict';
 import test, { type TestContext } from 'node:test';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { DEFAULT_TTS_CONFIG, type TtsConfig, type TtsStreamEvent } from '../shared/tts';
-import { FEED_CUE_INSTRUCTION, FEED_CUE_MAX_BYTES, FEED_CUE_TEXT, FEED_SOUND_IDS, type FeedCueKind } from '../shared/feed-cue';
-import { FeedCueSynth } from '../electron/feed-cue';
-import { SpeechRuntime } from '../electron/speech-runtime';
-import { FEED_CUE_DEADLINE_MS, FEED_CUE_WAIT_MS, FEED_RESUME_DELAY_MS, FeedSpeechPause, type FeedCuePort } from '../src/ui/feed-speech-pause';
-import { FeedCuePlayer, decodeCue } from '../src/ui/feed-cue-player';
-import { SharedAudioOutput } from '../src/ui/audio-output';
-import { CANCEL_SETTLE_MS, SpeechOutput } from '../src/ui/speech';
-import { VoiceOutput } from '../src/ui/VoiceOutput';
-import { CHEW_OPEN, EMPTY_CONTACT, MoodFeedback } from '../src/stage/mood-feedback';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { DEFAULT_TTS_CONFIG, type TtsConfig, type TtsStreamEvent } from '../shared/voice/tts';
+import { FEED_CUE_INSTRUCTION, FEED_CUE_MAX_BYTES, FEED_CUE_TEXT, FEED_SOUND_IDS, type FeedCueKind } from '../shared/initiative/feed-cue';
+import { FeedCueSynth } from '../electron/senses/feed-cue';
+import { SpeechRuntime } from '../electron/voice/speech-runtime';
+import { FEED_CUE_DEADLINE_MS, FEED_CUE_WAIT_MS, FEED_RESUME_DELAY_MS, FeedSpeechPause, type FeedCuePort } from '../src/initiative/feed-speech-pause';
+import { FeedCuePlayer, decodeCue } from '../src/initiative/feed-cue-player';
+import { SharedAudioOutput } from '../src/voice/audio-output';
+import { CANCEL_SETTLE_MS, SpeechOutput } from '../src/voice/speech';
+import { VoiceOutput } from '../src/voice/VoiceOutput';
+import { CHEW_OPEN, EMPTY_CONTACT, MoodFeedback } from '../src/mood/mood-feedback';
 import { flush } from './helpers/r02-audio-world';
 import { pausableEngine, pauseAudioWorld } from './helpers/feed-pause-audio';
 

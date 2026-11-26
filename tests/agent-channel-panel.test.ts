@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { setUiLanguage } from '../shared/ui-language';
-import type { AgentChannelView } from '../shared/agent-channel';
-import { AgentChannelPanel, agentChannelStatusText, agentNoticeText, runAgentRendererAction } from '../src/ui/AgentChannelPanel';
+import { setUiLanguage } from '../shared/foundation/ui-language';
+import type { AgentChannelView } from '../shared/safety/agent-channel';
+import { AgentChannelPanel, agentChannelStatusText, agentNoticeText, runAgentRendererAction } from '../src/safety/AgentChannelPanel';
 
 class Element {
   children: Element[] = []; className = ''; textContent: string | null = ''; type = '';
@@ -96,7 +96,7 @@ const mutualOn: AgentChannelView = { ...on, interconnect: { enabled: true, expli
   recycleBin: [{ id: 'e1', characterId: 'c1', characterName: '小桃', part: 'chat', count: 3, label: '聊天记忆 3 段', deletedAt: Date.UTC(2026, 10, 3), expiresAt: Date.UTC(2026, 10, 10, 12) }] },
   lastAction: { tool: 'set_setting', title: '调整设置', tier: 'reversible', outcome: 'allowed', at: Date.now(), undo: { id: 'u1', label: '把「渲染帧率」改回 60 FPS · 流畅', expiresAt: Date.now() + 60_000 } } };
 
-test('三方互通: on by default with the channel switch locked open; 撤回, 找回, 重新接上 and the bin period go to the host', async () => {
+test('三方互通: on by default with the channel switch locked open; 撤回 and 重新接上 go to the host', async () => {
   const requests: string[] = [];
   let publish: (view: AgentChannelView) => void = () => {};
   const root = new Element('div');
@@ -106,8 +106,6 @@ test('三方互通: on by default with the channel switch locked open; 撤回, �
     setInterconnect: async enabled => { requests.push(`mutual:${enabled}`); return { ...off, interconnect: { ...mutualOn.interconnect!, enabled, explicit: true } }; },
     relink: async () => { requests.push('relink'); return mutualOn; },
     undo: async id => { requests.push(`undo:${id}`); return { ...mutualOn, lastAction: { ...mutualOn.lastAction!, undo: undefined } }; },
-    restore: async id => { requests.push(`restore:${id}`); return mutualOn; },
-    setRecycleDays: async days => { requests.push(`days:${days}`); return mutualOn; },
   });
   await flush();
   const mutual = part(root, 'interconnect'), channel = part(root, 'enabled');
@@ -129,15 +127,12 @@ test('三方互通: on by default with the channel switch locked open; 撤回, �
   }
   publish({ ...mutualOn, lastAction: null, interconnect: { ...mutualOn.interconnect!, claudeCode: { state: 'removed', name: 'soft-hearts-next', message: '你的 Claude Code 里现在没有 soft-hearts-next' } } });
   part(root, 'relink').onclick!(); await flush();
-  const entry = all(root).find(node => node.dataset.recycleEntry === 'e1')!;
-  assert.match(entry.children[0].textContent!, /「小桃」的聊天记忆 3 段 · 11 月 10 日前可以找回/);
-  entry.children[1].onclick!(); await flush();
-  const days = part(root, 'recycle-days') as any;
-  assert.equal(days.value, '7');
-  days.value = '14'; days.onchange(); await flush();
-  days.value = '0'; days.onchange(); await flush();
+  // I-144: the recycle bin moved next to where things are deleted; here only a pointer to it.
+  assert.equal(all(root).some(node => node.dataset.recycleEntry === 'e1'), false, 'no list here any more');
+  assert.equal(all(root).some(node => node.dataset.agentChannel === 'recycle-days'), false);
+  assert.equal(part(root, 'recycle-pointer').textContent, '删掉的东西在角色页和记忆页的回收站里。');
   mutual.checked = false; mutual.onchange!(); await flush();
-  assert.deepEqual(requests, ['undo:u1', 'relink', 'restore:e1', 'days:14', 'mutual:false'], 'an out-of-range period is not sent');
+  assert.deepEqual(requests, ['undo:u1', 'relink', 'mutual:false']);
   assert.equal(mutual.checked, false); assert.equal(channel.disabled, false, 'off: the channel switch decides again');
   assert.match(part(root, 'interconnect-status').textContent!, /你关掉的，会一直记着/);
   publish({ ...mutualOn, interconnect: { ...mutualOn.interconnect!, enabled: false, explicit: false, unreadable: true } });

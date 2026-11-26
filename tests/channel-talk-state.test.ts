@@ -6,16 +6,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import type { AppSettings } from '../shared/contracts';
-import { AGENT_SETTINGS, AGENT_TOOLS, validateAgentSettingValue } from '../shared/agent-channel';
-import { CAPABILITIES, capabilityChannel } from '../shared/capabilities';
-import { herStateWords, sinceWords } from '../shared/her-state-words';
-import { AgentToolRegistry } from '../electron/agent-channel/registry';
-import { createAppTools } from '../electron/agent-channel/app-tools';
-import { createHostBridge, type IpcHandler } from '../electron/agent-channel/bridge';
-import { chatSettingApplier, chatSettingsSystemText, currentSettingsText, parseChatSettingProposal, turnSettingsMentioned, ChatSettingProposals } from '../electron/chat-settings';
-import { validateSettings } from '../electron/validation';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import type { AppSettings } from '../shared/foundation/settings';
+import { AGENT_SETTINGS, AGENT_TOOLS, validateAgentSettingValue } from '../shared/safety/agent-channel';
+import { CAPABILITIES, capabilityChannel } from '../shared/settings/capabilities';
+import { herStateWords, sinceWords } from '../shared/mood/her-state-words';
+import { AgentToolRegistry } from '../electron/safety/agent-channel/registry';
+import { createAppTools } from '../electron/safety/agent-channel/app-tools';
+import { createHostBridge, type IpcHandler } from '../electron/safety/agent-channel/bridge';
+import { chatSettingApplier, chatSettingsSystemText, currentSettingsText, parseChatSettingProposal, turnSettingsMentioned, ChatSettingProposals } from '../electron/brain/chat-settings';
+import { validateSettings } from '../electron/settings/validation';
 
 const CARD = '0f8fad5b-d9cb-469f-a165-70867728950e';
 const MINUTE = 60_000;
@@ -119,7 +119,7 @@ test('saved settings: an older file has none and reads as 适中; unknown values
 });
 
 test('the settings page has a short labelled select with the three choices', () => {
-  const layout = readFileSync(new URL('../src/ui/layout.ts', import.meta.url), 'utf8');
+  const layout = readFileSync(new URL('../src/settings/layout.ts', import.meta.url), 'utf8');
   const select = /<select id="proactive-talk"[^>]*>(.*?)<\/select>/su.exec(layout);
   assert.ok(select, 'the select is on the page');
   assert.deepEqual([...select![1].matchAll(/<option value="(\w+)">([^<]+)</gu)].map(m => [m[1], m[2]]), [['less', '少一点'], ['normal', '适中（默认）'], ['more', '多一点']]);

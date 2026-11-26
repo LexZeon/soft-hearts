@@ -3,7 +3,7 @@
 // fallback path. Calm mood, awake, no jitter. Pure arithmetic: no model, no profile, no files.
 //   node node_modules/tsx/dist/cli.mjs scripts/lib/reactions-table-report.ts                     (the preinstalled Gene card)
 //   node node_modules/tsx/dist/cli.mjs scripts/lib/reactions-table-report.ts 70 60 40 50 65 55   (six dispositions, in the registry order)
-import { preinstalledGeneDraft } from '../../electron/gene-preinstalled-card';
+import { preinstalledGeneDraft } from '../../electron/cards/gene-preinstalled-card';
 import { DISPOSITION_IDS, deriveDispositions, dispositionSummary, type Dispositions } from '../../shared/behaviors/reactions/dispositions';
 import { REACTION_EVENT_IDS } from '../../shared/behaviors/reactions/events';
 import { REACTION_TABLE } from '../../shared/behaviors/reactions/knobs';

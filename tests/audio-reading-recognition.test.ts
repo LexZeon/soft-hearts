@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ForegroundAsr } from '../electron/foreground-asr';
+import { ForegroundAsr } from '../electron/senses/foreground-asr';
 
 function deferred<T>() {
   let resolve!: (value: T) => void;

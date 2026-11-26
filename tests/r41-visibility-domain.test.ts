@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {CompanionCommandHost,type CommandCommitResult} from '../electron/companion-command-host';
-import {classifyCompanionCommand,formatCompanionCommandReceipt} from '../electron/companion-command-intent';
-import type {CompanionCommandAction,CompanionCommandCandidate,CompanionCommandView} from '../shared/companion-commands';
+import {CompanionCommandHost,type CommandCommitResult} from '../electron/settings/companion-command-host';
+import {classifyCompanionCommand,formatCompanionCommandReceipt} from '../electron/settings/companion-command-intent';
+import type {CompanionCommandAction,CompanionCommandCandidate,CompanionCommandView} from '../shared/settings/companion-commands';
 
 const visible=(value:boolean):CompanionCommandAction=>({actionId:'pet.set-visible',parameters:{value}});
 function fixture(candidate:CompanionCommandCandidate={kind:'explicit',action:visible(true)}){

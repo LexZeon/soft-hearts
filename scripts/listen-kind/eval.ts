@@ -6,7 +6,7 @@
  *   node node_modules/tsx/dist/cli.mjs scripts/listen-kind/eval.ts [--out .local/listen-kind]
  *
  * Per clip: the fast layer (src/stage/music-likeness.ts) on the capture's own samples (tests/helpers/listen-audio.ts analyser), and the
- * host's judgement (electron/listen-kind-source.ts) fed what the pet window would report each second (sound or not, the score). The
+ * host's judgement (electron/senses/listen-kind-source.ts) fed what the companion window would report each second (sound or not, the score). The
  * host is run twice: on the beat alone, and with recognizer tags simulated per 12 s clip by the rules measured on the real local
  * recognizer (docs/claude/2026-11-03-ambient-local-asr.md: music alone → bgm, no words; Chinese speech over music → bgm with words;
  * English speech over music → speech with words; speech alone → speech with words; laughter → laughter, an assumption: not measured).
@@ -14,9 +14,9 @@
 import { mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { MusicLikeness } from '../../src/stage/music-likeness';
-import { ListenKindJudge } from '../../electron/listen-kind-source';
-import type { ListenKind } from '../../shared/listen-kind';
-import type { AsrEventTag } from '../../electron/asr/decode';
+import { ListenKindJudge } from '../../electron/senses/listen-kind-source';
+import type { ListenKind } from '../../shared/senses/listen-kind';
+import type { AsrEventTag } from '../../electron/senses/asr/decode';
 import { RATE, ambientPad, analyserSamples, concat, drumSong, laughter, level, mix, noise, readWav, seconds, sungVocal } from '../../tests/helpers/listen-audio';
 
 const root = join(import.meta.dirname, '..', '..');

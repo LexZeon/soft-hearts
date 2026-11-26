@@ -1,5 +1,5 @@
 /**
- * I-048: her watch notes follow her chat memory through the existing recycle bin (electron/recoverable-forget.ts). Forget: they ride in
+ * I-048: her watch notes follow her chat memory through the existing recycle bin (electron/memory/recoverable-forget.ts). Forget: they ride in
  * the chat entry and are no longer recalled, the cached screenshots go; restore: they and their keywords are back and recalled; purge
  * (expiry): the entry's files are gone, and with them the notes; another character is untouched. Real stores in temporary folders,
  * synthetic text, no model.
@@ -9,10 +9,10 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readdir, rm, readFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { MemoryStore } from '../electron/memory';
-import { MemoryRecycleBin } from '../electron/memory-recycle-bin';
-import { forgetRecoverably, restoreRecoverably } from '../electron/recoverable-forget';
-import { WatchTogether } from '../electron/watch-notes/wiring';
+import { MemoryStore } from '../electron/memory/memory';
+import { MemoryRecycleBin } from '../electron/memory/memory-recycle-bin';
+import { forgetRecoverably, restoreRecoverably } from '../electron/memory/recoverable-forget';
+import { WatchTogether } from '../electron/senses/watch-notes/wiring';
 
 const T0 = 2_000_000_000_000, DAY = 86_400_000;
 const A = 'card-a', B = 'card-b', providerScope = 'claude-scope';

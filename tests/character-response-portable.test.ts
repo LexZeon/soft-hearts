@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { defaultCharacterMoodTemplate, CHARACTER_CARD_FORMAT } from '../shared/character-cards';
-import { defaultCharacterResponseProfile, defaultCharacterResponseRule } from '../shared/character-response';
-import { exportCharacterWithResponse, parseCharacterResponseImport } from '../shared/character-response-portable';
+import { defaultCharacterMoodTemplate, CHARACTER_CARD_FORMAT } from '../shared/cards/character-cards';
+import { defaultCharacterResponseProfile, defaultCharacterResponseRule } from '../shared/cards/character-response';
+import { exportCharacterWithResponse, parseCharacterResponseImport } from '../shared/cards/character-response-portable';
 
 const draft = () => ({
   name: 'Original fictional role', description: '<b>Literal text only</b>', personality: 'Patient',

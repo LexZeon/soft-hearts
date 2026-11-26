@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test, { type TestContext } from 'node:test';
-import { StreamingVoicePlayer } from '../src/ui/EmotionalVoice';
-import { AUDIO_OUTPUT_START_TIMEOUT_MS, SharedAudioOutput } from '../src/ui/audio-output';
+import { StreamingVoicePlayer } from '../src/voice/EmotionalVoice';
+import { AUDIO_OUTPUT_START_TIMEOUT_MS, SharedAudioOutput } from '../src/voice/audio-output';
 import { deferred, flush, pcm, world } from './helpers/r02-audio-world';
 
 /*

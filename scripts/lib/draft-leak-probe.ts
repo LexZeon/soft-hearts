@@ -13,19 +13,19 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { findClaude } from '../../electron/claude';
-import { compileCharacterPersona } from '../../shared/character-cards';
-import { DEFAULT_MOOD_PARAMETERS, type MoodParameters } from '../../shared/mood';
-import { rpsChatContext } from '../../shared/rps-personality';
-import type { ChatMessage } from '../../shared/contracts';
+import { findClaude } from '../../electron/brain/claude';
+import { compileCharacterPersona } from '../../shared/cards/character-cards';
+import { DEFAULT_MOOD_PARAMETERS, type MoodParameters } from '../../shared/foundation/mood';
+import { rpsChatContext } from '../../shared/initiative/rps-personality';
+import type { ChatMessage } from '../../shared/foundation/chat';
 import { GENE_DAY_CARD } from '../inner-loop-day-cards';
 import { replay, type TurnRecord } from './prompt-eval-analysis';
 import type { EvalScenario } from './prompt-eval-scenarios';
 import { runEval, type RunOptions } from './prompt-eval-runner';
 import { RPS_ACCEPT_OLD, toOldRpsWording } from './draft-leak-old-wording';
-import { COMPANION_RULES } from '../../shared/companion-rules';
-import { claudeSessionSystemPrompt } from '../../electron/claude-session-prompt';
-import { perceptionTurnLine } from '../../shared/perception-rule';
+import { COMPANION_RULES } from '../../shared/brain/companion-rules';
+import { claudeSessionSystemPrompt } from '../../electron/brain/claude-session-prompt';
+import { perceptionTurnLine } from '../../shared/brain/perception-rule';
 
 const root = path.resolve(import.meta.dirname, '..', '..');
 const DIR = path.join(root, '.local', 'fidelity');

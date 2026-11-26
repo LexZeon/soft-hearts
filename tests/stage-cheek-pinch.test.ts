@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CheekPinchMotion, type CheekPinchMotionFrame, type CheekPinchMotionInput, type CheekPinchMotionStyle } from '../src/stage/cheek-pinch-feedback';
+import { CheekPinchMotion, type CheekPinchMotionFrame, type CheekPinchMotionInput, type CheekPinchMotionStyle } from '../src/mood/cheek-pinch-feedback';
 
-const style: CheekPinchMotionStyle = { posture: 50, face: 50, playful: 50, mood: 'happy', sensitivity: 1 };
+// I-136: the face comes from the pick (here the table's "beam", a squinting smile); the mood label no longer writes one.
+const style: CheekPinchMotionStyle = { posture: 50, face: 50, playful: 50, mood: 'happy', sensitivity: 1, pick: { smile: 0.26, eyelids: 0.32 } };
 const hold: CheekPinchMotionInput = { pinching: true, x: 0.2, y: 0, side: 'left' };
 const release: CheekPinchMotionInput = { pinching: false, x: 0, y: 0, side: null };
 function settle(motion: CheekPinchMotion, input = hold, settings = style, seconds = 2, fps = 60) {
@@ -84,13 +85,26 @@ test('invalid movement or missing side decays safely, without retaining a half-v
   within(settle(new CheekPinchMotion(), hold, { ...style, sensitivity: NaN, face: Infinity, posture: NaN, playful: -Infinity }));
 });
 
-test('mood and character strengths change feeling while zero sensitivity retains small direct movement', () => {
+test('I-136: the face is the pick, scaled by the card; the mood label writes no smile; zero sensitivity keeps small direct movement', () => {
   const happy = settle(new CheekPinchMotion());
+  // The same pick in a concerned mood shows the same face (the pick already read her mood); only the physical gain is gentler.
   const concerned = settle(new CheekPinchMotion(), hold, { ...style, mood: 'concerned' });
-  const unknown = settle(new CheekPinchMotion(), hold, { ...style, mood: 'unknown' });
-  assert.equal(concerned.smile, 0);
-  assert.ok(happy.smile > unknown.smile && unknown.smile > concerned.smile);
-  assert.ok(happy.eyelids > concerned.eyelids);
+  assert.ok(Math.abs(concerned.smile - happy.smile) < 1e-9 && Math.abs(concerned.eyelids - happy.eyelids) < 1e-9);
+  assert.ok(Math.abs(concerned.headY) < Math.abs(happy.headY), 'a serious mood keeps the gentler physical deflection');
+  // No pick: no face of its own, whatever the label says (the scripted smile is gone); the physical deflection still plays.
+  for (const mood of ['happy', 'close', 'content', 'calm']) {
+    const plain = settle(new CheekPinchMotion(), hold, { ...style, mood, pick: null });
+    assert.equal(plain.smile, 0, mood); assert.equal(plain.eyelids, 0, mood);
+    assert.ok(plain.headY > 0, mood);
+  }
+  // A wince (no smile, squeezed eyes) and a small smile read differently.
+  const wince = settle(new CheekPinchMotion(), hold, { ...style, pick: { smile: 0, eyelids: 0.36 } });
+  const small = settle(new CheekPinchMotion(), hold, { ...style, pick: { smile: 0.14, eyelids: 0.12 } });
+  assert.equal(wince.smile, 0);
+  assert.ok(small.smile > wince.smile && wince.eyelids > small.eyelids);
+  // The card's expression strength scales the picked face; 0 shows none.
+  const strong = settle(new CheekPinchMotion(), hold, { ...style, face: 100 });
+  assert.ok(strong.smile > happy.smile);
   const gentle = settle(new CheekPinchMotion(), hold, { ...style, sensitivity: 0, posture: 0 });
   assert.ok(gentle.headY > 0 && gentle.headY < happy.headY);
   const noFace = settle(new CheekPinchMotion(), hold, { ...style, face: 0 });

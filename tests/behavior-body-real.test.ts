@@ -7,7 +7,7 @@ import { MeshBasicMaterial, type AnimationAction, type AnimationClip, type Anima
 import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
 import { BehaviorBodyPlayer, isBehaviorBodyTrack, type BehaviorBodyMaskId } from '../src/stage/behavior-body';
 import { LayeredMmdAnimation } from '../src/stage/motion-layers';
-import { createVmdParser } from '../src/stage/vmd';
+import { createVmdParser } from '../src/foundation/vmd';
 
 const cases = [
   { packId: 'gene', motionId: 'convinced', maskId: 'candidate-head-v1', overlap: 2,
@@ -26,8 +26,8 @@ function trackSnapshot(track: KeyframeTrack) {
 
 /** Real public PMX/skeleton/animation builder and real helper IK/grant; inert CPU materials only. */
 async function fixture() {
-  const catalog = JSON.parse(await readFile('shared/motion-catalog.json', 'utf8'));
-  const manifest = JSON.parse(await readFile('shared/bundled-assets.json', 'utf8'));
+  const catalog = JSON.parse(await readFile('shared/actions/motion-catalog.json', 'utf8'));
+  const manifest = JSON.parse(await readFile('shared/actions/bundled-assets.json', 'utf8'));
   const modelBytes = await readFile(join('assets/bundled', manifest.root, manifest.model.relativePath));
   assert.equal(sha(modelBytes), '0ef63a75a7699f58399ae655357f91542fc5209355aac925a589aac42669df37');
   const parserModule = 'three/examples/jsm/libs/mmdparser.module.js';

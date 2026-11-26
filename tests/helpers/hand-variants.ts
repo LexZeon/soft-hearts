@@ -2,8 +2,8 @@
  * Skeleton step 3: Gene-derived skeletons whose hands rest differently (no other model, nothing of the user's, no PMX bytes
  * written). Each edit changes bone rest positions in place, on a copy of Gene's parsed bones or the stage's rest bones.
  */
-import { qaxisAngle, qrotate, vnormalize, vsub } from '../../shared/motion-retarget';
-import type { Vec3 } from '../../shared/universal-skeleton';
+import { qaxisAngle, qrotate, vnormalize, vsub } from '../../shared/actions/motion-retarget';
+import type { Vec3 } from '../../shared/foundation/universal-skeleton';
 
 export interface EditableBone { name: string; parent: number; position: Vec3 }
 

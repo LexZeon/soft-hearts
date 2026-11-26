@@ -1,16 +1,16 @@
 // "别看"之后她自己主动想看画面（R10）也不带摄像头的图（Codex X-337 留下的缺口，docs/claude/2026-11-06-small-gaps.md）。
 // 真实的媒体开关、真实的"别看/你看看我"判断（LookAttachments + LookTurns）、真实的主动看画面引擎（ProactiveVision）和它的取图口
-// （electron/proactive-capture.ts，main.ts 用的同一个）；摄像头窗口是假的：只要被问就给一张图，所以"不带"只能是宿主自己拦下的。
+// （electron/senses/proactive-capture.ts，main.ts 用的同一个）；摄像头窗口是假的：只要被问就给一张图，所以"不带"只能是宿主自己拦下的。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { Attachment } from '../shared/contracts';
-import { MediaRuntime } from '../electron/runtime';
-import { LookTurns } from '../electron/look-turns';
-import { LookAttachments } from '../electron/look-attachments';
-import { ProactiveVision } from '../electron/proactive-vision';
-import { ProactiveSpeechGate } from '../electron/proactive-speech-gate';
-import { captureProactiveFrames, cameraFrameAllowed } from '../electron/proactive-capture';
-import { lookHint } from '../src/look-send';
+import type { Attachment } from '../shared/foundation/chat';
+import { MediaRuntime } from '../electron/senses/media-runtime';
+import { LookTurns } from '../electron/senses/look-turns';
+import { LookAttachments } from '../electron/senses/look-attachments';
+import { ProactiveVision } from '../electron/senses/proactive-vision';
+import { ProactiveSpeechGate } from '../electron/initiative/proactive-speech-gate';
+import { captureProactiveFrames, cameraFrameAllowed } from '../electron/senses/proactive-capture';
+import { lookHint } from '../src/senses/look-send';
 
 const camera = 'data:image/jpeg;base64,/9j/cameraAAAA';
 const screen = 'data:image/jpeg;base64,/9j/screenAAAA';

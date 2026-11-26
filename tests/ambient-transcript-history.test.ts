@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { AmbientTranscriptHistory, type AmbientTranscriptHistoryActions, type AmbientTranscriptHistoryOptions } from '../src/ui/AmbientTranscriptHistory';
-import type { AmbientComment, AmbientDeleteResult, AmbientTranscript, AmbientTranscriptPage, AmbientTranscriptQuery, AmbientTranscriptSummary } from '../shared/ambient-audio';
+import { AmbientTranscriptHistory, type AmbientTranscriptHistoryActions, type AmbientTranscriptHistoryOptions } from '../src/senses/AmbientTranscriptHistory';
+import type { AmbientComment, AmbientDeleteResult, AmbientTranscript, AmbientTranscriptPage, AmbientTranscriptQuery, AmbientTranscriptSummary } from '../shared/senses/ambient-audio';
 
 // Text-only DOM/action fixture. It supplies no async generation or deletion logic.
 class Element {

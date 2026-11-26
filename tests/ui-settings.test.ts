@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mergeSettings } from "../src/ui/settings-merge";
+import { mergeSettings } from "../src/settings/settings-merge";
 test("host clears unchanged cloned layer assets while preserving a concurrent edit in another channel", () => {
   const asset = (name: string) => ({ path: `${name}.vmd`, url: `mmd-asset://test/${name}.vmd`, name });
   const sent = { motion: asset("stand"), motionLayers: { gesture: asset("talk") as ReturnType<typeof asset> | null, expression: asset("happy") }, camera: { yaw: 0 } };

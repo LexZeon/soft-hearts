@@ -1,7 +1,7 @@
 /** M1: the developer panel shows her want to dance as one line, and hides it when there is nothing to say. */
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { MoodPanel } from '../src/ui/MoodPanel';
+import { MoodPanel } from '../src/mood/MoodPanel';
 
 test('M1 panel: the want-to-dance line follows the stage text and hides when empty', () => {
   class Node {

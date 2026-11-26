@@ -1,12 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import ts from 'typescript';
-import { AudioCaptureHost } from '../electron/audio-capture-host';
-import { parseAudioDanceFrame, parseAudioDanceIntent, type AudioDanceFrame } from '../shared/audio-dance';
-import { AudioDanceFusion } from '../src/ui/audio-dance-fusion';
-import { audioEnergy } from '../src/ui/audio-energy';
-import { MicrophoneInput } from '../src/ui/MicrophoneInput';
+import { AudioCaptureHost } from '../electron/senses/audio-capture-host';
+import { parseAudioDanceFrame, parseAudioDanceIntent, type AudioDanceFrame } from '../shared/senses/audio-dance';
+import { AudioDanceFusion } from '../src/senses/audio-dance-fusion';
+import { audioEnergy } from '../src/senses/audio-energy';
+import { MicrophoneInput } from '../src/senses/MicrophoneInput';
+// Reads as text (test-affected selects this test when they change): 'electron/main.ts'.
+import { WIRING_PRELUDE, wiringRegistration } from './helpers/wiring-source';
 
 const energy = (time = 1, rms = 0.2) => ({ time, rms, low: rms / 2, mid: rms / 3, high: 0 });
 function hostFixture() {
@@ -129,20 +130,18 @@ test('real microphone class keeps dance-only graph local and shares its stream w
 });
 
 test('actual host dance IPC routes only finite current-owner energy and visible-pet intent', () => {
-  const text = readFileSync(new URL('../electron/main.ts', import.meta.url), 'utf8');
-  const ast = ts.createSourceFile('main.ts', text, ts.ScriptTarget.Latest, true);
-  const register = ast.statements.find((n): n is ts.FunctionDeclaration => ts.isFunctionDeclaration(n) && n.name?.text === 'registerIPC')!;
+  // Wiring rewrite step 4c: the two registrations are read across electron/main.ts and electron/wiring/*.ts (exactly one each).
   const names = ['setAudioDanceSourceIntent', 'submitAudioDanceSample'];
-  const statements = names.map(name => register.body!.statements.find(n => ts.isExpressionStatement(n) && ts.isCallExpression(n.expression)
-    && n.expression.arguments[0]?.getText(ast) === `'${name}'`)!.getText(ast));
-  const f = hostFixture(), callbacks: Record<string, Function> = {}, sent: unknown[] = [];
+  const statements = [WIRING_PRELUDE, ...names.map(name => wiringRegistration(name))];
+  const f = hostFixture(), callbacks: Record<string, Function> = {}, sent: unknown[] = [], relayed: unknown[] = [];
   const pet = { webContents: { id: 1, send: (_channel: string, frame: unknown) => sent.push(frame) }, isDestroyed: () => false, isVisible: () => true, isMinimized: () => false };
-  const run = new Function('scopedHost', 'audioCapture', 'pet', 'ownerFor', 'parseAudioDanceIntent', ts.transpile(statements.join('\n'), { target: ts.ScriptTarget.ES2022 }));
-  run((name: string, callback: Function) => { callbacks[name] = callback; }, f.host, pet, (id: number) => id === 1 ? 'pet' : 'controls', parseAudioDanceIntent);
+  const run = new Function('scopedHost', 'audioCapture', 'pet', 'ownerFor', 'parseAudioDanceIntent', 'relayDance', ts.transpile(statements.join('\n'), { target: ts.ScriptTarget.ES2022 }));
+  run((name: string, callback: Function) => { callbacks[name] = callback; }, f.host, pet, (id: number) => id === 1 ? 'pet' : 'controls', parseAudioDanceIntent, (frame: unknown) => relayed.push(frame));
   assert.throws(() => callbacks.setAudioDanceSourceIntent(2, { source: 'microphone', enabled: true }));
   callbacks.setAudioDanceSourceIntent(1, { source: 'microphone', enabled: true }); f.ready('microphone');
   assert.equal(callbacks.submitAudioDanceSample(2, f.frame('microphone')), false);
   assert.equal(callbacks.submitAudioDanceSample(1, f.frame('microphone')), true); assert.equal(sent.length, 1);
   f.host.setDance(false, 'microphone'); f.advance();
   assert.equal(callbacks.submitAudioDanceSample(1, sent[0]), false); assert.equal(sent.length, 1);
+  assert.deepEqual(relayed, [sent[0]], 'batch F: only the accepted frame is offered to her full-screen page (the sense bridge decides the rest)');
 });

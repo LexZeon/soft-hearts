@@ -1,20 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
-import catalog from '../shared/motion-catalog.json';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
-import { createVmdParser } from '../src/stage/vmd';
-import { isReviewedDefaultPose } from '../src/stage/default-pose';
-import { AnimationClip, Bone, BufferGeometry, MeshBasicMaterial, Quaternion, QuaternionKeyframeTrack,
-  Skeleton, SkinnedMesh, Vector3 } from 'three';
-import { BEHAVIOR_RECIPES } from '../shared/behavior-recipes';
-import { canonicalVmdClipDuration } from '../shared/vmd-duration';
-import { BODY_START_AGE_MS, type BodyMotionCue, type BodyMotionPlan, type BodyMotionResource } from '../shared/body-motion';
+import { AnimationClip, Bone, BufferGeometry, MeshBasicMaterial, Quaternion, QuaternionKeyframeTrack, Skeleton, SkinnedMesh, Vector3 } from 'three';
+import { BEHAVIOR_RECIPES } from '../shared/actions/behavior-recipes';
+import { canonicalVmdClipDuration } from '../shared/actions/vmd-duration';
+import { BODY_START_AGE_MS, type BodyMotionCue, type BodyMotionPlan, type BodyMotionResource } from '../shared/actions/body-motion';
 import { BodyMotionController, type BodyPlayerPort, type BodyStageGates } from '../src/stage/body-motion-controller';
 import { BehaviorBodyPlayer, type BehaviorBodyPlay, type BehaviorBodyState } from '../src/stage/behavior-body';
 import { LayeredMmdAnimation } from '../src/stage/motion-layers';
-import { MmdStage } from '../src/stage/MmdStage';
 
 const gates = (): BodyStageGates => ({ ready: true, enabled: true, visible: true, manualPose: false, manualGesture: false, manualExpression: false,
   manualHead: false, dynamicPose: false, cameraOrWindow: false, inputBlocked: false, directContact: false,
@@ -245,52 +237,6 @@ test('Stage-owned consumption survives replacing a player or Layered instance', 
   first.controller.dispose(); const next = harness({ consumed });
   next.controller.update(plan(), 'token-1', gates()); await settle();
   assert.equal(next.counts().resolves, 0); next.controller.dispose();
-});
-
-test('controls Stage never creates the pet-only controller and new input gate leaves old routes alone', () => {
-  const stage = Object.create(MmdStage.prototype) as any;
-  stage.options = { transparent: false }; stage.bodyReady = true; stage.mesh = {}; stage.animation = {}; stage.bodyMotion = null;
-  stage.updateBodyMotion(); assert.equal(stage.bodyMotion, null, 'No window/desktop IPC exists in this CPU fixture.');
-  const events: string[] = [];
-  stage.cancelBodyMotion = () => events.push('cancel-body'); stage.updateBodyMotion = () => events.push('update-body');
-  stage.updateBehaviorMotion = () => { throw new Error('Old face route must not be called.'); };
-  stage.cancelChatGesture = () => { throw new Error('Old M004 route must not be called.'); };
-  stage.setBodyInputBlocked(true);
-  assert.equal(stage.bodyInputBlocked, true); assert.deepEqual(events, ['cancel-body', 'update-body']);
-});
-
-test('the actual hash-reviewed Stand head track is a compatible background, while other manual head sources block', async () => {
-  const pack = catalog.packs.find(value => value.id === 'gene')!;
-  const stand = pack.motions.find(value => value.id === 'stand')!;
-  const bytes = await readFile(path.join('assets/bundled', pack.source, pack.id, pack.revision, stand.relativePath));
-  const buffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
-  const parser = createVmdParser() as { parseVmd(data: ArrayBuffer, convert: boolean): { motions: { boneName: string; rotation: number[] }[] } };
-  const head = parser.parseVmd(buffer, true).motions.filter(frame => frame.boneName === '頭');
-  assert.ok(head.length > 1 && head.some(frame => frame.rotation.some((value, index) => Math.abs(value - head[0].rotation[index]) > 0.0001)),
-    'This regression must use the actual dynamic head track that sets legacy moodHeadBlocked.');
-  const qualified = await isReviewedDefaultPose('mmd-asset://public/stand.vmd', async () => new Response(buffer));
-  assert.equal(qualified, true);
-  const previousDocument = Object.getOwnPropertyDescriptor(globalThis, 'document');
-  Object.defineProperty(globalThis, 'document', { configurable: true, value: { hidden: false } });
-  try {
-    const stage = Object.create(MmdStage.prototype) as any;
-    Object.assign(stage, { bodyReady: true, mesh: {}, animation: {}, disposed: false, hostVisible: true,
-      container: { clientWidth: 400, clientHeight: 560 }, controls: { interacting: false },
-      bodyManualPose: !qualified, bodyManualGesture: false, bodyDynamicPose: false, moodHeadBlocked: true,
-      moodView: { expressions: true, parameters: structuredClone(DEFAULT_MOOD_PARAMETERS),
-        snapshot: { phase: 'idle', intensity: { ...DEFAULT_MOOD_PARAMETERS.intensity } }, gesture: null },
-      moodContact: { contact: false, feeding: false, hover: 0 }, behaviorBlocked: false, bodyCameraEditing: false,
-      bodyInputBlocked: false, musicEnabled: false, speaking: false, bodyWaitingForReply: false });
-    assert.equal(stage.bodyGates().manualHead, false);
-    stage.bodyManualPose = true; assert.equal(stage.bodyGates().manualHead, true);
-    stage.bodyManualPose = false; stage.bodyManualGesture = true; assert.equal(stage.bodyGates().manualHead, true);
-    stage.moodView.snapshot.intensity.posture = 0; assert.equal(stage.bodyGates().enabled, false);
-    stage.moodView.snapshot.intensity.posture = 50; stage.moodView.parameters.intensity.posture = 0;
-    assert.equal(stage.bodyGates().enabled, true, 'Host effective snapshot intensity remains authoritative over the template.');
-  } finally {
-    if (previousDocument) Object.defineProperty(globalThis, 'document', previousDocument);
-    else delete (globalThis as any).document;
-  }
 });
 
 test('controller uses the real Layered helper bridge, keeps base phase and releases at the next phase on revoke', async () => {

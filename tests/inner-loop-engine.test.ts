@@ -1,14 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ProactiveSpeechGate } from '../electron/proactive-speech-gate';
-import { InnerLoop, type InnerLoopDependencies, type InnerLoopMessage } from '../electron/inner-loop/inner-loop';
-import { withoutClaimedCue } from '../electron/inner-loop/claim';
-import { OpeningHost } from '../electron/inner-loop/opening-host';
+import { ProactiveSpeechGate } from '../electron/initiative/proactive-speech-gate';
+import { InnerLoop, type InnerLoopDependencies, type InnerLoopMessage } from '../electron/initiative/inner-loop/inner-loop';
+import { withoutClaimedCue } from '../electron/initiative/inner-loop/claim';
+import { OpeningHost } from '../electron/brain/opening-host';
 import { FixedOpeningChoice } from '../shared/behaviors/opening-choice/fake';
-import { DEFAULT_MOOD_PARAMETERS, createMoodState, getMoodSnapshot, type MoodCue } from '../shared/mood';
-import type { InnerLoopDiagnostic, InnerLoopQuiet } from '../shared/inner-loop';
-import { formatVisionPresentation } from '../shared/vision-runtime';
-import type { MoodView } from '../shared/mood-runtime';
+import { DEFAULT_MOOD_PARAMETERS, createMoodState, getMoodSnapshot, type MoodCue } from '../shared/foundation/mood';
+import type { InnerLoopDiagnostic, InnerLoopQuiet } from '../shared/initiative/inner-loop';
+import { formatVisionPresentation } from '../shared/senses/vision-runtime';
+import type { MoodView } from '../shared/mood/mood-runtime';
 
 const MINUTE = 60_000;
 const flush = async () => { for (let i = 0; i < 20; i++) await Promise.resolve(); };
@@ -69,7 +69,7 @@ test('a cue is decided on first sight only; a held cue stays claimed and a decli
 });
 
 test('invalid answers, timeouts and cancellations do nothing and return the speech quota', async () => {
-  const answers = ['{"action":"speak","text":"好","x":1}', 'not json', '{"action":"speak","text":"一二三四五六七八九十一二三四五六七八九十一"}',
+  const answers = ['{"action":"speak","text":"好","x":1}', 'not json', '{"action":"speak","text":"一二三四五六七八九十一二三四五六七八九十一二三四五六七八九十一"}',
     '{"action":"speak","text":"第一行\\n第二行"}', '{"action":"speak","text":"<b>嗨</b>"}'];
   for (const answer of answers) {
     const h = harness({}, answer);
@@ -163,7 +163,7 @@ test('a speechPerHour or speechWithoutReply of 0 never allows speak', async () =
 });
 
 // #10 (I-020): the fixed order is gone. Her own memorial invitation is still asked first and R20 next; after that
-// she picks (electron/inner-loop/opening-host.ts; the full set is tests/opening-choice.test.ts). Here: the real inner loop under the host.
+// she picks (electron/brain/opening-host.ts; the full set is tests/opening-choice.test.ts). Here: the real inner loop under the host.
 test('one cue, one owner: memorial first, R20 next, then her pick; a cue is decided once', async () => {
   const h = harness({}, '{"action":"speak","text":"在呢"}');
   const calls: string[] = [];

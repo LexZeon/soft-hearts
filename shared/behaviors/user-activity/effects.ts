@@ -5,7 +5,7 @@
  * 绝不做（用测试守住，tests/user-activity.test.ts）：她的话里不出现"你工作了两小时""休息一下""你还在吗"这类词，
  * 也不写屏幕上的内容；这里的句子只有状态和分钟数。
  */
-import type { MoodTendency } from '../../mood';
+import type { MoodTendency } from '../../foundation/mood';
 import { USER_ACTIVITY_KNOBS, type UserActivityKnobs } from './knobs';
 import type { UserActivityView } from './interface';
 

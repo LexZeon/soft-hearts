@@ -6,11 +6,11 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CharacterCardStore } from '../electron/character-cards';
-import { CharacterResponseStore } from '../electron/character-response';
-import { CharacterCardUpdater } from '../electron/character-card-update';
-import { MODEL_SPLIT_BACKUP, planCardForModel, splitCardFromModelAtStartup, type ModelIdentity } from '../electron/character-model-link';
-import { BUNDLED_CHARACTER_MODEL, CHARACTER_CARD_FORMAT, defaultCharacterMoodTemplate } from '../shared/character-cards';
+import { CharacterCardStore } from '../electron/cards/character-cards';
+import { CharacterResponseStore } from '../electron/cards/character-response';
+import { CharacterCardUpdater } from '../electron/cards/character-card-update';
+import { MODEL_SPLIT_BACKUP, planCardForModel, splitCardFromModelAtStartup, type ModelIdentity } from '../electron/cards/character-model-link';
+import { BUNDLED_CHARACTER_MODEL, CHARACTER_CARD_FORMAT, defaultCharacterMoodTemplate } from '../shared/cards/character-cards';
 
 async function withDirectory(run: (directory: string) => Promise<void>): Promise<void> {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'soft-startup-records-'));

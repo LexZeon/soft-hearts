@@ -12,10 +12,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   appLaunchLine, claudeCodeEntry, linkClaudeCode, sameLaunch, spawnClaudeRunner, spareName, type ClaudeCodeLinkOptions,
-} from '../electron/agent-channel/claude-code-link';
-import { registrationArguments, type ShimLaunch } from '../electron/agent-channel/setup-text';
-import { INTERCONNECT_FILE, InterconnectStore } from '../electron/agent-channel/interconnect';
-import { AgentChannelHost } from '../electron/agent-channel/host';
+} from '../electron/safety/agent-channel/claude-code-link';
+import { registrationArguments, type ShimLaunch } from '../electron/safety/agent-channel/setup-text';
+import { INTERCONNECT_FILE, InterconnectStore } from '../electron/safety/agent-channel/interconnect';
+import { AgentChannelHost } from '../electron/safety/agent-channel/host';
+import { manualClock, type ManualClock } from './helpers/manual-clock';
 
 const NAME = 'soft-hearts-next', SPARE = spareName(NAME);
 const fakeClaude = fileURLToPath(new URL('./fixtures/fake-claude-mcp.mjs', import.meta.url));
@@ -29,7 +30,7 @@ const line = (launch: ShimLaunch) => [launch.command, ...launch.args].join(' ');
 
 interface FakeState {
   servers: string[]; calls: string[][]; commands: Record<string, string>; status?: Record<string, string>; rows?: string[]; wrap?: number;
-  failList?: boolean; failAdd?: boolean | string[]; failRemove?: string[]; hang?: string[]; collide?: Record<string, string>;
+  failList?: boolean; failGet?: boolean; getParts?: Record<string, [string, string]>; getScope?: string; failAdd?: boolean | string[]; failRemove?: string[]; hang?: string[]; collide?: Record<string, string>;
 }
 
 async function directory(t: test.TestContext, prefix = 'sh-repoint-'): Promise<string> {
@@ -38,11 +39,32 @@ async function directory(t: test.TestContext, prefix = 'sh-repoint-'): Promise<s
   return dir;
 }
 
-async function fake(t: test.TestContext, state: Partial<FakeState>) {
+/**
+ * With a clock, the runner's time limit is the test's to move: a command that the fake hangs on (it did its change, then never exits)
+ * is cut off when the test advances the clock, and only once the fake has saved that change, so a slow start under load can neither
+ * cut a command off before it did anything nor leave it hanging.
+ */
+async function fake(t: test.TestContext, state: Partial<FakeState>, clock?: ManualClock) {
   const file = path.join(await directory(t), 'state.json');
   await writeFile(file, JSON.stringify({ servers: [], commands: {}, ...state, calls: [] }));
-  const runner = spawnClaudeRunner(process.execPath, { ...process.env, FAKE_CLAUDE_STATE: file }, [fakeClaude]);
+  const real = spawnClaudeRunner(process.execPath, { ...process.env, FAKE_CLAUDE_STATE: file }, [fakeClaude], clock?.timers);
   const read = async () => JSON.parse(await readFile(file, 'utf8')) as FakeState;
+  const runner: ClaudeCodeLinkOptions['runner'] = !clock ? real : (args, ms) => {
+    const running = real(args, ms);
+    void (async () => {
+      const operation = args[1] === 'add' || args[1] === 'remove' ? args[1] : null;
+      const name = operation === 'add' ? args[args.indexOf('--') - 1] : args[2];
+      if (!operation || !(await read()).hang?.includes(`${operation}:${name}`)) return;
+      let finished = false;
+      void running.then(() => { finished = true; });
+      while (!finished) {
+        const now = await read().catch(() => null);
+        if (now && now.servers.includes(name) === (operation === 'add')) { clock.advance(ms); return; }
+        await new Promise(done => setTimeout(done, 10));
+      }
+    })();
+    return running;
+  };
   /** The next start: failures gone, everything else as the last run left it. */
   const heal = async () => { const now = await read(); await writeFile(file, JSON.stringify({ ...now, failAdd: [], failRemove: [], hang: [] })); };
   return { runner, read, heal };
@@ -70,7 +92,8 @@ test('the list parser reads a launch line with spaces, " - " and Chinese in it, 
     const text = `Checking MCP server health…\n\ngithub: npx -y gh - ✓ Connected\n${NAME}: ${old} - ${status}\n${NAME}-dev: x - ✓ Connected\n`;
     assert.deepEqual(claudeCodeEntry(text, NAME), { listed: true, command: old }, status);
   }
-  // Ink may wrap a long row at the terminal width: the row is joined again; white space does not count when comparing.
+  // Ink may wrap a long row at the terminal width: the row is joined again, and only where it was broken may white space be
+  // missing or extra (X-449: white space inside a path is part of its name).
   const wrapped = `${NAME}: ${old.slice(0, 50)}\n${old.slice(50, 120)}\n${old.slice(120)} - ✓ Connected\nnext: y - ✓ Connected`;
   const entry = claudeCodeEntry(wrapped, NAME);
   assert.ok(entry?.listed && entry.command && sameLaunch(entry.command, OLD) && !sameLaunch(entry.command, NEW));
@@ -94,7 +117,8 @@ test('an update: this profile\'s own registration still on the previous version 
     const updated = await link(claude.runner, mark.options());
     assert.equal(updated.state, 'updated', `wrap ${wrap}`); assert.match(updated.message, /改成了这个版本/);
     const after = await claude.read();
-    assert.deepEqual(after.calls, [['mcp', 'list'], add(NEW, SPARE), remove(NAME), add(NEW, NAME), remove(SPARE)],
+    // X-449: a wrapped row is read exactly (`mcp get`) before anything is changed on its strength.
+    assert.deepEqual(after.calls, [['mcp', 'list'], ...(wrap ? [['mcp', 'get', NAME]] : []), add(NEW, SPARE), remove(NAME), add(NEW, NAME), remove(SPARE)],
       'the new launch is registered before the old one goes, and the real name is back before the spare goes');
     assert.deepEqual(after.servers.sort(), ['github', NAME]);
     assert.equal(after.commands[NAME], line(NEW)); assert.equal(after.commands.github, undefined, 'other servers untouched');
@@ -137,11 +161,11 @@ test('an entry whose launch line cannot be read is never changed by itself, even
     { servers: [NAME], commands: { [NAME]: line(OLD) }, rows: [`${NAME}: ${line(OLD)} - ✓ Connected`] }, // twice
   ];
   for (const state of cases) {
-    const claude = await fake(t, state);
+    const claude = await fake(t, { ...state, failGet: true }); // mcp get cannot tell either (tests/i061-link-read.test.ts: when it can)
     const mark = memo();
     const result = await link(claude.runner, mark.options());
     assert.equal(result.state, 'unverified', JSON.stringify(state)); assert.match(result.message, /没能读出/);
-    assert.deepEqual((await claude.read()).calls, [['mcp', 'list']]);
+    assert.deepEqual((await claude.read()).calls.filter(call => call[1] !== 'get'), [['mcp', 'list']]);
     assert.deepEqual(mark.state.marks, []);
   }
 });
@@ -183,9 +207,10 @@ const FAILURES: Array<{ name: string; state: Partial<FakeState>; message: RegExp
 
 test('a failure at any step leaves a working registration, says so, and the next start finishes or tidies it', async t => {
   for (const failure of FAILURES) {
-    const claude = await fake(t, { servers: [NAME], commands: { [NAME]: line(OLD) }, ...failure.state });
+    const clock = manualClock();
+    const claude = await fake(t, { servers: [NAME], commands: { [NAME]: line(OLD) }, ...failure.state }, clock);
     const mark = memo();
-    const result = await link(claude.runner, { ...mark.options(), timeoutMs: failure.state.hang ? 1_500 : 20_000 });
+    const result = await link(claude.runner, { ...mark.options(), timeoutMs: 20_000 });
     assert.match(result.message, failure.message, failure.name);
     const after = await claude.read();
     assert.deepEqual(Object.fromEntries(after.servers.map(name => [name, after.commands[name]])),
@@ -247,7 +272,7 @@ test('Codex round 033: the only working spare is kept until the real name is thi
   const m03 = memo(true);
   const r03 = await link(b03.runner, m03.options());
   assert.equal(r03.state, 'unverified'); assert.match(r03.message, /先留着它/);
-  assert.deepEqual((await b03.read()).calls, [['mcp', 'list']]); assert.equal(m03.state.pending, true);
+  assert.deepEqual((await b03.read()).calls.filter(call => call[1] !== 'get'), [['mcp', 'list']]); assert.equal(m03.state.pending, true);
 
   // B04: registered by this profile once, now the user's entry for another profile: not ours, not changed.
   const b04 = await fake(t, { servers: [NAME], commands: { [NAME]: ELSEWHERE } });

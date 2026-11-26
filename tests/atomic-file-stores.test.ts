@@ -3,13 +3,13 @@ import { mkdtemp, readFile, readdir, rename, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test, { type TestContext } from 'node:test';
-import { createAtomicFileWriter, type AtomicFileWriter } from '../electron/atomic-file';
-import { AssetRegistry } from '../electron/assets';
-import { CharacterCardStore } from '../electron/character-cards';
-import { KEY_SENTINEL, SettingsStore, type SecretStorage } from '../electron/settings';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { DEFAULT_TTS_CONFIG } from '../shared/tts';
-import type { CharacterDraft } from '../shared/character-cards';
+import { createAtomicFileWriter, type AtomicFileWriter } from '../electron/foundation/atomic-file';
+import { AssetRegistry } from '../electron/foundation/assets';
+import { CharacterCardStore } from '../electron/cards/character-cards';
+import { KEY_SENTINEL, SettingsStore, type SecretStorage } from '../electron/settings/settings';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { DEFAULT_TTS_CONFIG } from '../shared/voice/tts';
+import type { CharacterDraft } from '../shared/foundation/character-card';
 
 const secrets: SecretStorage = {
   isEncryptionAvailable: () => true,

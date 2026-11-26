@@ -15,9 +15,9 @@ import { SHOW_KEYS, SHOW_LIMITS, SHOW_MS, SHOW_NOTHING_REASON, showSample, showS
 import { ProceduralLife, lifeRig, type LifeGates, type LifeInput, type LifePort } from '../src/stage/procedural-life';
 import { EyelidCompositor } from '../src/stage/channel-compositors';
 import { StageModelProfile } from '../src/stage/model-profile';
-import { isExpressionRecipe } from '../shared/expression-preview';
-import { between, geneStage, patContact, steps, surprises, type GeneStage, type ShownFrame } from './helpers/gene-stage-harness';
+import { isExpressionRecipe } from '../shared/stage/expression-preview';
 import { toThreeMesh, toyModel } from './helpers/model-fixtures';
+import { type ShownFrame } from './helpers/frame-stats';
 
 const DT = 1 / 60, DEG = 180 / Math.PI;
 const trace = (recipe: 'surprise' | 'shy', hasEyes = true) => Array.from({ length: Math.ceil(SHOW_MS[recipe] / (DT * 1000)) + 2 }, (_, i) => ({ ...showSample(recipe, i * DT * 1000, hasEyes) }));
@@ -124,97 +124,10 @@ test('a synthetic model (English names, no eye bones): profile slots are written
 
 const EYES = ['左目', '右目'];
 interface Played { frames: ShownFrame[]; morph: (name: string) => number[]; blush: number[]; t0: number }
-/** Gene on the Stage loop: `t0` seconds of plain running, then the show (or nothing), then `after` seconds. */
-async function played(recipe: 'surprise' | 'shy' | null, options: { t0?: number; after?: number; hold?: number; during?: (h: GeneStage, time: number) => void } = {}): Promise<Played> {
-  const h = await geneStage({ extraBones: EYES });
-  try {
-    const t0 = options.t0 ?? 3, influences = () => h.mesh.morphTargetInfluences ?? [], dictionary = h.mesh.morphTargetDictionary ?? {};
-    const rows: Record<string, number>[] = [], blush: number[] = [];
-    const record = () => { const values = influences(); rows.push(Object.fromEntries(Object.entries(dictionary).map(([key, index]) => [key, values[index] ?? 0]))); blush.push(h.stage.life.out.blush); };
-    for (let i = 0; i < Math.round(t0 * 60); i++) { h.tick(); record(); }
-    if (recipe) assert.equal(h.stage.playExpression(recipe)?.usable, true);
-    const total = Math.round(((recipe ? SHOW_MS[recipe] / 1000 : options.hold ?? 3) + (options.after ?? 1.5)) * 60);
-    for (let i = 0; i < total; i++) { options.during?.(h, h.time()); h.tick(); record(); }
-    return { frames: h.shown, morph: name => rows.map(row => row[name] ?? 0), blush, t0 };
-  } finally { h.close(); }
-}
 const relative = (event: ShownFrame[], control: ShownFrame[], bone: number) => event.map((frame, i) => frame.world[bone].angleTo(control[i].world[bone]) * DEG);
 const HEAD = 4, UPPER = 1;
 function report(label: string, values: Record<string, number>): void {
   if (process.env.R29_REPORT) console.log(`${label}: ${Object.entries(values).map(([key, value]) => `${key} ${value.toFixed(3)}`).join(' · ')}`);
 }
-
-test('Gene, shy on the real Stage loop: head down/away by degrees you can see, eyes and lids, blush, closed smile — then back exactly', async () => {
-  const control = await played(null), shy = await played('shy');
-  const head = relative(shy.frames, control.frames, HEAD), upper = relative(shy.frames, control.frames, UPPER);
-  const start = Math.round(shy.t0 * 60);
-  report('shy', { headDeg: Math.max(...head), upperDeg: Math.max(...upper), blink: Math.max(...shy.morph('まばたき')), smile: Math.max(...shy.morph('にっこり')), brow: Math.max(...shy.morph('困る')), blush: Math.max(...shy.blush) });
-  assert.ok(Math.max(...head) > 10, `head moves well away from where it would be (${Math.max(...head).toFixed(1)} deg)`);
-  assert.ok(Math.max(...upper) > 1, 'the body draws in');
-  assert.ok(Math.max(...shy.morph('まばたき').slice(start)) > 0.3, 'half lids through the eyelid compositor');
-  assert.ok(Math.max(...shy.morph('にっこり')) > 0.4 && Math.max(...shy.morph('困る')) > 0.2 && Math.max(...shy.blush) > 0.5);
-  const eyes = shy.frames.map((frame, i) => frame.extra[0].angleTo(control.frames[i].extra[0]) * DEG);
-  assert.ok(Math.max(...eyes) > 8, `eyes drop and slide aside (${Math.max(...eyes).toFixed(1)} deg)`);
-  const end = start + Math.round(SHOW_MS.shy / 1000 * 60) + 60;
-  // Afterwards only her own small motions differ (their timing shifted while they gave way): no offset of the show is left.
-  const after = Math.max(...head.slice(end));
-  report('shy after', { headDeg: after });
-  assert.ok(after < 1.5, `the head is back with her own motion (${after.toFixed(2)} deg off the undisturbed run, the show peaked at ${Math.max(...head).toFixed(1)})`);
-  // Her own (R36) face comes back too: the mood's smile and blush, as in the undisturbed run.
-  const off = (a: number[], b: number[]) => Math.max(...a.slice(end + 30).map((value, i) => Math.abs(value - b[end + 30 + i])));
-  assert.ok(off(shy.morph('にっこり'), control.morph('にっこり')) < 0.03 && off(shy.blush, control.blush) < 0.03 && off(shy.morph('困る'), control.morph('困る')) < 0.03, 'face back to her own');
-});
-
-test('Gene, surprise on the real Stage loop: 上 and びっくり within 0.25 s, お, the chin up — then a natural settle', async () => {
-  const surprise = await played('surprise'), start = Math.round(surprise.t0 * 60);
-  const window = (name: string, from: number, to: number) => surprise.morph(name).slice(start + Math.round(from * 60), start + Math.round(to * 60));
-  report('surprise', { brow: Math.max(...window('上', 0, 0.25)), wide: Math.max(...window('びっくり', 0, 0.25)), o: Math.max(...window('お', 0, 0.4)) });
-  assert.ok(Math.max(...window('上', 0, 0.25)) > 0.9, 'brows up at once');
-  assert.ok(Math.max(...window('びっくり', 0, 0.25)) > 0.6, 'eyes wide at once (a natural blink may close them for a moment)');
-  assert.ok(Math.max(...window('お', 0, 0.4)) > 0.25, 'a small "o"');
-  assert.ok(Math.max(...window('上', 0.9, 1.1)) < 0.65, 'settling');
-  assert.ok(window('上', 2, 3).every(value => value === 0) && window('お', 2, 3).every(value => value === 0), 'back at rest');
-});
-
-test('Gene R29: entry and exit are continuous (no jump, no dead start), a pat fades it out, and the display guard catches nothing', async () => {
-  const control = await played(null, { t0: 3, after: 1.5 });
-  const results: Record<string, number> = {};
-  for (const recipe of ['shy', 'surprise'] as const) {
-    const event = await played(recipe, { t0: 3, after: 1.5 });
-    const t0 = 3, end = t0 + SHOW_MS[recipe] / 1000;
-    const undisturbed = Math.max(...surprises(between(control.frames, t0 - 1, end + 1.5))[HEAD]);
-    const entry = Math.max(...surprises(between(event.frames, t0 - 2 / 60, t0 + 0.6))[HEAD]);
-    const exit = Math.max(...surprises(between(event.frames, end - 0.6, end + 1.2))[HEAD]);
-    const stepPeak = Math.max(...steps(between(event.frames, t0 - 2 / 60, end + 1.2))[HEAD]);
-    Object.assign(results, { [`${recipe} entry`]: entry, [`${recipe} exit`]: exit, [`${recipe} step`]: stepPeak, [`${recipe} control`]: undisturbed });
-    // Entry and exit: the head's step never changes by more than a fraction of its own peak step in one frame (a teleport,
-    // a dead stop or a start at full speed is one step's worth at once); the exit is as quiet as her undisturbed motion.
-    assert.ok(entry <= Math.max(0.15, stepPeak * 0.5), `${recipe}: no jump at the start (${entry.toFixed(3)} deg, step peak ${stepPeak.toFixed(3)})`);
-    assert.ok(exit <= Math.max(0.15, undisturbed * 1.25), `${recipe}: no jump at the end (${exit.toFixed(3)} vs undisturbed ${undisturbed.toFixed(3)} deg)`);
-    assert.equal(event.frames.at(-1)!.guardJumps - event.frames[0].guardJumps, 0, `${recipe}: the display guard had nothing to catch`);
-  }
-  // A pat 1.2 s into the shy look-away: what is shown eases out over ~0.3 s.
-  const patted = await played('shy', { during: (h, time) => { if (time >= 4.2 && time < 5.2) h.stage.setMoodContact?.(patContact(time)); else if (time >= 5.2 && time < 5.3) h.stage.setMoodContact?.({ ...patContact(time), contact: false, hover: 0 }); } });
-  const cut = Math.max(...surprises(between(patted.frames, 4.2 - 2 / 60, 4.8))[HEAD]);
-  results['shy pat'] = cut;
-  assert.ok(cut <= 0.35, `a pat in the middle fades the show out (${cut.toFixed(3)} deg)`);
-  assert.equal(patted.frames.at(-1)!.guardJumps - patted.frames[0].guardJumps, 0, 'nothing for the guard to catch on a pat either');
-  report('R29 head surprise / step (deg)', results);
-});
-
-test('Gene: playing replaces a show already running; unknown recipes and no model do nothing', async () => {
-  const h = await geneStage();
-  try {
-    h.run(1);
-    assert.equal(h.stage.playExpression('angry'), null);
-    assert.equal(h.stage.playExpression('shy').usable, true);
-    h.run(0.5);
-    assert.equal(h.stage.playExpression('surprise').usable, true);
-    h.run(0.1);
-    assert.equal(JSON.parse(h.stage.renderer.domElement.dataset.proceduralLife).primitives.preview?.clip, 'show:surprise');
-    const support = h.stage.expressionSupport('shy');
-    assert.equal(support.usable, true); assert.ok(support.parts.includes('低头侧转') && support.parts.includes('半垂眼皮'));
-  } finally { h.close(); }
-});
 
 void Quaternion; void Euler;

@@ -22,7 +22,7 @@
  * 都在别处（frequency、内心循环），这里不碰。
  * 这些都只是试用值，没在真机上看过。
  */
-import type { MoodLabel, MoodTendency } from '../../mood';
+import type { MoodLabel, MoodTendency } from '../../foundation/mood';
 
 export const BOREDOM_TEMPO_IDS = ['eager', 'usual', 'unhurried'] as const;
 export type BoredomTempoId = typeof BOREDOM_TEMPO_IDS[number];
@@ -70,7 +70,7 @@ export const BOREDOM_TIMING_KNOBS: BoredomTimingKnobs = Object.freeze<BoredomTim
     eager: {
       label: '早一点来找你', base: 1, grace: [1, 1.1], pace: [1.08, 1.2], later: [0, 0.06],
       mood: { happy: 1.5, excited: 1.5, close: 1.6, longing: 1.8, relieved: 1.3, content: 1.1, 'tense-expectation': 1.2,
-        concerned: 0.9, sad: 0.8, disappointed: 0.5, upset: 0.5 },
+        concerned: 0.9, afraid: 0.9, sad: 0.8, disappointed: 0.5, upset: 0.5 },
       now: { close: 1.4, playful: 1.2, wistful: 1.4 }, personality: { close: 0.5, playful: 0.25 }, moments: { tired: 0.6, sleepy: 0.3 },
     },
     // 用户可能怎么说：她平时找我找得太早了／太晚了（不是某几次，是一直都这样）

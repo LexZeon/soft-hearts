@@ -1,26 +1,26 @@
 // I-024 模型体检 in the windows: each window's stage gets its card after a model load and again when the record changes; the
-// first load runs the check once; the character page's 「这个模型能做什么」 rows, switches and 试一下; the pet answers; and the
+// first load runs the check once; the character page's 「这个模型能做什么」 rows, switches and 试一下; the companion answers; and the
 // same table through the internal channel (I-025). Synthetic models, a temporary folder and a fake haiku; no Electron.
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import os from 'node:os';
 import path from 'node:path';
 import { mkdtemp, rm } from 'node:fs/promises';
-import { MODEL_CAPABILITY_IDS, deriveModelCapabilities, type CapabilityChoice, type ModelCapabilities, type ModelCapabilityId } from '../shared/model-capability';
-import type { CapabilityPreviewResult, ModelCapabilityUpdate } from '../shared/model-capability-check';
-import { registerUiMessages, setUiLanguage } from '../shared/ui-language';
-import { ENGLISH_CHARACTER_UI_COPY } from '../shared/ui-copy.character.en';
-import { capability } from '../shared/capabilities';
-import { ModelCapabilityStore } from '../electron/model-capability-store';
-import { CapabilityPreviewRelay, ModelCapabilityHost } from '../electron/model-capability-host';
-import { AgentToolRegistry } from '../electron/agent-channel/registry';
-import { createAppTools } from '../electron/agent-channel/app-tools';
-import { AGENT_HOST_OPERATIONS, createHostBridge, type IpcHandler } from '../electron/agent-channel/bridge';
+import { MODEL_CAPABILITY_IDS, deriveModelCapabilities, type CapabilityChoice, type ModelCapabilities, type ModelCapabilityId } from '../shared/stage/model-capability';
+import type { CapabilityPreviewResult, ModelCapabilityUpdate } from '../shared/stage/model-capability-check';
+import { registerUiMessages, setUiLanguage } from '../shared/foundation/ui-language';
+import { ENGLISH_CHARACTER_UI_COPY } from '../shared/foundation/ui-copy.character.en';
+import { capability } from '../shared/settings/capabilities';
+import { ModelCapabilityStore } from '../electron/stage/model-capability-store';
+import { CapabilityPreviewRelay, ModelCapabilityHost } from '../electron/stage/model-capability-host';
+import { AgentToolRegistry } from '../electron/safety/agent-channel/registry';
+import { createAppTools } from '../electron/safety/agent-channel/app-tools';
+import { AGENT_HOST_OPERATIONS, createHostBridge, type IpcHandler } from '../electron/safety/agent-channel/bridge';
 import { StageModelProfile, requestModelProfileCache } from '../src/stage/model-profile';
-import { ModelCapabilitySync, bindCapabilityPreview, type ModelCapabilitySyncState } from '../src/ui/model-capability-sync';
-import { CAPABILITY_ROWS, ModelCapabilityPanel } from '../src/ui/ModelCapabilityPanel';
-import { modelAdaptation, type ModelAdaptation } from '../shared/model-adaptation';
-import { buildModelProfile } from '../shared/model-profile';
+import { ModelCapabilitySync, bindCapabilityPreview, type ModelCapabilitySyncState } from '../src/stage/model-capability-sync';
+import { CAPABILITY_ROWS, ModelCapabilityPanel } from '../src/stage/ModelCapabilityPanel';
+import { modelAdaptation, type ModelAdaptation } from '../shared/brain/model-adaptation';
+import { buildModelProfile } from '../shared/stage/model-profile';
 import { JAPANESE_MORPHS, profileInput, toThreeMesh, toyModel, type ModelData, type ToyMorph } from './helpers/model-fixtures';
 
 const KEY = 'c'.repeat(64);

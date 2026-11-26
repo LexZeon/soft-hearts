@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ClaudeFailureError, simulatedClaudeFailure, streamClaude } from '../electron/claude';
-import { PersistentClaudeChat, type CompanionClaudeTask } from '../electron/claude-session';
-import { ChatAvailability } from '../electron/chat-availability';
+import { ClaudeFailureError, simulatedClaudeFailure, streamClaude } from '../electron/brain/claude';
+import { PersistentClaudeChat, type CompanionClaudeTask } from '../electron/brain/claude-session';
+import { ChatAvailability } from '../electron/brain/chat-availability';
 
 const TEXT = "You've hit your session limit · resets 11:59pm (America/Los_Angeles)";
 const task = (): CompanionClaudeTask => ({ kind: 'chat', model: 'haiku', workingDirectory: '', writable: false, prompt: '你好', replyId: 'r',

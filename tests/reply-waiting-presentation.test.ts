@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { renderReplyWaiting, WAITING_DOTS_CSS } from '../shared/reply-waiting-presentation';
+import { renderReplyWaiting, WAITING_DOTS_CSS } from '../shared/brain/reply-waiting-presentation';
 
 class Classes {
   readonly names = new Set<string>();

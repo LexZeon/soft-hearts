@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateChatRequest } from '../electron/validation';
-import { ambientCommentHistoryText, appendReplyHistory, outgoingChatMessages, trimReplyHistory } from '../src/ui/reply-history';
-import type { ChatMessage } from '../shared/contracts';
+import { validateChatRequest } from '../electron/settings/validation';
+import { ambientCommentHistoryText, appendReplyHistory, outgoingChatMessages, trimReplyHistory } from '../src/brain/reply-history';
+import type { ChatMessage } from '../shared/foundation/chat';
 
 const msg = (role: ChatMessage['role'], content: string): ChatMessage => ({ role, content });
 

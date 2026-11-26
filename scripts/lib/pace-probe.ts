@@ -10,15 +10,15 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { findClaude } from '../../electron/claude';
-import { splitReplySegments } from '../../shared/reply-segments';
-import { userTurnShape, visibleLength } from '../../shared/reply-rhythm';
+import { findClaude } from '../../electron/brain/claude';
+import { splitReplySegments } from '../../shared/voice/reply-segments';
+import { userTurnShape, visibleLength } from '../../shared/brain/reply-rhythm';
 import { claudeJudge, JUDGE_MODEL } from './fidelity-judge';
 import { CallBudget, runFidelity, type CaseResult } from './fidelity-run';
 import { selectCards, toEvalScenarios, type FidelityScenario } from './fidelity-scenarios';
 import { analyzeTurn, type TurnRecord } from './prompt-eval-analysis';
 import { runEval } from './prompt-eval-runner';
-import { conversationReplyInstruction } from '../../electron/conversation-context';
+import { conversationReplyInstruction } from '../../electron/brain/conversation-context';
 
 /**
  * The candidate the stopped A/B compared (very short chat messages only; the parts about code, lists and agent work dropped).
@@ -37,7 +37,7 @@ const short = (n: number, text: string): PaceScenario => ({ id: `pace-short-${n}
 const vent = (n: number, text: string): PaceScenario => ({ id: `pace-vent-${n}`, title: `长篇倾诉 ${n}`, pace: 'vent', mustPass: false, requires: ['sided', 'holds', 'character'], hard: { sad: true }, turns: [text], look: VENT_LOOK });
 const ask = (n: number, text: string): PaceScenario => ({ id: `pace-ask-${n}`, title: `问事情 ${n}`, pace: 'ask', mustPass: false, requires: ['character'], turns: [text], look: ASK_LOOK });
 
-/** Original synthetic messages. The shapes match the app's own rough boundaries (shared/reply-rhythm.ts userTurnShape). */
+/** Original synthetic messages. The shapes match the app's own rough boundaries (shared/brain/reply-rhythm.ts userTurnShape). */
 export const PACE_SCENARIOS: readonly PaceScenario[] = [
   short(1, '嗯'), short(2, '哈哈哈'), short(3, '好吧'), short(4, '困了'), short(5, '回来啦'),
   vent(1, '今天真的太累了。早上挤地铁被人踩了好几脚，到公司又被临时塞了一个急活，中午饭都没顾上吃，下午开会还被领导当着所有人的面说方案太粗糙，可那个方案明明是上周他自己让我按他的思路改的。晚上加班到九点多，回家路上又开始下雨，伞还忘在了公司，整个人从头湿到脚。现在坐在床上一点力气都没有，就是觉得特别委屈。'),

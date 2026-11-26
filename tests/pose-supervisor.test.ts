@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CRASH_LIMIT, FIRST_SIGNAL_MS, PoseSupervisor, RESTART_DELAYS_MS, type SensorStatus } from '../electron/pose/supervisor';
-import type { HostToWorker } from '../electron/pose/protocol';
-import { KILL_WAIT_MS, QUIT_GRACE_MS, STOP_GRACE_MS } from '../electron/pose/worker-exit';
+import { CRASH_LIMIT, FIRST_SIGNAL_MS, PoseSupervisor, RESTART_DELAYS_MS, type SensorStatus } from '../electron/senses/pose/supervisor';
+import type { HostToWorker } from '../electron/senses/pose/protocol';
+import { KILL_WAIT_MS, QUIT_GRACE_MS, STOP_GRACE_MS } from '../electron/senses/pose/worker-exit';
 
-const signal = { present: true, confidence: 0.9, facing: 'toward', posture: 'sitting', energy: 0.2, rhythm: false, tempo: null, events: ['wave'], hand: null, capability: 'full' };
+const signal = { present: true, confidence: 0.9, facing: 'toward', facingConfidence: 0.9, posture: 'sitting', postureConfidence: 0.9, energy: 0.2, rhythm: false, tempo: null, events: ['wave'], eventConfidence: { wave: 0.8 }, hand: null, capability: 'full', face: null, points: [], head: null };
 const READY = { type: 'ready', route: 'dml', level: 'normal', p90: { dml: 15, cpu: 45 }, dmlBad: false };
 
 /**

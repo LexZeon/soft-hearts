@@ -3,20 +3,20 @@
 // fake voices, virtual clock. Invented replies only.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CompletedReplySpeech } from '../electron/completed-reply-speech';
-import { CompletedPrefixProof } from '../electron/completed-prefix-proof';
-import { ReplyDraftGuard } from '../electron/reply-draft-guard';
-import { validateSettings } from '../electron/validation';
-import { CompletedReplySpeechQueue, type ReplySpeechSession } from '../src/ui/completed-reply-speech-queue';
-import { IncrementalReplySegments } from '../shared/incremental-reply-segments';
+import { CompletedReplySpeech } from '../electron/voice/completed-reply-speech';
+import { CompletedPrefixProof } from '../electron/voice/completed-prefix-proof';
+import { ReplyDraftGuard } from '../electron/brain/reply-draft-guard';
+import { validateSettings } from '../electron/settings/validation';
+import { CompletedReplySpeechQueue, type ReplySpeechSession } from '../src/voice/completed-reply-speech-queue';
+import { IncrementalReplySegments } from '../shared/voice/incremental-reply-segments';
 import {
   FIRST_CHUNK_MIN_UNITS, FirstCommaReplySegments, firstChunkMinUnits, firstSpeechChunk, replySpeechParser,
-} from '../shared/first-speech-chunk';
-import type { ReplySegment } from '../shared/reply-segments';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { AGENT_SETTINGS } from '../shared/agent-channel';
-import { capability, capabilityChannel } from '../shared/capabilities';
-import type { ApprovedReplySpeechSegment } from '../shared/tts';
+} from '../shared/voice/first-speech-chunk';
+import type { ReplySegment } from '../shared/voice/reply-segments';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { AGENT_SETTINGS } from '../shared/safety/agent-channel';
+import { capability, capabilityChannel } from '../shared/settings/capabilities';
+import type { ApprovedReplySpeechSegment } from '../shared/voice/tts';
 import { CASES, PROFILES, replay } from './fixtures/first-chunk-replay';
 
 const owner = 5, scope = 'scope';

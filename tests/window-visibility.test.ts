@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { WindowVisibility } from "../electron/window-visibility";
+import { WindowVisibility } from "../electron/stage/window-visibility";
 
 test("native and requested visibility advance one scoped revision without inventing a show", () => {
   const pet = new WindowVisibility(20, false, false);

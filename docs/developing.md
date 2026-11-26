@@ -20,15 +20,15 @@
 | 想改什么 | 在哪里改 |
 | --- | --- |
 | 她的性格、说话方式、开场白、对话示例 | 应用「连接与声音」里的角色卡：新建或复制一张，编辑后点保存。也可以导出 JSON 修改后再导入。格式见 `docs/character-cards.md`。 |
-| 换成自己的模型（PMX/PMD）或动作（VMD） | 应用「模型与动作」里选择文件。模型留在你自己的文件夹里即可，不要放进 `assets/bundled/`（那里只放随包发布、已审过的素材）。 |
+| 换成自己的模型（PMX/PMD 或 VRM）或动作（VMD） | 应用「模型与动作」里选择文件。模型留在你自己的文件夹里即可，不要放进 `assets/bundled/`（那里只放随包发布、已审过的素材）。 |
 | 她主动找你说话的频率 | 设置里的「她主动找你说话」，有「少一点 / 适中 / 多一点」三档。更细的数值在 `shared/behaviors/inner-rhythm/knobs.ts` 和 `shared/behaviors/boredom-timing/knobs.ts`。 |
 | 脸红、一会儿动一下、回答后停留多久等行为 | 对应行为文件夹里的 `knobs.ts`，例如 `shared/behaviors/blush/knobs.ts`、`shared/behaviors/reply-linger/knobs.ts`、`shared/behaviors/idle-gesture/knobs.ts`。每个数值上方都有一行说明。 |
-| 界面上的文字 | `src/ui/` 下对应的面板文件。新增的文字要同时给英文，英文放在 `shared/ui-copy.*.en.ts`。 |
-| 她说话的声音（朗读） | 应用「连接与声音」里设置。朗读默认用系统语音，代码在 `src/ui/speech.ts`。 |
-| 语音输入 | 应用里设置，代码在 `src/ui/VoiceDraftInput.ts`。 |
-| 镜头 | `src/stage/CameraController.ts`。窗口位置和尺寸相关的代码在 `electron/` 下的 `pet-*.ts` 文件里。 |
-| 聊天调用 Claude Code 的方式 | `electron/claude.ts`。 |
-| 任务执行（读写文件夹、运行命令） | `electron/claude-tasks/`。默认关闭，改动时要保留「写文件和运行命令每次都要用户批准」。 |
+| 界面上的文字 | 对应部分文件夹里的面板文件（如 `src/settings/`、`src/cards/`）。新增的文字要同时给英文，英文放在 `shared/foundation/ui-copy.*.en.ts`。 |
+| 她说话的声音（朗读） | 应用「连接与声音」里设置。朗读默认用系统语音，代码在 `src/voice/speech.ts`。 |
+| 语音输入 | 应用里设置，代码在 `src/voice/VoiceDraftInput.ts`。 |
+| 镜头 | `src/stage/CameraController.ts`。窗口位置和尺寸相关的代码在 `electron/stage/` 下的 `pet-*.ts` 文件里。 |
+| 聊天调用 Claude Code 的方式 | `electron/brain/claude.ts`。 |
+| 任务执行（读写文件夹、运行命令） | `electron/safety/claude-tasks/`。默认关闭，改动时要保留「写文件和运行命令每次都要用户批准」。 |
 | 角色卡的数值（心情、脸红、想念、反应倾向）怎么写、能填多少 | [角色卡和她的数值怎么写](character-card-guide.md)。字段、单位和范围都在那里。 |
 | 想让她某个表现不一样，要改哪个数字 | [想改什么 → 改哪里](knobs.md)，按“用户会怎么说”找到对应的文件和名字。 |
 

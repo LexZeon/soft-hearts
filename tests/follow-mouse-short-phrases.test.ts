@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { scanFollowMouseRequest as scan } from '../electron/scan-follow-mouse-request';
+import { scanFollowMouseRequest as scan } from '../electron/settings/scan-follow-mouse-request';
 
 test('requested mouse-following phrases preserve explicit direction and uncertainty', () => {
   assert.equal(scan('开启桌宠鼠标跟随'), 'on');

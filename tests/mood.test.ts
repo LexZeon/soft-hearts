@@ -14,7 +14,8 @@ import {
   validateMoodParameters,
   type MoodParameters,
   type MoodState,
-} from "../shared/mood";
+} from "../shared/foundation/mood";
+import { speechIntervalAfterUnanswered as STRETCH } from "../shared/behaviors/busy-chat/unanswered"; // the mood host passes busy chat's stretch to the gate (overhaul parts 3); direct calls here do too
 
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
@@ -248,8 +249,8 @@ test("look has a real cooldown and speech uses rolling-hour plus unanswered budg
   assert.equal(state.unansweredSpeech, 1);
   state = restoreMoodState(serializeMoodState(state), HOUR + 30 * MINUTE);
   state = advanceMood(state, HOUR + 80 * MINUTE, { online: true });
-  assert.notEqual(getMoodSnapshot(state).attentionCandidate, "speech", "I-039: an unanswered line waits 3 x the interval (90 min), no longer forever");
-  assert.equal(getMoodSnapshot(advanceMood(state, HOUR + 95 * MINUTE, { online: true })).attentionCandidate, "speech");
+  assert.notEqual(getMoodSnapshot(state, state.updatedAt, DEFAULT_MOOD_PARAMETERS, STRETCH).attentionCandidate, "speech", "I-039: an unanswered line waits 3 x the interval (90 min), no longer forever");
+  assert.equal(getMoodSnapshot(advanceMood(state, HOUR + 95 * MINUTE, { online: true }), undefined, DEFAULT_MOOD_PARAMETERS, STRETCH).attentionCandidate, "speech");
   assert.equal(state.unansweredSpeech, 1);
   state = applyMoodEvent(state, { type: "chat", id: "answer" }, state.updatedAt);
   assert.equal(state.unansweredSpeech, 0);

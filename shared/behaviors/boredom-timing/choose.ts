@@ -4,7 +4,7 @@
  *
  * 安全线（boredomRulesNoEarlier，不是旋钮）：
  *  - "动一下"和"开口"永远不早于卡上原来的时刻（主机真的发出的那一刻，不只是无聊到门槛的那一刻）。开口：用户要求不能比
- *    现在更早开口打扰；动一下：内心循环可能在"动一下"时问一次模型（electron/inner-loop/），早了就可能多问一次（额度 0）。
+ *    现在更早开口打扰；动一下：内心循环可能在"动一下"时问一次模型（electron/initiative/inner-loop/），早了就可能多问一次（额度 0）。
  *    "看你一眼"不说话、不问模型，可以早一点。
  *  - 做法（Codex T-207 之后，2026-11-04）：
  *    1. 宽限不短于卡上的、涨速不快于卡上的。这样同样的事（聊天、喂点心、在场、重新打开、中途改卡）发生在同样的时刻，
@@ -20,19 +20,19 @@
  *    涨速不变的一轮里，在场减掉的无聊让动一下和开口一起再往后推同样多，间隔照旧（T-207 3C：原来在场后把涨得快的那一轮
  *    压回卡上的涨速、门槛不变，间隔被拉长到超过内心循环的 10 分钟，多问了一次）。
  *  - 主动开口的冷却（frequency.speechIntervalMs）、每小时上限（speechPerHour）、没人回就不再说（speechWithoutReply）、
- *    深夜和困了安静（shared/inner-loop.ts innerLoopQuiet）、你在打字或她在说话时不开口（electron/main.ts companionCanExpress）
+ *    深夜和困了安静（shared/initiative/inner-loop.ts innerLoopQuiet）、你在打字或她在说话时不开口（electron/main.ts companionCanExpress）
  *    都在下游，这里一个也不碰：rules() 只换 boredom 那五个数。
  */
-import { sheChooses, type SheChoosesCandidate, type SheChose } from '../../she-chooses';
-import { MOOD_LABELS } from '../../mood-runtime';
-import { tendencyNow } from '../../mood-tendency';
-import type { MoodLabel, MoodSnapshot, MoodTendency } from '../../mood';
-import type { FatiguePhase } from '../../fatigue';
+import { sheChooses, type SheChoosesCandidate, type SheChose } from '../../brain';
+import { MOOD_LABELS } from '../../mood';
+import { tendencyNow } from '../../foundation/mood-tendency';
+import type { MoodLabel, MoodSnapshot, MoodTendency } from '../../foundation/mood';
+import type { FatiguePhase } from '../../mood';
 import { BOREDOM_TEMPO_IDS, BOREDOM_TIMING_KNOBS, type BoredomMoment, type BoredomTempoId, type BoredomTempoKnob, type BoredomTimingKnobs } from './knobs';
 import type { BoredomIdle, BoredomKind, BoredomRules, BoredomTimingHost, BoredomTimingNow, BoredomTimingWhy } from './interface';
 
 const MINUTE = 60_000;
-/** 和 shared/mood.ts validateMoodParameters 的范围一样：抽出来的永远是一组合法的参数。 */
+/** 和 shared/foundation/mood.ts validateMoodParameters 的范围一样：抽出来的永远是一组合法的参数。 */
 const MAX_GRACE_MS = 120 * MINUTE;
 const MAX_PER_MINUTE = 20;
 const EPS = 1e-9;
@@ -74,7 +74,7 @@ const round1 = (value: number): number => Math.round(value * 10) / 10;
 
 /** MoodHost 交给"此刻"的原料。 */
 export interface BoredomTimingNowInput {
-  /** tendencies：倾向够不够强才算"这会儿……"（shared/mood-tendency.ts）；没给时 companion 照原样算。 */
+  /** tendencies：倾向够不够强才算"这会儿……"（shared/foundation/mood-tendency.ts）；没给时 companion 照原样算。 */
   readonly snapshot: Pick<MoodSnapshot, 'primary' | 'companion'> & { readonly tendencies?: Partial<Record<MoodTendency, number>> };
   /** 角色卡性格（MoodParameters.weights）。 */
   readonly personality: Partial<Record<MoodTendency, number>> | null | undefined;
@@ -96,7 +96,7 @@ export function boredomTimingNow(input: BoredomTimingNowInput): BoredomTimingNow
 
 /**
  * 从这一轮开始算第几分钟无聊到 `threshold`：这一轮已经过了 `idleMinutes` 分钟、此刻无聊 `boredom`（新的一轮：0 分钟、
- * 上一轮剩下的无聊）。已经到了 = idleMinutes；null = 永远不会（卡上无聊不涨）。和 shared/mood.ts advanceMood 的算法一样。
+ * 上一轮剩下的无聊）。已经到了 = idleMinutes；null = 永远不会（卡上无聊不涨）。和 shared/foundation/mood.ts advanceMood 的算法一样。
  */
 export function boredomMinute(rules: Pick<BoredomRules, 'graceMs' | 'perMinute'>, threshold: number, boredom = 0, idleMinutes = 0): number | null {
   if (boredom >= threshold) return idleMinutes;

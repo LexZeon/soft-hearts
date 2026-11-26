@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { AMBIENT_ASR_LIMITS, parseAmbientAsrResult, transcribeAmbientWav, type AmbientAsrDependencies } from '../electron/ambient-asr';
-import { validateAmbientLanguage } from '../shared/ambient-audio';
+import { AMBIENT_ASR_LIMITS, parseAmbientAsrResult, transcribeAmbientWav, type AmbientAsrDependencies } from '../electron/senses/ambient-asr';
+import { validateAmbientLanguage } from '../shared/senses/ambient-audio';
 
 const config = { baseUrl: 'https://asr.example.test/v1/', model: 'fixture-sensevoice', language: 'zh', apiKey: 'PRIVATE_FIXTURE_KEY' };
 const evidence = (raw: string, languages: string[]) => ({ source: 'sensevoice-model', raw_language: raw, languages });

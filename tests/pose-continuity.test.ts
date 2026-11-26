@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { Euler, Quaternion, Vector3 } from 'three';
-import { DEFAULT_CONTINUITY_TUNING, PoseContinuity, type ContinuityMesh } from '../src/stage/pose-continuity';
+import { DEFAULT_CONTINUITY_TUNING, PoseContinuity, type ContinuityMesh } from '../src/senses/pose-continuity';
 
 const DEG = Math.PI / 180;
 interface FakeBone { name: string; quaternion: Quaternion; position: Vector3 }

@@ -13,7 +13,7 @@
  *  - amplitude：幅度范围（弧度，头的转动），每次在里面挑一个；pace：快慢范围（> 1 更慢）。
  * 这些都只是试用值，没在真机上看过。
  */
-import type { MoodLabel, MoodTendency } from '../../mood';
+import type { MoodLabel, MoodTendency } from '../../foundation/mood';
 
 export const IDLE_SHAPE_IDS = ['tilt', 'nod', 'glance', 'lift', 'stretch', 'sway'] as const;
 export type IdleShapeId = typeof IDLE_SHAPE_IDS[number];
@@ -71,7 +71,7 @@ export const IDLE_GESTURE_KNOBS: IdleGestureKnobs = Object.freeze<IdleGestureKno
     // 用户可能怎么说：她老是歪头／她怎么不歪头了／歪头歪得太厉害了
     // 怎么调：太多/太少 → base（多常用，0 = 不用它）；太厉害/太轻 → amplitude（幅度范围，弧度）；太快/太慢 → pace
     tilt: { label: '歪头', base: { look: 0.8, motion: 1 }, amplitude: [0.06, 0.09], pace: [0.9, 1.15],
-      mood: { happy: 1.4, excited: 1.5, content: 1.2, close: 1.3, relieved: 1.2, longing: 0.9, concerned: 0.7, disappointed: 0.6, upset: 0.4, sad: 0.5, 'tense-expectation': 0.8 },
+      mood: { happy: 1.4, excited: 1.5, content: 1.2, close: 1.3, relieved: 1.2, longing: 0.9, concerned: 0.7, afraid: 0.7, disappointed: 0.6, upset: 0.4, sad: 0.5, 'tense-expectation': 0.8 },
       now: { playful: 1.5, close: 1.2 }, personality: { playful: 0.8 }, moments: { pat: 1.4, pinch: 1.3, food: 1.2, drowsy: 0.7 } },
     // 用户可能怎么说：她老点头／她怎么从来不点头／点头太用力了
     // 怎么调：太多/太少 → base（多常用，0 = 不用它）；太厉害/太轻 → amplitude（幅度范围，弧度）；太快/太慢 → pace
@@ -81,7 +81,7 @@ export const IDLE_GESTURE_KNOBS: IdleGestureKnobs = Object.freeze<IdleGestureKno
     // 用户可能怎么说：她老往旁边看／她看向一边太远了
     // 怎么调：太多/太少 → base（多常用，0 = 不用它）；太厉害/太轻 → amplitude（幅度范围，弧度）；太快/太慢 → pace
     glance: { label: '看向一边再看回来', base: { look: 1, motion: 0.8 }, amplitude: [0.08, 0.12], pace: [0.9, 1.15],
-      mood: { 'tense-expectation': 1.5, concerned: 1.3, upset: 1.4, disappointed: 1.3, longing: 1.2, calm: 1.1, happy: 0.8, excited: 0.7 },
+      mood: { 'tense-expectation': 1.5, concerned: 1.3, afraid: 1.3, upset: 1.4, disappointed: 1.3, longing: 1.2, calm: 1.1, happy: 0.8, excited: 0.7 },
       now: { cautious: 1.5, wistful: 1.2 }, personality: { cautious: 0.8 }, moments: { bored: 1.3, drowsy: 0.6 } },
     // 用户可能怎么说：她老抬眼看我／她都不看我
     // 怎么调：太多/太少 → base（多常用，0 = 不用它）；太厉害/太轻 → amplitude（幅度范围，弧度）；太快/太慢 → pace
@@ -91,7 +91,7 @@ export const IDLE_GESTURE_KNOBS: IdleGestureKnobs = Object.freeze<IdleGestureKno
     // 用户可能怎么说：她老伸脖子／伸得太夸张了
     // 怎么调：太多/太少 → base（多常用，0 = 不用它）；太厉害/太轻 → amplitude（幅度范围，弧度）；太快/太慢 → pace
     stretch: { label: '伸伸脖子', base: { look: 0, motion: 0.8 }, amplitude: [0.055, 0.08], pace: [0.95, 1.2],
-      mood: { calm: 1.3, content: 1.3, upset: 0.6, 'tense-expectation': 0.5, sad: 0.7, concerned: 0.7 },
+      mood: { calm: 1.3, content: 1.3, upset: 0.6, 'tense-expectation': 0.5, sad: 0.7, concerned: 0.7, afraid: 0.7 },
       now: { comfortable: 1.4 }, personality: { comfortable: 0.6 }, moments: { bored: 1.8, drowsy: 1.6 } },
     // 用户可能怎么说：原来那个轻轻晃一下头太多了／太少了
     // 怎么调：太多/太少 → base（多常用，0 = 不用它）；太厉害/太轻 → amplitude（幅度范围，弧度）；太快/太慢 → pace
@@ -102,7 +102,7 @@ export const IDLE_GESTURE_KNOBS: IdleGestureKnobs = Object.freeze<IdleGestureKno
     // 用户可能怎么说：她闲着时太没表情了／太多表情了
     // 怎么调：太多/太少 → base（多常用，0 = 不用它）；笑多笑少 → smile
     plain: { label: '只是看着', bindingId: null, smile: 0.35, serious: [0.6, 1], base: { look: 1.4, motion: 0.8 },
-      mood: { calm: 1.3, concerned: 1.2, 'tense-expectation': 1.2 } },
+      mood: { calm: 1.3, concerned: 1.2, afraid: 1.2, 'tense-expectation': 1.2 } },
     // 用户可能怎么说：她老是一副若有所思的样子
     // 怎么调：太多/太少 → base（多常用，0 = 不用它）；笑多笑少 → smile
     convinced: { label: '若有所思', bindingId: 'face.convinced', smile: 0.6, serious: [0, 1], base: { look: 0.5, motion: 1 },

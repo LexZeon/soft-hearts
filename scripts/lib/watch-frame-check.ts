@@ -7,7 +7,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import zlib from 'node:zlib';
-import { quickLineWithClaude } from '../../electron/inner-loop/model';
+import { quickLineWithClaude } from '../../electron/initiative/inner-loop/model';
 import { WATCH_FRAME_SYSTEM_PROMPT, parseFrameReply, watchFramePrompt } from '../../shared/behaviors/watch-timeline/prompts';
 
 const option = (name: string, fallback = '') => { const i = process.argv.indexOf(`--${name}`); return i >= 0 ? process.argv[i + 1] ?? fallback : fallback; };

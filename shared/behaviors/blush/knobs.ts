@@ -5,7 +5,7 @@
  * handbook/knobs.md 那张"想改什么 → 改哪里"的表由 `node scripts/list-knobs.mjs` 从这些行生成，别手改那张表。
  *
  * 读法：
- *  - 什么时候会红还是心情模型定（shared/mood.ts 的 maybeBlush，没改）：你说了暖心的话、亲近涨了 1 点以上（并且亲近涨 2 或舒适涨 1），
+ *  - 什么时候会红还是心情模型定（shared/foundation/mood.ts 的 maybeBlush，没改）：你说了暖心的话、亲近涨了 1 点以上（并且亲近涨 2 或舒适涨 1），
  *    或者被摸头、亲近在 10 秒里一下子涨够卡上的 fastThreshold（默认 6）。冷却期内、正在红的时候不会再红。
  *  - 每次要红的那一刻，她挑这一次红成什么样：一下子红透了 / 红一下 / 微微一红。base、mood、now、personality、moments 和 #11、#8
  *    一样是倍数（personality 的倍数 = 1 + 这个数 × 2 ×（性格值 − 1），夹在 0.2～3）；triggers 是"被摸头"和"你说了暖心的话"各 × 多少。
@@ -17,7 +17,7 @@
  * 很多模型（包括没有脸红 morph 的）用的是程序红晕，找不到脸颊时舞台会跳过：这里只定"红成什么样"，看不看得见由舞台和模型定。
  * 这些都只是试用值，没在真机上看过。
  */
-import type { MoodLabel, MoodTendency } from '../../mood';
+import type { MoodLabel, MoodTendency } from '../../foundation/mood';
 
 export const BLUSH_LOOK_IDS = ['deep', 'usual', 'faint'] as const;
 export type BlushLookId = typeof BLUSH_LOOK_IDS[number];
@@ -63,7 +63,7 @@ export const BLUSH_KNOBS: BlushKnobs = Object.freeze<BlushKnobs>({
     deep: {
       label: '一下子红透了', base: 0.8, depth: [1, 1.15], rise: [1, 1.4], hold: [1.3, 1.9], fade: [1.1, 1.5],
       mood: { close: 1.5, happy: 1.3, relieved: 1.3, longing: 1.3, excited: 1.2, content: 1.1,
-        upset: 0.4, disappointed: 0.5, concerned: 0.7, 'tense-expectation': 0.8 },
+        upset: 0.4, disappointed: 0.5, concerned: 0.7, afraid: 0.7, 'tense-expectation': 0.8 },
       now: { close: 1.3, cautious: 1.3 }, personality: { cautious: 0.5, close: 0.25 }, triggers: { words: 1.3 }, moments: { sleepy: 0.6 },
     },
     // 用户可能怎么说：脸红平时太明显了／太淡了（不是某几次，是一直都这样）
@@ -76,7 +76,7 @@ export const BLUSH_KNOBS: BlushKnobs = Object.freeze<BlushKnobs>({
     // 怎么调：太常 → base 调小或 mood、personality 里的倍数调小；看不清 → depth、hold 的下限调大
     faint: {
       label: '微微一红', base: 0.8, depth: [0.7, 0.85], rise: [0.8, 1.1], hold: [0.4, 0.8], fade: [0.7, 1],
-      mood: { upset: 1.8, disappointed: 1.6, concerned: 1.3, 'tense-expectation': 1.2 },
+      mood: { upset: 1.8, disappointed: 1.6, concerned: 1.3, afraid: 1.3, 'tense-expectation': 1.2 },
       now: { playful: 1.2 }, personality: { cautious: -0.5 }, moments: { sleepy: 1.5 },
     },
   },

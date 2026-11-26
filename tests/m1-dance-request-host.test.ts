@@ -4,8 +4,8 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CompanionService } from '../electron/companion';
-import { MoodHost } from '../electron/mood';
+import { CompanionService } from '../electron/brain/companion';
+import { MoodHost } from '../electron/mood/mood';
 
 const provider = { kind: 'claude' as const, baseUrl: 'https://dance.invalid/v1', model: 'fixture' };
 

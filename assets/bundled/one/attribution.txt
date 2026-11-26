@@ -1,0 +1,11 @@
+One (one.vrm), VRM 1.0 model, author: the soft hearts project's author.
+
+Licence as declared in the model's own VRM metadata:
+- Redistribution: allowed.
+- Modification: allowed, and redistribution of modified copies allowed.
+- Credit: required. Keep a credit to the soft hearts author ("One, a soft hearts character") with every redistribution.
+- Commercial use: personal non-profit only.
+
+The "Crimson Rose Hairpin" item on the model was made by the project's author together with Codex; it is the author's own work and is covered by the same terms.
+
+The file is bundled byte for byte as the author exported it. soft hearts' MIT licence for source code does not replace this asset licence.

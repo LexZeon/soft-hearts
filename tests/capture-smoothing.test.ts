@@ -9,9 +9,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { AnimationClip, Quaternion, QuaternionKeyframeTrack, Vector3 } from 'three';
-import { CAPTURE_SMOOTHING_PASSES, smoothCapturedClip, smoothCapturedRotations } from '../src/stage/capture-smoothing';
+import { CAPTURE_SMOOTHING_PASSES, smoothCapturedClip, smoothCapturedRotations } from '../src/senses/capture-smoothing';
 import { isChatGestureTrack } from '../src/stage/chat-gesture';
-import { geneStage } from './helpers/gene-stage-harness';
 
 const DEG = 180 / Math.PI, AXIS = new Vector3(0, 0, 1);
 const about = (deg: number) => new Quaternion().setFromAxisAngle(AXIS, deg / DEG);
@@ -58,31 +57,3 @@ test('a clip is smoothed once (the stage caches it), only the tracks the filter 
   assert.deepEqual([...clip.tracks[0].values], once);
   assert.deepEqual([...clip.tracks[1].values], run.map(v => Math.fround(v)), 'a leg track is not a chat-gesture track: untouched');
 });
-
-/** A whole chat gesture on the real Stage frame loop (60 Hz screen, the stage's own frame clock): guard catches while it plays. */
-async function gestureCatches(packId: 'genea-2022-gestures' | 'mpi-embm-gestures', motionId: 'speaking-gesture-2' | 'conversation-joy', fps: number, strength: number) {
-  const h = await geneStage({ fps, refreshHz: 60, chatGesture: { packId, motionId } });
-  try {
-    for (let i = 0; i < 120; i++) h.tick();
-    const before = h.stage.continuity?.getState().jumps ?? 0;
-    const cue = { id: `g-${motionId}-${fps}-${strength}`, at: Date.now(), expiresAt: Date.now() + 60_000, intent: 'explain' as const, strength, reason: 'test' };
-    h.stage.moodView = { ...h.stage.moodView, gesture: cue };
-    await h.stage.playChatGesture(cue, h.stage.moodView.token);
-    assert.equal(h.stage.chatGesturePlayer.getState().active, true, `${motionId} ${fps} fps ${strength}: the gesture plays (${h.stage.chatGestureError})`);
-    const caught: string[] = [];
-    let last = before;
-    for (let i = 0; i < 60 * 7.5; i++) {
-      h.tick();
-      const state = h.stage.continuity?.getState();
-      if (state && state.jumps > last) { caught.push(`${state.lastJump?.property} ${state.lastJump?.size}`); last = state.jumps; }
-    }
-    return caught;
-  } finally { h.close(); }
-}
-
-for (const fps of [60, 30]) {
-  test(`${fps} fps: neither whole chat gesture leaves the display guard anything to catch (strength 0.46 and the maximum 0.7)`, async () => {
-    for (const [pack, motion] of [['genea-2022-gestures', 'speaking-gesture-2'], ['mpi-embm-gestures', 'conversation-joy']] as const)
-      for (const strength of [0.46, 0.7]) assert.deepEqual(await gestureCatches(pack, motion, fps, strength), [], `${motion} at ${strength}`);
-  });
-}

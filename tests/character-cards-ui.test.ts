@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CharacterCards } from '../src/ui/CharacterCards';
-import { defaultCharacterMoodTemplate, validateCharacterDraft, type CharacterCard, type CharacterCardState, type CharacterDraft, type CharacterMoodTemplate } from '../shared/character-cards';
+import { CharacterCards } from '../src/cards/CharacterCards';
+import { defaultCharacterMoodTemplate, validateCharacterDraft, type CharacterCard, type CharacterCardState, type CharacterDraft, type CharacterMoodTemplate } from '../shared/cards/character-cards';
 import type { DesktopAPI } from '../shared/contracts';
-import { emptyLanguageProfile } from '../shared/personalize-language';
-import { defaultCharacterResponseProfile, defaultCharacterResponseRule, type CharacterResponseProfile, type CharacterResponseState } from '../shared/character-response';
+import { emptyLanguageProfile } from '../shared/cards/personalize-language';
+import { CARD_STANCE_HINT } from '../shared/foundation/stance-notice';
+import { defaultCharacterResponseProfile, defaultCharacterResponseRule, type CharacterResponseProfile, type CharacterResponseState } from '../shared/cards/character-response';
 
 // Text/action-only fixture. The real editor owns all draft, validation, consent,
 // broadcast and save behavior; no browser, service or normal profile is started.
@@ -117,9 +118,10 @@ function fixture(initial: CharacterCard = card(), imported: CharacterCard | null
   Object.defineProperty(globalThis, 'document', { configurable: true, writable: true, value: { createElement: (tag: string) => tag === 'textarea' ? new TextArea() : new Element(tag) } });
   Object.defineProperty(globalThis, 'HTMLTextAreaElement', { configurable: true, writable: true, value: TextArea });
   Object.defineProperty(globalThis, 'window', { configurable: true, writable: true, value: { desktop: api, confirm: (message: string) => { confirmations.push(message); return answers.shift() ?? true; } } });
-  const ui = new CharacterCards(root as unknown as HTMLElement, { onError: message => errors.push(message) });
+  const notices: string[] = [];
+  const ui = new CharacterCards(root as unknown as HTMLElement, { onError: message => errors.push(message), onNotice: message => notices.push(message) });
   return {
-    ui, root, errors, saves, activations, confirmations, answers, realerRequests, realerAnswers, responseCopies, responseSaves, copyErrors, copyWaiters,
+    ui, root, errors, notices, saves, activations, confirmations, answers, realerRequests, realerAnswers, responseCopies, responseSaves, copyErrors, copyWaiters,
     setResponse(id: string, profile: CharacterResponseProfile) { responses.set(id, structuredClone(profile)); responseRevision++; responseCallback?.(responseState(id)); },
     state: () => structuredClone(stored),
     broadcast(next: CharacterCardState) { stored = structuredClone(next); callback?.(structuredClone(next)); },
@@ -181,17 +183,18 @@ test('complete JSON edits retain advanced fields when easy blush controls are us
   } finally { f.restore(); }
 });
 
-test('熟悉度: "关系慢慢升温" is unchecked for a card without it, follows the selected card, and saves exactly what is shown', async () => {
+test('熟悉度: "慢慢熟悉" is unchecked for a card without it, follows the selected card, and saves exactly what is shown', async () => {
   const f = fixture(card());
   try {
     await f.ui.init();
-    assert.equal(field(f.root, 'character-slow-warm-up').checked, false, 'older cards read as off');
+    assert.equal(field(f.root, 'character-slow-warm-up').checked, true, 'a card without it reads as on');
     type(f.root, 'character-greeting', '嗨');
     field(f.root, 'character-save').click(); await flush();
-    assert.equal(f.saves[0].draft.slowWarmUp, false);
-    field(f.root, 'character-slow-warm-up').checked = true; field(f.root, 'character-slow-warm-up').onchange?.();
+    assert.equal(f.saves[0].draft.slowWarmUp, true);
+    field(f.root, 'character-slow-warm-up').checked = false; field(f.root, 'character-slow-warm-up').onchange?.();
     field(f.root, 'character-save').click(); await flush();
-    assert.equal(f.saves[1].draft.slowWarmUp, true, 'ticked and saved');
+    assert.equal(f.saves[1].draft.slowWarmUp, false, 'unticked and saved: an explicit off');
+    field(f.root, 'character-slow-warm-up').checked = true; field(f.root, 'character-slow-warm-up').onchange?.();
     assert.equal(field(f.root, 'persona').value.includes('升温'), false, 'it is a card setting, not persona text');
     field(f.root, 'character-duplicate').click();
     assert.equal(field(f.root, 'character-slow-warm-up').checked, true, 'a copy keeps the switch');
@@ -200,6 +203,47 @@ test('熟悉度: "关系慢慢升温" is unchecked for a card without it, follow
     assert.equal(f.saves[2].draft.slowWarmUp, false);
     assert.deepEqual(f.errors, []);
   } finally { f.restore(); }
+});
+
+test('I-078 睡相: the middle for a card without it (left out of the draft), a moved slider is saved, a card with one keeps it and can go back to the middle', async () => {
+  const f = fixture(card());
+  try {
+    await f.ui.init();
+    assert.equal(field(f.root, 'character-sleep-habit').value, '50', 'older cards read as the middle');
+    type(f.root, 'character-greeting', '嗨');
+    field(f.root, 'character-save').click(); await flush();
+    assert.equal(Object.hasOwn(f.saves[0].draft, 'sleepHabit'), false, 'an untouched middle stays out of the card (it sleeps exactly as before)');
+    type(f.root, 'character-sleep-habit', '85');
+    field(f.root, 'character-save').click(); await flush();
+    assert.equal(f.saves[1].draft.sleepHabit, 85, 'moved and saved');
+    assert.equal(field(f.root, 'persona').value.includes('睡'), false, 'a card setting, not persona text');
+    type(f.root, 'character-sleep-habit', '50');
+    field(f.root, 'character-save').click(); await flush();
+    assert.equal(f.saves[2].draft.sleepHabit, 50, 'back to the middle on a card that had one is saved too');
+    assert.deepEqual(f.errors, []);
+  } finally { f.restore(); }
+});
+
+test('小毛病: the card editor shows the default for a card without it, saves a chosen value, shows a card that has one, and can go back to the default', async () => {
+  const f = fixture(card());
+  try {
+    await f.ui.init();
+    assert.equal(field(f.root, 'character-slips').value, 'default', 'older cards read as the default');
+    change(f.root, 'character-slips', 'off');
+    field(f.root, 'character-save').click(); await flush();
+    assert.equal(f.saves[0].draft.slips, 'off', 'chosen and saved');
+    assert.equal(field(f.root, 'persona').value.includes('小毛病'), false, 'a card setting, not persona text');
+    change(f.root, 'character-slips', 'default');
+    field(f.root, 'character-save').click(); await flush();
+    assert.equal(f.saves[1].draft.slips, undefined, 'back to the default leaves the draft without a value (the store test shows "default" clears the stored one)');
+    assert.deepEqual(f.errors, []);
+  } finally { f.restore(); }
+  const g = fixture({ ...card(), slips: 'more' });
+  try {
+    await g.ui.init();
+    assert.equal(field(g.root, 'character-slips').value, 'more', 'a card with one shows it');
+    assert.deepEqual(g.errors, []);
+  } finally { g.restore(); }
 });
 
 test('F6 "更真实的情绪": off by default, ticking asks the host (which explains first), declining leaves it off, the box shows the saved value, an unsaved card cannot', async () => {
@@ -228,6 +272,23 @@ test('F6 "更真实的情绪": off by default, ticking asks the host (which expl
     assert.equal(box().checked, false); assert.equal(box().disabled, true);
     assert.deepEqual(f.errors, []);
   } finally { f.restore(); }
+});
+
+test('I-112 B: the editor says when 更真实的情绪 turns itself off, 一直开着 for older cards, and 已到期关闭 after it ran out', async () => {
+  const at = new Date(2026, 10, 20, 21, 0).getTime();
+  const shown = async (initial: CharacterCard) => {
+    const f = fixture(initial);
+    try {
+      await f.ui.init();
+      const line = all(f.root).find(item => item.className.includes('character-realer-status'));
+      assert.ok(line, 'the status line exists');
+      return line.hidden ? '' : line.textContent;
+    } finally { f.restore(); }
+  };
+  assert.equal(await shown({ ...card(), realerEmotions: true, realerEmotionsUntil: at }), '到 11 月 20 日 21:00 自动关闭');
+  assert.equal(await shown({ ...card(), realerEmotions: true }), '一直开着，不会自动关闭');
+  assert.equal(await shown({ ...card(), realerEmotionsExpired: true }), '已到期关闭');
+  assert.equal(await shown(card()), '', 'a card that never had it shows nothing');
 });
 
 test('malformed JSON and runtime/private fields are rejected before any save IPC and valid edits recover the controls', async () => {
@@ -394,4 +455,25 @@ test('a late duplicate response copy cannot reactivate its target after an exter
     assert.deepEqual(f.activations, []); assert.equal(f.state().activeId, 'other');
     assert.equal(field(f.root, 'character-name').value, 'Other'); assert.equal(f.saves.length, 1);
   } finally { finish?.(); f.restore(); }
+});
+
+test('a card notice (import note, I-067 reminders) is shown as a notice, not as a failure (Codex T-230 C206)', async () => {
+  const f = fixture();
+  try {
+    await f.ui.init();
+    f.broadcast({ ...f.state(), notice: '提醒（不影响导入）：已经有一张叫「Gene」的卡。' });
+    assert.deepEqual(f.notices, ['提醒（不影响导入）：已经有一张叫「Gene」的卡。']);
+    assert.deepEqual(f.errors, []);
+  } finally { f.restore(); }
+});
+
+test('I-110: the card editor says her voice and views come from the card, not the model provider or the developers', async () => {
+  const f = fixture();
+  try {
+    await f.ui.init();
+    const hints = all(f.root).filter(node => node.className.split(' ').includes('character-stance-hint'));
+    assert.equal(hints.length, 1);
+    assert.equal(hints[0].textContent, CARD_STANCE_HINT);
+    assert.deepEqual(f.errors, []);
+  } finally { f.restore(); }
 });

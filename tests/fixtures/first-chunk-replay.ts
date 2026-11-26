@@ -1,18 +1,18 @@
 // I-029: replay invented replies through the real reading path with a fake stream, a fake native bubble, fake voices and a
-// virtual clock (docs/claude/2026-11-04-i029-comma-first-reading.md). Real: the draft filter (electron/reply-draft-guard.ts),
-// the host plan (electron/completed-reply-speech.ts), the native prefix proof (electron/completed-prefix-proof.ts), the paced
-// bubble (src/ui/reply-presentation.ts) and the renderer queue (src/ui/completed-reply-speech-queue.ts), wired in the order
+// virtual clock (docs/claude/2026-11-04-i029-comma-first-reading.md). Real: the draft filter (electron/brain/reply-draft-guard.ts),
+// the host plan (electron/voice/completed-reply-speech.ts), the native prefix proof (electron/voice/completed-prefix-proof.ts), the paced
+// bubble (src/brain/reply-presentation.ts) and the renderer queue (src/voice/completed-reply-speech-queue.ts), wired in the order
 // of electron/main.ts nextReplySpeechSegment's streamed (prefix) branch. Fake: provider timing, IPC and paint latency, and
 // both voices (no audio, no network, no paid call). Used by tests/i029-first-chunk.test.ts and scripts/first-chunk-replay.ts.
-import { CompletedReplySpeech } from '../../electron/completed-reply-speech';
-import { CompletedPrefixProof } from '../../electron/completed-prefix-proof';
-import { ReplyDraftGuard } from '../../electron/reply-draft-guard';
-import { CompletedReplySpeechQueue, type ReplySpeechSession } from '../../src/ui/completed-reply-speech-queue';
-import { ReplyPresentationState } from '../../src/ui/reply-presentation';
-import { IncrementalReplySegments } from '../../shared/incremental-reply-segments';
-import { speakableText } from '../../shared/speakable-text';
-import { spokenUnits, type FirstSpeechChunk } from '../../shared/first-speech-chunk';
-import type { ApprovedReplySpeechSegment } from '../../shared/tts';
+import { CompletedReplySpeech } from '../../electron/voice/completed-reply-speech';
+import { CompletedPrefixProof } from '../../electron/voice/completed-prefix-proof';
+import { ReplyDraftGuard } from '../../electron/brain/reply-draft-guard';
+import { CompletedReplySpeechQueue, type ReplySpeechSession } from '../../src/voice/completed-reply-speech-queue';
+import { ReplyPresentationState } from '../../src/brain/reply-presentation';
+import { IncrementalReplySegments } from '../../shared/voice/incremental-reply-segments';
+import { speakableText } from '../../shared/voice/speakable-text';
+import { spokenUnits, type FirstSpeechChunk } from '../../shared/voice/first-speech-chunk';
+import type { ApprovedReplySpeechSegment } from '../../shared/voice/tts';
 import type { PauseTalkPlan } from '../../shared/behaviors/pause-talk/interface';
 
 export type Voice = 'system' | 'bailian';

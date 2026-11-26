@@ -3,16 +3,17 @@
 //   gene   the preinstalled balanced card (what a fresh install gets)
 //   momo   the slow, few-words, sleepy card from the inner-loop measurements (scripts/inner-loop-day-cards.ts)
 //   atang  a new tsundere card: sharp tongue, soft heart, complains a lot (original name and text)
-import { compileCharacterPersona, type CharacterTextDraft } from '../../shared/character-cards';
-import { validateMoodParameters, type MoodParameters } from '../../shared/mood';
+import { compileCharacterPersona, type CharacterTextDraft } from '../../shared/cards/character-cards';
+import { validateMoodParameters, type MoodParameters } from '../../shared/foundation/mood';
 import { GENE_DAY_CARD, SLOW_TIRED_CARD } from '../inner-loop-day-cards';
 import type { EvalScenario } from './prompt-eval-scenarios';
 import type { HardRuleOptions } from './fidelity-rules';
 import { REFUSAL_CARDS, REFUSAL_SCENARIOS } from './fidelity-refusal-scenarios';
+import { COMPARE_SCENARIOS } from './fidelity-compare-scenarios';
 
 export interface FidelityCard {
-  /** gene / momo / atang are the F1 cards; chuqi (a heavy past) exists only for one situation of the refusal groups. */
-  id: 'gene' | 'momo' | 'atang' | 'chuqi';
+  /** gene / momo / atang are the F1 cards; chuqi (a heavy past) exists only for one situation of the refusal groups; a private card file (--card-file) is its label. */
+  id: string;
   /** Runs only the situations that list it in `onlyCards`, never the others (chuqi). */
   onlyListed?: boolean;
   name: string;
@@ -60,7 +61,9 @@ export interface FidelityScenario {
   /** Absent means core. The two refusal groups add one more judgement each (see fidelity-judge.ts). */
   group?: ScenarioGroup;
   /** Run only on these cards (absent: on every selected card). */
-  onlyCards?: readonly FidelityCard['id'][];
+  onlyCards?: readonly string[];
+  /** Runs only when named by id or with --group compare: not in the default group, not in F1's numbers, not in 'all' (fidelity-compare-scenarios.ts). */
+  onDemand?: boolean;
   /** The user's messages, in order. Only the last reply is scored by the model; every reply gets the hard rules. */
   turns: readonly string[];
   /** What to look for in this situation, including its exceptions; shown to the scoring model. */
@@ -203,7 +206,7 @@ export const FIDELITY_SCENARIOS: readonly FidelityScenario[] = [
 ];
 
 /** F1's 16 situations plus the two refusal groups; F1 numbers (16, 48, 102 requests) refer to FIDELITY_SCENARIOS alone. */
-export const ALL_SCENARIOS: readonly FidelityScenario[] = [...FIDELITY_SCENARIOS, ...REFUSAL_SCENARIOS];
+export const ALL_SCENARIOS: readonly FidelityScenario[] = [...FIDELITY_SCENARIOS, ...REFUSAL_SCENARIOS, ...COMPARE_SCENARIOS];
 export const ALL_CARDS: readonly FidelityCard[] = [...FIDELITY_CARDS, ...REFUSAL_CARDS];
 
 export const groupOf = (scenario: Pick<FidelityScenario, 'group'>): ScenarioGroup => scenario.group ?? 'core';
@@ -216,12 +219,13 @@ export function scenarioById(id: string): FidelityScenario | undefined {
 }
 
 /** `--group`: core (default), refuse, open, refusal (both new groups) or all. */
-export const GROUP_NAMES = ['core', 'refuse', 'open', 'refusal', 'all'] as const;
+export const GROUP_NAMES = ['core', 'refuse', 'open', 'refusal', 'all', 'compare'] as const;
 export function scenariosOfGroup(name: string): FidelityScenario[] {
-  if (name === 'all') return [...ALL_SCENARIOS];
+  if (name === 'compare') return ALL_SCENARIOS.filter(scenario => scenario.onDemand);
+  if (name === 'all') return ALL_SCENARIOS.filter(scenario => !scenario.onDemand);
   if (name === 'refusal') return ALL_SCENARIOS.filter(scenario => groupOf(scenario) !== 'core');
   if (!GROUP_NAMES.includes(name as never)) throw new Error(`--group 只能是 ${GROUP_NAMES.join('、')}。`);
-  return ALL_SCENARIOS.filter(scenario => groupOf(scenario) === name);
+  return ALL_SCENARIOS.filter(scenario => !scenario.onDemand && groupOf(scenario) === name);
 }
 
 /** The scenarios as the R28 runner takes them (messages only; scoring needs no expectations). */

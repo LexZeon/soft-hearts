@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Bone,Quaternion,Vector3,type SkinnedMesh} from 'three';
-import {SurpriseOverlay,surpriseSample} from '../src/stage/surprise-preview-overlay';
+import {SurpriseOverlay,surpriseSample} from '../src/mood/surprise-preview-overlay';
 
 const near=(a:number,b:number)=>assert.ok(Math.abs(a-b)<1e-10,`${a} != ${b}`);
 function rig(){

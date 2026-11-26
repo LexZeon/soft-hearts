@@ -1,11 +1,11 @@
 /**
  * D2: the note lines under a "测试：…" message, in the window. Plain text only, one row per command, the user's own line on
- * top even when the host's note arrives first, old rows go, a new conversation clears them, the pet's rows fade away.
+ * top even when the host's note arrives first, old rows go, a new conversation clears them, the companion's rows fade away.
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { TestCommandNotes } from '../src/ui/TestCommandNotes';
-import { TEST_NOTE_MAX, isTestEffect } from '../shared/test-command';
+import { TestCommandNotes } from '../src/safety/TestCommandNotes';
+import { TEST_NOTE_MAX, isTestEffect } from '../shared/safety/test-command';
 
 class Element {
   children: Element[] = []; className = ''; textContent: string | null = ''; dataset: Record<string, string> = {}; attributes = new Map<string, string>();

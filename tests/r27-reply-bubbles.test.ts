@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { REPLY_BUBBLE_POLICY, paragraphEnds, planReplyPieces, replyPieces, validReplyPieces, MAX_REPLY_PIECES } from '../shared/reply-bubbles';
-import { IncrementalReplySegments } from '../shared/incremental-reply-segments';
+import { REPLY_BUBBLE_POLICY, paragraphEnds, planReplyPieces, replyPieces, validReplyPieces, MAX_REPLY_PIECES } from '../shared/voice/reply-bubbles';
+import { IncrementalReplySegments } from '../shared/voice/incremental-reply-segments';
 
 const slices = (text: string, ends: number[]) => ends.map((end, index) => text.slice(index ? ends[index - 1] : 0, end));
 

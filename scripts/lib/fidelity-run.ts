@@ -95,7 +95,7 @@ export interface FidelityRunOptions {
   prewarmMs: number;
   /** Replaces the persistent process's fixed system prompt. */
   systemPrompt?: string;
-  /** 熟悉度: how long she has known the user and whether the card warms up slowly; omitted: the app's default for a first-day user. */
+  /** 熟悉度: how long she has known the user and whether the card gets familiar slowly; omitted: the app's default for a first-day user. */
   relationship?: EvalRelationship;
   /** F6: every card runs with "更真实的情绪" on (the app's opening paragraph; the hard rules and the rubric of that mode). */
   realer?: boolean;

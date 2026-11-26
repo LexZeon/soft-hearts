@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Unbound U4 surfaces preview</title>
+    <style>
+      html, body { margin: 0; width: 960px; height: 540px; overflow: hidden; }
+      body { background: linear-gradient(135deg, #e9eef7 0%, #f6efe8 100%); font: 12px/1.4 "Microsoft YaHei UI", system-ui, sans-serif; }
+      #desk { position: absolute; inset: 0; background-image: linear-gradient(rgba(120,130,150,.10) 1px, transparent 1px), linear-gradient(90deg, rgba(120,130,150,.10) 1px, transparent 1px); background-size: 48px 48px; }
+      #boards { position: absolute; inset: 0; z-index: 1; isolation: isolate; }
+      .board { position: absolute; box-sizing: border-box; border: 1px solid rgba(60,70,90,.45); border-radius: 4px; box-shadow: 0 6px 18px rgba(40,50,70,.28); overflow: hidden; }
+      .bar { height: 18px; background: rgba(60,70,90,.18); padding: 0 8px; line-height: 18px; color: #3b4558; }
+      #stage { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+      #canvas { position: absolute; left: 0; top: 0; width: 960px; height: 540px; display: block; }
+      #marks { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+      .dot { position: absolute; border-radius: 50%; border: 1px solid #fff; }
+      .edge { position: absolute; background: #e0245e; opacity: .8; }
+      #caption { position: absolute; left: 8px; bottom: 6px; z-index: 4; padding: 3px 8px; border-radius: 6px; background: rgba(16,21,29,.72); color: #dbe7ff; font: 12px/1.4 Consolas, "Microsoft YaHei UI", monospace; white-space: pre; }
+    </style>
+  </head>
+  <body>
+    <div id="desk"></div>
+    <div id="boards"></div>
+    <div id="stage"></div>
+    <div id="marks"></div>
+    <div id="caption"></div>
+    <script src="./u4-page.js"></script>
+  </body>
+</html>

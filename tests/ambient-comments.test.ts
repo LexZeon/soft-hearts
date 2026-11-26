@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { AmbientComments, ambientContextText, parseAmbientComment, type AmbientCommentOffer, type AmbientCommentSession } from '../electron/ambient-comments';
-import { AMBIENT_AUDIO_LIMITS, type AmbientContextItem, type AmbientCommentInput, type AmbientScope, type AmbientUserResponse } from '../shared/ambient-audio';
-import type { MoodView } from '../shared/mood-runtime';
-import { createMoodState, DEFAULT_MOOD_PARAMETERS, getMoodSnapshot, type AmbientSpeechObservation, type MoodCue } from '../shared/mood';
+import { AmbientComments, ambientContextText, parseAmbientComment, type AmbientCommentOffer, type AmbientCommentSession } from '../electron/senses/ambient-comments';
+import { AMBIENT_AUDIO_LIMITS, type AmbientContextItem, type AmbientCommentInput, type AmbientScope, type AmbientUserResponse } from '../shared/senses/ambient-audio';
+import type { MoodView } from '../shared/mood/mood-runtime';
+import { createMoodState, DEFAULT_MOOD_PARAMETERS, getMoodSnapshot, type AmbientSpeechObservation, type MoodCue } from '../shared/foundation/mood';
 
 const flush = async () => { for (let i = 0; i < 10; i++) await Promise.resolve(); };
 function deferred<T>() { let resolve!: (value: T) => void, reject!: (reason: unknown) => void; const promise = new Promise<T>((yes, no) => { resolve = yes; reject = no; }); return { promise, resolve, reject }; }

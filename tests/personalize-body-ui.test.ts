@@ -1,9 +1,9 @@
 import test from 'node:test';import assert from 'node:assert/strict';import { randomUUID } from 'node:crypto';
 import { mkdtemp,rm } from 'node:fs/promises';import os from 'node:os';import path from 'node:path';
-import { PersonalizeBodyControls } from '../src/ui/PersonalizeBodyControls';
-import { PersonalizeBodyAuthoring } from '../electron/personalize-body-authoring';import { PersonalizeBodyStore } from '../electron/personalize-body-store';
-import type { BodyPoseBinding } from '../shared/personalize-body';import type { SelectedVisualImage } from '../electron/selected-visual-image';
-import { bodyPoseBinding } from '../shared/personalize-body-bindings';import { BODY_TWEAK_TARGET } from '../shared/personalize-body';
+import { PersonalizeBodyControls } from '../src/stage/PersonalizeBodyControls';
+import { PersonalizeBodyAuthoring } from '../electron/stage/personalize-body-authoring';import { PersonalizeBodyStore } from '../electron/stage/personalize-body-store';
+import type { BodyPoseBinding } from '../shared/stage/personalize-body';import type { SelectedVisualImage } from '../electron/senses/selected-visual-image';
+import { bodyPoseBinding } from '../shared/stage/personalize-body-bindings';import { BODY_TWEAK_TARGET } from '../shared/stage/personalize-body';
 class Element {children:Element[]=[];textContent='';value='';disabled=false;hidden=false;open=false;className='';src='';dataset:Record<string,string>={};
  onclick:(()=>void)|null=null;oninput:(()=>void)|null=null;ontoggle:(()=>void)|null=null;constructor(readonly tagName:string){}
  append(...nodes:Element[]){this.children.push(...nodes);}replaceChildren(...nodes:Element[]){this.children=[...nodes];}setAttribute(_name:string,_value:string){} }

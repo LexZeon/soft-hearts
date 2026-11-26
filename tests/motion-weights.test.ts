@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, writeFile, rm, readdir } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { MotionWeightStore } from '../electron/motion-weights';
-import { parseWeightQuery, parseWeightTags, type MotionWeightAsset } from '../shared/motion-weights';
-import { buildMotionTagIndex, type MotionRecord } from '../shared/r32/motion-tag-index';
-import { rankMotionTagAnnotations, searchMotionTags } from '../shared/r32/motion-tag-query';
+import { MotionWeightStore } from '../electron/actions/motion-weights';
+import { parseWeightQuery, parseWeightTags, type MotionWeightAsset } from '../shared/actions/motion-weights';
+import { buildMotionTagIndex, type MotionRecord } from '../shared/actions/r32/motion-tag-index';
+import { rankMotionTagAnnotations, searchMotionTags } from '../shared/actions/r32/motion-tag-query';
 
 const a: MotionWeightAsset = { packId: 'gene', motionId: 'stand', assetKey: 'mmdagent-ex/gene@revision/stand', sha256: 'a'.repeat(64) };
 const b: MotionWeightAsset = { ...a, motionId: 'happy', assetKey: 'mmdagent-ex/gene@revision/happy', sha256: 'b'.repeat(64) };

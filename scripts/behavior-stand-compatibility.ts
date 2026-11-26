@@ -10,9 +10,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MeshBasicMaterial, type AnimationClip, type KeyframeTrack, type SkinnedMesh } from 'three';
 import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
-import { createVmdParser } from '../src/stage/vmd';
+import { createVmdParser } from '../src/foundation/vmd';
 import { BEHAVIOR_IDLE_BONES, isBehaviorBodyTrack, type BehaviorBodyMaskId } from '../src/stage/behavior-body';
-import type { VmdTrackReport } from '../src/stage/vmd-tracks';
+import type { VmdTrackReport } from '../src/foundation/vmd-tracks';
 
 const sourceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const outputPath = path.resolve(sourceRoot, '..', 'stand-compatibility.json');
@@ -59,9 +59,9 @@ function trackRecord(track: KeyframeTrack) {
 }
 
 async function main() {
-  const catalogBytes = await readFile(path.join(sourceRoot, 'shared/motion-catalog.json'));
+  const catalogBytes = await readFile(path.join(sourceRoot, 'shared/actions/motion-catalog.json'));
   const catalog = JSON.parse(catalogBytes.toString('utf8')) as Catalog;
-  const manifestBytes = await readFile(path.join(sourceRoot, 'shared/bundled-assets.json'));
+  const manifestBytes = await readFile(path.join(sourceRoot, 'shared/actions/bundled-assets.json'));
   const manifest = JSON.parse(manifestBytes.toString('utf8')) as Manifest;
   const modelPath = path.join(sourceRoot, 'assets/bundled', manifest.root, manifest.model.relativePath);
   const modelBytes = await readFile(modelPath);
@@ -134,7 +134,7 @@ async function main() {
             : 'The admitted source set does not overlap Stand tracks; this fact alone does not approve mixing or visible quality.',
       };
     });
-    const helperFiles = ['src/stage/vmd.ts', 'src/stage/vmd-tracks.ts', 'src/stage/behavior-body.ts', 'scripts/behavior-stand-compatibility.ts'];
+    const helperFiles = ['src/foundation/vmd.ts', 'src/foundation/vmd-tracks.ts', 'src/stage/behavior-body.ts', 'scripts/behavior-stand-compatibility.ts'];
     const helperHashes = Object.fromEntries(await Promise.all(helperFiles.map(async relative =>
       [relative, hash(await readFile(path.join(sourceRoot, relative)))] as const)));
     const report = {

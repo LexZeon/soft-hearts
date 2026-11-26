@@ -1,4 +1,4 @@
-// F7 说话节奏: the pure rules (shared/reply-rhythm.ts). Off by default (REPLY_RHYTHM_FALLBACK_ENABLED): the multiplier, the user's
+// F7 说话节奏: the pure rules (shared/brain/reply-rhythm.ts). Off by default (REPLY_RHYTHM_FALLBACK_ENABLED): the multiplier, the user's
 // pace, the "……" stop and the afterthought are 兜底（待定） for 停停说说, so these tests check mechanics and directions,
 // not final numbers. Visible characters and grapheme-safe paging are display helpers.
 import assert from 'node:assert/strict';
@@ -6,9 +6,9 @@ import test from 'node:test';
 import {
   REPLY_RHYTHM_MAX, REPLY_RHYTHM_MIN, UserPaceTracker, bubbleHoldMs, ellipsisStop, graphemeBoundaryAtOrBefore, isAfterthought,
   replyRhythmFor, rhythmMoodOf, userTurnShape, validReplyRhythmPacing, visibleLength, type ReplyRhythmInput,
-} from '../shared/reply-rhythm';
-import type { FatiguePhase } from '../shared/fatigue';
-import type { MoodContext, MoodLabel, MoodTendency } from '../shared/mood';
+} from '../shared/brain/reply-rhythm';
+import type { FatiguePhase } from '../shared/mood/fatigue';
+import type { MoodContext, MoodLabel, MoodTendency } from '../shared/foundation/mood';
 
 const calm = { primary: 'calm' as MoodLabel, context: 'neutral' as MoodContext };
 const m = (input: Partial<ReplyRhythmInput> & { mood?: ReplyRhythmInput['mood'] }) => replyRhythmFor({ mood: calm, ...input }).multiplier;

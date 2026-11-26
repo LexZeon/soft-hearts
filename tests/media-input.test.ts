@@ -2,18 +2,20 @@ import assert from "node:assert/strict";
 import test, { type TestContext } from "node:test";
 import fs from "node:fs";
 import ts from "typescript";
-import { VoiceSegmentRuntime } from "../electron/voice-segment-runtime";
-import { voiceFaultEvent } from "../electron/voice-chat-host";
-import { VoiceRoute } from "../electron/asr/voice-route";
-import { AudioCaptureHost } from "../electron/audio-capture-host";
-import { MediaRuntime } from "../electron/runtime";
-import { MicrophoneInput } from "../src/ui/MicrophoneInput";
-import type { AudioCaptureState } from "../shared/audio-capture";
-import type { VoiceCaptureBinding } from "../shared/voice-segments";
-import type { VoiceConversationEvent } from "../shared/voice-conversation";
+import { VoiceSegmentRuntime } from "../electron/voice/voice-segment-runtime";
+import { voiceFaultEvent } from "../electron/voice/voice-chat-host";
+import { VoiceRoute } from "../electron/senses/asr/voice-route";
+import { AudioCaptureHost } from "../electron/senses/audio-capture-host";
+import { MediaRuntime } from "../electron/senses/media-runtime";
+import { MicrophoneInput } from "../src/senses/MicrophoneInput";
+import type { AudioCaptureState } from "../shared/senses/audio-capture";
+import type { VoiceCaptureBinding } from "../shared/voice/voice-segments";
+import type { VoiceConversationEvent } from "../shared/voice/voice-conversation";
 import type { DesktopAPI } from "../shared/contracts";
-import type { RuntimeState } from "../shared/contracts";
-import { encodeWav, MediaInput, resamplePcm, VoiceSegmenter } from "../src/ui/MediaInput";
+import type { RuntimeState } from "../shared/foundation/runtime-state";
+import { encodeWav, MediaInput, resamplePcm, VoiceSegmenter } from "../src/senses/MediaInput";
+// Reads as text (test-affected selects this test when they change): 'electron/main.ts' (wiring rewrite step 4c: with electron/wiring/*.ts).
+import { wiringSource } from './helpers/wiring-source';
 
 const off: RuntimeState = { voiceInput: false, screenSharing: false, cameraSharing: false, voiceOwner: null, cameraOwner: null };
 const voice: RuntimeState = { ...off, voiceInput: true, voiceOwner: "pet" };
@@ -64,7 +66,7 @@ test("quiet speech is segmented while low microphone noise remains below the gat
 
 // Execute the real host's sanitized recognizer boundary and fault publisher.
 // Only recognizer results/devices are fixtures; queued receipts never await ASR.
-const hostSource = fs.readFileSync(new URL('../electron/main.ts', import.meta.url), 'utf8');
+const hostSource = wiringSource();
 const hostAst = ts.createSourceFile('main.ts', hostSource, ts.ScriptTarget.Latest, true);
 function hostCallback(variable: string, property: string): string {
   let callback: string | undefined;
@@ -80,7 +82,7 @@ function hostCallback(variable: string, property: string): string {
   visit(hostAst); assert.ok(callback, `${variable}.${property} must remain an actual host callback`);
   return callback;
 }
-// The fault publisher lives in electron/voice-chat-host.ts (R33): its actual
+// The fault publisher lives in electron/voice/voice-chat-host.ts (R33): its actual
 // voiceFaultEvent is imported and run here, the host's capture is the fixture's.
 // 识别方式 (2026-11-03): the host now routes through the real VoiceRoute; here it is set to the compatible address,
 // whose recognizer is the fixture below.

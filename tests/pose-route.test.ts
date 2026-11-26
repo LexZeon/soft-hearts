@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DegradeLadder, LADDER, SlowGpuWatch, budgetMs, chooseRoute } from '../electron/pose/route';
+import { DegradeLadder, LADDER, SlowGpuWatch, budgetMs, chooseRoute } from '../electron/senses/pose/route';
 
 test('start-up choice: the faster working route, on the first ladder step its p90 fits', () => {
   assert.deepEqual(chooseRoute({ dml: 15, cpu: 45, dmlDetect: 6, cpuDetect: 12 }), { route: 'dml', index: 0 });

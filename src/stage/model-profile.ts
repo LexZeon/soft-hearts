@@ -1,14 +1,15 @@
 import { Bone, Matrix4, Vector3, type SkinnedMesh } from 'three';
+import type { ProfileSource } from './model-adapter/types';
 import type { BlushAnchors } from './procedural-blush';
 import {
   acceptCachedProfile, buildModelProfile, calibratedWeight, profileBindings, summarizeModelProfile,
   type ModelProfile, type ModelProfileCacheView, type ModelProfileInput, type ModelProfileSummary, type ProfileBone, type StandardBone, type Vec3,
-} from '../../shared/model-profile';
-import type { HaikuMatches } from '../../shared/model-capability';
-import { mergeHaikuMatches, modelCheckNames, verifyHaikuCandidates, type HaikuCandidates, type ModelCheckNames } from '../../shared/model-capability-check';
+} from '../../shared/stage/model-profile';
+import type { HaikuMatches } from '../../shared/stage/model-capability';
+import { mergeHaikuMatches, modelCheckNames, verifyHaikuCandidates, type HaikuCandidates, type ModelCheckNames } from '../../shared/stage/model-capability-check';
 
 /**
- * Stage side of the model profile (shared/model-profile.ts): reads the loaded
+ * Stage side of the model profile (shared/stage/model-profile.ts): reads the loaded
  * mesh's rest data once, builds or accepts a cached profile, and turns it into
  * the few values the stage consumes. Imports only Three core, never the MMD
  * loader, so it runs in tests without `three/examples`.
@@ -21,6 +22,11 @@ import { mergeHaikuMatches, modelCheckNames, verifyHaikuCandidates, type HaikuCa
  */
 
 const tuple = (value: Vector3): Vec3 => [value.x, value.y, value.z];
+
+/** The profile's view of one MMD mesh (src/stage/model-adapter/mmd.ts hands the stage the same for it). */
+export function meshProfileSource(mesh: SkinnedMesh): ProfileSource {
+  return { input: () => modelProfileInput(mesh), get bones() { return mesh.skeleton?.bones ?? []; }, root: mesh, get morphDictionary() { return mesh.morphTargetDictionary; } };
+}
 
 /** Rest data in model space. Morph offsets are read lazily, only for alias candidates. */
 export function modelProfileInput(mesh: SkinnedMesh): ModelProfileInput {
@@ -93,6 +99,9 @@ export function modelProfileInput(mesh: SkinnedMesh): ModelProfileInput {
   return { positions, skinBone, skinWeights, bones: profileBones, morphs };
 }
 
+const isProfileSource = (model: SkinnedMesh | ProfileSource): model is ProfileSource =>
+  typeof (model as Partial<ProfileSource>).input === 'function' && !(model as Partial<SkinnedMesh>).isSkinnedMesh;
+
 /** The old name-only lookup, kept as the fallback when a profile cannot be built at all. */
 export function legacyMorphIndices(dictionary: Record<string, number> | undefined): { blink: number; mouth: number; smile: number; sad: number } {
   const find = (aliases: string[]) => { for (const name of aliases) if (dictionary?.[name] !== undefined) return dictionary[name]; return -1; };
@@ -100,8 +109,8 @@ export function legacyMorphIndices(dictionary: Record<string, number> | undefine
     smile: find(['笑い', 'にこり', '口角上げ', 'smile', 'Smile']), sad: find(['困る', '悲しい', 'sad', 'Sad']) };
 }
 
-/** Pinch-only cheek anchors from measured eyes and mouth (same head-local frame as probeBlushAnchors). */
-function cheekAnchorsFrom(eyes: readonly Vector3[], mouth: Vector3 | null): BlushAnchors | null {
+/** Pinch-only cheek anchors from measured eyes and mouth (same head-local frame as probeBlushAnchors). I-164: a VRM's too (src/unbound/her/vrm-blush.ts). */
+export function cheekAnchorsFrom(eyes: readonly Vector3[], mouth: Vector3 | null): BlushAnchors | null {
   if (eyes.length !== 2 || !mouth) return null;
   const [leftEye, rightEye] = [...eyes].sort((a, b) => a.x - b.x).map(point => point.clone());
   const spacing = leftEye.distanceTo(rightEye);
@@ -122,7 +131,7 @@ function cheekAnchorsFrom(eyes: readonly Vector3[], mouth: Vector3 | null): Blus
 
 /**
  * I-024: told about every profile a stage in this window builds (one stage per window), so the model check
- * (src/ui/model-capability-sync.ts) can read this mesh's own names and check haiku's candidates on it.
+ * (src/stage/model-capability-sync.ts) can read this mesh's own names and check haiku's candidates on it.
  */
 const builtListeners = new Set<(profile: StageModelProfile) => void>();
 /** I-024: haiku's checked matches the host sent along with a cached profile (requestModelProfileCache), keyed by that object. */
@@ -164,10 +173,14 @@ export class StageModelProfile {
   /** I-024: haiku's checked matches the host sent with the cached profile, filled into `profile` (never for the reviewed Gene). */
   readonly fromHaiku: HaikuMatches = {};
 
-  constructor(private readonly mesh: SkinnedMesh, options: { reviewed: boolean; cached?: unknown }) {
+  /** The model's rest data (I-152: from the loaded model's adapter; a bare MMD mesh is read as itself). */
+  private readonly restSource: ProfileSource;
+
+  constructor(model: SkinnedMesh | ProfileSource, options: { reviewed: boolean; cached?: unknown }) {
     this.reviewed = options.reviewed === true;
+    const source = this.restSource = isProfileSource(model) ? model : meshProfileSource(model);
     try {
-      const input = modelProfileInput(mesh);
+      const input = source.input();
       const identity = { vertices: input.positions.length / 3, bones: input.bones.map(bone => bone.name), morphs: input.morphs.map(morph => morph.name) };
       const cached = options.cached === undefined || options.cached === null ? null : acceptCachedProfile(options.cached, identity);
       this.source = cached ? 'cache' : 'computed';
@@ -182,7 +195,7 @@ export class StageModelProfile {
     } catch { this.profile = this.namedProfile = null; this.fromHaiku = {}; this.source = 'unavailable'; this.checkIdentity = null; this.checkInput = null; }
     this.fresh = this.source === 'computed';
     const bindings = this.profile ? profileBindings(this.profile, this.reviewed) : null;
-    this.indices = bindings ? { blink: bindings.blink, mouth: bindings.mouth, smile: bindings.smile, sad: bindings.sad } : legacyMorphIndices(mesh.morphTargetDictionary);
+    this.indices = bindings ? { blink: bindings.blink, mouth: bindings.mouth, smile: bindings.smile, sad: bindings.sad } : legacyMorphIndices(source.morphDictionary as Record<string, number> | undefined);
     this.scales = new Map(bindings?.scales ?? []);
     this.links = bindings && bindings.blinkPartner >= 0 ? new Map([[bindings.blink, [bindings.blink, bindings.blinkPartner]]]) : new Map();
     this.linkedMorphs = bindings && bindings.blinkPartner >= 0 ? [bindings.blinkPartner] : [];
@@ -204,7 +217,7 @@ export class StageModelProfile {
   /** The profile's mapping of a standard bone (aliases beyond the stage's exact names). */
   bone(slot: StandardBone): Bone | undefined {
     const entry = this.profile?.bones.map[slot];
-    const bone = entry ? this.mesh.skeleton?.bones[entry.index] : undefined;
+    const bone = entry ? this.restSource.bones[entry.index] : undefined;
     return bone && bone.name === entry?.name ? bone : undefined;
   }
 
@@ -214,8 +227,9 @@ export class StageModelProfile {
     const proportions = this.profile?.proportions;
     if (!head || this.reviewed || !proportions) return;
     try {
-      this.mesh.updateMatrixWorld(true); head.updateWorldMatrix(true, false);
-      const local = (point: Vec3) => head.worldToLocal(this.mesh.localToWorld(new Vector3(...point)));
+      const root = this.restSource.root;
+      root.updateMatrixWorld(true); head.updateWorldMatrix(true, false);
+      const local = (point: Vec3) => head.worldToLocal(root.localToWorld(new Vector3(...point)));
       const eyes = proportions.eyes ? [local(proportions.eyes.left), local(proportions.eyes.right)] : [];
       const mouth = proportions.mouth.source !== 'estimate' ? local(proportions.mouth.point) : null;
       if (![...eyes, ...(mouth ? [mouth] : [])].every(point => [point.x, point.y, point.z].every(Number.isFinite))) return;

@@ -1,12 +1,12 @@
-// 退出时等「允许记录」开关的存盘写完，但有上限（electron/settle-within.ts；main.ts 的 before-quit 里用）。
+// 退出时等「允许记录」开关的存盘写完，但有上限（electron/foundation/settle-within.ts；main.ts 的 before-quit 里用）。
 // 真实的 UserProfileStore 在临时目录里；"重启"= 新建一个 store 读同一个目录。
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { UserProfileStore } from '../electron/user-profile';
-import { QUIT_SETTLE_LIMIT_MS, settleWithin } from '../electron/settle-within';
+import { UserProfileStore } from '../electron/memory/user-profile';
+import { QUIT_SETTLE_LIMIT_MS, settleWithin } from '../electron/foundation/settle-within';
 
 const scope = { characterId: 'character-a', providerScope: 'provider-a' };
 

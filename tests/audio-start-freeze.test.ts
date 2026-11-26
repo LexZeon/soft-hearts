@@ -1,17 +1,17 @@
 import assert from 'node:assert/strict';
 import test, { type TestContext } from 'node:test';
-import { DEFAULT_TTS_CONFIG, type TtsConfig } from '../shared/tts';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { StreamingVoicePlayer } from '../src/ui/EmotionalVoice';
-import { FeedCuePlayer } from '../src/ui/feed-cue-player';
+import { DEFAULT_TTS_CONFIG, type TtsConfig } from '../shared/voice/tts';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { StreamingVoicePlayer } from '../src/voice/EmotionalVoice';
+import { FeedCuePlayer } from '../src/initiative/feed-cue-player';
 import {
   AUDIO_CONTEXT_BUILD_MEASURE, AUDIO_OUTPUT_RETRY_MS, AUDIO_OUTPUT_START_TIMEOUT_MS, SharedAudioOutput,
   type AudioOutputVisibility,
-} from '../src/ui/audio-output';
+} from '../src/voice/audio-output';
 import { flush, pcm, world } from './helpers/r02-audio-world';
 
 /*
- * 2026-11-05, the user: "现版本容易卡死", "突然卡一小段时间，不动", "点击试音也会卡一下". Measured on the user's machine
+ * Measured on the user's machine
  * (Electron 45, Windows arm64): `new AudioContext()` blocks the window's main thread for a random 0.1–15 s, while
  * resume() of an existing context is asynchronous and does not stall frames. These tests pin the lifecycle that follows:
  * one build per window (early, `warm()`), suspend when idle and resume the same context, never rebuild for a slow or failed
@@ -287,7 +287,7 @@ test('freeze: a real build leaves one User Timing measure (name only) for probes
 });
 
 /*
- * 2026-11-06, the user: "运行程序的第一句总是不会朗读". Stable ffbeec8 built the context at init but never started its
+ * Stable ffbeec8 built the context at init but never started its
  * device, so the first reading after launch paid the whole cold device start (measured 6.5 s, earlier builds 8-18 s) and
  * the user, hearing nothing, sent the next message, which cancelled it. Later readings were fast (device already running).
  */

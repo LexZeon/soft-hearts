@@ -1,8 +1,12 @@
 export declare const REACTION_JUDGE_OPENING: string;
 export declare const FAKE_CLAUDE_MARKER: string;
 export declare const FAKE_CLAUDE_REPLY: readonly string[];
+export declare const FAKE_CLAUDE_PEER_SETTINGS: string;
 export declare const FAKE_CLAUDE_HOLD: string;
 export declare const FOLLOW_UP_MARKER: string;
+export declare const FOLLOW_UP_HEADERS_I139: readonly string[];
+export declare const FOLLOW_UP_MARKERS: readonly string[];
+export declare function isFollowUpTurn(text: unknown): boolean;
 export declare function verifyArguments(args: unknown): { ok: true; model: string; systemPromptLength: number } | { ok: false; reason: string };
 export declare function parseConversation(text: unknown): { opening: boolean; currentUser: string; historyLength: number } | null;
 export interface FakeClaudeTimers { set(callback: () => void, ms: number): unknown; clear(handle: unknown): void }

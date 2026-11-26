@@ -363,7 +363,7 @@ try {
   await waitFor(() => requests.some(item => item.message === 'CHAT_ERROR'), 'error fixture requested');
   await chatDone();
   // R38 (default immersive): outside developer mode the bubble shows the fixed chat failure
-  // (src/notice-policy.ts conciseFailure(..., 'chat')); the raw failure stays behind the
+  // (src/settings/notice-policy.ts conciseFailure(..., 'chat')); the raw failure stays behind the
   // controls window's explicit details entry. The old check expected the raw text in the bubble.
   const chatFailure = '这次回复未完成，可查看问题详情后重试。';
   await waitFor(async () => await visible() && await bubble.evaluate(text => document.getElementById('reply-body').textContent.includes(text), chatFailure), 'error reply visible');

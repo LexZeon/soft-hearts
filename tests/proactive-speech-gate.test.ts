@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ProactiveSpeechGate } from '../electron/proactive-speech-gate';
-import { PROACTIVE_RECENT_OPPORTUNITIES, PROACTIVE_REQUEST_LIMIT_MS } from '../shared/proactive-speech';
+import { ProactiveSpeechGate } from '../electron/initiative/proactive-speech-gate';
+import { PROACTIVE_RECENT_OPPORTUNITIES, PROACTIVE_REQUEST_LIMIT_MS } from '../shared/brain/proactive-speech';
 
 function fixture() {
   let now = 1_000;

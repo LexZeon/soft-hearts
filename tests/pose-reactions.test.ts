@@ -17,18 +17,18 @@ import {
   POSE_CONSIDER_EVERY_MS, POSE_FOLLOW_CHANCE_MAX, POSE_REACTION_POLICY, POSE_STALE_MS, decidePoseFollow, emptyPoseFollowMemory, poseDiaryLine,
   poseInnerLoopLine, poseOwnStretchDue, poseSessionLive, poseSummary, readPoseReactionView, stepPoseSession,
   type PoseCharacter, type PoseFollowKind, type PoseSession,
-} from '../shared/pose-reactions';
-import { EMPTY_POSE_SIGNAL, parsePoseSignal, type PoseSignal } from '../shared/pose-signals';
-import { PoseReactionHost } from '../electron/pose-reactions/host';
-import { CompanionService } from '../electron/companion';
-import { applyMoodPresence } from '../shared/mood-presence';
-import { DEFAULT_MOOD_PARAMETERS, advanceMood, createMoodState, getMoodSnapshot } from '../shared/mood';
-import { buildInnerLoopPrompt } from '../shared/inner-loop';
-import { innerLoopPrompt, type InnerLoopContextSources } from '../electron/inner-loop/context';
-import { buildJournalEntry, describeJournalEntry } from '../shared/journal';
-import { poseInput } from '../electron/journal/sources';
+} from '../shared/mood/pose-reactions';
+import { EMPTY_POSE_SIGNAL, parsePoseSignal, type PoseSignal } from '../shared/senses/pose-signals';
+import { PoseReactionHost } from '../electron/mood/pose-reactions/host';
+import { CompanionService } from '../electron/brain/companion';
+import { applyMoodPresence } from '../shared/foundation/mood-presence';
+import { DEFAULT_MOOD_PARAMETERS, advanceMood, createMoodState, getMoodSnapshot } from '../shared/foundation/mood';
+import { buildInnerLoopPrompt } from '../shared/initiative/inner-loop';
+import { innerLoopPrompt, type InnerLoopContextSources } from '../electron/initiative/inner-loop/context';
+import { buildJournalEntry, describeJournalEntry } from '../shared/memory/journal';
+import { poseInput } from '../electron/memory/journal/sources';
 import { seeded } from './helpers/seeded';
-import { PoseReactionStage } from '../src/stage/pose-reaction-stage';
+import { PoseReactionStage } from '../src/mood/pose-reaction-stage';
 
 const MINUTE = 60_000;
 const character = (over: Partial<PoseCharacter> = {}): PoseCharacter => ({ weights: { playful: 1, close: 1, comfortable: 1, cautious: 1 }, mood: 'calm',
@@ -168,8 +168,8 @@ test('her own stretch: due once the user sat the card\'s time (6–10 small-moti
 /** A host on a fake clock, fed like CompanionService feeds it. */
 function rig(over: { random?: () => number; c?: PoseCharacter; expressions?: boolean; canExpress?: boolean } = {}) {
   let now = 1_000_000, ids = 0;
-  const changed: string[] = [], presence: [string, number][] = [], journal: string[] = [];
-  const host = new PoseReactionHost({ changed: id => changed.push(id), presence: (id, relief) => presence.push([id, relief]),
+  const changed: string[] = [], presence: [string, number, (number | null)?][] = [], journal: string[] = [];
+  const host = new PoseReactionHost({ changed: id => changed.push(id), presence: (id, relief, _eventId, awayMs) => presence.push([id, relief, awayMs ?? null]),
     journal: (id, event, kind) => journal.push(`${event}:${kind ?? '-'}`), clock: () => now, random: over.random ?? (() => 0), id: () => `id${++ids}` });
   const tick = () => host.tick('gene', { now, expressions: over.expressions ?? true, canExpress: over.canExpress ?? true, character: over.c ?? character() });
   /** Sensing sends a signal at least every 2 s while it runs (the supervisor treats a 10 s gap as a crash): the same signal for `ms`, ticking each time. */
@@ -218,6 +218,8 @@ test('the host: an arrival is a light presence for her mood and a glance; leavin
   r.feed(signal({ present: false }), 2 * MINUTE);
   r.advance(1_000); r.host.signal(signal());
   assert.deepEqual(r.presence.map(([id, relief]) => [id, Math.round(relief)]), [['gene', 8]], 'default card: 0.4 × the chat relief');
+  // 心情第二批: how long the camera saw nobody goes along, so a long absence can lift her mood (electron/mood/mood-moments.ts).
+  assert.ok(Math.abs((r.presence[0][2] ?? 0) - (2 * MINUTE + 1_000)) <= 2_000, `away ${r.presence[0][2]} ms`);
   assert.equal(r.host.view('gene')!.cue!.kind, 'glance');
   assert.deepEqual(r.journal, ['leave:-', 'arrive:-']);
 });

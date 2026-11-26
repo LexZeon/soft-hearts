@@ -7,7 +7,7 @@ import { Bone, BufferGeometry, Float32BufferAttribute, Matrix4, MeshBasicMateria
 import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
 import { MMDToonShader } from 'three/examples/jsm/shaders/MMDToonShader.js';
 import { ProceduralBlush, probeBlushAnchors, type BlushAnchors } from '../src/stage/procedural-blush';
-import { ProceduralTears, TEAR_STYLE, tearsSupport } from '../src/stage/procedural-tears';
+import { ProceduralTears, TEAR_STYLE, tearsSupport } from '../src/mood/procedural-tears';
 
 function skin(name = 'face-skin') {
   const material = new ShaderMaterial({ vertexShader: MMDToonShader.vertexShader, fragmentShader: MMDToonShader.fragmentShader, uniforms: UniformsUtils.clone(MMDToonShader.uniforms) });
@@ -187,7 +187,7 @@ test('dispose preserves an external material/callback replacement rather than re
 });
 
 test('hash-pinned public Gene supplies face and cheek-cover targets and preserves unrelated materials and source geometry', async () => {
-  const manifest = JSON.parse(await readFile('shared/bundled-assets.json', 'utf8'));
+  const manifest = JSON.parse(await readFile('shared/actions/bundled-assets.json', 'utf8'));
   const bytes = await readFile(join('assets/bundled', manifest.root, manifest.model.relativePath));
   const verified = createHash('sha256').update(bytes).digest('hex') === manifest.model.sha256;
   assert.equal(verified, true); assert.equal(bytes.byteLength, manifest.model.bytes);

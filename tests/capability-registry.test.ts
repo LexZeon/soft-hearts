@@ -1,21 +1,21 @@
-// I-025: the capability list (shared/capabilities.ts), its control patterns (shared/capability-controls.ts) and the handbook
-// generated from it (shared/capability-handbook.ts, the channel's read_handbook). The browser scan of the settings window is
+// I-025: the capability list (shared/settings/capabilities.ts), its control patterns (shared/settings/capability-controls.ts) and the handbook
+// generated from it (shared/settings/capability-handbook.ts, the channel's read_handbook). The browser scan of the settings window is
 // tests/capability-coverage.test.ts.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import type { AppSettings } from '../shared/contracts';
-import type { CharacterCardState } from '../shared/character-cards';
-import { AGENT_SETTINGS, AGENT_TOOLS, agentSetting } from '../shared/agent-channel';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import type { AppSettings } from '../shared/foundation/settings';
+import type { CharacterCardState } from '../shared/foundation/character-card';
+import { AGENT_SETTINGS, AGENT_TOOLS, agentSetting } from '../shared/safety/agent-channel';
 import {
   CAPABILITIES, CAPABILITY_CATEGORIES, capabilityChannel, capabilityGap, capabilityHow, capabilityPatterns, capabilitySetting, capabilityValues,
-} from '../shared/capabilities';
+} from '../shared/settings/capabilities';
 import {
   controlMatches, describeControl, parseControlPattern, unregisteredControls, unusedPatterns, type ControlDescriptor,
-} from '../shared/capability-controls';
-import { handbookCategory, handbookIndex } from '../shared/capability-handbook';
-import { AgentToolRegistry } from '../electron/agent-channel/registry';
-import { createAppTools, type AgentAppBridge } from '../electron/agent-channel/app-tools';
+} from '../shared/settings/capability-controls';
+import { handbookCategory, handbookIndex } from '../shared/settings/capability-handbook';
+import { AgentToolRegistry } from '../electron/safety/agent-channel/registry';
+import { createAppTools, type AgentAppBridge } from '../electron/safety/agent-channel/app-tools';
 
 const CARD = '0f8fad5b-d9cb-469f-a165-70867728950e';
 /** Tools the host defines itself (agent-channel/host.ts). */
@@ -50,12 +50,15 @@ test('levels agree with the channel catalog: confirm tier is "需要用户原话
     const tier = 'setting' in channel ? agentSetting(channel.setting)!.tier : AGENT_TOOLS.find(tool => tool.name === channel.tool)!.tier;
     // A setting's `confirmWhen` values (更真实的情绪 on, the microphone on, the recognizer's download) escalate to confirm.
     // set_perception escalates to confirm when it opens a sense (app-tools tierFor).
-    const escalates = 'setting' in channel ? !!agentSetting(channel.setting)!.confirmWhen?.length : channel.tool === 'set_perception';
+    // 2026-11-24: set_character_voice escalates when the voice it sets is a paid one; a confirm-tier setting (the Drama 3 limit) is user-words itself.
+    const escalates = 'setting' in channel ? !!agentSetting(channel.setting)!.confirmWhen?.length : channel.tool === 'set_perception' || channel.tool === 'set_character_voice';
     const expected = tier === 'confirm' || escalates ? 'user-words' : 'direct';
     assert.equal(entry.level, expected, entry.id);
   }
   // Keys and running commands are never open, and nothing open mentions a key.
-  for (const id of ['asr_key', 'tts_key', 'claude_tasks', 'claude_code_link', 'reset_settings', 'character_delete', 'memory_delete_one'])
+  // I-173: deleting a whole card goes into the recycle bin through delete_character (user-words, always the dialog); single memories stay the user's own.
+  assert.equal(CAPABILITIES.find(entry => entry.id === 'character_delete')?.level, 'user-words');
+  for (const id of ['asr_key', 'tts_key', 'tts_fish_key', 'claude_tasks', 'claude_code_link', 'reset_settings', 'recycle_delete_for_good', 'memory_delete_one'])
     assert.equal(CAPABILITIES.find(entry => entry.id === id)?.level, 'never', id);
   for (const entry of CAPABILITIES.filter(capabilityChannel)) assert.doesNotMatch(entry.label, /密钥|API Key/u, entry.id);
 });

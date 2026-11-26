@@ -9,7 +9,8 @@ import { runtimeInputs, workspaceSourceHash } from '../scripts/update-desktop.mj
 
 function makeWorkspace(extraFolders = []) {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), 'shdesk-'));
-  for (const file of runtimeInputs.fixed) fs.writeFileSync(path.join(base, file), file);
+  // A fixed input may sit in a folder (I-071 v2: docs/knobs.md and the other shipped guides).
+  for (const file of runtimeInputs.fixed) { fs.mkdirSync(path.dirname(path.join(base, file)), { recursive: true }); fs.writeFileSync(path.join(base, file), file); }
   for (const folder of ['electron', 'shared', 'src', 'scripts', 'tests', 'assets/bundled', ...extraFolders]) {
     fs.mkdirSync(path.join(base, folder), { recursive: true });
     fs.writeFileSync(path.join(base, folder, 'a.txt'), folder);

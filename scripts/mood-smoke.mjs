@@ -244,9 +244,9 @@ async function launch() {
   controls.setDefaultTimeout(15_000); pet.setDefaultTimeout(15_000);
   await controls.waitForFunction(() => typeof window.desktop?.getMood === 'function');
   await pet.waitForFunction(() => typeof window.desktop?.getMood === 'function');
-  // A fresh profile starts with the preinstalled Gene: an ordinary start shows only the pet and keeps the
-  // controls closed (electron/initial-controls.ts, R37), and a hidden controls window hides its mood panel.
-  // Open it the way a user does, through the pet's settings button.
+  // A fresh profile starts with the preinstalled Gene: an ordinary start shows only the companion and keeps the
+  // controls closed (electron/foundation/initial-controls.ts, R37), and a hidden controls window hides its mood panel.
+  // Open it the way a user does, through the companion's settings button.
   await pet.locator('#open-controls').evaluate(button => button.click());
   await poll(controls, () => !document.hidden, undefined, 10_000);
   for (const window of [controls, pet]) await window.evaluate(() => {
@@ -272,7 +272,7 @@ async function launch() {
     await window.desktop.saveSettings(settings);
     await window.desktop.useBundledModel();
   }, claude.provider);
-  // Outside developer mode the pet status shows only 模型已就绪 for both a ready model and VMD playback
+  // Outside developer mode the companion status shows only 模型已就绪 for both a ready model and VMD playback
   // (R38 default immersive, src/main.ts updateStageStatus); the old wait required the developer text.
   await poll(pet, async () => (await window.desktop.getSettings()).model?.name === 'gene.pmx' && /模型已就绪|VMD 播放中/.test(document.querySelector('#pet-status')?.textContent ?? ''), undefined, 60_000);
   // Default legacy camera can crop Gene's forehead under the toolbar. Use the

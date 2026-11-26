@@ -6,12 +6,12 @@ import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { CodexTaskEvent } from '../shared/codex-tasks';
-import { claudeEnvironment } from '../electron/claude';
-import { ClaudeTaskService, TASK_NO_FOLDER, TASK_OFF, recapPrompt } from '../electron/claude-tasks/service';
-import { ClaudeTaskSwitch, registerClaudeTaskIpc } from '../electron/claude-tasks/ipc';
-import { openTaskPermissionEndpoint } from '../electron/claude-tasks/permission-server';
-import { TASK_SYSTEM_PROMPT } from '../electron/claude-tasks/process';
+import type { CodexTaskEvent } from '../shared/safety/codex-tasks';
+import { claudeEnvironment } from '../electron/brain/claude';
+import { ClaudeTaskService, TASK_NO_FOLDER, TASK_OFF, recapPrompt } from '../electron/safety/claude-tasks/service';
+import { ClaudeTaskSwitch, registerClaudeTaskIpc } from '../electron/safety/claude-tasks/ipc';
+import { openTaskPermissionEndpoint } from '../electron/safety/claude-tasks/permission-server';
+import { TASK_SYSTEM_PROMPT } from '../electron/safety/claude-tasks/process';
 import { createTaskMcpServer, readTaskCredentials, TaskConnection, validDecision } from '../scripts/soft-hearts-task-mcp.mjs';
 import { FrameReader, encodeFrame } from '../scripts/agent-channel-wire.mjs';
 

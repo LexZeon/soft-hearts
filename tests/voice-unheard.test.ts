@@ -1,14 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MediaInput } from '../src/ui/MediaInput';
-import { VoiceChatHost } from '../electron/voice-chat-host';
-import { VoiceRoute } from '../electron/asr/voice-route';
-import { encodeWav } from '../src/ui/MediaInput';
-import { VOICE_INPUT_FAILURES } from '../shared/speech-failure';
-import { NOTICE_ACTIONS, voiceFailureAction } from '../src/notice-policy';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import type { VoiceConversationEvent } from '../shared/voice-conversation';
-import type { JournalInput } from '../shared/journal';
+import { MediaInput } from '../src/senses/MediaInput';
+import { VoiceChatHost } from '../electron/voice/voice-chat-host';
+import { VoiceRoute } from '../electron/senses/asr/voice-route';
+import { encodeWav } from '../src/senses/MediaInput';
+import { VOICE_INPUT_FAILURES } from '../shared/voice/speech-failure';
+import { NOTICE_ACTIONS, voiceFailureAction } from '../src/settings/notice-policy';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import type { VoiceConversationEvent } from '../shared/voice/voice-conversation';
+import type { JournalInput } from '../shared/memory/journal';
 
 const tick = () => new Promise<void>(resolve => setImmediate(resolve));
 const room = (rms: number, length = 4096) => new Float32Array(length).fill(rms);
@@ -118,7 +118,7 @@ test('journal: the voice route writes the two categories as notes, not as a swit
 });
 
 test('she words each note in more than one way, never the same way twice in a row, and not again within 20 s', async () => {
-  const { voiceUnheardLine } = await import('../src/notice-policy');
+  const { voiceUnheardLine } = await import('../src/settings/notice-policy');
   const said: string[] = [];
   let now = 1_000_000;
   for (let round = 0; round < 6; round++) { const line = voiceUnheardLine('empty', now, () => 0); assert.ok(line); said.push(line!); now += 25_000; }

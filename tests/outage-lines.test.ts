@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { OUTAGE_LINE_KINDS } from '../shared/chat-availability';
-import { OutageLineBank, outageCardKey, outageLinesPrompt, parseOutageLines, type OutageLines } from '../electron/outage-lines';
+import { OUTAGE_LINE_KINDS } from '../shared/brain/chat-availability';
+import { OutageLineBank, outageCardKey, outageLinesPrompt, parseOutageLines, type OutageLines } from '../electron/brain/outage-lines';
 
 const HOUR = 3_600_000;
 function lines(prefix = '她'): OutageLines {

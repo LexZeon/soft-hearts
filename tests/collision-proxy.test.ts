@@ -3,17 +3,17 @@ import test from 'node:test';
 import {
   COLLISION_PROXY_VERSION, PROXY_PARAMS, PROXY_SEGMENTS, acceptCollisionProxy, classifyProxyBones, fitCollisionProxy,
   type CollisionProxy, type CollisionProxyInput, type ProxyCapsule, type ProxySegment,
-} from '../shared/collision-proxy';
+} from '../shared/foundation/collision-proxy';
 import {
   MODEL_PROFILE_VERSION, acceptCachedProfile, buildModelProfile, standardBoneOfName, summarizeModelProfile, validateStoredModelProfile,
   type ModelProfile, type StandardBone, type Vec3,
-} from '../shared/model-profile';
+} from '../shared/stage/model-profile';
 import {
   LINEAR_INTERPOLATION, buildRetargetRig, compactRig, planRetarget, qarc, qconj, qrotate, rigFromCompact, vlength, vnormalize, vsub,
   type CompactRig, type Quat, type RetargetRig, type TrackKey, type Tracks,
-} from '../shared/motion-retarget';
-import { adaptMotion, armClearance, checkTracks, fitMotion, usesFittedBody } from '../shared/motion-fit';
-import geneSource from '../shared/retarget-gene-source.json';
+} from '../shared/actions/motion-retarget';
+import { adaptMotion, armClearance, checkTracks, fitMotion, usesFittedBody } from '../shared/actions/motion-fit';
+import geneSource from '../shared/foundation/retarget-gene-source.json';
 import { StageModelProfile } from '../src/stage/model-profile';
 import { bodyModel, shuffledVertices, type BodyOptions } from './helpers/body-fixtures';
 import { profileInput, toThreeMesh, type ModelData } from './helpers/model-fixtures';

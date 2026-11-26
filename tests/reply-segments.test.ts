@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { formatReplySegments } from '../src/ui/reply-segments';
+import { formatReplySegments } from '../src/brain/reply-segments';
 
 test('Chinese and Japanese prose is one sentence per paragraph with closing quotes', () => {
   assert.equal(formatReplySegments('今天很难。先歇一会！好吗？'), '今天很难。\n\n先歇一会！\n\n好吗？');
@@ -8,10 +8,10 @@ test('Chinese and Japanese prose is one sentence per paragraph with closing quot
   assert.equal(formatReplySegments('他说：“我在。”你可以慢慢说。'), '他说：“我在。”\n\n你可以慢慢说。');
 });
 
-test('English sentences keep original spacing, punctuation runs and closing emphasis', () => {
+test('English sentences keep original spacing, punctuation runs and closing emphasis (T-250: the doubled markers themselves are not shown)', () => {
   assert.equal(formatReplySegments('I hear you. We can take this slowly! Is that okay?'), 'I hear you. \n\nWe can take this slowly! \n\nIs that okay?');
-  assert.equal(formatReplySegments('He asked, "Really?!" Yes. **It works.** Good.'), 'He asked, "Really?!" \n\nYes. \n\n**It works.** \n\nGood.');
-  assert.equal(formatReplySegments('先歇会。**再继续。** 好。'), '先歇会。\n\n**再继续。** \n\n好。');
+  assert.equal(formatReplySegments('He asked, "Really?!" Yes. **It works.** Good.'), 'He asked, "Really?!" \n\nYes. \n\nIt works. \n\nGood.');
+  assert.equal(formatReplySegments('先歇会。**再继续。** 好。'), '先歇会。\n\n再继续。 \n\n好。');
 });
 
 test('decimals, common abbreviations, initials, URLs and pauses do not create false sentences', () => {

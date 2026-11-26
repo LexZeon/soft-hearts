@@ -1,6 +1,6 @@
 // Local pose-sensing smoke (I-001 stage 1). Real Electron, real utilityProcess, real onnxruntime-node + DirectML,
 // but: no download (components are imported from files already on disk, verified against the built-in manifest),
-// no real camera (Chromium's fake capture device), no pet or control window, a throw-away user-data dir.
+// no real camera (Chromium's fake capture device), no companion or control window, a throw-away user-data dir.
 //
 //   pnpm build:app            (dist-electron/pose-worker.cjs, pose-sensor-preload.cjs, pose-sensor.html, pose-licenses/)
 //   node scripts/pose-smoke-run.mjs --bench <dir with npm/node_modules and models/flat> --out <result.json>
@@ -10,12 +10,12 @@ import { app, MessageChannelMain, utilityProcess, BrowserWindow } from 'electron
 import { mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { PoseComponentStore } from '../electron/pose/component-store';
-import { createElectronPoseSensing } from '../electron/pose/electron-wiring';
-import { posePlatform } from '../electron/pose/manifest';
-import { syntheticFrame } from '../electron/pose/pipeline';
-import { parseWorkerMessage } from '../electron/pose/protocol';
-import type { PoseSensingView, PoseSignal } from '../shared/pose-signals';
+import { PoseComponentStore } from '../electron/senses/pose/component-store';
+import { createElectronPoseSensing } from '../electron/senses/pose/electron-wiring';
+import { posePlatform } from '../electron/foundation/pose-manifest';
+import { syntheticFrame } from '../electron/senses/pose/pipeline';
+import { parseWorkerMessage } from '../electron/senses/pose/protocol';
+import type { PoseSensingView, PoseSignal } from '../shared/senses/pose-signals';
 
 const arg = (name: string) => { const i = process.argv.indexOf(`--${name}`); return i > 0 ? process.argv[i + 1] : undefined; };
 const bench = arg('bench'), out = arg('out'), dist = arg('dist') ?? path.resolve('dist-electron');

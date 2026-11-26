@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SpeechRuntime } from '../electron/speech-runtime';
-import { ReplySpeechStyles } from '../electron/speech-emotion';
-import { DEFAULT_TTS_CONFIG } from '../shared/tts';
-import { CompletedReplySpeech } from '../electron/completed-reply-speech';
-import { cancelReplySpeechTransport } from '../electron/reply-speech-transport';
+import { SpeechRuntime } from '../electron/voice/speech-runtime';
+import { ReplySpeechStyles } from '../electron/mood/speech-emotion';
+import { DEFAULT_TTS_CONFIG } from '../shared/voice/tts';
+import { CompletedReplySpeech } from '../electron/voice/completed-reply-speech';
+import { cancelReplySpeechTransport } from '../electron/voice/reply-speech-transport';
 
 function harness() {
  const styles=new ReplySpeechStyles(),plans=new CompletedReplySpeech(),events:unknown[]=[];

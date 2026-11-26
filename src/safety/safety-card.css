@@ -1,0 +1,28 @@
+/* I-117 the safety card: the app's own card (a plain, neutral panel), never her speech bubble. Not modal; the chat stays usable. */
+.safety-card {
+  position: fixed; z-index: 70; box-sizing: border-box;
+  padding: 12px 14px; border: 1px solid #c9d6e366; border-radius: 10px;
+  background: #f4f7faf7; color: #1d2733; box-shadow: 0 8px 24px #0006;
+  font-size: 12px; line-height: 1.6; pointer-events: auto; text-shadow: none;
+}
+.safety-card.in-pet { top: 46px; left: 10px; right: 10px; max-width: 340px; margin: 0 auto; max-height: calc(100vh - 140px); overflow-y: auto; }
+.safety-card.in-controls { top: 16px; right: 18px; width: 340px; max-width: calc(100vw - 36px); max-height: calc(100vh - 32px); overflow-y: auto; }
+.safety-card-title { margin: 0 0 4px; font-size: 10px; letter-spacing: .4px; color: #5b6b7c; }
+.safety-card-sentence { margin: 0 0 8px; font-size: 13px; font-weight: 600; }
+.safety-card-line { margin: 0 0 6px; padding: 8px 10px; border-radius: 8px; background: #e7eef5; }
+.safety-card-line.is-primary { background: #dde8f2; }
+.safety-card-region { display: block; font-size: 10px; color: #5b6b7c; }
+.safety-card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+.safety-card-number { font-size: 14px; user-select: text; }
+.safety-card-line.is-primary .safety-card-number { font-size: 22px; letter-spacing: .5px; }
+.safety-card-number.is-generic { font-size: 14px; }
+.safety-card-line.is-primary .safety-card-number.is-generic { font-size: 16px; }
+.safety-card-name { font-weight: 600; }
+.safety-card-how, .safety-card-emergency { margin: 2px 0 0; user-select: text; }
+.safety-card-emergency { color: #5b6b7c; }
+.safety-card-others { margin: 2px 0 8px; }
+.safety-card-others summary { cursor: pointer; color: #3d5368; font-size: 11px; margin-bottom: 4px; }
+.safety-card-others .safety-card-line { font-size: 11px; }
+.safety-card-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.safety-card-actions button { font-size: 12px; padding: 5px 12px; border-radius: 7px; border: 1px solid #9fb2c4; background: #ffffff; color: #1d2733; cursor: pointer; }
+.safety-card-actions .safety-card-safe { background: #2f5d84; border-color: #2f5d84; color: #ffffff; }

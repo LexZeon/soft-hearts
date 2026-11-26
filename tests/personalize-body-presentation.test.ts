@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import { selectBodyPosePresentation } from '../shared/personalize-body-presentation';
-import type { BodyPoseBinding,BodyPoseProfile } from '../shared/personalize-body';
-import type { BehaviorMotionPlan } from '../shared/behavior-motion';
+import { selectBodyPosePresentation } from '../shared/stage/personalize-body-presentation';
+import type { BodyPoseBinding,BodyPoseProfile } from '../shared/stage/personalize-body';
+import type { BehaviorMotionPlan } from '../shared/actions/behavior-motion';
 const sha='a'.repeat(64),source='b'.repeat(64),binding:BodyPoseBinding={id:'body.test',label:'test',targetModelSha:sha,sourceSha:source,mask:'test',qualifiedStrength:.3,properties:[{boneIndex:1,boneName:'bone',quaternion:[0,0,0,1]}]};
 const profile:BodyPoseProfile={enabled:true,targetModelSha:sha,sourceSha:source,bindingId:binding.id,semantic:'mood.happy',label:'happy',strength:0.3};
 const plan:BehaviorMotionPlan={state:{id:'cue1',kind:'state',bindingId:'face.happy',semantic:'mood.happy',at:100,expiresAt:300,strength:0.4,stateKey:'x'},reaction:null};

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateChatRequest } from '../electron/validation';
+import { validateChatRequest } from '../electron/settings/validation';
 
 test('host rejects oversized current user text rather than silently losing final constraints', () => {
   const exact = 'a'.repeat(15983) + '最终要求：只讨论，不执行。';

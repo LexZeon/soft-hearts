@@ -4,7 +4,7 @@
 // The text below is invented for the test: only the structure matches (no words of the user's chat are used).
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { ReplyDraftGuard } from '../electron/reply-draft-guard';
+import { ReplyDraftGuard } from '../electron/brain/reply-draft-guard';
 
 function run(chunks: string[], chinese = true): { shown: string; kinds: string[] } {
   const guard = new ReplyDraftGuard([], { chinese });

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MoodReplyProtocol } from '../electron/mood-chat';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
 test('reply protocol strips metadata even when opening marker arrives one character per chunk', () => {
   let body = '';
   const protocol = new MoodReplyProtocol(text => { body += text; });

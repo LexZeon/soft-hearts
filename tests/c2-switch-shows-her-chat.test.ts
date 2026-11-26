@@ -6,9 +6,9 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readdir, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CompanionService, type CompanionTurn } from '../electron/companion';
-import type { ProviderConfig } from '../shared/contracts';
-import { restoredChatHistory } from '../src/ui/chat-continuity';
+import { CompanionService, type CompanionTurn } from '../electron/brain/companion';
+import type { ProviderConfig } from '../shared/foundation/settings';
+import { restoredChatHistory } from '../src/brain/chat-continuity';
 
 const provider: ProviderConfig = { kind: 'claude', baseUrl: 'http://127.0.0.1:11434/v1', model: '' };
 const GENE = '角色名称：Gene', AOI = '角色名称：小葵';
@@ -35,6 +35,8 @@ test('换走再换回来：聊天窗口是她最近的那段对话，接着聊�
   await withService(async (service, directory) => {
     const files = async () => (await readdir(directory)).sort();
     await say(service, 'g1', '这句话是换角色之前说的', '嗯嗯。', GENE);
+    // Her mood, needs and fatigue files come from saves queued behind the reply: wait for them, or this list is taken half way.
+    await service.flush();
     const before = await files();
 
     await service.context('aoi', provider, AOI);
@@ -49,6 +51,7 @@ test('换走再换回来：聊天窗口是她最近的那段对话，接着聊�
 
     await service.context('aoi', provider, AOI);
     assert.deepEqual(window(service, 'aoi'), ['user:小葵你好', 'assistant:你好呀。'], '小葵的只有她自己的');
+    await service.flush();
     assert.deepEqual(await files(), before, '没有新建任何存储文件');
   });
 });

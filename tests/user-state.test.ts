@@ -3,18 +3,18 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CompanionService } from '../electron/companion';
-import { MoodHost } from '../electron/mood';
-import { MoodReplyProtocol } from '../electron/mood-chat';
-import { UserStateDiagnostics, UserStateStore, sanitizeUserStateDiagnostic } from '../electron/user-state';
-import { innerLoopPrompt, type InnerLoopContextSources } from '../electron/inner-loop/context';
-import { buildInnerLoopPrompt, type InnerLoopPromptInput } from '../shared/inner-loop';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
+import { CompanionService } from '../electron/brain/companion';
+import { MoodHost } from '../electron/mood/mood';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
+import { UserStateDiagnostics, UserStateStore, sanitizeUserStateDiagnostic } from '../electron/senses/user-state';
+import { innerLoopPrompt, type InnerLoopContextSources } from '../electron/initiative/inner-loop/context';
+import { buildInnerLoopPrompt, type InnerLoopPromptInput } from '../shared/initiative/inner-loop';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
 import {
   USER_STATE_FADE_MS, USER_STATE_INSTRUCTION, parseUserStateField, cleanUserStateReason, userStateAgo, type UserStateJudgment,
-} from '../shared/user-state';
-import { formatUserStateLine } from '../src/ui/MoodPanel';
-import type { VoiceTextLeg, VoiceTextSettlement } from '../electron/voice-text-continuation';
+} from '../shared/senses/user-state';
+import { formatUserStateLine } from '../src/mood/MoodPanel';
+import type { VoiceTextLeg, VoiceTextSettlement } from '../electron/voice/voice-text-continuation';
 
 const MIN = 60_000;
 const provider = { kind: 'claude' as const, baseUrl: 'https://user-state.invalid/v1', model: 'fixture' };

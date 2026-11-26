@@ -5,14 +5,14 @@
  * 做什么：她身上发生的事先照本机规则马上起作用（表情、脸红、心情数都和以前一样）；同时收进一批，过一会儿交给 haiku 看一眼：
  * 按她的性格和此刻的心情，这一阵五个心情数该再往哪边动、动多少、本机这次调得合不合理。本机把答案收在安全线里，加到现在的数上。
  *
- * 谁调用它、怎么调用（electron/mood-judge/host.ts 的 MoodJudgeHost 是唯一的主机）：
- *  1. 心情主机（electron/mood.ts MoodHost.setJudgeObserver）：每个被接受的摸头、捏脸、喂食、聊天、Opus 尾注、"她被哄好了"一类的 lift
+ * 谁调用它、怎么调用（electron/mood/mood-judge/host.ts 的 MoodJudgeHost 是唯一的主机）：
+ *  1. 心情主机（electron/mood/mood.ts MoodHost.setJudgeObserver）：每个被接受的摸头、捏脸、喂食、聊天、Opus 尾注、"她被哄好了"一类的 lift
  *     → MoodJudgeHost.noteMood（MoodJudgeMoodNote：类型、编号、固定原因、本机这次实际动了多少）。
  *  2. electron/main.ts：你发出的那句话（和发给 Opus 的是同一句，host 截到 knobs.userTextChars）→ userText；猜拳结果、她主动说出口的一句
  *     → note；每次心情视图发布 → watch（从视图里看出睡着 / 醒来、很久没人理跨过一道坎、你回来了、她有了小情绪、摄像头看到的动作，
  *     以及屏幕共享时你换了在做的事、一起听完一首）。
- *  3. 开发者面板（src/ui/MoodPanel.ts）只读 MoodView.moodJudge：今天问了几次、上限、最近几次的结果（只在开发者模式，只在内存）。
- *  4. 体验记录（shared/journal.ts 'mood-judge'）：每次真的动了数写一行，原因只能是下面 MOOD_JUDGE_WHYS 里的一种（不引用你的话）。
+ *  3. 开发者面板（src/mood/MoodPanel.ts）只读 MoodView.moodJudge：今天问了几次、上限、最近几次的结果（只在开发者模式，只在内存）。
+ *  4. 体验记录（shared/memory/journal.ts 'mood-judge'）：每次真的动了数写一行，原因只能是下面 MOOD_JUDGE_WHYS 里的一种（不引用你的话）。
  *
  * 底线（写死的，不是旋钮）：
  *  - 2026-11-07 起默认开（用户：心情调整员默认开启）；用户在「隐私与设置」里关掉（或对她、对自己的 Claude 说）就不再问 haiku，关着时一次都不问。
@@ -24,11 +24,11 @@
  *
  * 假 haiku 在 fake.ts（按脚本回答、数调用次数），守约测试在 tests/i027-mood-judge.test.ts。
  */
-import type { MoodChannel, MoodContext, MoodValues } from '../../mood';
-import type { HerNeedId } from '../../her-needs';
-import type { ScreenActivity } from '../../screen-activity';
+import type { MoodChannel, MoodContext, MoodValues } from '../../foundation/mood';
+import type { HerNeedId } from '../../mood/her-needs';
+import type { ScreenActivity } from '../../senses';
 
-/** haiku 的那一次调用：提示词、系统提示词、中止信号 → 它的原文（electron/inner-loop/model.ts quickLineWithClaude 的 text）。 */
+/** haiku 的那一次调用：提示词、系统提示词、中止信号 → 它的原文（electron/initiative/inner-loop/model.ts quickLineWithClaude 的 text）。 */
 export type MoodJudgeAsk = (prompt: string, systemPrompt: string, signal: AbortSignal) => Promise<string>;
 
 /** 喂食认图（I-019）认出来的那一个词。 */
@@ -38,7 +38,7 @@ export type MoodJudgeBoredLevel = 'look' | 'motion' | 'speech';
 export type MoodJudgeLongingLevel = 'longing' | 'sad' | 'cry';
 
 /**
- * 心情主机报来的一次被接受的心情变化（electron/mood.ts setJudgeObserver）。`reason` 只用来查固定表（她被哄好了、猜拳……），
+ * 心情主机报来的一次被接受的心情变化（electron/mood/mood.ts setJudgeObserver）。`reason` 只用来查固定表（她被哄好了、猜拳……），
  * 从不交给 haiku；`applied` 是本机这次实际动了多少（已经乘过角色卡敏感度、过了饱和）。
  */
 export interface MoodJudgeMoodNote {
@@ -97,6 +97,8 @@ export interface MoodJudgeNow {
   readonly personality: Readonly<Record<'playful' | 'close' | 'comfortable' | 'cautious', number>>;
   readonly values: MoodValues;
   readonly baseline: MoodValues;
+  /** The card's evidence.level (shared/foundation/mood.ts moodLevel); absent = 1. */
+  readonly evidence?: number;
   /** 角色卡的敏感度：本机加修正前会除掉它（choose.ts liftDelta），haiku 说多少就是多少。 */
   readonly sensitivity: MoodValues;
   /** 心情标签的中文（"满足"）。 */

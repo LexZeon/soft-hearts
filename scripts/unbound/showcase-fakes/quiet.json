@@ -1,0 +1,4 @@
+{"summary":"假编排 quiet（开发用，不是 Claude 写的）：转过来，然后安静地看着你 20 秒","beats":[
+{"at":0,"dur":1.5,"kind":"notice","intensity":0.5,"feel":"转过来看你"},
+{"at":1.5,"dur":20,"kind":"hold-gaze","intensity":0.5,"feel":"安静地看着你"}
+]}

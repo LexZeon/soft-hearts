@@ -1,4 +1,4 @@
-import type { CameraConfig } from "../../shared/contracts";
+import type { CameraConfig } from "../../shared/foundation/settings";
 import { clamp } from "./procedural";
 
 export interface MovementAxes { forward: number; right: number; up: number; }

@@ -3,22 +3,28 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { scanBreathRequest } from '../shared/breath-request';
-import { scanFramingRequest } from '../shared/framing-request';
-import { scanStopReadoutRequest } from '../shared/stop-readout-request';
-import { CompanionCommandHost, validCompanionAction } from '../electron/companion-command-host';
-import { classifyCompanionCommand, formatCompanionCommandReceipt } from '../electron/companion-command-intent';
-import { createCommandDialogueTurn } from '../electron/companion-command-dialogue';
-import { outgoingChatMessages } from '../src/ui/reply-history';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { scanBreathRequest } from '../shared/actions/breath-request';
+import { scanFramingRequest } from '../shared/stage/framing-request';
+import { scanStopReadoutRequest } from '../shared/voice/stop-readout-request';
+import { CompanionCommandHost, validCompanionAction } from '../electron/settings/companion-command-host';
+import { classifyCompanionCommand, formatCompanionCommandReceipt } from '../electron/settings/companion-command-intent';
+import { createCommandDialogueTurn } from '../electron/settings/companion-command-dialogue';
+import { outgoingChatMessages } from '../src/brain/reply-history';
+import { WIRING_PRELUDE, wiringFunction, wiringSource } from './helpers/wiring-source';
+import { rendererSource as readRendererSource } from './helpers/renderer-source'; // overhaul step 5: src/main.ts and src/wiring/*.ts
+import { testSendGuard } from './helpers/send-guard'; // 2026-11-22: sendChat's guard
 
 const parse = (file: string) => ts.createSourceFile(file, fs.readFileSync(new URL(file, import.meta.url),'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-const main = parse('../electron/main.ts'), renderer = parse('../src/main.ts');
+const main = parse('../electron/main.ts'), renderer = ts.createSourceFile('../src/main.ts', readRendererSource(), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+const wiring = ts.createSourceFile('wiring.ts', wiringSource(), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS); // main.ts and electron/wiring/*.ts
 function find(source: ts.SourceFile, predicate: (n: ts.Node) => boolean): ts.Node {
   const result: ts.Node[]=[]; const visit=(n: ts.Node)=>{if(predicate(n))result.push(n);ts.forEachChild(n,visit);};visit(source);
   assert.equal(result.length,1);return result[0];
 }
-const fn=(name:string)=>find(main,n=>ts.isFunctionDeclaration(n)&&n.name?.text===name).getText(main);
+// Wiring rewrite step 4: the companion commands are in electron/wiring/settings-wiring.ts (read across main.ts and electron/wiring/*.ts,
+// still exactly one each); what they read from the settings part's needs comes from this context's names (WIRING_PRELUDE).
+const fn=(name:string)=>wiringFunction(name);
 const evaluate=(text:string,ctx:vm.Context)=>vm.runInContext(ts.transpileModule('('+text+')',{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,ctx);
 function fixture(value=0.5){
   let id=0, now=1000, context='card-model-window-provider', visible=true, destroyed=false, queue=Promise.resolve();
@@ -30,6 +36,7 @@ function fixture(value=0.5){
   const ctx:any=vm.createContext({store,pet,windows:()=>[controls,pet],Number,structuredClone,
     companionBreathRevision:0,companionBreathObserved:value,companionCommandContext:()=>context,
     broadcast:(type:string,data:unknown)=>events.push({type,data:structuredClone(data)}),publicSettings:structuredClone});
+  vm.runInContext(WIRING_PRELUDE,ctx);
   for(const name of ['noteCompanionBreathWrite','companionBreathTarget','commitCompanionBreath'])ctx[name]=evaluate(fn(name).replace(/^(?:async )?function\s+\w+/,m=>m.startsWith('async')?'async function':'function'),ctx);
   const enqueue=(job:()=>Promise<any>)=>{const run=queue.then(job,job);queue=run.then(()=>{},()=>{});return run;};
   const host=new CompanionCommandHost({now:()=>now,id:()=> 'choice-'+ ++id,target:()=>null,
@@ -105,15 +112,15 @@ test('actual dialogue reports saved setting or zero-strength clarification witho
 
 test('actual renderer and host local-control hints route literal breathing without provider/media/whole-settings side effects',async()=>{
   const input={value:'关闭桌宠呼吸'},requests:any[]=[],forbidden=()=>{throw Error('Unexpected ordinary chat effect');};
-  const ctx:any=vm.createContext({activeChat:null,pendingReadoutControl:null,attachments:[],history:[],isPet:false,
+  const ctx:any=vm.createContext({activeChat:null,sendGuard:testSendGuard(),attachments:[],history:[],isPet:false,
     scanBreathRequest,scanFramingRequest,scanStopReadoutRequest,outgoingChatMessages,crypto:{randomUUID:()=> 'breath-input'},$:()=>input,
     window:{desktop:{chat:async(value:unknown)=>requests.push(value),noteUserInput:forbidden}},save:forbidden,speech:{stop:forbidden},notify:forbidden});
   const send=find(renderer,n=>ts.isFunctionDeclaration(n)&&n.name?.text==='sendChat').getText(renderer);
   await evaluate(send.replace(/^async function\s+\w+/,'async function'),ctx)();assert.equal(requests.length,1);assert.equal(requests[0].messages.at(-1).content,'关闭桌宠呼吸');assert.equal(requests[0].attachments.length,0);
-  const hint=find(main,n=>ts.isVariableDeclaration(n)&&n.name.getText(main)==='readoutControl')as ts.VariableDeclaration;
-  // I-036: the host counts the turn's frames without 「发图片」's small one (electron/look-attachments.ts TurnFrames.asked).
-  ctx.request=requests[0];ctx.turnFrames={asked:()=>requests[0].attachments};assert.equal(evaluate(hint.initializer!.getText(main),ctx),true);
-  const constructor=find(main,n=>ts.isNewExpression(n)&&n.expression.getText(main)==='CompanionCommandHost');
-  assert.match(constructor.getText(main),/breathTarget: companionBreathTarget, commitBreath: commitCompanionBreath/);
-  const admission=find(main,n=>ts.isCallExpression(n)&&n.expression.getText(main)==='companionCommands!.admit');assert.match(admission.getText(main),/currentBreath: store.current.pet.breath/);
+  const hint=find(wiring,n=>ts.isVariableDeclaration(n)&&n.name.getText(wiring)==='readoutControl')as ts.VariableDeclaration; // the chat turn (electron/wiring/brain-chat-wiring.ts since step 4h)
+  // I-036: the host counts the turn's frames without 「发图片」's small one (electron/senses/look-attachments.ts TurnFrames.asked).
+  ctx.request=requests[0];ctx.turnFrames={asked:()=>requests[0].attachments};assert.equal(evaluate(hint.initializer!.getText(wiring),ctx),true);
+  const constructor=find(wiring,n=>ts.isNewExpression(n)&&n.expression.getText(wiring)==='CompanionCommandHost');
+  assert.match(constructor.getText(wiring),/breathTarget: companionBreathTarget, commitBreath: commitCompanionBreath/);
+  const admission=find(wiring,n=>ts.isCallExpression(n)&&n.expression.getText(wiring)==='companionCommands!.admit');assert.match(admission.getText(wiring),/currentBreath: store.current.pet.breath/);
 });

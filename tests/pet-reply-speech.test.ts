@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { PetReplyAnchor, PetReplyUpdate } from '../shared/contracts';
-import { PetUI } from '../src/ui/PetUI';
-import { ReplySpeechState } from '../src/ui/reply-speech';
+import type { PetReplyAnchor, PetReplyUpdate } from '../shared/foundation/pet-reply';
+import { PetUI } from '../src/stage/PetUI';
+import { ReplySpeechState } from '../src/voice/reply-speech';
 import { REPLY_LINGER_KNOBS } from '../shared/behaviors/reply-linger/knobs';
 
 class Classes {
@@ -332,7 +332,7 @@ test('PetUI a new reply ID cannot borrow a same-text receipt from the previous I
   await f.answered(); assert.equal(f.deadline(), f.now() + HOST_LINGER_MS);
 }));
 
-// ---------------------------------------------------------------- #5: the pet window keeps the host's decision, nothing of its own
+// ---------------------------------------------------------------- #5: the companion window keeps the host's decision, nothing of its own
 
 test('#5 PetUI keeps exactly the lifetime the host answered, whatever it is', async () => {
   for (const lingerMs of [2600, 9300, 17_500]) await withPet(async f => {

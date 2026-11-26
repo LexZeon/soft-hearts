@@ -5,15 +5,15 @@ import assert from 'node:assert/strict';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { ComponentInstallError, PoseComponentStore, type ComponentProgress } from '../electron/pose/component-store';
-import { PoseSensingHost } from '../electron/pose/host';
+import { ComponentInstallError, PoseComponentStore, type ComponentProgress } from '../electron/senses/pose/component-store';
+import { PoseSensingHost } from '../electron/senses/pose/host';
 import {
   POSE_ARCHIVES, POSE_MANIFEST, POSE_MODEL_FILES, POSE_PACK_REPLACES, POSE_PLATFORMS, archiveFiles, downloadBytes, officialDownloadBytes, packProblem,
   posePackFiles, type ManifestArchive, type ManifestPack, type PoseManifest,
-} from '../electron/pose/manifest';
-import { parsePoseView, type PoseSensingView } from '../shared/pose-signals';
-import { setUiLanguage } from '../shared/ui-language';
-import { poseStatusText } from '../src/ui/PoseSensingPanel';
+} from '../electron/foundation/pose-manifest';
+import { parsePoseView, type PoseSensingView } from '../shared/senses/pose-signals';
+import { setUiLanguage } from '../shared/foundation/ui-language';
+import { poseStatusText } from '../src/senses/PoseSensingPanel';
 import { fakeFetch, integrity, makeTgz, makeZip, sha256 } from './helpers/pose-archives';
 
 // ------------------------------------------------------------ a miniature of the real manifest, with a pack

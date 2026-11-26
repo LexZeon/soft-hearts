@@ -12,10 +12,11 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { _electron as electron } from 'playwright';
-import { createMoodState, serializeMoodState, DEFAULT_MOOD_PARAMETERS } from '../shared/mood.ts';
-import { DEFAULT_SETTINGS } from '../shared/defaults.ts';
-import { DEFAULT_BLUSH_CALIBRATION } from '../shared/blush.ts';
+import { createMoodState, serializeMoodState, DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood.ts';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults.ts';
+import { DEFAULT_BLUSH_CALIBRATION } from '../shared/mood/blush.ts';
 import { navigateControlPage } from './lib/control-navigation.mjs';
+import { STAGE_FILE, stageSourceFiles } from './lib/stage-source-files.mjs';
 import { createClaudeFixture } from './lib/claude-smoke-fixture.mjs';
 
 const harnessFile = fileURLToPath(import.meta.url), root = path.resolve(path.dirname(harnessFile), '..');
@@ -45,11 +46,11 @@ const manifestFile = await realpath(process.env.MMD_TEST_CANDIDATE_MANIFEST ?? p
 const manifestBytes = await readFile(manifestFile), proof = JSON.parse(manifestBytes.toString('utf8'));
 assert.equal(proof.version, 1); assert.ok(hashPattern.test(proof.sourceHash) && hashPattern.test(proof.asarSha256));
 assert.ok(Array.isArray(proof.inputs) && proof.inputs.length > 0 && proof.inputs.length < 20_000 && new Set(proof.inputs).size === proof.inputs.length);
-const exactFiles = ['shared/mood.ts', 'shared/mood-runtime.ts', 'shared/contracts.ts', 'shared/defaults.ts', 'shared/blush.ts',
-  'shared/bundled-assets.json', 'electron/mood.ts', 'src/stage/procedural-blush.ts', 'src/stage/procedural-tears.ts',
-  'src/stage/crying-timeline.ts', 'src/stage/MmdStage.ts', 'scripts/crying-smoke.mjs', 'scripts/lib/control-navigation.mjs'];
-const exactHelpers = new Set(['shared/mood.ts', 'shared/defaults.ts', 'shared/blush.ts',
-  'src/stage/procedural-tears.ts', 'src/stage/crying-timeline.ts', 'scripts/crying-smoke.mjs', 'scripts/lib/control-navigation.mjs']);
+const exactFiles = ['shared/foundation/mood.ts', 'shared/mood/mood-runtime.ts', 'shared/contracts.ts', 'shared/foundation/defaults.ts', 'shared/mood/blush.ts',
+  'shared/actions/bundled-assets.json', 'electron/mood/mood.ts', 'src/stage/procedural-blush.ts', 'src/mood/procedural-tears.ts',
+  'src/mood/crying-timeline.ts', ...stageSourceFiles(root), 'scripts/crying-smoke.mjs', 'scripts/lib/control-navigation.mjs'];
+const exactHelpers = new Set(['shared/foundation/mood.ts', 'shared/foundation/defaults.ts', 'shared/mood/blush.ts',
+  'src/mood/procedural-tears.ts', 'src/mood/crying-timeline.ts', 'scripts/crying-smoke.mjs', 'scripts/lib/control-navigation.mjs']);
 const sourceBefore = {};
 for (const name of exactFiles) {
   assert.ok(proof.inputs.includes(name), `Validation record includes ${name}.`);
@@ -59,7 +60,7 @@ for (const name of exactFiles) {
 const expectedStage = process.env.MMD_TEST_EXPECTED_STAGE_SHA256?.toLowerCase();
 if (expectedStage) {
   assert.ok(hashPattern.test(expectedStage), 'Expected merged Stage hash must be a complete SHA-256.');
-  assert.equal(sourceBefore['src/stage/MmdStage.ts'], expectedStage, 'Stage matches the group-reviewed merged source.');
+  assert.equal(sourceBefore[STAGE_FILE], expectedStage, 'Stage matches the group-reviewed merged source.');
 }
 async function sourceFingerprint() {
   const entries = [];
@@ -68,7 +69,7 @@ async function sourceFingerprint() {
 }
 assert.equal(await sourceFingerprint(), proof.sourceHash, 'Complete frozen source matches its validation fingerprint.');
 const before = { sourceHash: proof.sourceHash, asarSha256: await hash(asar), executableSha256: await hash(executable),
-  manifestSha256: digest(manifestBytes), harnessSha256: await hash(harnessFile), stageSha256: sourceBefore['src/stage/MmdStage.ts'], exactSourceSha256: sourceBefore };
+  manifestSha256: digest(manifestBytes), harnessSha256: await hash(harnessFile), stageSha256: sourceBefore[STAGE_FILE], exactSourceSha256: sourceBefore };
 assert.equal(before.asarSha256, proof.asarSha256, 'The supplied packaged ASAR is the validated candidate.');
 
 const output = path.join(root, '.local', 'crying-smoke', new Date().toISOString().replaceAll(':', '-'));
@@ -300,7 +301,7 @@ try {
   if (!fake.fakeClaudeExited || !fake.claudeHomeEmpty) { errors.push({ type: 'cleanup-fake-claude', ...fake }); process.exitCode = 1; }
   try {
     after = { asarSha256: await hash(asar), executableSha256: await hash(executable), manifestSha256: await hash(manifestFile), harnessSha256: await hash(harnessFile),
-      sourceHash: await sourceFingerprint(), stageSha256: await hash(path.join(source, 'src/stage/MmdStage.ts')),
+      sourceHash: await sourceFingerprint(), stageSha256: await hash(path.join(source, STAGE_FILE)),
       exactSourceSha256: Object.fromEntries(await Promise.all(exactFiles.map(async name => [name, await hash(path.join(source, name))]))) };
     assert.deepEqual(after, before, 'ASAR, EXE, source, helpers and harness remain immutable throughout QA.');
   } catch (error) { errors.push({ type: 'integrity', message: String(error) }); process.exitCode = 1; }

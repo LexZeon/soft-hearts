@@ -11,12 +11,30 @@ export const FAKE_CLAUDE_MARKER = '--soft-hearts-fake-claude';
 export const FAKE_CLAUDE_REPLY = Object.freeze(['你好，', '桌面伙伴已连接。']);
 /** A current user message equal to this is held until interrupted, closed or expired. */
 export const FAKE_CLAUDE_HOLD = 'WAIT';
-/** The persistent session's follow-up header begins with this (electron/claude-session-prompt.ts). */
+/** The persistent session's follow-up header begins with this (electron/brain/claude-session-prompt.ts). */
 export const FOLLOW_UP_MARKER = '【同一段对话的新一轮】';
+/**
+ * I-139 (docs/claude/2026-11-15-i139-defences.md): with the I-139 switch on, a follow-up begins with FOLLOW_UP_HEADER of
+ * shared/foundation/i139-texts.ts instead (zh or en). Copied here because this file runs under plain node without TypeScript;
+ * tests/smoke-fake-claude.test.ts checks they stay equal to the module's.
+ */
+export const FOLLOW_UP_HEADERS_I139 = Object.freeze(['新的一轮：心情和想起的事以下面为准。', 'A new turn: go by the mood and memories below.']);
+/** Every way a follow-up turn of the persistent session begins. */
+export const FOLLOW_UP_MARKERS = Object.freeze([FOLLOW_UP_MARKER, ...FOLLOW_UP_HEADERS_I139]);
+/** A follow-up turn (not the opening one), by either the old header or the I-139 one. */
+export function isFollowUpTurn(text) {
+  return typeof text === 'string' && FOLLOW_UP_MARKERS.some(marker => text.startsWith(marker));
+}
 
-// The isolation flags electron/claude.ts claudeArguments() always sends, in order.
+/**
+ * The `--settings` value claudeArguments() sends (electron/brain/claude-settings.ts claudeSettingsArguments(): peer messages refused,
+ * SendMessage/ListAgents denied). Copied because this file runs under plain node; tests/claude-peer-refuse.test.ts checks it stays equal.
+ */
+export const FAKE_CLAUDE_PEER_SETTINGS = '{"permissions":{"deny":["SendMessage","ListAgents"]},"crossSessionInbound":"refuse"}';
+// The isolation flags electron/brain/claude.ts claudeArguments() always sends, in order.
 const fixedFlags = ['-p', '--input-format', 'stream-json', '--output-format', 'stream-json', '--verbose', '--include-partial-messages',
-  '--tools', '', '--strict-mcp-config', '--safe-mode', '--disable-slash-commands', '--no-session-persistence', '--setting-sources', '', '--system-prompt'];
+  '--tools', '', '--strict-mcp-config', '--safe-mode', '--disable-slash-commands', '--no-session-persistence', '--setting-sources', '',
+  '--settings', FAKE_CLAUDE_PEER_SETTINGS, '--system-prompt'];
 
 /** The first words of the I-037 reaction judge system prompt (shared/behaviors/reactions/choose.ts reactionSystemPrompt). */
 export const REACTION_JUDGE_OPENING = '你是桌宠角色的"反应判定员"';
@@ -34,7 +52,7 @@ export function verifyArguments(args) {
   return { ok: false, reason: 'unexpected extra arguments' };
 }
 
-/** The app's `<conversation-data>` block (electron/conversation-context.ts buildCodexChatPrompt), or null. */
+/** The app's `<conversation-data>` block (electron/brain/conversation-context.ts buildCodexChatPrompt), or null. */
 export function parseConversation(text) {
   if (typeof text !== 'string') return null;
   const start = text.lastIndexOf('<conversation-data>\n'), end = text.lastIndexOf('\n</conversation-data>');
@@ -42,7 +60,7 @@ export function parseConversation(text) {
   try {
     const data = JSON.parse(text.slice(start + '<conversation-data>\n'.length, end));
     if (!data || typeof data.currentUser !== 'string' || !Array.isArray(data.history)) return null;
-    return { opening: !text.startsWith(FOLLOW_UP_MARKER), currentUser: data.currentUser, historyLength: data.history.length };
+    return { opening: !isFollowUpTurn(text), currentUser: data.currentUser, historyLength: data.history.length };
   } catch { return null; }
 }
 

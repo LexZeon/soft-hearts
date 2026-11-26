@@ -7,9 +7,12 @@ import {tmpdir} from 'node:os';
 import vm from 'node:vm';
 import ts from 'typescript';
 import {transformSync} from 'esbuild';
-import {FatigueActivityBridge,verifiedFatigueBackground} from '../electron/fatigue-activity';
-import {SpeechPlaybackActivity} from '../electron/speech-playback-activity';
-import {CompletedReplySpeech} from '../electron/completed-reply-speech';
+import {FatigueActivityBridge,verifiedFatigueBackground} from '../electron/mood/fatigue-activity';
+import {SpeechPlaybackActivity} from '../electron/voice/speech-playback-activity';
+import {CompletedReplySpeech} from '../electron/voice/completed-reply-speech';
+import {WIRING_PRELUDE,wiringFunction,wiringSource} from './helpers/wiring-source';
+import { rendererSource as readRendererSource } from './helpers/renderer-source'; // overhaul step 5: src/main.ts and src/wiring/*.ts
+// Reads as text (test-affected selects this test when they change): 'electron/main.ts', 'electron/wiring/voice-wiring.ts'.
 
 const asset=(name:string)=>({path:path.resolve(name),url:`mmd-asset://owned/${name}`,name});
 const flush=async()=>{await Promise.resolve();await Promise.resolve();await Promise.resolve();};
@@ -32,9 +35,13 @@ test('new manual selection closes immediately; late neutral success and disposal
   assert.deepEqual(bridge.current(),{chat:true,tts:true,manualMotion:true});
 });
 
-const hostText=await readFile(new URL('../electron/main.ts',import.meta.url),'utf8');
+// Wiring rewrite step 4: the speech handlers and the playback lease's checks are 声音's (electron/wiring/voice-wiring.ts); the host is
+// read across main.ts and electron/wiring/*.ts, each declaration still exactly one, and what the moved lines read through the part's needs
+// comes from the context's own names (WIRING_PRELUDE).
+const hostText=wiringSource();
 const hostAst=ts.createSourceFile('main.ts',hostText,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
 function declarations(ast:ts.SourceFile,names:string[]):string{
+  if(ast===hostAst)return names.map(name=>wiringFunction(name)).join('\n');
   return names.map(name=>{const matches=ast.statements.filter(n=>ts.isFunctionDeclaration(n)&&n.name?.text===name);
     assert.equal(matches.length,1,name);return matches[0].getText(ast);}).join('\n');
 }
@@ -44,7 +51,7 @@ function install(source:string,context:Record<string,unknown>):Record<string,any
 test('actual host aggregation retains segment queue and final renderer playback ownership independently',()=>{
   let current:any;const owners=new Set<number>(),pending=new Map<string,any>();let logical=false,wall=100;
   const leases=new SpeechPlaybackActivity();
-  const ctx=install(declarations(hostAst,['syncFatigueActivity']),{
+  const ctx=install(WIRING_PRELUDE+'\n'+declarations(hostAst,['syncFatigueActivity']),{ // step 4f: 心情's (electron/wiring/mood-wiring.ts); its needs are this context's names
     fatigueActivityReady:true,exiting:false,userInputUntil:0,pending,asrTask:null,readingInputSpeech:false,
     foregroundAsr:{foregroundBusy:false},ambientSpeakingOwners:owners,replySpeechBusy:()=>logical,
     fatigueActivity:{setActivity:(v:any)=>current=v},Date:{now:()=>wall},
@@ -63,7 +70,7 @@ test('actual host aggregation retains segment queue and final renderer playback 
 });
 test('actual completion sampler freezes only same-card same-scope known phase',()=>{
   let phase='drowsy',id='card-a',reads=0;
-  const ctx=install(declarations(hostAst,['completedFatigueFeeling']),{speechScope:()=> 'scope-a',
+  const ctx=install(WIRING_PRELUDE+'\n'+declarations(hostAst,['completedFatigueFeeling']),{speechScope:()=> 'scope-a',
     characterCards:{getActive:()=>({id:'card-a'})},companion:{mood:{get:()=>{reads++;return {characterId:id,fatigue:{phase,A:.9,W:.1}};}}}});
   const feeling=ctx.completedFatigueFeeling('scope-a','card-a');assert.equal(feeling.phase,'drowsy');
   assert.deepEqual(Object.keys(feeling),['phase']);assert.equal(Object.isFrozen(feeling),true);assert.equal(reads,1);
@@ -79,7 +86,7 @@ test('actual synthesis starts block sleep before the first audio event and retai
   }visit(hostAst);assert.ok(callback);
   let current:any,active=false,finish!:()=>void;
   const owners=new Set<number>();
-  const ctx=install(declarations(hostAst,['syncFatigueActivity'])+`\nvar synthesize=${callback.getText(hostAst)};`,{
+  const ctx=install(WIRING_PRELUDE+'\n'+declarations(hostAst,['syncFatigueActivity'])+`\nvar synthesize=${callback.getText(hostAst)};`,{
     fatigueActivityReady:true,exiting:false,userInputUntil:0,pending:new Map(),asrTask:null,readingInputSpeech:false,
     foregroundAsr:{foregroundBusy:false},ambientSpeakingOwners:owners,replySpeechBusy:()=>active,
     fatigueActivity:{setActivity:(v:any)=>current=v},Date:{now:()=>100},
@@ -98,8 +105,8 @@ test('actual activity IPC denies hidden owners and releases only the exact owner
     ts.forEachChild(n,visit);
   }visit(hostAst);assert.equal(Object.keys(callbacks).length,2);
   const leases=new SpeechPlaybackActivity();leases.setScope('scope-a');let visible=false,minimized=false;
-  const ctx=install(declarations(hostAst,['canBeginSpeechPlaybackActivity'])+`\nvar begin=${callbacks.beginSpeechPlaybackActivity};var end=${callbacks.endSpeechPlaybackActivity};`,{
-    syncFatigueActivity:()=>{},speechPlaybackActivity:leases,controls:null,speechScope:()=> 'scope-a',completedReplySpeech:new CompletedReplySpeech(),
+  const ctx=install(WIRING_PRELUDE+'\n'+declarations(hostAst,['canBeginSpeechPlaybackActivity','replySurface','herOnScreen','heldLineSpeakable'])+`\nvar begin=${callbacks.beginSpeechPlaybackActivity};var end=${callbacks.endSpeechPlaybackActivity};`,{
+    syncFatigueActivity:()=>{},speechPlaybackActivity:leases,controls:null,pet:null,unbound:null,speechScope:()=> 'scope-a',completedReplySpeech:new CompletedReplySpeech(),
     windows:()=>[{webContents:{id:7},isVisible:()=>visible,isMinimized:()=>minimized}],
   });
   assert.equal(await ctx.begin(7,'a'),null);assert.equal(leases.busy,false);
@@ -121,7 +128,7 @@ test('background exception verifies approved path and original pinned bytes, not
   }finally{await unlink(file);await rmdir(directory);}
 });
 test('actual renderer binds accepted card and invalidates first identity as well as switches',async()=>{
-  const text=await readFile(new URL('../src/main.ts',import.meta.url),'utf8'),ast=ts.createSourceFile('renderer.ts',text,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
+  const text=readRendererSource(),ast=ts.createSourceFile('renderer.ts',text,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
   const options:Record<string,string>={};function visit(n:ts.Node):void{
     if(ts.isNewExpression(n)&&n.expression.getText(ast)==='MoodCompanion')for(const p of (n.arguments?.[0] as ts.ObjectLiteralExpression).properties)
       if(ts.isPropertyAssignment(p)&&['getCharacterId','onScopeInvalidated'].includes(p.name.getText(ast)))options[p.name.getText(ast)]=p.initializer.getText(ast);
@@ -130,7 +137,7 @@ test('actual renderer binds accepted card and invalidates first identity as well
   const resets:string[]=[],clears:string[]=[],refills:boolean[]=[];let stageInvalidations=0,voiceChecks=0;
   const ctx=install(declarations(ast,['applyCharacterCards'])+`\nvar getAccepted=${options.getCharacterId};var invalidate=${options.onScopeInvalidated};`,{
     petFramingController:null,characterState:null,characterName:'',characterControls:null,characterPage:null,emotionalVoiceControls:null,ambientTranscriptHistory:null,memoryPanel:null,
-    feedCuePrefetch:{voiceContextChanged:()=>{voiceChecks++;}},
+    feedCuePrefetch:{voiceContextChanged:()=>{voiceChecks++;}},noteVoicePlan:()=>{},
     moodCompanion:{reset:(reason:string)=>resets.push(reason)},stage:{invalidateMoodScope:()=>stageInvalidations++},
     compileCharacterPersona:()=>'',clearChat:()=>clears.push('clear'),refillChat:(greeting:boolean)=>refills.push(greeting),showCharacterGreeting:()=>{},notify:()=>{},$:()=>null,history:[],activeChat:null,
   });
@@ -138,7 +145,7 @@ test('actual renderer binds accepted card and invalidates first identity as well
   ctx.applyCharacterCards({revision:1,activeId:'a',cards:[card('a')]});assert.equal(ctx.getAccepted(),'a');assert.deepEqual(resets,['character']);
   ctx.applyCharacterCards({revision:2,activeId:'a',cards:[card('a')]});assert.equal(resets.length,1,'metadata alone is not a scope change');
   ctx.applyCharacterCards({revision:3,activeId:'b',cards:[card('b')]});assert.equal(ctx.getAccepted(),'b');assert.equal(resets.length,2);assert.equal(clears.length,1);
-  assert.deepEqual(refills,[true],'C2: a switch refills the window with her conversation (greeting only when she has none)');
+  assert.deepEqual(refills,[true,true],'C2: the first card state and a switch refill the window with her conversation (greeting only for one who never opened)');
   assert.equal(voiceChecks,3,'B06: every accepted card state lets the cue prefetch check for a new character voice');
   ctx.applyCharacterCards({revision:1,activeId:'a',cards:[card('a')]});assert.equal(ctx.getAccepted(),'b','late old card state is ignored');
   ctx.invalidate();assert.equal(stageInvalidations,1);

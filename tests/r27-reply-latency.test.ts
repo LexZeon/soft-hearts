@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { ReplyLatencyProbe, type ReplyLatencyRecord } from '../electron/reply-latency';
+import { ReplyLatencyProbe, type ReplyLatencyRecord } from '../electron/brain/reply-latency';
 
 function fixture(enabled = true, file: string | null = null) {
   let now = 0, wall = 1_800_000_000_000;

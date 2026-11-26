@@ -1,5 +1,5 @@
 // Codex T-207 round 2 (2026-11-04, bridge X-257, pinned 9f58785) counterexample for the "UTF-8 read as GBK" filter
-// (shared/mojibake.ts; docs/claude/2026-11-03-mojibake-guard.md, section "Codex 第二轮反例和修复"). Fed one character at a
+// (shared/foundation/mojibake.ts; docs/claude/2026-11-03-mojibake-guard.md, section "Codex 第二轮反例和修复"). Fed one character at a
 // time, "浣犲ソ。她叫宸。" came out as "你好。她叫巡" and, with "!" for the last mark, as "你好。她叫!": once a real garbled run
 // was repaired, an ordinary name a few ordinary characters later was read as more of that garbage. The rule held here: a
 // garbled run never reaches across a sentence end or the ordinary characters after it, and once ordinary text has shown
@@ -10,9 +10,9 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { canStartMojibake, cleanMojibake, gbkCode, MojibakeGuard } from '../shared/mojibake';
-import { MoodReplyProtocol } from '../electron/mood-chat';
-import { CompanionService } from '../electron/companion';
+import { canStartMojibake, cleanMojibake, gbkCode, MojibakeGuard } from '../shared/foundation/mojibake';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
+import { CompanionService } from '../electron/brain/companion';
 
 const garble = (text: string): string => new TextDecoder('gbk').decode(Buffer.from(text, 'utf8'));
 

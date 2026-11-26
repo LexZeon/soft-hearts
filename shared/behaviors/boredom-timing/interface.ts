@@ -1,24 +1,24 @@
 /**
  * #8 "你不理她：多久看你一眼、动一下、想开口"的接口（I-020：一个功能一个文件夹，接口写清楚，换实现只换一块）。
  *
- * 原来：shared/mood.ts 的 DEFAULT_MOOD_PARAMETERS.boredom（或角色卡上的那一组）是固定的五个数，你不理她 5 分钟后无聊按
+ * 原来：shared/foundation/mood.ts 的 DEFAULT_MOOD_PARAMETERS.boredom（或角色卡上的那一组）是固定的五个数，你不理她 5 分钟后无聊按
  * 每分钟 +2 直线涨，第 20 分钟看你、第 32.5 分钟动一下、第 42.5 分钟想开口，每轮都在同一刻。
  * 现在：每一轮"你不理她"开始时，由这里按角色卡倾向和此刻心情在一个范围里抽这一轮的宽限、涨速和三个门槛（卡上的值是中心），
- * 心情模型（shared/mood.ts，没改）照旧拿这五个数去涨、去比门槛。
+ * 心情模型（shared/foundation/mood.ts，没改）照旧拿这五个数去涨、去比门槛。
  *
  * 谁调用它、怎么调用：
- *  1. 主机（electron/mood.ts 的 MoodHost）是唯一的调用方（BoredomTimingHost，真实现 choose.ts 的 BoredomTimingDirector）：
+ *  1. 主机（electron/mood/mood.ts 的 MoodHost）是唯一的调用方（BoredomTimingHost，真实现 choose.ts 的 BoredomTimingDirector）：
  *     - 每次要把参数交给心情模型（advanceMood、applyMoodEvent、getMoodAttentionCandidate、getMoodSnapshot……）之前，
  *       用 rules() 拿这一轮的五个数，只替换 parameters.boredom，别的参数（frequency 冷却和上限、longing……）一律是卡上的；
  *     - 一秒一次的规则时机真的发出了 look / motion / speech（不是测试命令、不是陪听点评、不是内心循环认领后改的）→ happened()；
- *     - 你回到电脑前、她没那么无聊了（在场，shared/mood-presence.ts，只在摄像头感知开着时）→ relieved()。
+ *     - 你回到电脑前、她没那么无聊了（在场，shared/foundation/mood-presence.ts，只在摄像头感知开着时）→ relieved()。
  *     存档、导出给面板和角色卡的 parameters 永远是卡上的值，抽出来的只在内存。
- *  2. 开发者面板（src/ui/MoodPanel.ts）只读 MoodView.boredomTimingWhy：这一轮和前几轮的节奏、时刻、为什么（只在开发者模式发出，只在内存）。
+ *  2. 开发者面板（src/mood/MoodPanel.ts）只读 MoodView.boredomTimingWhy：这一轮和前几轮的节奏、时刻、为什么（只在开发者模式发出，只在内存）。
  *  3. #11（shared/behaviors/idle-gesture/）：什么时候"动一动""看你一眼"来自这里，样子和表情来自 idle-gesture。两边不互相调用。
  *
  * 假实现在 fake.ts（卡上的值原样用 = 原来的做法），守约测试在 tests/boredom-timing.test.ts：换一种实现，先过那组测试。
  */
-import type { MoodLabel, MoodParameters, MoodTendency } from '../../mood';
+import type { MoodLabel, MoodParameters, MoodTendency } from '../../foundation/mood';
 import type { BoredomMoment } from './knobs';
 
 /** 一轮的宽限、涨速和三个门槛：和 MoodParameters.boredom 一模一样的形状。 */

@@ -2,18 +2,18 @@
 // reads lets the sentence being heard finish, reads nothing more of that reply (its bubbles still show), then she listens.
 import assert from 'node:assert/strict';
 import test, { type TestContext } from 'node:test';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { DEFAULT_TTS_CONFIG, type ApprovedReplySpeechSegment, type TtsConfig, type TtsStreamEvent } from '../shared/tts';
-import { StreamingVoicePlayer } from '../src/ui/EmotionalVoice';
-import { VoiceOutput, type VoiceOutputEvent } from '../src/ui/VoiceOutput';
-import { SharedAudioOutput } from '../src/ui/audio-output';
-import { CompletedReplySpeechQueue, type ReplySpeechSession } from '../src/ui/completed-reply-speech-queue';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { DEFAULT_TTS_CONFIG, type ApprovedReplySpeechSegment, type TtsConfig, type TtsStreamEvent } from '../shared/voice/tts';
+import { StreamingVoicePlayer } from '../src/voice/EmotionalVoice';
+import { VoiceOutput, type VoiceOutputEvent } from '../src/voice/VoiceOutput';
+import { SharedAudioOutput } from '../src/voice/audio-output';
+import { CompletedReplySpeechQueue, type ReplySpeechSession } from '../src/voice/completed-reply-speech-queue';
 import { flush, pcm, world } from './helpers/r02-audio-world';
-import { VoiceChatHost } from '../electron/voice-chat-host';
-import { DEFAULT_SETTINGS as SETTINGS } from '../shared/defaults';
-import type { MediaOwner } from '../electron/runtime';
-import { MediaInput } from '../src/ui/MediaInput';
-import { VOICE_OPEN_AFTER_REPLY } from '../shared/voice-segments';
+import { VoiceChatHost } from '../electron/voice/voice-chat-host';
+import { DEFAULT_SETTINGS as SETTINGS } from '../shared/foundation/defaults';
+import type { MediaOwner } from '../electron/senses/media-runtime';
+import { MediaInput } from '../src/senses/MediaInput';
+import { VOICE_OPEN_AFTER_REPLY } from '../shared/voice/voice-segments';
 
 const voice = { ...DEFAULT_SETTINGS.voice, enabled: true };
 const segment = (replyId: string, index: number, text: string): ApprovedReplySpeechSegment =>
@@ -160,7 +160,10 @@ test('system voice playback: queued sentences are not launched after finishCurre
   assert.deepEqual(spoken, ['零。'], 'only the sentence that was being spoken');
 });
 
-test('opening the microphone asks the reading window to finish its sentence, never to stop now', () => {
+// the interruption rule (「必须得是，明确，成句子的，再打断」, tests/interrupt-gate.test.ts) now covers voice input
+// too: opening the microphone stops nothing; a clear sentence or stop command does. The window's finish-the-sentence path above
+// stays tested because the window still understands it; the host no longer asks for it.
+test('opening the microphone leaves her reading alone (2026-11-19); stopping generation still stops reading at once', () => {
   const stops: (string | undefined)[] = [];
   const media = { voiceInput: true, voiceOwner: 'controls' as MediaOwner };
   const host = new VoiceChatHost({
@@ -171,9 +174,9 @@ test('opening the microphone asks the reading window to finish its sentence, nev
     transcribe: async () => '', stopReading: mode => { stops.push(mode); }, prepareSpeech() {},
   });
   host.open(5, 'controls');
-  assert.ok(stops.length > 0);
-  assert.ok(stops.every(mode => mode === 'sentence'), 'opening only ever finishes the sentence');
-  stops.length = 0;
+  assert.deepEqual(stops, [], 'opening the microphone neither stops nor shortens her reading');
+  host.open(5, 'controls');
+  assert.deepEqual(stops, [], 'nor does opening it again (a new capture scope)');
   host.revoke('stop-generation');
   assert.ok(stops.length > 0 && stops.every(mode => mode !== 'sentence'), 'stopping generation still stops reading at once');
 });

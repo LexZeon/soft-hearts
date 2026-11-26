@@ -1,4 +1,4 @@
-// I-046 只放行开头标记之后的话 (electron/reply-opening.ts, docs/claude/2026-11-07-draft-leak-envelope-plan.md). Synthetic replies only:
+// I-046 只放行开头标记之后的话 (electron/brain/reply-opening.ts, docs/claude/2026-11-07-draft-leak-envelope-plan.md). Synthetic replies only:
 // the shapes below are made up after the structure of the 2026-11-07 leak (a Chinese plan with no fixed opening, the tail's fields,
 // a memorial proposal's fields, a drafted "正文：", English self-talk), never a real chat.
 import test from 'node:test';
@@ -6,14 +6,14 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { MoodReplyProtocol } from '../electron/mood-chat';
-import { APP_REPLY_OPENING, FIXED_OPENING_MARKER, OPENING_CODE_CHARS, OPENING_SYSTEM_SENTENCE, OpeningGate, REPLY_OPENING_ENABLED, internalWords, openingCut, openingMarker, openingSentence, type OpeningMode } from '../electron/reply-opening';
-import { claudeSessionSystemPrompt, sessionText } from '../electron/claude-session-prompt';
-import { claudeChatSystemPrompt } from '../electron/claude';
-import { CompanionService } from '../electron/companion';
-import { replyCheckInput } from '../electron/journal/extras';
-import { buildJournalEntry, describeJournalEntry, readJournalLine, type JournalEntry } from '../shared/journal';
-import { ENGLISH_JOURNAL_UI_COPY } from '../shared/ui-copy.journal.en';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
+import { APP_REPLY_OPENING, FIXED_OPENING_MARKER, FIXED_TURN_REMINDER, FIXED_TURN_SENTENCE, OPENING_CLOSING_SLOT, OPENING_CODE_CHARS, OPENING_SYSTEM_SENTENCE, OpeningGate, REPLY_OPENING_ENABLED, internalWords, openingCut, openingMarker, openingSentence, type OpeningMode } from '../electron/brain/reply-opening';
+import { claudeSessionSystemPrompt, sessionText } from '../electron/brain/claude-session-prompt';
+import { claudeChatSystemPrompt } from '../electron/brain/claude';
+import { CompanionService } from '../electron/brain/companion';
+import { replyCheckInput } from '../electron/memory/journal/extras';
+import { buildJournalEntry, describeJournalEntry, readJournalLine, type JournalEntry } from '../shared/memory/journal';
+import { ENGLISH_JOURNAL_UI_COPY } from '../shared/foundation/ui-copy.journal.en';
 import { replay } from '../scripts/lib/prompt-eval-analysis';
 
 const PLAN = '这轮用户在接梗，我顺着“马上就好”那个梗说。尾注填 positive，delta 给 O 加一点。纪念提议：quote 用“下雨天互道晚安要说两遍”，purpose 写留作纪念，invite 问要不要记下来。\n'
@@ -46,9 +46,9 @@ function play(raw: (protocol: MoodReplyProtocol) => string, chunking: Chunking, 
 }
 const tail = (protocol: MoodReplyProtocol) => `${protocol.start}${TAIL}${protocol.end}`;
 
-test('the switch is off for the app (the first-character A/B did not clear 150 ms); the marker is this turn\'s code, from the tail\'s nonce', () => {
-  assert.equal(REPLY_OPENING_ENABLED, false);
-  assert.equal(APP_REPLY_OPENING, false);
+test('the switch is on for the app with the fixed marker (I-080); a turn marker is this turn\'s code, from the tail\'s nonce', () => {
+  assert.equal(REPLY_OPENING_ENABLED, true);
+  assert.equal(APP_REPLY_OPENING, 'fixed');
   const protocol = new MoodReplyProtocol(() => {}, { opening: true });
   const nonce = /^<sh-state-([a-f0-9]{32})>$/u.exec(protocol.start)![1];
   assert.equal(protocol.open, `<sh-open-${nonce.slice(0, OPENING_CODE_CHARS)}>`);
@@ -70,11 +70,20 @@ test('the protocol text: one sentence in place of "先正常回复用户。", no
   assert.ok(memorial.instruction().startsWith(openingSentence(memorial.open)) && memorial.instruction().includes('<sh-memorial-'));
 });
 
-test('fixed mode: one marker named once by the fixed system prompts; the turn text is exactly the old one', () => {
+test('fixed mode: one marker named by the fixed system prompts and, in place of "先正常回复用户。", by every turn (2026-11-21); nothing else changes', () => {
   const fixed = new MoodReplyProtocol(() => {}, { opening: 'fixed' }), off = new MoodReplyProtocol(() => {});
   assert.equal(fixed.open, FIXED_OPENING_MARKER);
   const norm = (text: string) => text.replace(/[a-f0-9]{32}/gu, 'N');
-  assert.equal(norm(fixed.instruction()), norm(off.instruction()), 'the turn text does not change');
+  assert.equal(FIXED_TURN_REMINDER, true);
+  // 2026-11-23 (FIXED_TURN_REMINDER_AT 'end', docs/claude/2026-11-23-opening-marker-plan.md): the sentence is the prompt's last line, so the text itself starts at 回复正文结束后.
+  const lead = new MoodReplyProtocol(() => {}, { opening: 'fixed', reminderAt: 'lead' });
+  assert.ok(lead.instruction().startsWith(FIXED_TURN_SENTENCE) && FIXED_TURN_SENTENCE.includes(FIXED_OPENING_MARKER), "the 'lead' knob names the marker first, as before");
+  assert.ok(!lead.instruction().includes('先正常回复用户。'), 'one sentence for one: the old lead is gone');
+  assert.equal(norm(lead.instruction()).slice(FIXED_TURN_SENTENCE.length), norm(off.instruction()).slice('先正常回复用户。'.length), 'the rest of the turn text does not change');
+  assert.ok(fixed.instruction().startsWith('回复正文结束后，') && fixed.instruction().endsWith(OPENING_CLOSING_SLOT), "'end': no lead, a slot at the very end");
+  assert.equal(norm(fixed.instruction()).slice(0, -OPENING_CLOSING_SLOT.length), norm(off.instruction()).slice('先正常回复用户。'.length), "'end': the rest of the turn text does not change");
+  const speak = new MoodReplyProtocol(() => {}, { opening: 'fixed', speakOnly: true });
+  assert.ok(!speak.instruction().includes(FIXED_OPENING_MARKER), 'a speak-only turn stays as it was (no added sentence)');
   assert.ok(claudeSessionSystemPrompt({ opening: true }).includes(OPENING_SYSTEM_SENTENCE));
   assert.ok(!claudeSessionSystemPrompt({ opening: false }).includes('<sh-open'));
   assert.ok(claudeChatSystemPrompt({ opening: true }).includes(OPENING_SYSTEM_SENTENCE), 'the per-message path says the same');
@@ -89,6 +98,19 @@ test('fixed mode: one marker named once by the fixed system prompts; the turn te
     assert.equal(coded.protocol.replyCheck()!.marker, 'foreign', `a coded marker is not this one, ${name}`);
   }
   assert.equal(sessionText(`${PLAN}<sh-open>${REPLY}`), REPLY.trim());
+});
+
+test('I-080: the two shapes that reached the stable build on 2026-11-11 are cut when they stand in front of the fixed marker', () => {
+  // 18:02: a name, then an English note (a scene, then reply instructions), glued to the reply; 17:54: "答<reply>".
+  const NOTE = '小玲 crying, banging against wall, subtitle "完了" and "小玲". User scared. Respond: comfort, playful light, not too scary. Short.';
+  const SAD = '她哭得好伤心，我也跟着心里一紧。往我这边靠过来，靠垫给你挡着。';
+  for (const [name, chunking] of CHUNKINGS) {
+    const note = play(protocol => `${NOTE}${protocol.open}${SAD}\n${tail(protocol)}`, chunking, { opening: 'fixed' });
+    assert.equal(note.shown, SAD, name);
+    assert.ok(!note.increments.some(item => /[A-Za-z]/u.test(item.text)), `no English piece is ever shown, ${name}`);
+    const wrapped = play(protocol => `答<reply>\n${protocol.open}${SAD}\n</reply>\n${tail(protocol)}`, chunking, { opening: 'fixed' });
+    assert.equal(wrapped.shown.trim(), SAD, name);
+  }
 });
 
 test('a plan in front of the marker is never shown, read or archived, however the stream is cut; the reply streams from the marker', () => {

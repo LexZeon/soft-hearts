@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "name": "StayStill idle model (d2-e60) with its quick moves (events-d2-0.6)",
+  "use": "Unbound only: her idle while she stands, layer-2 targets; the desktop pet does not use it",
+  "variant": "ss-model-raw+events",
+  "settings": { "activation": 0.5, "calibrated": false, "eventRate": 1, "leashS": 8, "bounds": { "headYawKneeDeg": 30, "headYawMaxDeg": 45, "hipShiftKnee": 0.016, "hipShiftMax": 0.022 } },
+  "tuning": "leashS 12 -> 8 and the soft bounds added on 2026-11-16 after a 30-minute run (docs/claude/2026-11-14-staystill-idle.md「接进 Unbound」): with 12 s and no bounds the head deviated more than the StayStill people (p95 31-33° vs 30.7°, up to 62°) and the centre of mass came within 1.4 cm of the edge of her feet",
+  "source": {
+    "dataset": "StayStill",
+    "authors": "Eneko Atxa Landa, Igor Rodriguez, Elena Lazkano, Taras Kucherenko",
+    "paper": "arXiv 2605.13693",
+    "url": "https://zenodo.org/records/18741736",
+    "part": "freemocap skeleton, idle takes, official training split only (lafan/ never read)"
+  },
+  "license": {
+    "id": "MIT",
+    "url": "https://zenodo.org/records/18741736",
+    "attribution": "Copyright (c) [2026] [Eneko Atxa landa]"
+  },
+  "weights": { "relativePath": "unbound/idle/idle-vae.json", "bytes": 3377744, "sha256": "15007ef76b75c984c8d8caeddf01b19d89fb618a9deefa95a089546c46559d9a" },
+  "eventsMeta": { "relativePath": "unbound/idle/events.json", "bytes": 35039, "sha256": "84b72d1fdfa3bbcf0cbe1561600799328f26e779752ebe9cd8a1c0bd700dbbff" },
+  "eventsData": { "relativePath": "unbound/idle/events.f32", "bytes": 1601856, "sha256": "cff78eca74b43d40329e024226891f76ded006007348cafb775600ecf67cdec3" },
+  "licenseFile": { "relativePath": "unbound/idle/LICENSE", "bytes": 1076, "sha256": "8576bac1dc9f045837d8f2d43286f255a85e85200cbc0841afa642ea31b9998a" },
+  "readme": { "relativePath": "unbound/idle/README.md", "bytes": 1719, "sha256": "3ff6845e95d0c7c093f62ceb7c753051cb345d7b15709024fb7fdf15064501a5" }
+}

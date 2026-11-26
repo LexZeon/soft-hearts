@@ -1,9 +1,9 @@
 import test, { type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
-import { MoodCompanion, type MoodCompanionAPI } from '../src/ui/MoodCompanion';
-import { DEFAULT_PET_INTERACTION_CONFIG, type PetHeadRegion } from '../src/ui/PetInteraction';
-import { createMoodState, getMoodSnapshot, DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
-import type { MoodInput, MoodView } from '../shared/mood-runtime';
+import { MoodCompanion, type MoodCompanionAPI } from '../src/mood/MoodCompanion';
+import { DEFAULT_PET_INTERACTION_CONFIG, type PetHeadRegion } from '../src/mood/PetInteraction';
+import { createMoodState, getMoodSnapshot, DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
+import type { MoodInput, MoodView } from '../shared/mood/mood-runtime';
 
 class Style {
   [key: string]: unknown;

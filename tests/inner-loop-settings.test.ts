@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { validateSettings } from '../electron/validation';
-import { SettingsStore } from '../electron/settings';
-import { AssetRegistry } from '../electron/assets';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
+import { validateSettings } from '../electron/settings/validation';
+import { SettingsStore } from '../electron/settings/settings';
+import { AssetRegistry } from '../electron/foundation/assets';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
 
 test('the inner-loop switch defaults on, keeps an explicit off, and ignores non-boolean values', () => {
   assert.equal(DEFAULT_SETTINGS.innerLoop, true);

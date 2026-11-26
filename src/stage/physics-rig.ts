@@ -1,5 +1,5 @@
 import type { SkinnedMesh } from "three";
-import type { ModelPhysicsPart, ModelPhysicsPartSupport, ModelPhysicsSupport } from "../../shared/model-physics";
+import type { ModelPhysicsPart, ModelPhysicsPartSupport, ModelPhysicsSupport } from "../../shared/stage/model-physics";
 
 type Triple = [number, number, number];
 
@@ -87,12 +87,21 @@ function triple(value: unknown, min = -10_000, max = 10_000): Triple | undefined
     ? [value[0], value[1], value[2]] : undefined;
 }
 
+/**
+ * R01: authors give a long chain huge masses that fall off along it (the user's private
+ * model's back hair and braid: 1.8e7 to 6e13 at the roots, about 3.5x lighter per segment). The old ceiling (10 000) dropped those
+ * bodies, their joints went with them, and the whole braid was left out of the simulation: it followed the head rigidly. Mass only
+ * matters relative to the other bodies, so any finite positive weight is kept as authored, up to a bound that keeps Bullet's
+ * float32 inertia (mass × size², size ≤ 10 000) and impulses finite.
+ */
+export const MAX_BODY_WEIGHT = 1e20;
+
 function readBody(value: unknown, boneCount: number): PhysicsRigidBody | undefined {
   const p = record(value);
   if (!p || !integer(p.boneIndex, -1, boneCount - 1) || !integer(p.type, 0, 2)
     || !integer(p.shapeType, 0, 2) || !integer(p.groupIndex, 0, 15) || !integer(p.groupTarget, 0, 65535)
     || !number(p.width, 0.000001) || !number(p.height, 0) || !number(p.depth, 0)
-    || !number(p.weight, 0) || (p.type !== 0 && p.weight <= 0)
+    || !number(p.weight, 0, MAX_BODY_WEIGHT) || (p.type !== 0 && p.weight <= 0)
     || (p.shapeType === 1 && (p.height <= 0 || p.depth <= 0))
     || !number(p.friction, 0, 10) || !number(p.restitution, 0, 1)
     || !number(p.positionDamping, 0, 1) || !number(p.rotationDamping, 0, 1)) return undefined;
@@ -172,7 +181,22 @@ function collides(a: PhysicsRigidBody, b: PhysicsRigidBody): boolean {
  * skin weights; their component must still contain a weighted hair seed.
  * Nonselected boundary bodies are kinematic copies, never additional outputs.
  */
-export function buildPhysicsRigPlan(mesh: SkinnedMesh): PhysicsRigPlan {
+export interface PhysicsRigOptions {
+  /** The lab's "arms collide with the chest" (off: a0c532d). */
+  chestArms?: boolean;
+  /** The lab's "hair collides with the body" (on: as authored). Off keeps only the bodies hair hangs from. */
+  hairBody?: boolean;
+}
+
+/**
+ * R01: the most and least massive dynamic bodies of one part's world may differ by at most this much. Bullet solves in float32;
+ * the private model's braid joins a 1.4e6 strand to a 4.9e12 one, and that world blew up (rest jitter 0.42 model units per frame,
+ * the braid rising instead of hanging). A larger range is compressed by a power (m' = lo·(m/lo)^a), which keeps every body's
+ * order and the heavy-root-light-tip shape the author used against stretching. Models within the range are untouched.
+ */
+export const MAX_MASS_RATIO = 1000;
+
+export function buildPhysicsRigPlan(mesh: SkinnedMesh, options: PhysicsRigOptions = {}): PhysicsRigPlan {
   const metadata = record(mesh.geometry.userData.MMD);
   const rawBodies = metadata?.rigidBodies;
   const rawConstraints = metadata?.constraints;
@@ -189,31 +213,54 @@ export function buildPhysicsRigPlan(mesh: SkinnedMesh): PhysicsRigPlan {
   const paths = mesh.skeleton.bones.map((_, index) => ancestry(index, parentIndices));
   const weighted = weightedBones(mesh);
   const names = mesh.skeleton.bones.map(bone => bone.name.normalize("NFKC"));
+  // A bone drives skin when it or a descendant is weighted (an unweighted ancestor may directly drive weighted descendants).
+  const driving = new Set([...weighted].flatMap(bone => paths[bone] ?? []));
+  const drives = (bone: number) => driving.has(bone);
 
   function plan(part: ModelPhysicsPart): PhysicsPartRig {
     const named = part === "hair" ? HAIR : CHEST;
     const regionAnchor = part === "hair" ? HEAD : TORSO;
+    /** Where the part's head/torso anchor sits in a bone's ancestry (≥ 1: the bone is in the part's region), else -1. */
+    const regionAt = (bone: number): number => {
+      const path = paths[bone], anchorAt = path.findIndex(entry => regionAnchor.test(names[entry]));
+      if (part === "chest" && anchorAt >= 1 && path.slice(0, anchorAt).some(entry => HEAD.test(names[entry]) || HAIR.test(names[entry]))) return -1;
+      return anchorAt;
+    };
     const candidates = new Set<number>();
     const weightedSeeds = new Set<number>();
     for (let index = 0; index < bodies.length; index++) {
       const body = bodies[index];
       if (!body || body.type === 0 || body.boneIndex < 0 || PROTECTED.test(names[body.boneIndex])) continue;
       const path = paths[body.boneIndex];
-      const anchorAt = path.findIndex(bone => regionAnchor.test(names[bone]));
+      const anchorAt = regionAt(body.boneIndex);
       // A semantic seed must sit below a separately identified head/torso anchor.
       if (anchorAt < 1 || !path.slice(0, anchorAt).some(bone => named.test(names[bone]))) continue;
-      if (part === "chest" && path.slice(0, anchorAt).some(bone => HEAD.test(names[bone]) || HAIR.test(names[bone]))) continue;
-      // An unweighted ancestor may directly drive weighted descendants. Hair
-      // also uses unweighted dynamic support bodies connected by joints rather
+      // Hair also uses unweighted dynamic support bodies connected by joints rather
       // than by the skeleton hierarchy. Excluding those before traversing the
       // component would incorrectly pin them as kinematic boundary bodies.
-      const drivesWeights = weighted.has(body.boneIndex)
-        || paths.some((other, bone) => weighted.has(bone) && other.includes(body.boneIndex));
+      const drivesWeights = drives(body.boneIndex);
       if (!drivesWeights && part !== "hair") continue;
       candidates.add(index);
       if (drivesWeights) weightedSeeds.add(index);
     }
 
+    /**
+     * R01 / Codex T-251: a dynamic body jointed to the part's chain stays dynamic, as a simulation helper that shows nothing, by its
+     * structure rather than its name: unless it is the anchor (animation-owned: on a protected bone, or on an ancestor of the body it
+     * holds), it carries visible skin of its own (simulated unseen, it would move under the part) or its bone lies outside the part's
+     * region (the adapter never takes another region's bone, even one it would restore). Left out, a helper became a
+     * kinematic body glued to the animated pose (a tip bone with nothing weighted below it, a helper bone no name rule knows) or, with
+     * no bone, frozen in world space at the bind pose (MMDPhysics never updates such a body): the part hung pinned between it and
+     * its anchor. The private model's chest is jointed to four boneless helpers.
+     */
+    const helper = (other: number, from: number): boolean => {
+      const candidate = bodies[other]!, holder = bodies[from]!;
+      if (candidate.type === 0) return false;
+      if (candidate.boneIndex < 0) return true;
+      if (PROTECTED.test(names[candidate.boneIndex])) return false;
+      if (holder.boneIndex >= 0 && paths[holder.boneIndex].slice(1).includes(candidate.boneIndex)) return false;
+      return regionAt(candidate.boneIndex) >= 1 && !drives(candidate.boneIndex);
+    };
     // Keep only components with both a weighted seed and an external anchor.
     // A disconnected hair-named ornament/helper alone cannot grant support.
     const dynamic = new Set<number>();
@@ -234,11 +281,13 @@ export function buildPhysicsRigPlan(mesh: SkinnedMesh): PhysicsRigPlan {
           const other = joint.rigidBodyIndex1 === index ? joint.rigidBodyIndex2
             : joint.rigidBodyIndex2 === index ? joint.rigidBodyIndex1 : -1;
           if (other < 0) continue;
+          // A simulation helper joins the component (see helper above), dynamic as authored.
+          if (!candidates.has(other) && helper(other, index)) candidates.add(other);
           if (candidates.has(other)) queue.push(other);
           else {
             const anchor = bodies[other]!;
             const body = bodies[index]!;
-            if (anchor.type === 0 || (anchor.boneIndex >= 0 && paths[body.boneIndex].slice(1).includes(anchor.boneIndex))) anchored = true;
+            if (anchor.type === 0 || (anchor.boneIndex >= 0 && body.boneIndex >= 0 && paths[body.boneIndex].slice(1).includes(anchor.boneIndex))) anchored = true;
           }
         }
       }
@@ -258,12 +307,13 @@ export function buildPhysicsRigPlan(mesh: SkinnedMesh): PhysicsRigPlan {
     // Preserve original kinematic collision shapes with compatible masks.
     // Disconnected dynamic clothing is deliberately never activated as collateral.
     bodies.forEach((body, index) => {
-      if (body?.type !== 0 || (part === "chest" && body.boneIndex >= 0 && LIMB.test(names[body.boneIndex]))) return;
+      if (body?.type !== 0 || (part === "chest" && !options.chestArms && body.boneIndex >= 0 && LIMB.test(names[body.boneIndex]))) return;
+      if (part === "hair" && options.hairBody === false) return;
       if ([...dynamic].some(other => collides(body, bodies[other]!))) included.add(index);
     });
     const sourceBodyIndices = [...included].sort((a, b) => a - b);
     const remap = new Map(sourceBodyIndices.map((index, i) => [index, i]));
-    const dynamicBoneIndices = [...new Set([...dynamic].map(index => bodies[index]!.boneIndex))].sort((a, b) => a - b);
+    const dynamicBoneIndices = [...new Set([...dynamic].map(index => bodies[index]!.boneIndex).filter(index => index >= 0))].sort((a, b) => a - b);
     const outputBoneIndices = [...new Set([...dynamic].filter(index => weightedSeeds.has(index))
       .map(index => bodies[index]!.boneIndex))].sort((a, b) => a - b);
     // Anchors are the bodies a dynamic body hangs from (a selected joint), not collision-only shapes: a hand sweeping fast past
@@ -271,10 +321,14 @@ export function buildPhysicsRigPlan(mesh: SkinnedMesh): PhysicsRigPlan {
     const jointed = new Set(selectedConstraints.flatMap(joint => [joint.rigidBodyIndex1, joint.rigidBodyIndex2]).filter(index => !dynamic.has(index)));
     const anchorBoneIndices = [...new Set([...jointed].sort((a, b) => a - b)
       .map(index => bodies[index]!.boneIndex).filter(index => index >= 0))];
+    const masses = [...dynamic].map(index => bodies[index]!.weight);
+    const lightest = Math.min(...masses), range = Math.max(...masses) / lightest;
+    const power = range > MAX_MASS_RATIO ? Math.log(MAX_MASS_RATIO) / Math.log(range) : 1;
     const rigidBodies = sourceBodyIndices.map(index => {
       const body = bodies[index]!;
       return { ...body, position: [...body.position] as Triple, rotation: [...body.rotation] as Triple,
-        type: dynamic.has(index) ? body.type : 0, weight: dynamic.has(index) ? body.weight : 0 };
+        type: dynamic.has(index) ? body.type : 0,
+        weight: !dynamic.has(index) ? 0 : power === 1 ? body.weight : lightest * Math.pow(body.weight / lightest, power) };
     });
     const selected = selectedConstraints.map(joint => ({ ...joint,
       rigidBodyIndex1: remap.get(joint.rigidBodyIndex1)!, rigidBodyIndex2: remap.get(joint.rigidBodyIndex2)! }));
@@ -285,6 +339,13 @@ export function buildPhysicsRigPlan(mesh: SkinnedMesh): PhysicsRigPlan {
 
   const hair = plan("hair"), chest = plan("chest");
   return { hair, chest, support: { hair: hair.support, chest: chest.support } };
+}
+
+/** `<bodies>/<joints>/<bones>`: which model a lab tuning was made for (shared/stage/physics-tuning.ts). */
+export function physicsRigSignature(mesh: SkinnedMesh): string {
+  const meta = record(mesh.geometry.userData.MMD);
+  const count = (value: unknown) => Array.isArray(value) ? value.length : 0;
+  return `${count(meta?.rigidBodies)}/${count(meta?.constraints)}/${mesh.skeleton?.bones.length ?? 0}`;
 }
 
 /** Safe to call before an Ammo download/initialization or any world allocation. */

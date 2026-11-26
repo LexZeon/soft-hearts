@@ -1,18 +1,24 @@
 import test from 'node:test';import assert from 'node:assert/strict';import ts from 'typescript';
+import { stageTurn } from '../electron/brain/turn-owner/stage-turn';
 import { readFile, mkdtemp, rm } from 'node:fs/promises';import os from 'node:os';import path from 'node:path';import { randomUUID } from 'node:crypto';
-import { PersonalizeLanguageStore } from '../electron/personalize-language';
-import { emptyLanguageRules, emptyLanguageProfile, personalizeLanguageContext, type LanguageState } from '../shared/personalize-language';
-import { buildCodexChatPrompt } from '../electron/conversation-context';
-import { PersistentClaudeChat } from '../electron/claude-session';
-import { CompanionService } from '../electron/companion';
-import { VoiceChatHost } from '../electron/voice-chat-host';
-import { encodeWav } from '../src/ui/MediaInput';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import type { VoiceConversationEvent } from '../shared/voice-conversation';
-import { MutationQueue } from '../electron/mutation-queue';
-import { TurnFrames } from '../electron/look-attachments';
+import { PersonalizeLanguageStore } from '../electron/cards/personalize-language';
+import { emptyLanguageRules, emptyLanguageProfile, personalizeLanguageContext, type LanguageState } from '../shared/cards/personalize-language';
+import { withSpeechLanguage } from '../shared/brain/chat-language';
+import { cardLanguageOf } from '../shared/foundation/character-card';
+import { buildCodexChatPrompt } from '../electron/brain/conversation-context';
+import { PersistentClaudeChat } from '../electron/brain/claude-session';
+import { CompanionService } from '../electron/brain/companion';
+import { VoiceChatHost } from '../electron/voice/voice-chat-host';
+import { encodeWav } from '../src/senses/MediaInput';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import type { VoiceConversationEvent } from '../shared/voice/voice-conversation';
+import { MutationQueue } from '../electron/foundation/mutation-queue';
+import { TurnFrames } from '../electron/senses/look-attachments';
+import { ipcGuardSource } from './helpers/wiring-source';
+import { wiringSource } from './helpers/wiring-source';
+import { SpeechBeatTurn } from '../electron/brain/speech-beats/turn';
 
-const source=await readFile(new URL('../electron/main.ts',import.meta.url),'utf8'),tree=ts.createSourceFile('main.ts',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
+const source=wiringSource() /* wiring rewrite step 4: electron/main.ts and electron/wiring/*.ts (the card handlers are in cards-wiring.ts) */,tree=ts.createSourceFile('main.ts',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
 function find<T extends ts.Node>(predicate:(n:ts.Node)=>n is T,root:ts.Node=tree):T[]{const rows:T[]=[];function visit(n:ts.Node){if(predicate(n))rows.push(n);ts.forEachChild(n,visit);}visit(root);return rows;}
 function variable(name:string,root:ts.Node=tree):string{const rows=find((n):n is ts.VariableStatement=>ts.isVariableStatement(n)&&n.declarationList.declarations.some(d=>d.name.getText(tree)===name),root);assert.equal(rows.length,1,name);return rows[0].getText(tree);}
 function fn(name:string):string{const rows=tree.statements.filter((n):n is ts.FunctionDeclaration=>ts.isFunctionDeclaration(n)&&n.name?.text===name);assert.equal(rows.length,1,name);return rows[0].getText(tree);}
@@ -27,7 +33,7 @@ test('actual controls-only host handlers validate card/revision, save and undo t
  const calls=['getPersonalizeLanguage','savePersonalizeLanguage','undoPersonalizeLanguage'].map(name=>{
   const rows=find((n):n is ts.CallExpression=>ts.isCallExpression(n)&&n.expression.getText(tree)==='host'&&ts.isStringLiteral(n.arguments[0])&&n.arguments[0].text===name);assert.equal(rows.length,1,name);return rows[0].getText(tree)+';';
  }).join('\n');
- evaluate(`${fn('host')}\n${fn('scopedHost')}\n${variable('mutations')}\n${variable('mutate')}\n${variable('publishLanguage')}\n${calls}`,{
+ evaluate(`${ipcGuardSource() /* wiring rewrite step 3: electron/wiring/ipc-wiring.ts */}\n${variable('mutations')}\n${variable('mutate')}\n${variable('publishLanguage')}\n${calls}`,{
   MutationQueue,controls,windows:()=>[controls,pet],ipcMain:{handle:(key:string,handler:(event:any,...args:unknown[])=>unknown)=>handlers.set(key,handler)},personalizeLanguage:f.store,languageAuthoring:undefined,
  });
  const frame={},sender={id:1,mainFrame:frame},event={sender,senderFrame:frame};
@@ -35,6 +41,13 @@ test('actual controls-only host handlers validate card/revision, save and undo t
  assert.throws(()=>handlers.get('desk:getPersonalizeLanguage')!({sender:{id:2,mainFrame:frame},senderFrame:frame},f.a),/未授权/);
  assert.throws(()=>handlers.get('desk:getPersonalizeLanguage')!({sender,senderFrame:{}},f.a),/未授权/);
  assert.throws(()=>invoke('getPersonalizeLanguage','../outside'));
+ // Saving and undoing are control-window only too (the gap found in wiring rewrite step 3: only the read was checked). The companion window and a
+ // subframe are refused before anything is saved.
+ for(const name of ['savePersonalizeLanguage','undoPersonalizeLanguage']){
+  assert.throws(()=>handlers.get(`desk:${name}`)!({sender:{id:2,mainFrame:frame},senderFrame:frame},f.a,name==='savePersonalizeLanguage'?profile('来自桌宠窗口'):0,0),/未授权/,`${name}: the pet window`);
+  assert.throws(()=>handlers.get(`desk:${name}`)!({sender,senderFrame:{}},f.a,name==='savePersonalizeLanguage'?profile('来自子框架'):0,0),/未授权/,`${name}: a subframe`);
+ }
+ assert.equal(f.store.get(f.a).revision,0);assert.equal(events.length,0);
  const saved=await invoke('savePersonalizeLanguage',f.a,profile('仅A'),0) as LanguageState;assert.equal(saved.revision,1);assert.equal(events.length,1);assert.equal(events[0].channel,'desk:personalize-language');assert.equal(events[0].state.characterId,f.a);
  await assert.rejects(invoke('savePersonalizeLanguage',f.a,profile('旧请求'),0) as Promise<unknown>,/新修改/);
  await assert.rejects(invoke('savePersonalizeLanguage',f.b,{...profile('bad'),provider:'codex'},0) as Promise<unknown>);
@@ -43,7 +56,7 @@ test('actual controls-only host handlers validate card/revision, save and undo t
 }));
 
 test('actual preload exposes only fixed language IPC routes and the exact unsubscribable host event',async()=>{
- const text=await readFile(new URL('../electron/preload.ts',import.meta.url),'utf8'),ast=ts.createSourceFile('preload.ts',text,ts.ScriptTarget.Latest,true);
+ const text=await readFile(new URL('../electron/safety/preload.ts',import.meta.url),'utf8'),ast=ts.createSourceFile('preload.ts',text,ts.ScriptTarget.Latest,true);
  const vars=(name:string)=>{const rows=ast.statements.filter((n):n is ts.VariableStatement=>ts.isVariableStatement(n)&&n.declarationList.declarations.some(d=>d.name.getText(ast)===name));assert.equal(rows.length,1);return rows[0].getText(ast);};
  const sub=ast.statements.find((n):n is ts.FunctionDeclaration=>ts.isFunctionDeclaration(n)&&n.name?.text==='subscribe');assert.ok(sub);
  const invocations:unknown[][]=[],listeners=new Map<string,(event:unknown,state:LanguageState)=>void>();
@@ -61,15 +74,20 @@ test('actual ordinary Claude branch freezes only confirmed selected-card rules w
  const run=evaluate<()=>Promise<void>>(`return async function actual(){${candidates[0].getText(tree)}};`,{
   settings,request,store:{directory:f.directory},path,app:{getPath:()=>f.directory},PROFILE_FOLDER:'soft-hearts-claude',signal:new AbortController().signal,
   // withCurrentRecall: the late recall check (Codex T-222 E04, tests/recall-late-window.test.ts); nothing was recalled here.
-  turn:{push:()=>{},withCurrentRecall:(persona:string)=>persona},profileContextLease:null,visualSelfLease:null,
+  // I-209 step 2: the rules are the turn's own character's (here the one the run is for).
+  turn:{scope:{get characterId(){return active;}},push:()=>{},withCurrentRecall:(persona:string)=>persona},profileContextLease:null,visualSelfLease:null,
   // listenAsk.current: the same check for 一起听 (tests/listen-late-window.test.ts); no 一起听 block here.
   listenAsk:{block:'',current:(persona:string)=>persona},
   personalizeLanguage:{effectiveProfile:(id:string)=>{lookups++;return f.store.effectiveProfile(id);}},characterCards:{getActive:()=>({id:active})},buildCodexChatPrompt,
-  chatContextData:()=>undefined,
+  stageTurn, owner:undefined, currentId:undefined, companion:{}, // I-209 step 3: the desktop companion's own turn (her history as before)
+  chatContextData:()=>undefined, LONG_CHAT:{enabled:false}, getPromptSwitches:()=>({}), movingMemory:undefined, // I-134 new chat off: the renderer's window, as before; I-139 A3: relaxed prompts off
+  relaxedTurn:null, // I-139 off: no opening layers, no once-lines
+  beatTurn:new SpeechBeatTurn(false,()=>{}),speechBeats:null, // 边说边演 off: its filter only (no markers here)
   // The prompt getter recomposes the perception line for this turn's frames (Codex T-205 round 4); no frames here.
   turnFrames:new TurnFrames([]),sightAgain:()=>{throw new Error('no frame was dropped');},
   // The branch now goes through the conversation-scoped manager; here it is the
   // real manager with the persistent process off, i.e. the per-message path.
+  seeAndSay:null, // I-166 off here: the plain stream, no closer look
   streamClaude,claudeChat:new PersistentClaudeChat({enabled:false,perMessage:streamClaude}),basePersona:settings.persona,acceptedSpeechScope:'synthetic-scope',
  });
  await run();assert.equal(lookups,1);assert.equal(prompts[0],prompts[1]);assert.ok(prompts[0].startsWith(settings.persona));assert.ok(prompts[0].includes('A规则'));assert.ok(!prompts[0].includes('保存后的下一轮规则'));
@@ -81,7 +99,7 @@ test('actual ordinary Claude branch freezes only confirmed selected-card rules w
 test('actual voice and proactive Claude text branches consume confirmed rules without a second speech lifecycle',async()=>fixture(async f=>{
  await f.store.save(f.a,profile('共享文字习惯'),0);const settings={persona:'原角色和心情',provider:{kind:'claude',model:'synthetic'}},request={messages:[{role:'user' as const,content:'原始当前问题'}],attachments:[]};const prompts:string[]=[];
  const voiceChunks:string[]=[],visionChunks:string[]=[],languages:unknown[]=[];
- // Voice: the actual host module (electron/voice-chat-host.ts), imported rather than cut out of main.ts. Its one
+ // Voice: the actual host module (electron/voice/voice-chat-host.ts), imported rather than cut out of main.ts. Its one
  // Claude turn gets the confirmed rules both in the per-message prompt and as the conversation session's language.
  const companion=new CompanionService(path.join(f.directory,'companion'),()=>{});await companion.load();
  const appSettings=structuredClone(DEFAULT_SETTINGS);appSettings.persona=settings.persona;appSettings.provider.model='synthetic';
@@ -98,7 +116,7 @@ test('actual voice and proactive Claude text branches consume confirmed rules wi
  const deadline=Date.now()+3000;while(!events.some(event=>event.type==='terminal')&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,5));
  voice.dispose();await voice.drain();await companion.flush();
  assert.equal(prompts.length,1);assert.deepEqual(voiceChunks,['合成正文']);assert.deepEqual(languages,[f.store.effectiveProfile(f.a)]);
- const common={settings,request,personalizeLanguage:f.store,characterCards:{getActive:()=>({id:f.a})},buildCodexChatPrompt,personalizeLanguageContext,store:{directory:f.directory},path,app:{getPath:()=>f.directory},PROFILE_FOLDER:'soft-hearts-claude',signal:new AbortController().signal,
+ const common={settings,request,personalizeLanguage:f.store,characterCards:{getActive:()=>({id:f.a})},buildCodexChatPrompt,personalizeLanguageContext,withSpeechLanguage,cardLanguageOf,store:{directory:f.directory},path,app:{getPath:()=>f.directory},PROFILE_FOLDER:'soft-hearts-claude',signal:new AbortController().signal,
   streamClaude:async(task:{readonly prompt:string;writable:boolean},_signal:AbortSignal,emit:(type:string,text:string)=>void)=>{assert.equal(task.writable,false);prompts.push(task.prompt);emit('delta','合成正文');}};
  const vision=find((n):n is ts.IfStatement=>ts.isIfStatement(n)&&n.thenStatement.getText(tree).includes('personalizeLanguageContext(languageProfile)'));
  assert.equal(vision.length,1);const vars=find((n):n is ts.VariableStatement=>ts.isVariableStatement(n)&&n.declarationList.declarations.some(d=>d.name.getText(tree)==='languageProfile'&&d.initializer?.getText(tree).startsWith("settings.provider.kind === 'claude'")));assert.equal(vars.length,1);

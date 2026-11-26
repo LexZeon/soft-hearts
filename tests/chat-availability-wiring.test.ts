@@ -3,10 +3,11 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import ts from 'typescript';
-import { CHAT_AVAILABILITY_METHODS } from '../electron/chat-availability-host';
+import { desktopApiSource } from './helpers/desktop-api-source';
+import { CHAT_AVAILABILITY_METHODS } from '../electron/brain/chat-availability-host';
 
 async function loadPreload() {
-  const source = await readFile(new URL('../electron/preload.ts', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../electron/safety/preload.ts', import.meta.url), 'utf8');
   let api: any; const invokes: unknown[][] = [], subscriptions: unknown[][] = [];
   const context = { process: { platform: 'win32' }, require: (name: string) => {
     assert.equal(name, 'electron');
@@ -42,7 +43,7 @@ test('actual preload: the availability feed listens on its one channel and can b
 });
 
 test('the typed API has exactly these operations and none takes a parameter', async () => {
-  const text = await readFile(new URL('../shared/contracts.ts', import.meta.url), 'utf8');
+  const text = desktopApiSource(); // DesktopAPI across its per-part slices (shared/contracts.ts extends shared/<part>/desktop-api.ts)
   const ast = ts.createSourceFile('contracts.ts', text, ts.ScriptTarget.Latest, true);
   const api = ast.statements.find((node): node is ts.InterfaceDeclaration => ts.isInterfaceDeclaration(node) && node.name.text === 'DesktopAPI')!;
   for (const name of [...CHAT_AVAILABILITY_METHODS, 'onChatAvailability']) {

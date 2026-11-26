@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { VoiceDraftInput } from '../src/ui/VoiceDraftInput';
+import { VoiceDraftInput } from '../src/voice/VoiceDraftInput';
 test('two cancelled groups cannot overwrite one recovered input; only the same group can update it', () => {
   const recovery = new VoiceDraftInput(), input = { value: '' }, fallback: string[] = [];
   for (const [key, text] of [['epoch/group-a', '第一组原文'], ['epoch/group-b', '第二组原文'], ['epoch/group-c', '第三组原文']])

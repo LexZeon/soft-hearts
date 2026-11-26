@@ -9,11 +9,11 @@
  *    （心情模型的剂数上限）不超过卡上的两倍，所以恢复新鲜最多是卡上的两倍久（默认旋钮下最多 1.25 倍）。
  *  - 抽出来的不过这一关，这一次就按卡上的值（= 原来的做法）。
  */
-import { sheChooses, type SheChoosesCandidate, type SheChose } from '../../she-chooses';
-import { MOOD_LABELS } from '../../mood-runtime';
-import { MOOD_TENDENCY_MIN, tendencyNow } from '../../mood-tendency';
-import type { MoodLabel, MoodSnapshot, MoodTendency } from '../../mood';
-import type { FatiguePhase } from '../../fatigue';
+import { sheChooses, type SheChoosesCandidate, type SheChose } from '../../brain';
+import { MOOD_LABELS } from '../../mood/mood-runtime';
+import { MOOD_TENDENCY_MIN, tendencyNow } from '../../foundation/mood-tendency';
+import type { MoodLabel, MoodSnapshot, MoodTendency } from '../../foundation/mood';
+import type { FatiguePhase } from '../../mood/fatigue';
 import { TOUCH_FEED_EFFECT_KNOBS, TOUCH_FEED_KINDS, TOUCH_FEED_LANDING_IDS, type TouchFeedEffectKnobs, type TouchFeedKind,
   type TouchFeedKindKnobs, type TouchFeedLandingId, type TouchFeedLandingKnob, type TouchFeedMoment } from './knobs';
 import type { TouchFeedContact, TouchFeedEffect, TouchFeedEffectHost, TouchFeedEvent, TouchFeedFreshness, TouchFeedNow, TouchFeedWhy } from './interface';
@@ -31,14 +31,14 @@ const PERSONALITY_WORDS: Readonly<Record<MoodTendency, readonly [string, string]
 export const TOUCH_FEED_CONTACT_WORDS: Readonly<Record<TouchFeedContact, string>> = { pat: '摸头', pinch: '捏脸', food: '喂点心' };
 /** 腻到底至少还剩多少（安全线；旋钮 minFloor 只能比它高）。 */
 const MIN_FLOOR = 0.05;
-/** 心情模型的剂数上限（shared/mood.ts 的 MAX_DOSES）。 */
+/** 心情模型的剂数上限（shared/foundation/mood.ts 的 MAX_DOSES）。 */
 const MAX_DOSES = 64;
 /** 前几次留几次（只在内存）。 */
 const KEEP = 4;
 /**
  * "这会儿……"至少要这么强才算（心情快照 tendencies 的同一把尺子：亲近比基线高约 2.5 点）。心情模型的 companion 只要大于 0
  * 就算，她的数值慢慢回到基线时永远略高一丝（例如隔了一天还高 1e-10），那不是"这会儿想黏着你"，不能写进"为什么"。
- * 各功能共用 shared/mood-tendency.ts 的同一个门槛（#8、#11 也用它），想改只改那里。
+ * 各功能共用 shared/foundation/mood-tendency.ts 的同一个门槛（#8、#11 也用它），想改只改那里。
  */
 export const TOUCH_FEED_TENDENCY_MIN = MOOD_TENDENCY_MIN;
 const EPS = 1e-9;
@@ -70,7 +70,7 @@ export function touchFeedNow(input: TouchFeedNowInput): TouchFeedNow {
   return { mood, tendency, personality, moments };
 }
 
-/** 心情模型腻得多深（shared/mood.ts depthCap 的同一算法）：剂数最多攒到几，恢复新鲜的时间跟着它。 */
+/** 心情模型腻得多深（shared/foundation/mood.ts depthCap 的同一算法）：剂数最多攒到几，恢复新鲜的时间跟着它。 */
 export function freshnessDepth(f: Readonly<Pick<TouchFeedFreshness, 'retention' | 'floor'>>): number {
   if (f.retention === 1 || f.floor === 1 || f.retention === 0) return 1;
   return Math.min(MAX_DOSES, f.floor === 0 ? MAX_DOSES : Math.ceil(Math.log(f.floor) / Math.log(f.retention)));

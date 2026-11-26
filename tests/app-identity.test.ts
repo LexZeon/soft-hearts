@@ -116,7 +116,10 @@ function guardedFiles(): string[] {
     }
   };
   walk('scripts');
-  for (const entry of readdirSync(path.join(root, 'electron'))) if (entry.endsWith('.ts')) files.push('electron/' + entry);
+  // electron/*.ts, and the part folders those files moved into in the 2026-11-16 overhaul (their top level, as before the move).
+  for (const folder of ['electron', 'electron/cards', 'electron/voice']) {
+    for (const entry of readdirSync(path.join(root, folder))) if (entry.endsWith('.ts')) files.push(folder + '/' + entry);
+  }
   for (const entry of readdirSync(root)) if (entry.toLowerCase().endsWith('.cmd')) files.push(entry);
   // The identity module names the Codex edition once, only so that guards can refuse it.
   return files.filter(file => file !== 'scripts/lib/app-identity.mjs');

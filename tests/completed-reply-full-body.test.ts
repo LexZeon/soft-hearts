@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CompletedReplySpeech } from '../electron/completed-reply-speech';
-import type { ApprovedReplySpeechSegment } from '../shared/tts';
+import { CompletedReplySpeech } from '../electron/voice/completed-reply-speech';
+import type { ApprovedReplySpeechSegment } from '../shared/voice/tts';
 
 test('each exact completed segment exposes the same full raw host body without approving it', () => {
   const plans = new CompletedReplySpeech();

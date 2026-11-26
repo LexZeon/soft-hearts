@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { ProviderConfig } from '../shared/contracts';
-import { codexCatalogSupportsVision, VisionProviderSupport } from '../electron/vision-support';
+import type { ProviderConfig } from '../shared/foundation/settings';
+import { codexCatalogSupportsVision, VisionProviderSupport } from '../electron/senses/vision-support';
 
 const catalog = (models: unknown[]) => JSON.stringify({ models });
 const model = (slug: string, modalities: string[] = ['text', 'image']) => ({ slug, input_modalities: modalities });

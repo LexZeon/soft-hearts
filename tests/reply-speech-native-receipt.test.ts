@@ -1,27 +1,31 @@
-import * as uiCopy from '../src/ui/ui-language';
+import * as uiCopy from '../src/foundation/ui-language';
 const { uiText, uiHtml, uiMarkup, uiTemplate } = uiCopy;
 import test from 'node:test';
-import { ReplyRhythmHost } from '../electron/reply-rhythm-host';
+import { ReplyRhythmHost } from '../electron/brain/reply-rhythm-host';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import fs from 'node:fs';
 import ts from 'typescript';
-import { CompletedReplySpeech } from '../electron/completed-reply-speech';
-import { SpeechRuntime } from '../electron/speech-runtime';
-import { ReplySpeechStyles } from '../electron/speech-emotion';
-import { DEFAULT_TTS_CONFIG } from '../shared/tts';
-import { formatReplyBubbles } from '../shared/reply-segments';
-import { ReplyPresentationState } from '../src/ui/reply-presentation';
-import { appendReplyHistory, trimReplyHistory } from '../src/ui/reply-history';
-import { formatReplySegments } from '../src/ui/reply-segments';
-import { CompletedReplySpeechQueue } from '../src/ui/completed-reply-speech-queue';
+import { CompletedReplySpeech } from '../electron/voice/completed-reply-speech';
+import { SpeechRuntime } from '../electron/voice/speech-runtime';
+import { ReplySpeechStyles } from '../electron/mood/speech-emotion';
+import { DEFAULT_TTS_CONFIG } from '../shared/voice/tts';
+import { formatReplyBubbles } from '../shared/voice/reply-segments';
+import { ReplyPresentationState } from '../src/brain/reply-presentation';
+import { appendReplyHistory, trimReplyHistory } from '../src/brain/reply-history';
+import { formatReplySegments } from '../src/brain/reply-segments';
+import { CompletedReplySpeechQueue } from '../src/voice/completed-reply-speech-queue';
+import { WIRING_PRELUDE, wiringSource } from './helpers/wiring-source';
+import { rendererSource as readRendererSource } from './helpers/renderer-source'; // overhaul step 5: src/main.ts and src/wiring/*.ts
 
-const sourceFile=new URL('../electron/main.ts',import.meta.url),sourceText=fs.readFileSync(sourceFile,'utf8');
-const ast=ts.createSourceFile(sourceFile.pathname,sourceText,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
+// Wiring rewrite step 4: 「别读了」's stopCompanionReadout is the settings part's (electron/wiring/settings-wiring.ts); the wiring is read
+// across main.ts and electron/wiring/*.ts, and what it reads from the part's needs comes from the context's names (WIRING_PRELUDE).
+const sourceText=wiringSource();
+const ast=ts.createSourceFile('wiring.ts',sourceText,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
 function hostFunction(name:string):string {
  let found:string|undefined;
  function visit(n:ts.Node){
-  if(ts.isFunctionDeclaration(n)&&n.name?.text===name)found=n.getText(ast);
+  if(ts.isFunctionDeclaration(n)&&n.name?.text===name)found=n.getText(ast).replace(/^export\s+/,''); // wiring rewrite step 4g: herOnScreen and replySurface are exported by 'electron/wiring/stage-wiring.ts'
   if(ts.isCallExpression(n)&&ts.isIdentifier(n.expression)&&n.expression.text==='scopedHost'&&ts.isStringLiteral(n.arguments[0])&&n.arguments[0].text===name)found=n.arguments[1].getText(ast);
   ts.forEachChild(n,visit);
  }visit(ast);assert.ok(found,name);return '(()=>{'+ts.transpileModule('const result = ('+found+');',{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText+'\nreturn result;})()';
@@ -39,7 +43,7 @@ function harness(ready=true,owner=7){
   });},
   isPresentationCurrent(expected:string){return !!proof&&!proof.signal.aborted&&proof.text===expected&&nativeText===expected;},
  };
- const context:any={textMemorialHost:null,completedReplySpeech:plans,replySpeechStyles:styles,replyRhythm:new ReplyRhythmHost(),speechRuntime:runtime,store:{current:{voice:{enabled:true}}},pet:{webContents:{id:8},isDestroyed:()=>false,isVisible:()=>true,isMinimized:()=>false},petReply:surface,
+ const context:any={textMemorialHost:null,unbound:null,completedReplySpeech:plans,replySpeechStyles:styles,replyRhythm:new ReplyRhythmHost(),speechRuntime:runtime,store:{current:{voice:{enabled:true}}},pet:{webContents:{id:8},isDestroyed:()=>false,isVisible:()=>true,isMinimized:()=>false},petReply:surface,
   speechScope:()=>scope,formatReplyBubbles,windows:()=>[1,2].map(window=>({webContents:{send:(channel:string,id:string)=>{if(failStopNotification)throw Error('owned notification unavailable');cancelled.push({window,channel,id});}}})),
   suspendAmbientSpeech:()=>{paused=runtime.busy||plans.busy;events.push('pause:'+paused);},
   // Fatigue observation is outside this native-receipt fixture's scope.
@@ -47,7 +51,7 @@ function harness(ready=true,owner=7){
   broadcast:(channel:string,segment:any)=>{events.push('broadcast');assert.ok(events.indexOf('register')<events.lastIndexOf('broadcast'));broadcasts.push({channel,segment});},
   Error,Promise,
  };
- vm.createContext(Object.assign(context, { uiText, uiHtml, uiMarkup, uiTemplate }));context.cancelCompletedReply=vm.runInContext(hostFunction('cancelCompletedReply'),context);context.cancelReplyStyle=vm.runInContext(hostFunction('cancelReplyStyle'),context);
+ vm.createContext(Object.assign(context, { uiText, uiHtml, uiMarkup, uiTemplate }));vm.runInContext(WIRING_PRELUDE,context);for(const name of ['replySurface','herOnScreen','heldLineSpeakable'])context[name]=vm.runInContext(hostFunction(name),context);context.cancelCompletedReply=vm.runInContext(hostFunction('cancelCompletedReply'),context);context.cancelReplyStyle=vm.runInContext(hostFunction('cancelReplyStyle'),context);
  const next=vm.runInContext(hostFunction('nextReplySpeechSegment'),context),synthesize=vm.runInContext(hostFunction('synthesizeSpeech'),context),cancel=vm.runInContext(hostFunction('cancelReplySpeech'),context),acknowledge=vm.runInContext(hostFunction('acknowledgeReplySpeechReady'),context),stopReadout=vm.runInContext(hostFunction('stopCompanionReadout'),context);
  const record=async(id='reply',newScope=scope)=>{scope=newScope;styles.begin(owner,id,scope);styles.complete(owner,id,scope,{context:'neutral',primary:'calm'},{emotion:'custom',instruction:'frozen public style'});plans.record(owner,id,scope,'第一句。第二句。');if(ready)await acknowledge(8,id);};
  return{plans,styles,runtime,events,broadcasts,cancelled,waiters,next,synthesize,cancel,acknowledge,stopReadout,record,failStopNotification:()=>{failStopNotification=true;},loseProof:()=>{proof=null;nativeText=null;},get providerCalls(){return providerCalls;},get paused(){return paused;}};
@@ -140,7 +144,7 @@ test('actual host waits for the pet completion barrier; another sender and cance
 
 for (const owner of ['controls','pet']) test(`actual ${owner}-owned completion drains paced raw pet publication before the exact full-body receipt`,async()=>{
  const ownerId=owner==='pet'?8:7,h=harness(false,ownerId);
- const rendererFile=new URL('../src/main.ts',import.meta.url),rendererText=fs.readFileSync(rendererFile,'utf8');
+ const rendererFile=new URL('../src/main.ts',import.meta.url),rendererText=readRendererSource();
  const tree=ts.createSourceFile(rendererFile.pathname,rendererText,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
  let stream='',segment='';const helpers:Record<string,string>={};
  function visit(n:ts.Node){
@@ -158,14 +162,16 @@ for (const owner of ['controls','pet']) test(`actual ${owner}-owned completion d
   const queue=new CompletedReplySpeechQueue({nextReplySpeechSegment:async(replyId:string,index?:number)=>h.next(ownerId,replyId,index),cancelReplySpeech:async(replyId:string)=>h.cancel(ownerId,replyId)},async piece=>{
    played.push(piece.text);await h.synthesize(ownerId,'coupled_'+piece.index,piece.text,piece.context);h.runtime.release(ownerId,'coupled_'+piece.index);
   },()=>true);
-  const context:any={activeChat:'reply',activeUser:{role:'user',content:'text'},reply:'',chatOwner:owner,windowKind:isPet?'pet':'controls',isPet,settings:{provider:{kind:'openai'},voice:{enabled:true}},voiceReplyIds:new Set(),hostVisible:true,document:{hidden:false},history:[],assistantNode:{textContent:'',classList:{add(){}}},
+  const context:any={windowVisibility:{minimized:false},shown:()=>context.hostVisible&&!context.document?.hidden,activeChat:'reply',activeUser:{role:'user',content:'text'},reply:'',chatOwner:owner,windowKind:isPet?'pet':'controls',isPet,settings:{provider:{kind:'openai'},voice:{enabled:true}},voiceReplyIds:new Set(),hostVisible:true,document:{hidden:false},history:[],assistantNode:{textContent:'',classList:{add(){}}},
    voiceSpeechReady:null,ordinaryReplyPresentation:null,ordinaryVoiceConfig:null,speechPlaybackErrorShown:false,releaseReplySpeech:null,readoutControlTurns:new Map(),
    replyPresentation:presentation,replySpeechContext:()=> 'scope',
    replySpeechQueue:{speak:(id:string)=>{queueStarts.push(id);pending=queue.speak(id);return pending;}},window:{desktop:{acknowledgeReplySpeechReady:async(id:string)=>h.acknowledge(8,id),cancelReplySpeech:async(id:string)=>h.cancel(ownerId,id)}},
    petUI:isPet?{flushReplyPublication:()=>drain,refreshAnswerReader:(text:string)=>readers.push(text),finishAnswer:(text:string,_id:string,_s:boolean,_p:boolean,segmented:boolean)=>nativePatches.push({text,segmented}),showAnswer:(text:string,_s:boolean,_id:string,segmented:boolean)=>nativePatches.push({text,segmented}),endAnswerSpeech(){}}:null,
+   bubbleFollow:()=>({engage(){},over(){},heard(){},segment(){}}), // I-165: not followed in this fixture (the companion bubble follows nothing here)
+   speechBeats:()=>({shown(){},done(){},cancel(){},begin(){},historyText:(_id:string,reply:string)=>reply,performed:()=>null,showPerformed:()=>false}), // 边说边演: the view (nothing to perform here)
    formatReplySegments,appendReplyHistory,trimReplyHistory,renderReplyWaiting(){},syncBodyInputGate(){},setChatBusy(){},text(){},$:()=>({scrollTop:0,scrollHeight:0}),endReplySpeech(){},reportReplySpeechError(error:unknown){throw error;},
   };
-  vm.createContext(Object.assign(context, { uiText, uiHtml, uiMarkup, uiTemplate }));
+  vm.createContext(Object.assign(context, { uiText, uiHtml, uiMarkup, uiTemplate }));for(const name of ['replySurface','herOnScreen','heldLineSpeakable'])context[name]=vm.runInContext(hostFunction(name),context);
   const compile=(raw:string)=>ts.transpileModule('('+raw+')',{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText;
   for(const [name,raw]of Object.entries(helpers))context[name]=vm.runInContext(compile(raw),context);
   presentation.begin('reply');presentation.startReadout('reply',(prefix,raw)=>context.renderReadout('reply',prefix,raw));
@@ -200,13 +206,13 @@ for (const owner of ['controls','pet']) test(`actual ${owner}-owned completion d
 });
 
 function preparationHarness(ready:boolean){
- const rendererFile=new URL('../src/main.ts',import.meta.url),raw=fs.readFileSync(rendererFile,'utf8'),tree=ts.createSourceFile(rendererFile.pathname,raw,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
+ const rendererFile=new URL('../src/main.ts',import.meta.url),raw=readRendererSource(),tree=ts.createSourceFile(rendererFile.pathname,raw,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
  const helpers:Record<string,string>={};function visit(n:ts.Node){if(ts.isFunctionDeclaration(n)&&['prepareReplySpeechPresentation','finishReplySpeechPresentation'].includes(n.name?.text??''))helpers[n.name!.text]=n.getText(tree);ts.forEachChild(n,visit);}visit(tree);
  let resolve!:()=>void,reject!:(reason:unknown)=>void,scope='scope';const drain=new Promise<void>((yes,no)=>{resolve=yes;reject=no;}),acks:string[]=[],cancels:string[]=[],fallbacks:any[]=[],errors:any[]=[];
  const accepted={id:'reply',text:'第一句。第二句。',context:'scope',index:-1};
- const context:any={ordinaryReplyPresentation:accepted,activeChat:null,settings:{voice:{enabled:true}},hostVisible:true,document:{hidden:false},replySpeechContext:()=>scope,
+ const context:any={shown:()=>context.hostVisible&&!context.document?.hidden,bubbleFollow:()=>({over(){}}),ordinaryReplyPresentation:accepted,activeChat:null,settings:{voice:{enabled:true}},hostVisible:true,document:{hidden:false},replySpeechContext:()=>scope,
   petUI:{flushReplyPublication:()=>drain,finishAnswer:(...args:any[])=>fallbacks.push(args),endAnswerSpeech(){}},window:{desktop:{acknowledgeReplySpeechReady:async(id:string)=>{acks.push(id);return ready;},cancelReplySpeech:async(id:string)=>{cancels.push(id);}}},reportReplySpeechError:(error:unknown)=>errors.push(error),
- };vm.createContext(Object.assign(context, { uiText, uiHtml, uiMarkup, uiTemplate }));for(const [name,source]of Object.entries(helpers))context[name]=vm.runInContext(ts.transpileModule('('+source+')',{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,context);
+ };vm.createContext(Object.assign(context, { uiText, uiHtml, uiMarkup, uiTemplate }));for(const name of ['replySurface','herOnScreen','heldLineSpeakable'])context[name]=vm.runInContext(hostFunction(name),context);for(const [name,source]of Object.entries(helpers))context[name]=vm.runInContext(ts.transpileModule('('+source+')',{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,context);
  return {context,accepted,resolve,reject,acks,cancels,fallbacks,errors,scope:(value:string)=>{scope=value;},start:()=>context.prepareReplySpeechPresentation(accepted)};
 }
 

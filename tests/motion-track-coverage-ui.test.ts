@@ -1,4 +1,4 @@
-import * as uiCopy from '../src/ui/ui-language';
+import * as uiCopy from '../src/foundation/ui-language';
 const { uiText, uiHtml, uiMarkup, uiTemplate } = uiCopy;
 import test,{type TestContext} from 'node:test';
 import assert from 'node:assert/strict';
@@ -6,15 +6,15 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
 import {createHash} from 'node:crypto';
-import {MotionTrackCoverageControls} from '../src/ui/MotionTrackCoverage';
-import {MotionTrackCoverageHost} from '../electron/motion-track-coverage';
-import {MotionWeightControls} from '../src/ui/MotionWeights';
-import {stripDefaultVmdTracks,type VmdTrackData} from '../src/stage/vmd-tracks';
-import * as filters from '../src/ui/motion-filters';
-import * as layers from '../shared/motion-layers';
-import type {MotionCatalog} from '../shared/motion-library';
-import type {MotionTrackCoverageView} from '../shared/motion-track-coverage';
-import gene from '../shared/motion-track-gene-structure.json';
+import {MotionTrackCoverageControls} from '../src/actions/MotionTrackCoverage';
+import {MotionTrackCoverageHost} from '../electron/actions/motion-track-coverage';
+import {MotionWeightControls} from '../src/actions/MotionWeights';
+import {stripDefaultVmdTracks,type VmdTrackData} from '../src/foundation/vmd-tracks';
+import * as filters from '../src/actions/motion-filters';
+import * as layers from '../shared/actions/motion-layers';
+import type {MotionCatalog} from '../shared/actions/motion-library';
+import type {MotionTrackCoverageView} from '../shared/actions/motion-track-coverage';
+import gene from '../shared/actions/motion-track-gene-structure.json';
 
 class Element{
   children:Element[]=[];parent:Element|null=null;id='';className='';private textValue='';value='';disabled=false;hidden=false;open=false;
@@ -48,8 +48,8 @@ test('actual complete library caller reads one selected content, filters by know
     getMotionLibrary:async()=>({directory:'synthetic-source-only',packs:[{id:'gene',installedMotionIds:['first','second'],complete:true,bundled:true}]}),onMotionDownload:()=>()=>{},
     invalidateMotionWeightSelection:async()=>{},readMotionWeights:async()=>{throw Error('No annotation read requested');}};
   globals(t,api);const exports={},context={exports,document:(globalThis as any).document,window:(globalThis as any).window,Option:OptionElement,
-    require:(name:string)=>{if(name==='./ui-language')return uiCopy;if(name.endsWith('.css'))return{};if(name.endsWith('motion-catalog.json'))return c;if(name==='./MotionWeights')return{MotionWeightControls};if(name==='./MotionTrackCoverage')return{MotionTrackCoverageControls};if(name==='./motion-filters')return filters;if(name.endsWith('motion-layers'))return layers;throw Error('Unexpected import '+name);}};
-  const source=fs.readFileSync(new URL('../src/ui/MotionLibrary.ts',import.meta.url),'utf8');vm.runInNewContext(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText,Object.assign(context, { uiText, uiHtml, uiMarkup, uiTemplate }));
+    require:(name:string)=>{if(name==='../foundation/ui-language')return uiCopy;if(name.endsWith('.css'))return{};if(name.endsWith('motion-catalog.json'))return c;if(name==='./MotionWeights')return{MotionWeightControls};if(name==='./MotionTrackCoverage')return{MotionTrackCoverageControls};if(name==='./motion-filters')return filters;if(name.endsWith('motion-layers'))return layers;throw Error('Unexpected import '+name);}};
+  const source=fs.readFileSync(new URL('../src/actions/MotionLibrary.ts',import.meta.url),'utf8');vm.runInNewContext(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText,Object.assign(context, { uiText, uiHtml, uiMarkup, uiTemplate }));
   const root=new Element('div');ui=new(exports as any).MotionLibraryControls(root,{getModel:()=>({path:'synthetic.pmx',url:'synthetic-model',name:'synthetic'}),onEnabled:async()=>{enabled++;},onPreview:async()=>{previewed++;return true;},onStopPreview:async()=>{},onError:(message:string)=>assert.fail(message)});await ui.init();
   assert.equal(requests.length,0,'No background whole-library coverage scan');click(root,'读取当前动作轨道');await flush();assert.equal(requests.length,1);
   assert.ok(all(root).some(n=>n.textContent.includes('非默认静态')));assert.ok(all(root).some(n=>n.textContent.includes('右臂')));
@@ -138,8 +138,8 @@ test('actual library hard exclusion intersects include filters, distinguishes bo
     getMotionLibrary:async()=>({directory:'synthetic-only',packs:[{id:'gene',installedMotionIds:['first','second'],complete:true,bundled:true}]}),onMotionDownload:()=>()=>{},
     invalidateMotionWeightSelection:async()=>{},readMotionWeights:async()=>{throw Error('No weight read requested');}};
   globals(t,api);const exports={},context={exports,document:(globalThis as any).document,window:(globalThis as any).window,Option:OptionElement,
-    require:(name:string)=>{if(name==='./ui-language')return uiCopy;if(name.endsWith('.css'))return{};if(name.endsWith('motion-catalog.json'))return c;if(name==='./MotionWeights')return{MotionWeightControls};if(name==='./MotionTrackCoverage')return{MotionTrackCoverageControls};if(name==='./motion-filters')return filters;if(name.endsWith('motion-layers'))return layers;throw Error('Unexpected import '+name);}};
-  const source=fs.readFileSync(new URL('../src/ui/MotionLibrary.ts',import.meta.url),'utf8');vm.runInNewContext(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText,Object.assign(context, { uiText, uiHtml, uiMarkup, uiTemplate }));
+    require:(name:string)=>{if(name==='../foundation/ui-language')return uiCopy;if(name.endsWith('.css'))return{};if(name.endsWith('motion-catalog.json'))return c;if(name==='./MotionWeights')return{MotionWeightControls};if(name==='./MotionTrackCoverage')return{MotionTrackCoverageControls};if(name==='./motion-filters')return filters;if(name.endsWith('motion-layers'))return layers;throw Error('Unexpected import '+name);}};
+  const source=fs.readFileSync(new URL('../src/actions/MotionLibrary.ts',import.meta.url),'utf8');vm.runInNewContext(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText,Object.assign(context, { uiText, uiHtml, uiMarkup, uiTemplate }));
   const root=new Element('div');ui=new(exports as any).MotionLibraryControls(root,{getModel:()=>({path:'synthetic',url:'synthetic',name:'synthetic'}),onEnabled:async()=>{enabled++;},onPreview:async()=>{previewed++;return true;},onStopPreview:async()=>{},onError:(message:string)=>assert.fail(message)});await ui.init();
   const select=find(root,n=>n.id==='motion-select-gene'),include=find(root,n=>n.attributes['aria-label']==='按已知轨道目标或已核模型部位筛选'),exclude=find(root,n=>n.attributes['aria-label']==='排除已读源目标或已核部位');
   const values=()=>all(select).filter(n=>n.tagName==='option').map(n=>n.value);

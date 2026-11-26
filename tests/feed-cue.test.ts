@@ -9,12 +9,12 @@ import assert from 'node:assert/strict';
 import test, { type TestContext } from 'node:test';
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { DEFAULT_MOOD_PARAMETERS, type MoodLabel, type MoodTendency } from '../shared/mood';
-import { MOOD_LABELS } from '../shared/mood-runtime';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { DEFAULT_TTS_CONFIG, type TtsConfig, type TtsStreamEvent } from '../shared/tts';
+import { DEFAULT_MOOD_PARAMETERS, type MoodLabel, type MoodTendency } from '../shared/foundation/mood';
+import { MOOD_LABELS } from '../shared/mood/mood-runtime';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { DEFAULT_TTS_CONFIG, type TtsConfig, type TtsStreamEvent } from '../shared/voice/tts';
 import { CUE_TEXT, FEED_CUE_INSTRUCTION, FEED_CUE_TEXT, FEED_EAT_SOUND_IDS, FEED_OPEN_SOUND_IDS, FEED_SOUND_IDS, FEED_SOUND_TEXT, cueInstruction, isCueKind,
-  type CueKind } from '../shared/feed-cue';
+  type CueKind } from '../shared/initiative/feed-cue';
 import { FEED_CUE_KNOBS, type FeedCueKnobs } from '../shared/behaviors/feed-cue/knobs';
 import { drawFeedEat, drawFeedOpen, FEED_LINE_FOLLOWS_WORDS, feedCueNow, feedCuePlanSafe, FeedCueDirector, feedSatiety, feedSlowness,
   type FeedEatChoice, type FeedOpenChoice } from '../shared/behaviors/feed-cue/choose';
@@ -23,11 +23,11 @@ import { FeedEatPerformer, readFeedCueView } from '../shared/behaviors/feed-cue/
 import type { FeedCueHost, FeedCueNow, FeedCueView } from '../shared/behaviors/feed-cue/interface';
 import { freshnessLeft, tiredFreshness, tireFactor } from '../shared/behaviors/touch-feed-effect/choose';
 import { TOUCH_FEED_EFFECT_KNOBS } from '../shared/behaviors/touch-feed-effect/knobs';
-import { FeedCueSynth } from '../electron/feed-cue';
-import { CHEW_OPEN, EMPTY_CONTACT, FEED_OPEN, MoodFeedback, type MoodContact, type StageMoodState } from '../src/stage/mood-feedback';
-import { ChosenFeedCues, FEED_CUE_PLAN_WAIT_MS, type ChosenFeedCuePlayer } from '../src/ui/feed-cue-choice';
-import { FEED_CUE_DEADLINE_MS, FEED_CUE_WAIT_MS, FEED_RESUME_DELAY_MS, FeedSpeechPause } from '../src/ui/feed-speech-pause';
-import { FeedCuePlayer } from '../src/ui/feed-cue-player';
+import { FeedCueSynth } from '../electron/senses/feed-cue';
+import { CHEW_OPEN, EMPTY_CONTACT, FEED_OPEN, MoodFeedback, type MoodContact, type StageMoodState } from '../src/mood/mood-feedback';
+import { ChosenFeedCues, FEED_CUE_PLAN_WAIT_MS, type ChosenFeedCuePlayer } from '../src/initiative/feed-cue-choice';
+import { FEED_CUE_DEADLINE_MS, FEED_CUE_WAIT_MS, FEED_RESUME_DELAY_MS, FeedSpeechPause } from '../src/initiative/feed-speech-pause';
+import { FeedCuePlayer } from '../src/initiative/feed-cue-player';
 import { fileURLToPath } from 'node:url';
 import { seeded } from './helpers/seeded';
 import { pausableEngine } from './helpers/feed-pause-audio';

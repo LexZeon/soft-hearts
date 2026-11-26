@@ -4,10 +4,10 @@ import { mkdir, mkdtemp, readFile, rm, rmdir, symlink, writeFile } from "node:fs
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test, { type TestContext } from "node:test";
-import { AssetRegistry } from "../electron/assets";
-import { BundledAssets, type BundledAssetManifest } from "../electron/bundled-assets";
-import { MotionLibrary } from "../electron/motion-library";
-import type { MotionCatalog, MotionDownloadFile } from "../shared/motion-library";
+import { AssetRegistry } from "../electron/foundation/assets";
+import { BundledAssets, type BundledAssetManifest } from "../electron/actions/bundled-assets";
+import { MotionLibrary } from "../electron/actions/motion-library";
+import type { MotionCatalog, MotionDownloadFile } from "../shared/actions/motion-library";
 
 async function fixture(t: TestContext) {
   const temporary = await mkdtemp(path.join(tmpdir(), "soft-hearts-bundled-"));

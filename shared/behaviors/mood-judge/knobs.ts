@@ -12,7 +12,7 @@
  * 同一批最多生效一次，不重试；修正是在现在的数上加减，不是改回某个旧值。
  * 这些都只是试用值，没在真机上看过；haiku 的判断合不合理也还没用真的 haiku 试过。
  */
-import type { MoodChannel } from '../../mood';
+import type { MoodChannel } from '../../foundation/mood';
 
 export interface MoodJudgeKnobs {
   readonly gatherMs: number;

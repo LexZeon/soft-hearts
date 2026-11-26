@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { SettingsStore } from '../electron/settings';
-import { AssetRegistry } from '../electron/assets';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
+import { SettingsStore } from '../electron/settings/settings';
+import { AssetRegistry } from '../electron/foundation/assets';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
 
 // 穿透模式默认开启 (only the default; the user's own choice is kept across launches). Her body and the visible
-// controls stay clickable in click-through (src/ui/pointer-passthrough.ts); the tray and Ctrl+Alt+P bring the window back.
+// controls stay clickable in click-through (src/stage/pointer-passthrough.ts); the tray and Ctrl+Alt+P bring the window back.
 test('click-through: on in a fresh profile; a saved choice (off or on) is kept at the next launch', async () => {
   assert.equal(DEFAULT_SETTINGS.pet.clickThrough, true);
   const secret = { isEncryptionAvailable: () => false, encryptString: () => Buffer.alloc(0), decryptString: () => '' };

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { latchSignal } from '../src/latched-signal';
+import { latchSignal } from '../src/stage/latched-signal';
 
 // Mirrors the preload subscription: an IPC event reaches only the listeners registered at that moment.
 function hostChannel() {

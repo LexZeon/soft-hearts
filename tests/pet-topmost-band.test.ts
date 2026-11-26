@@ -1,12 +1,16 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { PetTopmostGuard, applyPetTopmost, petTopmostLevel, type TopmostLevel, type TopmostWindow } from '../electron/pet-topmost';
-import { applyPetWindowSettings, type PetSettingsWindow } from '../electron/pet-window-settings';
+import { PetTopmostGuard, applyPetTopmost, petTopmostLevel, raisePet, type TopmostLevel, type TopmostWindow } from '../electron/stage/pet-topmost';
+import { applyPetWindowSettings, type PetSettingsWindow } from '../electron/stage/pet-window-settings';
 
 /**
- * The always-on-top band as measured on Windows (2026-11-08, Electron 45, GetWindow z-order): 'floating' (Electron's default)
- * inserts the window directly behind the taskbar; 'pop-up-menu' puts it at the top of the band; moveTop puts it at the top.
- * Nothing here activates a window; `activations` counts any call that would.
+ * The always-on-top band as measured on Windows (2026-11-08 and 2026-11-10, Electron 45, GetWindow z-order;
+ * scripts/dev/topmost-probe): 'floating' (Electron's default) inserts the window directly behind the taskbar; 'pop-up-menu'
+ * puts it at the top of the band, also when it already has the style; moveTop puts it at the top. Ordinary windows are never in
+ * the band, so anything in the band is above them. Nothing here activates a window; `activations` counts any call that would.
+ *
+ * The rule (I-062): with the switch on she stays above ordinary windows and never fights a topmost window shown after her; she
+ * goes to the top of the band only at her own moments.
  */
 class Band {
   order: string[] = ['taskbar'];
@@ -34,6 +38,7 @@ class BandWin implements PetSettingsWindow {
   hide() { this.calls.push('hide'); this.visible = false; }
 }
 const pointer = () => { const calls: boolean[] = []; return { calls, sync: (v: boolean) => { calls.push(v); } }; };
+const on = { visible: true, alwaysOnTop: true, clickThrough: true };
 
 test('Windows uses the top-of-band level; other platforms keep floating', () => {
   assert.equal(petTopmostLevel('win32'), 'pop-up-menu');
@@ -43,32 +48,31 @@ test('Windows uses the top-of-band level; other platforms keep floating', () => 
 
 const windowsOnly = { skip: process.platform !== 'win32' };
 
-test('startup: a pet created topmost but below another program\'s topmost window ends up above it, without activation', windowsOnly, () => {
+test('startup: the pet (created without the style) goes on top of the band when shown, without activation', windowsOnly, () => {
   const band = new Band();
-  const pet = new BandWin(band, 'pet'); pet.setAlwaysOnTop(true, 'floating'); // new BrowserWindow({ alwaysOnTop: true })
-  const other = new BandWin(band, 'other', true); other.visible = true;      // another app's always-on-top window, above the taskbar
-  assert.ok(band.above('other', 'pet'));
+  const other = new BandWin(band, 'other', true); other.visible = true; // already there before she starts
+  const pet = new BandWin(band, 'pet');
   const ptr = pointer();
-  applyPetWindowSettings(pet, { visible: true, alwaysOnTop: true, clickThrough: true }, ptr);
-  assert.ok(band.above('pet', 'other'), 'she is on top after startup');
+  assert.equal(applyPetWindowSettings(pet, on, ptr), 'applied');
+  assert.ok(band.above('pet', 'other'));
   assert.ok(band.above('pet', 'taskbar'));
   assert.equal(band.activations, 0);
   assert.deepEqual(ptr.calls, [true]);
 });
 
-test('measured before: re-applying the floating level leaves her under that window (what startup and the guard did)', () => {
+test('measured before: re-applying the floating level leaves her under a later window (what startup and the guard did before 11-08)', () => {
   const band = new Band();
   const pet = new BandWin(band, 'pet'); pet.setAlwaysOnTop(true, 'floating'); pet.visible = true;
   new BandWin(band, 'other', true);
-  applyPetTopmost(pet, true, 'floating');
+  pet.setAlwaysOnTop(true, 'floating');
   assert.ok(band.above('other', 'pet'));
 });
 
 test('startup applies exactly what a toggle off and on applies', windowsOnly, () => {
-  const settings = { visible: true, alwaysOnTop: true, clickThrough: false };
   const startup = new Band(), toggled = new Band();
-  const a = new BandWin(startup, 'pet'); a.setAlwaysOnTop(true, 'floating'); new BandWin(startup, 'other', true);
-  const b = new BandWin(toggled, 'pet'); b.setAlwaysOnTop(true, 'floating'); new BandWin(toggled, 'other', true);
+  const a = new BandWin(startup, 'pet'); new BandWin(startup, 'other', true);
+  const b = new BandWin(toggled, 'pet'); new BandWin(toggled, 'other', true);
+  const settings = { ...on, clickThrough: false };
   const pa = pointer(), pb = pointer();
   applyPetWindowSettings(a, settings, pa);
   applyPetWindowSettings(b, settings, pb);
@@ -79,19 +83,19 @@ test('startup applies exactly what a toggle off and on applies', windowsOnly, ()
   assert.equal(pa.calls.at(-1), pb.calls.at(-1));
 });
 
-test('order: shown first (inactive), then raised, then the mouse flag on the shown window', () => {
+test('order: shown first (inactive), then the style, then the mouse flag on the shown window', () => {
   const band = new Band();
   const pet = new BandWin(band, 'pet');
   const order: string[] = [];
   const ptr = { sync: (v: boolean) => { order.push(`pointer:${v}:${pet.isVisible() ? 'shown' : 'hidden'}`); } };
-  applyPetWindowSettings(pet, { visible: true, alwaysOnTop: true, clickThrough: true }, ptr);
+  applyPetWindowSettings(pet, on, ptr);
   assert.deepEqual(pet.calls.slice(0, 2), ['showInactive', `top:true:${petTopmostLevel()}`]);
   assert.deepEqual(order, ['pointer:true:shown']);
 });
 
 test('saved hidden and not on top: hidden, out of the band, mouse flag still applied', () => {
   const band = new Band();
-  const pet = new BandWin(band, 'pet'); pet.setAlwaysOnTop(true, 'floating'); pet.visible = true;
+  const pet = new BandWin(band, 'pet'); pet.setAlwaysOnTop(true, 'pop-up-menu'); pet.visible = true;
   const ptr = pointer();
   applyPetWindowSettings(pet, { visible: false, alwaysOnTop: false, clickThrough: false }, ptr);
   assert.equal(pet.isVisible(), false);
@@ -99,32 +103,84 @@ test('saved hidden and not on top: hidden, out of the band, mouse flag still app
   assert.deepEqual(ptr.calls, [false]);
 });
 
-test('guard: a topmost pet covered by a window that became topmost later is raised within one check', windowsOnly, () => {
+test('a settings change while she is on top leaves a topmost window shown after her above her', windowsOnly, () => {
+  const band = new Band();
+  const pet = new BandWin(band, 'pet');
+  applyPetWindowSettings(pet, on, pointer());
+  const later = new BandWin(band, 'later', true);
+  pet.calls = [];
+  for (const clickThrough of [false, true, false]) applyPetWindowSettings(pet, { ...on, clickThrough }, pointer());
+  assert.ok(band.above('later', 'pet'));
+  assert.deepEqual(pet.calls, [], 'no z-order call at all');
+});
+
+/** Ten seconds of 2 s checks (fake clock). */
+function tenSeconds(guard: PetTopmostGuard, clock: { t: number }): string[] {
+  const seen: string[] = [];
+  for (let s = 0; s <= 10; s += 2) { clock.t += 2000; seen.push(guard.check()); }
+  return seen;
+}
+
+test('guard: a topmost window shown after her stays above her (10 s of checks); she stays above ordinary windows', windowsOnly, () => {
+  const band = new Band(); const clock = { t: 0 };
+  const pet = new BandWin(band, 'pet'); pet.visible = true;
+  applyPetTopmost(pet, true);
+  const later = new BandWin(band, 'later', true);
+  const guard = new PetTopmostGuard({ window: () => pet, wanted: () => true, now: () => clock.t });
+  assert.deepEqual(tenSeconds(guard, clock), ['ok', 'ok', 'ok', 'ok', 'ok', 'ok']);
+  assert.ok(band.above('later', 'pet'));
+  assert.ok(pet.top, 'still in the band: above every ordinary window');
+  assert.equal(band.activations, 0);
+});
+
+test('guard: a full-screen topmost overlay (the screenshot overlay) shown after her is never covered', windowsOnly, () => {
+  const band = new Band(); const clock = { t: 0 };
+  const pet = new BandWin(band, 'pet'); pet.visible = true;
+  applyPetWindowSettings(pet, on, pointer());
+  const guard = new PetTopmostGuard({ window: () => pet, wanted: () => true, now: () => clock.t });
+  const overlay = new BandWin(band, 'screenshot-overlay', true);
+  tenSeconds(guard, clock);
+  assert.ok(band.above('screenshot-overlay', 'pet'));
+  overlay.setAlwaysOnTop(false); // the overlay closes
+  assert.ok(band.above('pet', 'taskbar'), 'she is where she was');
+});
+
+test('the old guard (raise every check) covered that window within one check: the bug', windowsOnly, () => {
+  const band = new Band();
+  const pet = new BandWin(band, 'pet'); pet.visible = true;
+  applyPetTopmost(pet, true);
+  new BandWin(band, 'later', true);
+  raisePet(pet); // what every 2 s check did when she still had the style
+  assert.ok(band.above('pet', 'later'));
+});
+
+test('her own moments lift her to the top of the band, without activation; not while hidden or with the switch off', windowsOnly, () => {
   const band = new Band();
   const pet = new BandWin(band, 'pet'); pet.visible = true;
   applyPetTopmost(pet, true);
   const later = new BandWin(band, 'later', true);
-  assert.ok(band.above('later', 'pet'));
   let wanted = true;
   const guard = new PetTopmostGuard({ window: () => pet, wanted: () => wanted });
-  assert.equal(guard.check(), 'raised');
+  assert.equal(guard.ownMoment(), 'raised');
   assert.ok(band.above('pet', 'later'));
   assert.equal(band.activations, 0);
   later.setAlwaysOnTop(true, 'pop-up-menu');
   wanted = false;
-  assert.equal(guard.check(), 'skipped', 'switch off: she is left where she is');
+  assert.equal(guard.ownMoment(), 'skipped');
   assert.ok(band.above('later', 'pet'));
   wanted = true; pet.visible = false;
-  assert.equal(guard.check(), 'skipped', 'hidden: not touched');
+  assert.equal(guard.ownMoment(), 'skipped');
   assert.ok(band.above('later', 'pet'));
 });
 
-test('guard with the old floating level does not lift her (the bug)', () => {
+test('a lost style is put back by the next check (the top of the band, like turning the switch on)', windowsOnly, () => {
   const band = new Band();
-  const pet = new BandWin(band, 'pet'); pet.visible = true; pet.setAlwaysOnTop(true, 'floating');
-  new BandWin(band, 'later', true);
-  new PetTopmostGuard({ window: () => pet, wanted: () => true }, 'floating').check();
-  assert.ok(band.above('later', 'pet'));
+  const pet = new BandWin(band, 'pet'); pet.visible = true;
+  applyPetTopmost(pet, true);
+  pet.setAlwaysOnTop(false); // lost from outside
+  const guard = new PetTopmostGuard({ window: () => pet, wanted: () => true });
+  assert.equal(guard.check(), 'applied');
+  assert.ok(band.above('pet', 'taskbar'));
 });
 
 test('TopmostWindow fakes stay structurally compatible', () => {

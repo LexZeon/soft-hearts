@@ -10,11 +10,12 @@
  *  - "歇一下"：专心够久（专注度到过 pause.needsPeak）以后，你有 pause.fromIdleSec～pause.toIdleSec 秒没动；或者你忙完直接转到她的窗口。
  *    每忙一段只算一次；你一动键盘鼠标，或者过了 pause.endsAfterMinutes 分钟就结束。
  *  - 她怎么变：quiet 是无聊涨得多慢（只许慢、不许快）；herLife.longer 是她每件事做得久多少；
- *    "开口选择"偏向"这次不说"的倍数在 opening-choice 的旋钮里（moments.busy）；她自己的生活里每件事的"你在忙"倍数在 shared/her-life.ts 的表里。
- * 绝不做的事不是旋钮：不评论屏幕、不说"你工作两小时了"、不催休息、不把没操作当离开、不问"你还在吗"、除当前状态外什么都不存。
+ *    "开口选择"偏向"这次不说"的倍数在 opening-choice 的旋钮里（moments.busy）；她自己的生活里每件事的"你在忙"倍数在 shared/stage/her-life.ts 的表里。
+ * 绝不做的事不是旋钮：不评论屏幕、不说"你工作两小时了"、不催休息、不问"你还在吗"、除当前状态外什么都不存。
+ * （I-066，5 分钟没动算"不在"只用在"能不能打扰"上，她不开口、话留着；"在忙"的状态本身照旧不把没操作当离开。）
  * 这些都只是试用值，没在真机上看过。
  */
-import type { MoodTendency } from '../../mood';
+import type { MoodTendency } from '../../foundation/mood';
 
 export interface UserActivityKnobs {
   readonly operatingBelowSec: number;
@@ -28,6 +29,17 @@ export interface UserActivityKnobs {
   readonly pause: { readonly needsPeak: number; readonly fromIdleSec: number; readonly toIdleSec: number; readonly endsAfterMinutes: number };
   readonly quiet: { readonly base: number; readonly min: number; readonly max: number; readonly personality: Readonly<Partial<Record<MoodTendency, number>>> };
   readonly herLife: { readonly longer: number };
+  /** I-066 你现在方便吗 (shared/behaviors/user-activity/presence.ts). */
+  readonly presence: {
+    readonly awayAfterMinutes: number;
+    readonly backMinutes: number;
+    readonly offInteractionMinutes: number;
+    readonly unsureAfterSec: number;
+    readonly look: { readonly cacheMinutes: number; readonly perHour: number; readonly timeoutSec: number };
+    readonly heldMinutes: number;
+    readonly greet: { readonly afterAwayMinutes: number; readonly base: number; readonly min: number; readonly max: number;
+      readonly personality: Readonly<Partial<Record<MoodTendency, number>>> };
+  };
 }
 
 export const USER_ACTIVITY_KNOBS: UserActivityKnobs = Object.freeze<UserActivityKnobs>({
@@ -69,9 +81,41 @@ export const USER_ACTIVITY_KNOBS: UserActivityKnobs = Object.freeze<UserActivity
 
   // 用户可能怎么说：我专心的时候她还是老来找我／我专心的时候她完全不理我了
   // 怎么调：base＝专注度满了以后，她的无聊涨得只有平时的多少倍（1＝不放慢，越小越安静）；personality＝按角色卡性格加减（黏人加、慢热和随和减）；min、max＝夹在这个范围里（max 小于 1，所以永远是放慢，不会比平时更早开口）
-  quiet: { base: 0.45, min: 0.15, max: 0.85, personality: { close: 0.2, playful: 0.05, comfortable: -0.1, cautious: -0.15 } },
+  // I-066：0.45 → 0.8，在忙只是稍微收着一点
+  quiet: { base: 0.8, min: 0.15, max: 0.85, personality: { close: 0.2, playful: 0.05, comfortable: -0.1, cautious: -0.15 } },
 
   // 用户可能怎么说：我专心的时候她老换来换去／她发呆发得太短
   // 怎么调：你在忙时她每件自己的事比平时久多少（0.8＝久八成；专注度没满时按比例）
   herLife: { longer: 0.8 },
+
+  // I-066 "你现在方便吗"：所有会打扰你的功能共用的一个判断（presence.ts）。
+  presence: {
+    // 用户可能怎么说：我才离开一会儿她就当我不在了／我走开很久了她还在对着空屋子说话
+    // 怎么调：多少分钟没动键盘鼠标（也没锁屏）算"不在"；锁屏、电脑睡眠马上算不在
+    awayAfterMinutes: 5,
+
+    // 用户可能怎么说：我一回来她怎么没反应／我回来好久了她还当我刚回来
+    // 怎么调：你从"不在"回来以后，多少分钟内算"刚回来"（最好的开口时机）
+    backMinutes: 2,
+
+    // 用户可能怎么说：我关了「知道你是不是在忙」以后她就不主动找我了
+    // 怎么调：开关关着时，你和她互动（聊天、摸她）以后多少分钟内当作你在
+    offInteractionMinutes: 10,
+
+    // 用户可能怎么说：开着屏幕共享，我才停手一会儿她就去看屏幕／我开会很久了她才发现
+    // 怎么调：多少秒没动键盘鼠标就算"拿不准"（开着屏幕共享时，她想开口前会让 haiku 看一眼）
+    unsureAfterSec: 120,
+
+    // 用户可能怎么说：她看屏幕判断我在干什么看得太勤了／判断得太久不更新
+    // 怎么调：cacheMinutes＝看过一眼的结论照用几分钟；perHour＝一小时最多看几眼（每眼一次带图的 haiku 小调用）；timeoutSec＝看一眼最多等多久
+    look: { cacheMinutes: 3, perHour: 6, timeoutSec: 20 },
+
+    // 用户可能怎么说：我回来以后她说的是好久以前想说的话，很奇怪／我一回来她把攒的话都倒出来
+    // 怎么调：你不在时她想说的话最多留多少分钟（只留 1 件，过了就算了）
+    heldMinutes: 120,
+
+    // 用户可能怎么说：我离开很久回来她都不招呼我／我每次回来她都说"你回来啦"
+    // 怎么调：afterAwayMinutes＝离开多久回来她才可能招呼你（她没有留着的话时）；base＝招呼的机会（0～1）；personality＝按角色卡性格加减（黏人加、拘谨减）；min、max＝夹在这个范围
+    greet: { afterAwayMinutes: 30, base: 0.35, min: 0.05, max: 0.8, personality: { close: 0.3, playful: 0.1, comfortable: -0.05, cautious: -0.15 } },
+  },
 });

@@ -6,7 +6,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { findClaude } from '../../electron/claude';
+import { findClaude } from '../../electron/brain/claude';
 import type { TurnRecord } from './prompt-eval-analysis';
 import { replay } from './prompt-eval-analysis';
 import { runEval } from './prompt-eval-runner';

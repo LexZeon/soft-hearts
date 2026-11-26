@@ -3,12 +3,12 @@
 // RPS (docs/claude/2026-11-03-rps-five-fixes.md): the game's accept line as shipped until 2026-11-03 was a list of dos and
 // don'ts ("简短地答应 / 不用讲规则 / 不要替你们出拳 / 不要宣布结果") that came back as her visible notes when she answered
 // without thinking first, and "由你来喊" made her call the count herself mid-session (draft-leak record). The app now
-// says what is going on instead (shared/rps-personality.ts rpsChatContext). Arm A of the A/B puts the old line back into
+// says what is going on instead (shared/initiative/rps-personality.ts rpsChatContext). Arm A of the A/B puts the old line back into
 // the stdin prompt; arm B is the app as it is; nothing else in the prompt changes.
 //
 // F2 (docs/claude/2026-11-03-draft-leak-fix.md): a candidate for F2's chat line, not shipped (its first A/B with the
 // earlier RPS candidate was +117.5 ms). Kept so it can be measured on its own.
-import { rpsChatContext } from '../../shared/rps-personality';
+import { rpsChatContext } from '../../shared/initiative/rps-personality';
 
 /** The RPS accept line as the app sent it until 2026-11-03 (b61091e). */
 export const RPS_ACCEPT_OLD = '【猜拳】用户想和你玩猜拳（三局两胜）。你答应了：这一轮用你的口吻简短地答应，一两句就好，不用讲规则；你说完后应用会在你身边浮出"石头、剪刀、布"三个按钮，由你来喊"石头剪刀布"。这一轮不要替你们出拳，也不要宣布结果。';
@@ -31,7 +31,7 @@ export const DRAFT_LEAK_CANDIDATE_WORDING = {
   userStateLine: '你先前觉得用户{label}（{detail}）。这份感觉只让你说话更体贴，不用提起，不说教，也不劝用户去找别人；用户现在怎样，以这轮的话为准。',
 } as const;
 
-/** The app's F2 chat line (shared/user-state.ts userStateChatLine), capturing the label, how long ago and the reason. */
+/** The app's F2 chat line (shared/senses/user-state.ts userStateChatLine), capturing the label, how long ago and the reason. */
 const APP_USER_STATE = /你对用户此刻状态的判断：(累|烦|低落|开心|兴奋)（(刚刚|约\d+(?:分钟|小时)前)，把握[\d.]+(?:，([^）]*))?）。[^\n]*/u;
 
 /** F2 candidate: the stdin prompt with the app's F2 line swapped for the candidate. Throws when the app's line is missing. */

@@ -1,0 +1,31 @@
+/* I-086 她也照顾你: the soft target on what she holds out, and her picture card (src/initiative/GiveOverlay.ts). */
+.give-target { position: absolute; z-index: 25; padding: 0; border: 1.5px dashed #ffe7c8aa; border-radius: 50%; background: radial-gradient(circle, #fff3e214 0%, #fff3e208 60%, transparent 72%);
+  cursor: pointer; animation: give-breathe 2.4s ease-in-out infinite; }
+.give-target[hidden] { display: none; }
+.give-target:hover { border-color: #ffe7c8; background: radial-gradient(circle, #fff3e238 0%, #fff3e214 60%, transparent 72%); }
+@keyframes give-breathe { 0%, 100% { transform: scale(1); opacity: .75; } 50% { transform: scale(1.06); opacity: 1; } }
+.give-card { position: absolute; z-index: 27; right: 10px; bottom: 12px; width: 168px; padding: 8px 8px 6px; border-radius: 6px; background: #fffaf3; color: #4a3528;
+  box-shadow: 0 6px 18px #0006; transform: rotate(-1.5deg); font-size: 12px; line-height: 1.4; pointer-events: auto; }
+.give-card[hidden] { display: none; }
+.give-card-image { display: block; width: 100%; aspect-ratio: 1; border-radius: 3px; object-fit: cover; }
+.give-card-line { margin: 6px 2px 4px; word-break: break-word; }
+.give-card-actions { display: flex; justify-content: space-between; align-items: center; }
+.give-card-save { padding: 3px 10px; border: 1px solid #c9a98c; border-radius: 12px; background: #f6e6d4; color: #4a3528; font-size: 12px; cursor: pointer; }
+.give-card-close { width: 22px; height: 22px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #8a6a55; font-size: 15px; cursor: pointer; }
+/* I-086 我们的小东西 (src/memory/OurThingsPanel.ts), the control window's memory page. */
+.our-things-list { display: flex; flex-direction: column; gap: 6px; }
+.our-things-day { margin: 10px 0 2px; font-size: 12px; opacity: .7; }
+.our-thing { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 8px; background: #ffffff0a; }
+.our-thing-picture { width: 52px; height: 52px; border-radius: 4px; object-fit: cover; flex: none; }
+.our-thing-text { flex: 1; min-width: 0; font-size: 13px; line-height: 1.45; }
+.our-thing-line { opacity: .8; word-break: break-word; }
+.our-thing-actions { display: flex; gap: 6px; flex: none; }
+/* I-088 你生活里的人和事 (src/memory/PeopleThingsPanel.ts), the control window's memory page. */
+.people-things-list, .people-things-pending { display: flex; flex-direction: column; gap: 6px; }
+.people-things-heading { margin: 10px 0 2px; font-size: 12px; opacity: .7; }
+.people-things-row, .people-things-suggestion, .people-things-merge-bar { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 8px; background: #ffffff0a; }
+.people-things-text, .people-things-question { flex: 1; min-width: 0; font-size: 13px; line-height: 1.45; word-break: break-word; }
+.people-things-kind, .people-things-meta { opacity: .7; }
+.people-things-alias { margin-right: 2px; }
+.people-things-aliases button { margin-right: 8px; padding: 0 6px; font-size: 11px; }
+.people-things-actions { display: flex; gap: 6px; flex: none; align-items: center; }

@@ -3,7 +3,7 @@
  * 方案和用户决定见 docs/claude/2026-11-04-opening-choice-plan.md，做了什么见 docs/claude/2026-11-04-opening-choice.md。
  *
  * 谁调用它、怎么调用：
- *  1. 主机（electron/inner-loop/opening-host.ts 的 OpeningHost，electron/main.ts 心情回调里那一处）是唯一调用"挑"的一方
+ *  1. 主机（electron/brain/opening-host.ts 的 OpeningHost，electron/main.ts 心情回调里那一处）是唯一调用"挑"的一方
  *     （OpeningChoiceHost，真实现 choose.ts 的 OpeningChoiceDirector）。一次说话时机来了：
  *       - 睡着时谁都不说（不挑）；她自己提出的纪念邀请先问（不挑）；代办提议 R20（默认关）照旧；
  *       - 深夜"醒着时提醒一次休息"走内心循环原来那条路（不挑）；
@@ -12,12 +12,12 @@
  *       - 备选：挑中的那件做不成，在剩下的里再挑一次；
  *         还不行就这次不说，次数退回（间隔照算）。
  *     小动作时机（look / motion）不经过这里，照旧交给内心循环。
- *  2. 开发者面板（src/ui/inner-loop-panel.ts）只读 InnerLoopView.opening：最近几次挑了什么、为什么。
+ *  2. 开发者面板（src/initiative/inner-loop-panel.ts）只读 InnerLoopView.opening：最近几次挑了什么、为什么。
  *     只在开发者模式发出，只在内存，只有类别和理由的字，不进体验记录和存档。
  *
  * 假实现在 fake.ts，守约测试在 tests/opening-choice.test.ts：换一种实现，先过那组测试。
  */
-import type { MoodLabel, MoodTendency } from '../../mood';
+import type { MoodLabel, MoodTendency } from '../../foundation/mood';
 import type { OpeningCandidateId, OpeningMoment } from './knobs';
 
 export type { OpeningCandidateId, OpeningMoment } from './knobs';
@@ -25,14 +25,20 @@ export type { OpeningCandidateId, OpeningMoment } from './knobs';
 /** "此刻"：挑的时候只看这些。都是标签和数，不含任何对话、画面或声音内容。 */
 export interface OpeningNow {
   /** 此刻真有的候选（"这次不说"一直都有，不在这里）。 */
-  readonly available: Readonly<Record<Exclude<OpeningCandidateId, 'quiet'>, boolean>>;
+  /** `keepsake` (I-050): present only while her folder is on and she has something to leave or to tell; absent = no. */
+  readonly available: Readonly<Record<'listen' | 'screen' | 'mood' | 'play', boolean> & { keepsake?: boolean; give?: boolean }>;
   readonly mood: MoodLabel;
-  /** 她这会儿真的够强的那项情绪倾向（shared/mood-tendency.ts）。 */
+  /** 她这会儿真的够强的那项情绪倾向（shared/foundation/mood-tendency.ts）。 */
   readonly tendency: MoodTendency | 'wistful' | null;
   /** 角色卡性格（MoodParameters.weights，1 = 一般）。 */
   readonly personality: Readonly<Record<MoodTendency, number>>;
   /** 此刻的事：正好有一件小需要、闲了很久、深夜、有点困、上次想找你说话以后你还没来过。 */
   readonly moments: readonly OpeningMoment[];
+  /**
+   * I-086: extra reasons for one candidate that are read from the hormones and mood values rather than the mood label (for 'give':
+   * shared/behaviors/give/choose.ts giveLean: O and M up, N and C high down). Absent: none.
+   */
+  readonly leans?: Readonly<Partial<Record<OpeningCandidateId, readonly { readonly text: string; readonly factor: number }[]>>>;
 }
 
 /** 一次挑选的结果。 */

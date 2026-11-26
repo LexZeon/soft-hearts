@@ -1,5 +1,5 @@
 /**
- * A small fake DOM for the pet window: it parses the real renderPet markup into elements, so the real PetUI and the real
+ * A small fake DOM for the companion window: it parses the real renderPet markup into elements, so the real PetUI and the real
  * panels around it (ReplyReader, ImmersiveNotice, UserProfilePanel, AudioReadingClient, ScreenSharingOptions,
  * MoodCompanion) run against the ids, classes and attributes the app really has. No layout, no CSS: what is "open" is
  * read from the same state the panels set (hidden, dialog open, aria-expanded).
@@ -193,7 +193,7 @@ class Broadcast {
   close(): void { Broadcast.ports.delete(this); this.onmessage = null; }
 }
 
-/** Installs a fresh pet window as `document` / `window` for this test and restores the real globals after it. */
+/** Installs a fresh companion window as `document` / `window` for this test and restores the real globals after it. */
 export function installPetWindow(t: TestContext, desktop: FakeWindow['desktop'] = {}) {
   const saved = ['document', 'window', 'BroadcastChannel'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)] as const);
   const view = Object.assign(new EventTarget(), { innerWidth: 400, innerHeight: 560, desktop, confirm: () => true, performance }) as FakeWindow;

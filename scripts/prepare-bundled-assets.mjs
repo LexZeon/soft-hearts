@@ -14,7 +14,7 @@ const sourceUrl = "https://github.com/mmdagent-ex/gene";
 const rawBase = `https://raw.githubusercontent.com/mmdagent-ex/gene/${revision}/`;
 const modelCache = path.join(root, ".local", "motion-validation-models", "gene", revision);
 const motionCache = path.join(root, ".local", "motion-library", "mmdagent-ex", "gene", revision);
-const catalogPath = path.join(root, "shared", "motion-catalog.json");
+const catalogPath = path.join(root, "shared/actions/motion-catalog.json");
 const catalog = JSON.parse(await readFile(catalogPath, "utf8"));
 const pack = catalog.packs.find(entry => entry.id === "gene");
 if (catalog.schemaVersion !== 1 || !pack || pack.revision !== revision || pack.motions.length !== 40)
@@ -159,7 +159,7 @@ const record = {
 };
 await save("metadata/source.json", `${JSON.stringify(record, null, 2)}\n`);
 await save("metadata/attribution.txt", `${pack.license.attribution}\n\nLicense: ${pack.license.id}\n${pack.license.url}\nSource: ${sourceUrl}\nRevision: ${revision}\n\n${modifications}\n\n${rightsNotice}\n\nKeep this attribution, the license text and upstream-readme.md with redistributions. The original README includes the author's usage guidelines. The MIT license for soft hearts source code does not replace this asset license.\n`);
-await writeFile(path.join(root, "shared", "bundled-assets.json"), `${JSON.stringify({
+await writeFile(path.join(root, "shared/actions/bundled-assets.json"), `${JSON.stringify({
   schemaVersion: 1, root: relativeRoot, defaultMotionId: "stand", model, textures,
 }, null, 2)}\n`);
 await writeFile(catalogPath, `${JSON.stringify({ schemaVersion: 1, packs: [pack] }, null, 2)}\n`);

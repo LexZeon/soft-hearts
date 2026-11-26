@@ -11,30 +11,30 @@ import test from 'node:test';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { AmbientAsrRoute, type AmbientAsrRouteDeps } from '../electron/asr/ambient-route';
-import { LocalAsrError } from '../electron/asr/host';
-import { transcribeAmbientWav } from '../electron/ambient-asr';
-import { AudioReadingHostBroker } from '../electron/audio-reading-host-broker';
-import { validateVoiceInput } from '../electron/validation';
-import { ListenKindSource } from '../electron/listen-kind-source';
-import { ListenTogetherCore } from '../electron/listen-together/core';
-import { ListenTogether } from '../electron/listen-together/host';
-import type { AmbientCommentsLike } from '../electron/listen-together/proactive';
-import { LISTEN_LIMITS, segmentText, type ListenSegment } from '../shared/listen-together';
-import { ListenKindHost, type ListenKind } from '../shared/listen-kind';
-import { listenAskContext, matchListenAsk } from '../shared/listen-ask';
-import type { NoteRequest } from '../shared/listen-note';
-import type { VoiceInputConfig } from '../shared/contracts';
-import type { StageMusicState } from '../shared/her-state';
-import { createMoodState, getMoodSnapshot, DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
-import type { MoodView } from '../shared/mood-runtime';
-import { NOTICE_ACTIONS, readingRefusalAction } from '../src/notice-policy';
-import { listenSwitchStatus } from '../src/ui/ListenTogetherSwitch';
-import { setUiLanguage, uiText } from '../src/ui/ui-language';
+import { AmbientAsrRoute, type AmbientAsrRouteDeps } from '../electron/senses/asr/ambient-route';
+import { LocalAsrError } from '../electron/senses/asr/host';
+import { transcribeAmbientWav } from '../electron/senses/ambient-asr';
+import { AudioReadingHostBroker } from '../electron/voice/audio-reading-host-broker';
+import { validateVoiceInput } from '../electron/settings/validation';
+import { ListenKindSource } from '../electron/senses/listen-kind-source';
+import { ListenTogetherCore } from '../electron/senses/listen-together/core';
+import { ListenTogether } from '../electron/senses/listen-together/host';
+import type { AmbientCommentsLike } from '../electron/senses/listen-together/proactive';
+import { LISTEN_LIMITS, segmentText, type ListenSegment } from '../shared/senses/listen-together';
+import { ListenKindHost, type ListenKind } from '../shared/senses/listen-kind';
+import { listenAskContext, matchListenAsk } from '../shared/senses/listen-ask';
+import type { NoteRequest } from '../shared/senses/listen-note';
+import type { VoiceInputConfig } from '../shared/foundation/settings';
+import type { StageMusicState } from '../shared/mood/her-state';
+import { createMoodState, getMoodSnapshot, DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
+import type { MoodView } from '../shared/mood/mood-runtime';
+import { NOTICE_ACTIONS, readingRefusalAction } from '../src/settings/notice-policy';
+import { listenSwitchStatus } from '../src/senses/ListenTogetherSwitch';
+import { setUiLanguage, uiText } from '../src/foundation/ui-language';
 import { MusicLikeness } from '../src/stage/music-likeness';
-import { encodeWav } from '../src/ui/MediaInput';
+import { encodeWav } from '../src/senses/MediaInput';
 import { musicPresence, MUSIC_AUDIBLE_RMS } from '../src/stage/music-presence';
-import { analyserSamples, RATE, rng, seconds, speechLike } from './helpers/listen-audio';
+import { analyserSamples, drumSong, mix, RATE, rng, seconds, speechLike } from './helpers/listen-audio';
 
 const MIN = 60_000;
 const T0 = 1_700_000_000_000;
@@ -83,7 +83,7 @@ test('T-207 #1: an old setting with a changed address (识别方式 = compatible
     const refused = route.blocked('pet');
     assert.equal(refused, 'not-local', 'the words part is refused: only the local recognizer may transcribe played sound');
     assert.equal(route.ready(), false, 'no listening session can start on the compatible address');
-    // She says why (the pet's notice), in both languages; the status under the switch is the rhythm-only line.
+    // She says why (the companion's notice), in both languages; the status under the switch is the rhythm-only line.
     assert.equal(readingRefusalAction(refused), 'reading-not-local');
     try {
       for (const language of ['zh-CN', 'en'] as const) {
@@ -260,10 +260,10 @@ async function listenThrough(pcm: Float32Array, clip: { words: boolean; event: '
   return { kind, peak, stored: core.snapshot().segments.flatMap(segment => segment.pieces.map(piece => piece.text)), requests };
 }
 
-test('T-207 #3: speech-like syllables over a steady hum (a beat the recognizer only ever hears as speech) is not a song; nothing of it is kept', async t => {
-  const syllables = speechLike(0.65, { seed: 17, rate: 1.5 });
-  const signal = seconds(42);
-  for (let n = 0; n < signal.length; n++) signal[n] = syllables[n % syllables.length]! * 0.6 + 0.04 * Math.sin(2 * Math.PI * 114 * n / RATE);
+test('T-207 #3: speech-like syllables over a loud beat (a beat the recognizer only ever hears as speech) is not a song; nothing of it is kept', async t => {
+  // I-072: the fast layer used to hear a 0.65 s loop of syllables over a hum as a steady beat; it now hears those syllables as speech
+  // (they rise and fall syllable by syllable). Words over a loud beat are what it still takes for a song while the recognizer hears only speech.
+  const signal = mix(drumSong(42, { bpm: 92, seed: 17 }), speechLike(42, { seed: 17, rate: 1.5 }), -2);
   const run = await listenThrough(signal, { words: true, event: 'speech' }, n => `合成通话核验标记梨子${n}号，我们下午三点再对一下进度`);
   t.diagnostic(JSON.stringify({ kind: run.kind, peak: run.peak, stored: run.stored.length, requests: run.requests.length }));
   assert.ok(run.peak > 0.9, 'fixture: the fast layer does hear a steady beat in it');
@@ -385,7 +385,13 @@ test('X-252: a note request goes out only at a segment\'s end, a long show\'s ro
     assert.equal(lines.length, 0, 'no chat-model call before the mood host gives her the cue');
     comments.observe(cue(source!)); await flush();
     assert.equal(lines.length, 1);
-    assert.match(lines[0]!, /一首讲雨夜等人的歌/); assert.ok(!/苹果|车站等你/u.test(lines[0]!), 'her line is written from the note, never the raw words');
+    assert.match(lines[0]!, /一首讲雨夜等人的歌/); {
+      // I-082 (2026-11-16, intended change): the last minute's words now go into this prompt too, labelled 刚刚, in memory only, capped,
+      // and only inside the data block; everything else of her line is still the note. Nothing older than the last minute is in it.
+      const block = lines[0]!.split('<external-audio-data>\n')[1]!.split('\n</external-audio-data>')[0]!, data = JSON.parse(block);
+      assert.ok(/苹果/u.test(data.刚刚), 'the last minute\'s words, labelled 刚刚'); assert.ok(data.刚刚.length <= 300 && !data.刚刚.includes('第0句'), 'capped, nothing older than a minute');
+      assert.ok(!/苹果|车站等你/u.test(JSON.stringify({ ...data, 刚刚: '' })) && !/苹果/u.test(lines[0]!.replace(block, '')), 'outside 刚刚 it is still written from the note');
+    }
     // A call: nothing kept, nothing sent, nothing said.
     set('talk'); await play(5 * MIN, i => `合成会议核验标记橘子第${i}项进度我们周五前对齐`);
     assert.equal(notes.length, 1); assert.equal(lines.length, 1);

@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { setUiLanguage, t, registerUiMessages } from '../shared/ui-language';
-import { VOICE_UI_MESSAGES } from '../shared/voice-ui-messages';
-import { VoiceContinuationStatus } from '../src/ui/VoiceContinuationStatus';
-import { transcribeWav, validateWav } from '../electron/asr';
-import { encodeWav } from '../src/ui/MediaInput';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
+import { setUiLanguage, t, registerUiMessages } from '../shared/foundation/ui-language';
+import { VOICE_UI_MESSAGES } from '../shared/voice/voice-ui-messages';
+import { VoiceContinuationStatus } from '../src/voice/VoiceContinuationStatus';
+import { transcribeWav, validateWav } from '../electron/senses/asr';
+import { encodeWav } from '../src/senses/MediaInput';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
 registerUiMessages(VOICE_UI_MESSAGES);
 
 test('voice dictionaries cover the same fixed keys/placeholders and leave private placeholder text untouched', () => {

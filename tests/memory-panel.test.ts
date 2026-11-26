@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MemoryPanel } from '../src/ui/MemoryPanel';
-import { DEFAULT_MEMORY_CONFIG, type MemoryPage, type MemoryReadQuery, type MemoryRecordPage, type MemorySummary } from '../shared/memory';
-import { registerUiMessages, setUiLanguage } from '../shared/ui-language';
-import { ENGLISH_TASKS_UI_COPY } from '../shared/ui-copy.tasks.en';
-import type { MemoryNoteBody, MemoryNoteState } from '../shared/memory-notes/interface';
+import { MemoryPanel } from '../src/memory/MemoryPanel';
+import { DEFAULT_MEMORY_CONFIG, type MemoryPage, type MemoryReadQuery, type MemoryRecordPage, type MemorySummary } from '../shared/memory/memory';
+import { registerUiMessages, setUiLanguage } from '../shared/foundation/ui-language';
+import { ENGLISH_TASKS_UI_COPY } from '../shared/foundation/ui-copy.tasks.en';
+import type { MemoryNoteBody, MemoryNoteState } from '../shared/memory/memory-notes/interface';
 
 // A narrow text/action DOM fixture. Requests run through the real panel; the
 // fixture supplies no generation, pagination or context-reset implementation.

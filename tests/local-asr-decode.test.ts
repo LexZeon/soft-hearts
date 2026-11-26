@@ -1,9 +1,9 @@
-// Local recognizer back end: greedy CTC, special-token removal (electron/asr/decode.ts) and the ONNX metadata reader
-// (electron/asr/onnx-metadata.ts) that finds SenseVoice's CMVN and ids without loading the model.
+// Local recognizer back end: greedy CTC, special-token removal (electron/senses/asr/decode.ts) and the ONNX metadata reader
+// (electron/senses/asr/onnx-metadata.ts) that finds SenseVoice's CMVN and ids without loading the model.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ctcGreedy, parseTokens, tokensToText } from '../electron/asr/decode';
-import { readOnnxMetadata, senseVoiceMeta, type ByteSource } from '../electron/asr/onnx-metadata';
+import { ctcGreedy, parseTokens, tokensToText } from '../electron/senses/asr/decode';
+import { readOnnxMetadata, senseVoiceMeta, type ByteSource } from '../electron/senses/asr/onnx-metadata';
 import { onnxWithMetadata, senseVoiceMetadata } from './helpers/onnx-proto';
 
 const TOKENS = ['<unk>', '<s>', '</s>', '<|zh|>', '<|en|>', '<|NEUTRAL|>', '<|Speech|>', '<|withitn|>', '今天', '天气', '真', '好', '。', '▁hello', '▁world', '<|HAPPY|>', '<|BGM|>'];

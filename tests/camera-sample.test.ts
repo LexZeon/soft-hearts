@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CameraSampleBroker } from '../electron/camera-sample';
+import { CameraSampleBroker } from '../electron/senses/camera-sample';
 
 const jpeg = 'data:image/jpeg;base64,YQ==';
 

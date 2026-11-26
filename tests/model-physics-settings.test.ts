@@ -5,7 +5,7 @@ import {
   DEFAULT_MODEL_PHYSICS_SETTINGS,
   normalizeModelPhysicsSettings,
   type ModelPhysicsSettings,
-} from "../shared/model-physics";
+} from "../shared/stage/model-physics";
 
 const tuned: ModelPhysicsSettings = {
   hair: { enabled: true, strength: 0.81 },

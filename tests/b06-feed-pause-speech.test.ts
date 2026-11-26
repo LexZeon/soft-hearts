@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import test, { type TestContext } from 'node:test';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { DEFAULT_TTS_CONFIG, type ApprovedReplySpeechSegment, type TtsConfig, type TtsStreamEvent } from '../shared/tts';
-import { validateSpeechDiagnosticRecord, type SpeechDiagnosticRecord } from '../shared/speech-diagnostics';
-import { PAUSE_FADE_S, StreamingVoicePlayer } from '../src/ui/EmotionalVoice';
-import { VoiceOutput, type VoiceOutputEvent } from '../src/ui/VoiceOutput';
-import { SharedAudioOutput } from '../src/ui/audio-output';
-import { CompletedReplySpeechQueue } from '../src/ui/completed-reply-speech-queue';
-import { FEED_MAX_PAUSE_MS, FEED_RESUME_DELAY_MS, FeedSpeechPause, feedHoldsMouth } from '../src/ui/feed-speech-pause';
-import { ReplyPresentationState } from '../src/ui/reply-presentation';
-import { CANCEL_SETTLE_MS, PAUSE_CONFIRM_MS, RESUME_CONFIRM_MS, SpeechOutput, type SystemSpeechEvent } from '../src/ui/speech';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { DEFAULT_TTS_CONFIG, type ApprovedReplySpeechSegment, type TtsConfig, type TtsStreamEvent } from '../shared/voice/tts';
+import { validateSpeechDiagnosticRecord, type SpeechDiagnosticRecord } from '../shared/voice/speech-diagnostics';
+import { PAUSE_FADE_S, StreamingVoicePlayer } from '../src/voice/EmotionalVoice';
+import { VoiceOutput, type VoiceOutputEvent } from '../src/voice/VoiceOutput';
+import { SharedAudioOutput } from '../src/voice/audio-output';
+import { CompletedReplySpeechQueue } from '../src/voice/completed-reply-speech-queue';
+import { FEED_MAX_PAUSE_MS, FEED_RESUME_DELAY_MS, FeedSpeechPause, feedHoldsMouth } from '../src/initiative/feed-speech-pause';
+import { ReplyPresentationState } from '../src/brain/reply-presentation';
+import { CANCEL_SETTLE_MS, PAUSE_CONFIRM_MS, RESUME_CONFIRM_MS, SpeechOutput, type SystemSpeechEvent } from '../src/voice/speech';
 import { flush, pcm } from './helpers/r02-audio-world';
 import { pausableEngine, pauseAudioWorld, type PlayedSpan } from './helpers/feed-pause-audio';
 

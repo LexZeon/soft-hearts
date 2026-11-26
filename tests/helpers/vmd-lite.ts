@@ -3,7 +3,7 @@
  * (the sandbox lacks `three/examples`). Left-to-right conversion as the parser does:
  * position z and rotation x/y are negated. Bytes are never modified.
  */
-import type { VmdBoneFrame, VmdMorphFrame } from '../../src/stage/vmd-tracks';
+import type { VmdBoneFrame, VmdMorphFrame } from '../../src/foundation/vmd-tracks';
 
 export interface VmdLiteBoneFrame extends VmdBoneFrame { position: number[]; rotation: number[]; interpolation: number[] }
 export interface VmdLite {

@@ -26,7 +26,7 @@ interface FixtureMmdLoader {
 export const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 export const frozenSource = 'tests/fixtures';
 export const sourcePins = {
-  [`${frozenSource}/r05-legacy-cheek-projection.ts`]: 'a9a0be4948aef1a983dd3c5d24b802a62659a1902d8888c03b34651ad29c5cbd',
+  [`${frozenSource}/r05-legacy-cheek-projection.ts`]: 'ca74463cf7ac10ac9f0dfe749a12fc7e7912f92f5c9d17c7c90eb5e4064e08f9', // re-pinned in overhaul parts 3: only its CheekPinch import path changed (src/ui -> src/mood)
   'src/stage/procedural-blush.ts': null,
   'assets/bundled/mmdagent-ex/gene/c7eace43dffaccff6ad0597433ef85fa57c91e03/model/gene.pmx': '0ef63a75a7699f58399ae655357f91542fc5209355aac925a589aac42669df37',
 };

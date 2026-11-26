@@ -3,14 +3,14 @@
 // money and deletion moved to "需要用户原话". Fake handlers only: no window, no profile, no download.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import type { AppSettings } from '../shared/contracts';
-import { AGENT_SETTINGS, AGENT_TOOLS } from '../shared/agent-channel';
-import { CAPABILITIES, capabilityChannel, capabilityGap } from '../shared/capabilities';
-import { AgentToolRegistry, type AgentConfirmRequest } from '../electron/agent-channel/registry';
-import { createAppTools } from '../electron/agent-channel/app-tools';
-import { AGENT_HOST_OPERATIONS, createHostBridge, type IpcHandler } from '../electron/agent-channel/bridge';
-import { ChatSettingProposals, chatSettingsSystemText, currentSettingsText, mentionsSettings, turnSettingsMentioned } from '../electron/chat-settings';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import type { AppSettings } from '../shared/foundation/settings';
+import { AGENT_SETTINGS, AGENT_TOOLS } from '../shared/safety/agent-channel';
+import { CAPABILITIES, capabilityChannel, capabilityGap } from '../shared/settings/capabilities';
+import { AgentToolRegistry, type AgentConfirmRequest } from '../electron/safety/agent-channel/registry';
+import { createAppTools } from '../electron/safety/agent-channel/app-tools';
+import { AGENT_HOST_OPERATIONS, createHostBridge, type IpcHandler } from '../electron/safety/agent-channel/bridge';
+import { ChatSettingProposals, chatSettingsSystemText, currentSettingsText, mentionsSettings, turnSettingsMentioned } from '../electron/brain/chat-settings';
 
 const CARD = '0f8fad5b-d9cb-469f-a165-70867728950e', NEW = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
 
@@ -74,7 +74,8 @@ test('every new operation is one the settings window itself calls, and only thos
   for (const name of ['setUiLanguage', 'setMoodDeveloperMode', 'setMusicSettings', 'setModelPhysicsSettings', 'setVisionOptions', 'setFeedRecognition',
     'downloadPoseComponents', 'cancelPoseDownload', 'removePoseComponents', 'recoverPet', 'useBundledModel', 'createCharacterForCurrentModel'])
     assert.ok(AGENT_HOST_OPERATIONS.includes(name), name);
-  for (const never of ['resetSettings', 'quit', 'deleteCharacter', 'deleteMemory', 'exportCharacterCard', 'importPoseComponents', 'setClaudeTasksEnabled', 'startCodexTask'])
+  // I-173: the 角色页's deleteCharacter (into the recycle bin) is reused by delete_character; the old direct deleteCharacterCard never is.
+  for (const never of ['resetSettings', 'quit', 'deleteCharacterCard', 'deleteRecycleEntryForGood', 'deleteMemory', 'exportCharacterCard', 'importPoseComponents', 'setClaudeTasksEnabled', 'startCodexTask'])
     assert.ok(!AGENT_HOST_OPERATIONS.includes(never), never);
 });
 

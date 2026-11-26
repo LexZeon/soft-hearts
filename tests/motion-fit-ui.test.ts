@@ -1,13 +1,13 @@
-import * as uiCopy from '../src/ui/ui-language';
+import * as uiCopy from '../src/foundation/ui-language';
 import test, { type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import ts from 'typescript';
-import * as filters from '../src/ui/motion-filters';
-import * as layers from '../shared/motion-layers';
-import type { MotionCatalog } from '../shared/motion-library';
-import type { MotionFitView } from '../src/stage/motion-retarget';
+import * as filters from '../src/actions/motion-filters';
+import * as layers from '../shared/actions/motion-layers';
+import type { MotionCatalog } from '../shared/actions/motion-library';
+import type { MotionFitView } from '../src/actions/motion-retarget';
 
 // Text/action-only DOM (the motion-weights-ui fixture pattern), plus <select>.options.
 class Element {
@@ -50,10 +50,10 @@ const stub = class { element = new Element('div'); ranking = null; filtering = f
 
 test('the library does not offer a motion the fit check hid on this model, and shows "N of M usable"', async t => {
   globals(t, { onMotionDownload: () => () => {}, getMotionLibrary: async () => ({ directory: 'x', packs: [{ id: 'gene', installedMotionIds: ['stand', 'happy'], complete: true, bundled: true }] }) });
-  const source = await readFile(new URL('../src/ui/MotionLibrary.ts', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../src/actions/MotionLibrary.ts', import.meta.url), 'utf8');
   const exports = {}, context = { exports, document: (globalThis as any).document, window: (globalThis as any).window, Option: OptionElement,
     require: (name: string) => {
-      if (name === './ui-language') return uiCopy;
+      if (name === '../foundation/ui-language') return uiCopy;
       if (name.endsWith('.css')) return {};
       if (name.endsWith('motion-catalog.json')) return catalog;
       if (name === './MotionWeights') return { MotionWeightControls: stub };

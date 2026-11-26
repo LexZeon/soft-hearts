@@ -1,0 +1,6 @@
+.take-me-there { margin: 8px 0; pointer-events: auto; }
+.take-me-there__button { padding: 6px 14px; border: 1px solid #b7dfcc66; border-radius: 12px; background: #1b2830f2; color: #d8e8df; font-size: 12px; line-height: 1.6; cursor: pointer; }
+.take-me-there__button:hover:not(:disabled) { border-color: #b7dfccaa; }
+.take-me-there__button:disabled { opacity: 0.6; cursor: default; }
+@keyframes take-me-there-flash { 0%, 60% { box-shadow: 0 0 0 3px #b7dfccaa; } 100% { box-shadow: 0 0 0 3px #b7dfcc00; } }
+.take-me-there-flash { border-radius: 8px; animation: take-me-there-flash 1.8s ease-out; }

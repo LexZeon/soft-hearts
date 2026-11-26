@@ -34,7 +34,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { findClaude } from '../electron/claude';
+import { findClaude } from '../electron/brain/claude';
 import { markdownReport, summarize, summaryTable, type TurnRecord } from './lib/prompt-eval-analysis';
 import { selectScenarios } from './lib/prompt-eval-scenarios';
 import { runEval } from './lib/prompt-eval-runner';

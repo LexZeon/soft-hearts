@@ -1,0 +1,1762 @@
+[
+ {
+  "id": "A-memory",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "return { memory: companion.memory, textInvitations:",
+  "replace": "return { memory: null as never, textInvitations:",
+  "what": "删角色：不把 memory 交给回收站（记忆部分的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-textInvitations",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "textInvitations: textInvitationMemory,",
+  "replace": "textInvitations: null,",
+  "what": "删角色：不把 textInvitations 交给回收站（记忆部分的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-notes",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "notes: memoryNotes,",
+  "replace": "notes: null,",
+  "what": "删角色：不把 notes 交给回收站（记忆部分的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-keywords",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "keywords: watchTogether?.keywords ?? null,",
+  "replace": "keywords: null,",
+  "what": "删角色：不把 keywords 交给回收站（记忆部分的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-semantic",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "semantic: semantic?.recall ?? null, profiles:",
+  "replace": "semantic: null, profiles:",
+  "what": "删角色：不把 semantic 交给回收站（记忆部分的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-profiles",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "profiles: userProfiles ?? null, upcoming, herNote:",
+  "replace": "profiles: null, upcoming, herNote:",
+  "what": "删角色：不把 profiles 交给回收站（记忆部分的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-upcoming",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "upcoming, herNote: herNote?.store ?? null,",
+  "replace": "upcoming: null, herNote: herNote?.store ?? null,",
+  "what": "删角色：不把 upcoming 交给回收站（记忆部分的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-herNote",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "herNote: herNote?.store ?? null,",
+  "replace": "herNote: null,",
+  "what": "删角色：不把 herNote 交给回收站（记忆部分的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-movingMemory",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "movingMemory: movingMemory ?? null, relationship:",
+  "replace": "movingMemory: null, relationship:",
+  "what": "删角色：不把 movingMemory 交给回收站（记忆部分的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-relationship",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "relationship: companion.relationship,\n      specialDay,",
+  "replace": "relationship: null as never,\n      specialDay,",
+  "what": "删角色：不把 relationship 交给回收站（记忆部分的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-specialDay",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "      specialDay, textMemorials:",
+  "replace": "      specialDay: null, textMemorials:",
+  "what": "删角色：不把 specialDay 交给回收站（记忆部分的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-textMemorials",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "textMemorials: textMemorialHost ?? null,",
+  "replace": "textMemorials: null,",
+  "what": "删角色：不把 textMemorials 交给回收站（记忆部分的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-upcomingStore",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "upcomingStore: userProfiles?.companionStores().upcoming ?? null,",
+  "replace": "upcomingStore: null,",
+  "what": "删角色：不把 upcomingStore 交给回收站（记忆部分的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-reviews",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "reviews: userProfiles?.companionStores().reviews ?? null,",
+  "replace": "reviews: null,",
+  "what": "删角色：不把 reviews 交给回收站（记忆部分的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-feeding",
+  "part": "memory",
+  "file": "electron/wiring/senses-wiring.ts",
+  "find": "feeding: needs.feeding.store, songs:",
+  "replace": "feeding: null, songs:",
+  "what": "删角色：不把 feeding 交给回收站（senses-wiring.ts 的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-songs",
+  "part": "memory",
+  "file": "electron/wiring/senses-wiring.ts",
+  "find": "songs: needs.songMemory, listen:",
+  "replace": "songs: null, listen:",
+  "what": "删角色：不把 songs 交给回收站（senses-wiring.ts 的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-listen",
+  "part": "memory",
+  "file": "electron/wiring/senses-wiring.ts",
+  "find": "listen: listenTogether, watch:",
+  "replace": "listen: null, watch:",
+  "what": "删角色：不把 listen 交给回收站（senses-wiring.ts 的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-watch",
+  "part": "memory",
+  "file": "electron/wiring/senses-wiring.ts",
+  "find": "watch: watchTogether, ambient:",
+  "replace": "watch: null, ambient:",
+  "what": "删角色：不把 watch 交给回收站（senses-wiring.ts 的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-ambient",
+  "part": "memory",
+  "file": "electron/wiring/senses-wiring.ts",
+  "find": "ambient: ambientStore ?? null }),",
+  "replace": "ambient: null }),",
+  "what": "删角色：不把 ambient 交给回收站（senses-wiring.ts 的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-rps",
+  "part": "memory",
+  "file": "electron/wiring/initiative-wiring.ts",
+  "find": "recycle: () => ({ rps: rps.store, hands:",
+  "replace": "recycle: () => ({ rps: null, hands:",
+  "what": "删角色：不把 rps 交给回收站（initiative-wiring.ts 的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-hands",
+  "part": "memory",
+  "file": "electron/wiring/initiative-wiring.ts",
+  "find": "hands: hands.store, ourThings:",
+  "replace": "hands: null, ourThings:",
+  "what": "删角色：不把 hands 交给回收站（initiative-wiring.ts 的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-ourThings",
+  "part": "memory",
+  "file": "electron/wiring/initiative-wiring.ts",
+  "find": "ourThings: give.store,",
+  "replace": "ourThings: null,",
+  "what": "删角色：不把 ourThings 交给回收站（initiative-wiring.ts 的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-keepsakes",
+  "part": "memory",
+  "file": "electron/wiring/initiative-wiring.ts",
+  "find": "keepsakes: keepsake }),",
+  "replace": "keepsakes: null }),",
+  "what": "删角色：不把 keepsakes 交给回收站（initiative-wiring.ts 的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-cards",
+  "part": "memory",
+  "file": "electron/wiring/cards-wiring.ts",
+  "find": "recycle: () => ({ cards: needs.characterCards, responses:",
+  "replace": "recycle: () => ({ cards: null, responses:",
+  "what": "删角色：不把 cards 交给回收站（cards-wiring.ts 的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-responses",
+  "part": "memory",
+  "file": "electron/wiring/cards-wiring.ts",
+  "find": "responses: needs.characterResponses, avatars:",
+  "replace": "responses: null, avatars:",
+  "what": "删角色：不把 responses 交给回收站（cards-wiring.ts 的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-avatars",
+  "part": "memory",
+  "file": "electron/wiring/cards-wiring.ts",
+  "find": "avatars: needs.characterAvatars }),",
+  "replace": "avatars: null }),",
+  "what": "删角色：不把 avatars 交给回收站（cards-wiring.ts 的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-assistant",
+  "part": "memory",
+  "file": "electron/main.ts",
+  "find": "recycle: () => ({ assistant: recycleAssistant })",
+  "replace": "recycle: () => ({ assistant: null })",
+  "what": "删角色：不把 assistant 交给回收站（main.ts 的登记）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-scopes",
+  "part": "memory",
+  "file": "electron/wiring/memory-recycle-wiring.ts",
+  "find": "characterId => companion.memory.providerScopesOf(characterId))",
+  "replace": "() => [])",
+  "what": "删角色：她所有连接下的记忆（回收站主机找不到别的连接）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-agent-scopes",
+  "part": "memory",
+  "file": "electron/memory/recoverable-forget.ts",
+  "find": "id => ports.chat.providerScopesOf?.(id) ?? [])",
+  "replace": "id => [])",
+  "what": "Claude 删记忆：不找她所有连接下的聊天",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/three-way-interconnect.test.ts",
+   "tests/memory-notes-delete.test.ts",
+   "tests/i144-recycle-host.test.ts",
+   "tests/c2-character-page.test.ts",
+   "tests/i048-watch-recycle.test.ts"
+  ]
+ },
+ {
+  "id": "A-bookmarks",
+  "part": "memory",
+  "file": "electron/wiring/memory-recycle-wiring.ts",
+  "find": "id => companion.memory.providerScopesOf(id)) : []",
+  "replace": "id => []) : []",
+  "what": "Claude 删聊天后不复查书签",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-prune-delete",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "await removed; void movingMemory?.prune(scope);",
+  "replace": "await removed;",
+  "what": "删一条聊天后不复查书签",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "A-prune-edit",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "void movingMemory?.prune(scope); // I-139 A3: a bookmark whose words",
+  "replace": "// I-139 A3: a bookmark whose words",
+  "what": "改一条聊天后不复查书签",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "B-herNote",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "relationship: companion.relationship, herNote: herNote?.store,",
+  "replace": "relationship: companion.relationship, herNote: undefined,",
+  "what": "关「允许记录」：不清她的小纸条",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "B-movingMemory",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "movingMemory: movingMemory?.store,",
+  "replace": "movingMemory: undefined,",
+  "what": "关「允许记录」：不清最打动她的那件",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "B-upcoming",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "semantic: semantic?.recall, upcoming }; },",
+  "replace": "semantic: semantic?.recall, upcoming: undefined }; },",
+  "what": "关「允许记录」：不清她记得的计划",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "B-hands",
+  "part": "memory",
+  "file": "electron/wiring/initiative-wiring.ts",
+  "find": "hands: typeof hands !== 'undefined' ? hands.host : null, reminders:",
+  "replace": "hands: null, reminders:",
+  "what": "关「允许记录」：不清牵手",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "B-rps",
+  "part": "memory",
+  "file": "electron/wiring/initiative-wiring.ts",
+  "find": "recordingOff: () => ({ rps: rps.store, hands:",
+  "replace": "recordingOff: () => ({ rps: null, hands:",
+  "what": "关「允许记录」：不清猜拳",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "B-feeding",
+  "part": "memory",
+  "file": "electron/wiring/senses-wiring.ts",
+  "find": "recordingOff: () => ({ feeding: needs.feeding.store, songMemory:",
+  "replace": "recordingOff: () => ({ feeding: null, songMemory:",
+  "what": "关「允许记录」：不清喂食",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "B-callback",
+  "part": "memory",
+  "file": "electron/wiring/memory-profile-wiring.ts",
+  "find": "(scope, reason) => { runRecordingOff(recordingOffRegistry(privacyStores()), scope, reason); });",
+  "replace": "(scope, reason) => { void scope; void reason; });",
+  "what": "关「允许记录」：回调什么都不清",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "B-reason",
+  "part": "memory",
+  "file": "electron/wiring/memory-profile-wiring.ts",
+  "find": "runRecordingOff(recordingOffRegistry(privacyStores()), scope, reason);",
+  "replace": "runRecordingOff(recordingOffRegistry(privacyStores()), scope, 'x' as never);",
+  "what": "关「允许记录」：理由写死成别的",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "C-deleteMemory",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "host('deleteMemory', id => mutate(() => recycleSingle(",
+  "replace": "host('deleteMemory', id => mutate(() => ((_take: unknown, remove: () => unknown) => remove())(",
+  "what": "删一条聊天：绕过回收站直接删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "C-deleteTextMemorial",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "const memorials=textMemorialHost;return recycleSingle(",
+  "replace": "const memorials=textMemorialHost;return ((_take: unknown, remove: () => unknown) => remove())(",
+  "what": "删文字纪念：绕过回收站直接删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "C-deleteUserProfile",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "recycleSingle(() => takeProfileEntry(",
+  "replace": "((_take: unknown, remove: () => unknown) => remove())(() => takeProfileEntry(",
+  "what": "删画像一条：绕过回收站直接删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "C-deleteUserDiary",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "recycleSingle(() => takeDiary(recycleStores(), companion.currentScope(), field(request, 'date'))",
+  "replace": "((_take: unknown, remove: () => unknown) => remove())(() => takeDiary(recycleStores(), companion.currentScope(), field(request, 'date'))",
+  "what": "删一天日记：绕过回收站直接删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "C-clearUserDiary",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "recycleSingle(() => takeDiary(recycleStores(), companion.currentScope(), '*')",
+  "replace": "((_take: unknown, remove: () => unknown) => remove())(() => takeDiary(recycleStores(), companion.currentScope(), '*')",
+  "what": "清空日记：绕过回收站直接删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "C-deleteUserUpcoming",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "recycleSingle(() => takePlans(recycleStores(), companion.currentScope(), field(request, 'id'))",
+  "replace": "((_take: unknown, remove: () => unknown) => remove())(() => takePlans(recycleStores(), companion.currentScope(), field(request, 'id'))",
+  "what": "删一个计划：绕过回收站直接删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "C-clearUserUpcoming",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "recycleSingle(() => takePlans(recycleStores(), companion.currentScope(), '*')",
+  "replace": "((_take: unknown, remove: () => unknown) => remove())(() => takePlans(recycleStores(), companion.currentScope(), '*')",
+  "what": "清空计划：绕过回收站直接删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "C-deleteUserReview",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "recycleSingle(() => takeReview(",
+  "replace": "((_take: unknown, remove: () => unknown) => remove())(() => takeReview(",
+  "what": "删回顾：绕过回收站直接删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "C-nickname",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "recycleSingle(() => takeNickname(",
+  "replace": "((_take: unknown, remove: () => unknown) => remove())(() => takeNickname(",
+  "what": "删称呼：绕过回收站直接删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "C-listenRaw",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "recycleSingle(() => takeListenRaw(",
+  "replace": "((_take: unknown, remove: () => unknown) => remove())(() => takeListenRaw(",
+  "what": "清空一起听原文：绕过回收站直接删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "C-ambientTranscript",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "host('deleteAmbientTranscript', id => mutate(() => recycleSingle(",
+  "replace": "host('deleteAmbientTranscript', id => mutate(() => ((_take: unknown, remove: () => unknown) => remove())(",
+  "what": "删听到的声音文字：绕过回收站直接删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "C-ourThing",
+  "part": "memory",
+  "file": "electron/wiring/initiative-together-wiring.ts",
+  "find": "recycleSingle(() => takeOurThing(",
+  "replace": "((_take: unknown, remove: () => unknown) => remove())(() => takeOurThing(",
+  "what": "删我们的小东西：绕过回收站直接删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "C-assistant",
+  "part": "memory",
+  "file": "electron/main.ts",
+  "find": "recycleSingle(() => takeAssistantChat(",
+  "replace": "((_take: unknown, remove: () => unknown) => remove())(() => takeAssistantChat(",
+  "what": "清空 Claude 助手：绕过回收站直接删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "C-songs",
+  "part": "memory",
+  "file": "electron/memory/recycle-wiring.ts",
+  "find": "const outcome = await host.recycled(() => takeSongs(s, id), () => songs.clear(id),",
+  "replace": "const outcome = await ((_take: unknown, remove: () => Promise<{ count: number }>) => remove())(() => takeSongs(s, id), () => songs.clear(id),",
+  "what": "清除她记得的歌：绕过回收站直接清",
+  "tests": [
+   "tests/i144-recycle-host.test.ts",
+   "tests/i144b-recycle-items.test.ts",
+   "tests/i144-recycle-bin.test.ts",
+   "tests/memory-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "C-single-ready",
+  "part": "memory",
+  "file": "electron/wiring/memory-recycle-wiring.ts",
+  "find": ": Promise.reject(new Error('回收站还没准备好，这一项没有删，稍后再试。')); }",
+  "replace": ": Promise.resolve(remove()); }",
+  "what": "回收站没准备好时照样删（recycleSingle）",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "C-memoryNote-ready",
+  "part": "memory",
+  "file": "electron/memory/recycle-wiring.ts",
+  "find": "if (!stores.bin.ready) throw new Error('回收站还没准备好，这条笔记没有删，稍后再试。');",
+  "replace": "",
+  "what": "回收站没准备好时照样删聊天笔记",
+  "tests": [
+   "tests/i144-recycle-host.test.ts",
+   "tests/i144b-recycle-items.test.ts",
+   "tests/i144-recycle-bin.test.ts",
+   "tests/memory-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "C-listenNote-ready",
+  "part": "memory",
+  "file": "electron/memory/recycle-wiring.ts",
+  "find": "if (!stores.bin.ready) throw new Error('回收站还没准备好，这条记录没有删，稍后再试。');",
+  "replace": "",
+  "what": "回收站没准备好时照样删一起听笔记",
+  "tests": [
+   "tests/i144-recycle-host.test.ts",
+   "tests/i144b-recycle-items.test.ts",
+   "tests/i144-recycle-bin.test.ts",
+   "tests/memory-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "C-movingMemory-ready",
+  "part": "memory",
+  "file": "electron/memory/recycle-wiring.ts",
+  "find": "if (!stores.bin.ready) throw new Error('回收站还没准备好，这一件没有删，稍后再试。');",
+  "replace": "",
+  "what": "回收站没准备好时照样删最打动她的那件",
+  "tests": [
+   "tests/i144-recycle-host.test.ts",
+   "tests/i144b-recycle-items.test.ts",
+   "tests/i144-recycle-bin.test.ts",
+   "tests/memory-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "C-recycled-ready",
+  "part": "memory",
+  "file": "electron/memory/recycle-wiring.ts",
+  "find": "if (!stores.bin.ready) throw new Error('回收站还没准备好，这一项没有删，稍后再试。');\n      const item = await take();",
+  "replace": "const item = await take();",
+  "what": "回收站没准备好时照样删（主机的 recycled）",
+  "tests": [
+   "tests/i144-recycle-host.test.ts",
+   "tests/i144b-recycle-items.test.ts",
+   "tests/i144-recycle-bin.test.ts",
+   "tests/memory-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "D-changed-raw",
+  "part": "memory",
+  "file": "electron/wiring/memory-recycle-wiring.ts",
+  "find": "controls.webContents.send('desk:recycle-bin', recycleHost.view())",
+  "replace": "controls.webContents.send('desk:recycle-bin', recycleBin)",
+  "what": "回收站变化发出完整的回收站，不是摘要",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "D-changed-pet",
+  "part": "memory",
+  "file": "electron/wiring/memory-recycle-wiring.ts",
+  "find": "controls.webContents.send('desk:recycle-bin', recycleHost.view()); agentChannelRefresh();",
+  "replace": "controls.webContents.send('desk:recycle-bin', recycleHost.view()); if (recycleHost && needs.pet && !needs.pet.isDestroyed()) needs.pet.webContents.send('desk:recycle-bin', recycleHost.view()); agentChannelRefresh();",
+  "what": "回收站变化也发给桌宠窗口",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "D-ipc-pet",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "registerRecycleIpc(host, () => recycleHost);",
+  "replace": "registerRecycleIpc(((name: string, handler: never) => host(name, handler, false)) as never, () => recycleHost);",
+  "what": "回收站接口桌宠窗口也能调",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts",
+   "tests/wiring-skeleton.test.ts"
+  ]
+ },
+ {
+  "id": "E-restoreOther",
+  "part": "memory",
+  "file": "electron/wiring/memory-recycle-wiring.ts",
+  "find": "restoreOther: id => recycleHost!.restore(id),",
+  "replace": "restoreOther: id => recycleHost!.deleteForGood(id) as never,",
+  "what": "Claude 找回角色或单条：改成永久删除",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "E-restoreMemoryPart",
+  "part": "memory",
+  "file": "electron/wiring/memory-recycle-wiring.ts",
+  "find": "restoreMemoryPart: id => createMemoryBridge(recycleBin!, recoverable).restore(id, () => {}),",
+  "replace": "restoreMemoryPart: id => recycleHost!.deleteForGood(id) as never,",
+  "what": "找回聊天和画像：改成永久删除",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "F-take-chat",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "return takeChatRecord(recycleStores(), companion.currentScope(), selected.id,",
+  "replace": "return null as never; takeChatRecord(recycleStores(), companion.currentScope(), selected.id,",
+  "what": "删一条聊天：不拷下来就删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "F-take-profile",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "takeProfileEntry(recycleStores(), companion.currentScope(), field(request, 'id'))",
+  "replace": "null",
+  "what": "删画像一条：不拷下来就删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "F-take-diary",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "takeDiary(recycleStores(), companion.currentScope(), field(request, 'date'))",
+  "replace": "null",
+  "what": "删一天日记：不拷下来就删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "F-take-plans",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "takePlans(recycleStores(), companion.currentScope(), field(request, 'id'))",
+  "replace": "null",
+  "what": "删计划：不拷下来就删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "F-take-review",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "takeReview(recycleStores(), companion.currentScope(), field(request, 'kind'), field(request, 'key'))",
+  "replace": "null",
+  "what": "删回顾：不拷下来就删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "F-take-memorial",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "takeTextMemorial(recycleStores(), field(value, 'id'))",
+  "replace": "null",
+  "what": "删文字纪念：不拷下来就删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "F-take-nickname",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "takeNickname(recycleStores(), characterId)",
+  "replace": "null",
+  "what": "删称呼：不拷下来就删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "F-take-transcript",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "return takeAmbientTranscript(recycleStores(), scope,",
+  "replace": "return null as never; takeAmbientTranscript(recycleStores(), scope,",
+  "what": "删听到的声音文字：不拷下来就删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "F-take-ourThing",
+  "part": "memory",
+  "file": "electron/wiring/initiative-together-wiring.ts",
+  "find": "takeOurThing(recycleStores(), characterId, id)",
+  "replace": "null",
+  "what": "删我们的小东西：不拷下来就删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "F-take-listenRaw",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "takeListenRaw(recycleStores(), companion.currentScope().characterId)",
+  "replace": "null",
+  "what": "清空一起听原文：不拷下来就删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "F-take-assistant",
+  "part": "memory",
+  "file": "electron/main.ts",
+  "find": "takeAssistantChat(recycleStores())",
+  "replace": "null",
+  "what": "清空 Claude 助手：不拷下来就删",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "F-take-songs",
+  "part": "memory",
+  "file": "electron/memory/recycle-wiring.ts",
+  "find": "host.recycled(() => takeSongs(s, id), () => songs.clear(id),",
+  "replace": "host.recycled(() => null, () => songs.clear(id),",
+  "what": "清除她记得的歌：不拷下来就删",
+  "tests": [
+   "tests/i144-recycle-host.test.ts",
+   "tests/i144b-recycle-items.test.ts",
+   "tests/i144-recycle-bin.test.ts",
+   "tests/memory-privacy-gates.test.ts"
+  ]
+ },
+ {
+  "id": "F-profileExtras",
+  "part": "memory",
+  "file": "electron/wiring/memory-recycle-wiring.ts",
+  "find": "return Object.fromEntries(PROFILE_EXTRA_ROWS.map(row => [row, registry[row]]))",
+  "replace": "return {}",
+  "what": "Claude 删画像：计划、回顾、笔记、那件不一起拷",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "F-watch",
+  "part": "memory",
+  "file": "electron/wiring/memory-recycle-wiring.ts",
+  "find": "watch: () => watchTogether?.recyclePort(),",
+  "replace": "watch: () => undefined,",
+  "what": "Claude 删聊天：一起看的笔记不一起拷",
+  "tests": [
+   "tests/memory-privacy-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts"
+  ]
+ },
+ {
+  "id": "M5-glitch-any-window",
+  "part": "memory",
+  "file": "electron/wiring/memory-handlers-wiring.ts",
+  "find": "sender === pet?.webContents.id && appJournal.motionGlitch",
+  "replace": "appJournal.motionGlitch",
+  "what": "控制窗口也能往体验记录写动作跳变",
+  "tests": [
+   "tests/step5-handlers.test.ts",
+   "tests/app-identity.test.ts",
+   "tests/app-session.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/brain-gates.test.ts",
+   "tests/bundle-inputs.test.mjs",
+   "tests/camera-two-switches.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/clipboard-permission.test.ts",
+   "tests/companion-breath.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/companion-framing.test.ts",
+   "tests/desktop-entry-chain.test.ts",
+   "tests/i084-look-at-me.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/layer-check.test.mjs",
+   "tests/listen-late-window.test.ts",
+   "tests/look-stale-frame.test.ts",
+   "tests/media-input.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/model-physics-wiring.test.ts",
+   "tests/mood-gates.test.ts",
+   "tests/motion-track-coverage.test.ts",
+   "tests/motion-weights-ipc.test.ts",
+   "tests/music-settings-wiring.test.ts",
+   "tests/part-table.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/pet-always-on-top-host.test.ts",
+   "tests/pose-privacy.test.ts",
+   "tests/public-snapshot.test.mjs",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r20-proactive-offer-ui.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/reply-speech-native-receipt.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/senses-privacy-gates.test.ts",
+   "tests/size-check.test.mjs",
+   "tests/sleep-entry-ready.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/structure-inventory.test.mjs",
+   "tests/surprise-preview-wiring.test.ts",
+   "tests/test-affected.test.mjs",
+   "tests/test-command-wiring.test.ts",
+   "tests/test-parts.test.mjs",
+   "tests/text-invitation-archive.test.ts",
+   "tests/text-memorial-question-binding.test.ts",
+   "tests/ui-language-entry.test.ts",
+   "tests/unbound-read-aloud.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/user-profile-host-wiring.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts",
+   "tests/wiring-skeleton.test.ts"
+  ]
+ },
+ {
+  "id": "M5-fact-as-pet",
+  "part": "memory",
+  "file": "electron/wiring/memory-handlers-wiring.ts",
+  "find": "journalExtras.fact(kind, value, companionFact(kind, sender === pet?.webContents.id))",
+  "replace": "journalExtras.fact(kind, value, true)",
+  "what": "控制窗口的记录项当成桌宠窗口的记",
+  "tests": [
+   "tests/step5-handlers.test.ts",
+   "tests/app-identity.test.ts",
+   "tests/app-session.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/brain-gates.test.ts",
+   "tests/bundle-inputs.test.mjs",
+   "tests/camera-two-switches.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/clipboard-permission.test.ts",
+   "tests/companion-breath.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/companion-framing.test.ts",
+   "tests/desktop-entry-chain.test.ts",
+   "tests/i084-look-at-me.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/layer-check.test.mjs",
+   "tests/listen-late-window.test.ts",
+   "tests/look-stale-frame.test.ts",
+   "tests/media-input.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/model-physics-wiring.test.ts",
+   "tests/mood-gates.test.ts",
+   "tests/motion-track-coverage.test.ts",
+   "tests/motion-weights-ipc.test.ts",
+   "tests/music-settings-wiring.test.ts",
+   "tests/part-table.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/pet-always-on-top-host.test.ts",
+   "tests/pose-privacy.test.ts",
+   "tests/public-snapshot.test.mjs",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r20-proactive-offer-ui.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/reply-speech-native-receipt.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/senses-privacy-gates.test.ts",
+   "tests/size-check.test.mjs",
+   "tests/sleep-entry-ready.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/structure-inventory.test.mjs",
+   "tests/surprise-preview-wiring.test.ts",
+   "tests/test-affected.test.mjs",
+   "tests/test-command-wiring.test.ts",
+   "tests/test-parts.test.mjs",
+   "tests/text-invitation-archive.test.ts",
+   "tests/text-memorial-question-binding.test.ts",
+   "tests/ui-language-entry.test.ts",
+   "tests/unbound-read-aloud.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/user-profile-host-wiring.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts",
+   "tests/wiring-skeleton.test.ts"
+  ]
+ },
+ {
+  "id": "M5-memorials-skipped",
+  "part": "memory",
+  "file": "electron/wiring/memory-publish-wiring.ts",
+  "find": "  textMemorialHost?.sync();\n",
+  "replace": "",
+  "what": "心情发布时文字纪念不跟着她",
+  "tests": [
+   "tests/wiring-golden.test.mjs",
+   "tests/app-identity.test.ts",
+   "tests/app-session.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/brain-gates.test.ts",
+   "tests/bundle-inputs.test.mjs",
+   "tests/camera-two-switches.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/clipboard-permission.test.ts",
+   "tests/companion-breath.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/companion-framing.test.ts",
+   "tests/desktop-entry-chain.test.ts",
+   "tests/i084-look-at-me.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/layer-check.test.mjs",
+   "tests/listen-late-window.test.ts",
+   "tests/look-stale-frame.test.ts",
+   "tests/media-input.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/model-physics-wiring.test.ts",
+   "tests/mood-gates.test.ts",
+   "tests/motion-track-coverage.test.ts",
+   "tests/motion-weights-ipc.test.ts",
+   "tests/music-settings-wiring.test.ts",
+   "tests/part-table.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/pet-always-on-top-host.test.ts",
+   "tests/pose-privacy.test.ts",
+   "tests/public-snapshot.test.mjs",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r20-proactive-offer-ui.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/reply-speech-native-receipt.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/senses-privacy-gates.test.ts",
+   "tests/size-check.test.mjs",
+   "tests/sleep-entry-ready.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/structure-inventory.test.mjs",
+   "tests/surprise-preview-wiring.test.ts",
+   "tests/test-affected.test.mjs",
+   "tests/test-command-wiring.test.ts",
+   "tests/test-parts.test.mjs",
+   "tests/text-invitation-archive.test.ts",
+   "tests/text-memorial-question-binding.test.ts",
+   "tests/ui-language-entry.test.ts",
+   "tests/unbound-read-aloud.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/user-profile-host-wiring.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/wiring-skeleton.test.ts"
+  ]
+ },
+ {
+  "id": "M-U3-nick-said",
+  "part": "memory",
+  "file": "electron/memory/relationship/nickname-route.ts",
+  "find": " && saidInText(name, userText)) await",
+  "replace": ") await",
+  "what": "Unbound 第 3 步：模型编出来、用户没说过的称呼也进了称呼表",
+  "tests": [
+   "tests/nickname-table.test.ts"
+  ]
+ },
+ {
+  "id": "M-U3-nick-append",
+  "part": "memory",
+  "file": "electron/memory/relationship/host.ts",
+  "find": "herNickname, herNicknames: withHerNickname(herNicknameList(current), herNickname) }",
+  "replace": "herNickname, herNicknames: [herNickname] }",
+  "what": "Unbound 第 3 步：新称呼把旧称呼覆盖掉（称呼表不再累积）",
+  "tests": [
+   "tests/nickname-table.test.ts"
+  ]
+ },
+ {
+  "id": "M-U3-nick-bin",
+  "part": "memory",
+  "file": "electron/memory/recycle/items-wiring.ts",
+  "find": "await s.relationship.restoreHerNickname(summary.characterId, data.name, data.at);",
+  "replace": ";",
+  "what": "Unbound 第 3 步：删掉的称呼从回收站找不回来",
+  "tests": [
+   "tests/i144b-recycle-items.test.ts"
+  ]
+ },
+ {
+  "id": "M-U3-nick-remove-current",
+  "part": "memory",
+  "file": "electron/memory/relationship/host.ts",
+  "find": "return { ...current, herNicknames: left, herNickname: left.at(-1) ?? null };",
+  "replace": "return { ...current, herNicknames: left };",
+  "what": "Unbound 第 3 步：删掉的称呼仍是她开场用的那个",
+  "tests": [
+   "tests/nickname-table.test.ts"
+  ]
+ },
+ {
+  "id": "M-U3-recording-off-voiceprint",
+  "part": "memory",
+  "file": "electron/memory/privacy-wiring.ts",
+  "find": "    voiceprint: voiceprint ? () => voiceprint.deleteData() : null,",
+  "replace": "    voiceprint: null,",
+  "what": "Unbound 第 3 步：关「允许记录」不删声纹",
+  "tests": [
+   "tests/voiceprint.test.ts"
+  ]
+ },
+ {
+  "id": "M-warmup-no-relationship-label",
+  "part": "memory",
+  "file": "shared/memory/relationship.ts",
+  "find": "熟悉度第 ${index + 1} 级「${STAGE_LABELS[stage]}」",
+  "replace": "熟悉度第 ${index + 1} 级「${STAGE_LABELS[stage]}」，你们是老朋友了",
+  "what": "慢慢升温的说明不给关系定性：熟的程度说明里混进“老朋友”",
+  "tests": [
+   "tests/relationship.test.ts"
+  ]
+ },
+ {
+  "id": "M-warmup-by-chat-line",
+  "part": "memory",
+  "file": "shared/memory/relationship.ts",
+  "find": "说话的分寸完全由你自己的性格决定。${RELATIONSHIP_BY_CHAT_LINE}`",
+  "replace": "说话的分寸完全由你自己的性格决定。`",
+  "what": "没开升温时少了“关系以聊天为准”那一句",
+  "tests": [
+   "tests/relationship.test.ts"
+  ]
+ },
+ {
+  "id": "SB-P6-registry-remove-noop",
+  "part": "memory",
+  "file": "electron/memory/recycle-wiring.ts",
+  "find": "      remove: scope => speechBeats.removeScope(scope),",
+  "replace": "      remove: async () => undefined,",
+  "what": "边说边演：删角色勾选「同时删除她的记忆」时拍子不删",
+  "tests": [
+   "tests/speech-beats-privacy.test.ts"
+  ]
+ },
+ {
+  "id": "SB-P7-registry-restore-noop",
+  "part": "memory",
+  "file": "electron/memory/recycle-wiring.ts",
+  "find": "      restore: (scope, captured) => speechBeats.restore(scope, captured),",
+  "replace": "      restore: async () => undefined,",
+  "what": "边说边演：找回角色时拍子不放回",
+  "tests": [
+   "tests/speech-beats-privacy.test.ts"
+  ]
+ },
+ {
+  "id": "SB-P8-registry-capture-empty",
+  "part": "memory",
+  "file": "electron/memory/recycle-wiring.ts",
+  "find": "      capture: async scope => speechBeats.copyScope(scope),",
+  "replace": "      capture: async () => null,",
+  "what": "边说边演：删角色时拍子不收进回收站（删了就找不回）",
+  "tests": [
+   "tests/speech-beats-privacy.test.ts"
+  ]
+ },
+ {
+  "id": "SB-P9-record-copy-no-beats",
+  "part": "memory",
+  "file": "electron/memory/recycle/items-wiring.ts",
+  "find": "    speechBeats: s.speechBeats?.copyTurns(scope, turnIdsOf(record.record.value)) ?? null,",
+  "replace": "    speechBeats: null,",
+  "what": "边说边演：删一段聊天记录时它的拍子不收进回收站条目",
+  "tests": [
+   "tests/speech-beats-privacy.test.ts"
+  ]
+ },
+ {
+  "id": "SB-P10-record-restore-no-beats",
+  "part": "memory",
+  "file": "electron/memory/recycle/items-wiring.ts",
+  "find": "  if (data.speechBeats) await s.speechBeats?.restore(scope, data.speechBeats)",
+  "replace": "  if (false) await s.speechBeats?.restore(scope, data.speechBeats)",
+  "what": "边说边演：找回一段聊天记录时它的拍子不放回",
+  "tests": [
+   "tests/speech-beats-privacy.test.ts"
+  ]
+ },
+ {
+  "id": "SB-P11-agent-forget-no-beats",
+  "part": "memory",
+  "file": "electron/memory/recoverable-forget.ts",
+  "find": "          const beats = await Promise.resolve(ports.beats?.capture(scope)).catch(() => null);",
+  "replace": "          const beats = null;",
+  "what": "边说边演：Claude 删聊天记忆时拍子不放进聊天条目",
+  "tests": [
+   "tests/speech-beats-privacy.test.ts"
+  ]
+ },
+ {
+  "id": "SB-P12-agent-restore-no-beats",
+  "part": "memory",
+  "file": "electron/memory/recoverable-forget.ts",
+  "find": "    if (ports.beats && beats) await ports.beats.restore(scope, beats)",
+  "replace": "    if (false) await ports.beats!.restore(scope, beats)",
+  "what": "边说边演：Claude 找回聊天记忆时拍子不放回",
+  "tests": [
+   "tests/speech-beats-privacy.test.ts"
+  ]
+ },
+ {
+  "id": "SB-P13-c2-clear-missing",
+  "part": "memory",
+  "file": "electron/memory/privacy-wiring.ts",
+  "find": "'speech-beats': viaRecycle(s, 'speech-beats'),",
+  "replace": "'speech-beats': null,",
+  "what": "边说边演：C2 删角色的清除表里没有拍子这一行",
+  "tests": [
+   "tests/speech-beats-privacy.test.ts"
+  ]
+ },
+ {
+  "id": "SB-P14-delete-no-turns-notice",
+  "part": "memory",
+  "file": "electron/memory/memory.ts",
+  "find": "      this.notifyTurnsRemoved(key, record.messages);",
+  "replace": "",
+  "what": "边说边演：删一段聊天记录时聊天库不告诉被删的轮次",
+  "tests": [
+   "tests/speech-beats-privacy.test.ts"
+  ]
+ },
+ {
+  "id": "SB-P15-forget-no-turns-notice",
+  "part": "memory",
+  "file": "electron/memory/memory.ts",
+  "find": "      this.notifyTurnsRemoved(key, doomed.flatMap(record => record.messages));",
+  "replace": "",
+  "what": "边说边演：忘掉整个角色和连接的聊天时聊天库不告诉被删的轮次",
+  "tests": [
+   "tests/speech-beats-privacy.test.ts"
+  ]
+ },
+ {
+  "id": "SB-P16-wiring-hook-missing",
+  "part": "memory",
+  "file": "electron/wiring/memory-recycle-wiring.ts",
+  "find": "  followChatDeletions(companion.memory, speechBeatsFor(store.directory).archive);",
+  "replace": "  void followChatDeletions;",
+  "what": "边说边演：接线里没有装「删聊天记录就删拍子」",
+  "tests": [
+   "tests/speech-beats-privacy.test.ts"
+  ]
+ },
+ {
+  "id": "SB-P17-wiring-archive-not-given",
+  "part": "memory",
+  "file": "electron/wiring/memory-wiring.ts",
+  "find": "      speechBeats: speechBeatsFor(needs.store.directory).archive }; },",
+  "replace": "      speechBeats: null }; },",
+  "what": "边说边演：记忆部分不把拍子文件交给回收站（单条删除、删角色都收不到）",
+  "tests": [
+   "tests/speech-beats-privacy.test.ts"
+  ]
+ },
+ {
+  "id": "SB-P18-wiring-agent-beats-missing",
+  "part": "memory",
+  "file": "electron/wiring/memory-recycle-wiring.ts",
+  "find": "    beats: () => { const beats = recycleStores().speechBeats;",
+  "replace": "    beats: () => { const beats = undefined as never as ReturnType<typeof recycleStores>['speechBeats'];",
+  "what": "边说边演：Claude 删除/找回记忆的接线里没有拍子",
+  "tests": [
+   "tests/speech-beats-privacy.test.ts"
+  ]
+ },
+ {
+  "id": "CALLV13-end-reason-overwritten",
+  "part": "memory",
+  "file": "shared/memory/journal.ts",
+  "find": "...('reason' in body ? { note } : { reason: note })",
+  "replace": "...{ reason: note }",
+  "what": "通话的挂断原因被中文说明盖掉（这一行读回来时被丢掉）",
+  "tests": [
+   "tests/call-her-voice.test.ts"
+  ]
+ },
+ {
+  "id": "EN1-her-note-material-language-dropped",
+  "part": "memory",
+  "file": "electron/memory/her-note/writer.ts",
+  "find": "!isLeakedDraft(message, { language })",
+  "replace": "!isLeakedDraft(message)",
+  "what": "她的笔记读材料时不看角色语言（英文角色她自己的英文回复被当成漏出的草稿丢掉）",
+  "tests": [
+   "tests/english-drafts-memory.test.ts"
+  ]
+ },
+ {
+  "id": "EN2-her-note-text-language-dropped",
+  "part": "memory",
+  "file": "electron/memory/her-note/writer.ts",
+  "find": "{ listenerWords: false, language }",
+  "replace": "{ listenerWords: false }",
+  "what": "她写出的英文笔记检查时不看角色语言（英文笔记被当成漏出的计划作废）",
+  "tests": [
+   "tests/english-drafts-memory.test.ts"
+  ]
+ },
+ {
+  "id": "EN3-handoff-archive-language-dropped",
+  "part": "memory",
+  "file": "electron/memory/moving-memory/handoff.ts",
+  "find": "const archive = this.options.messages(scope, 0, now + 1).filter(m => !isLeakedDraft(m, { language }));",
+  "replace": "const archive = this.options.messages(scope, 0, now + 1).filter(m => !isLeakedDraft(m));",
+  "what": "「最触动她的那一刻」挑材料时不看角色语言（英文角色她自己的回复进不了候选）",
+  "tests": [
+   "tests/english-drafts-memory.test.ts"
+  ]
+ },
+ {
+  "id": "EN4-handoff-judge-language-dropped",
+  "part": "memory",
+  "file": "electron/memory/moving-memory/handoff.ts",
+  "find": "m.content.includes(quote) && !isLeakedDraft(m, { language })",
+  "replace": "m.content.includes(quote) && !isLeakedDraft(m)",
+  "what": "「最触动她的那一刻」核对引文时不看角色语言（英文角色引用她自己的回复被拒）",
+  "tests": [
+   "tests/english-drafts-memory.test.ts"
+  ]
+ },
+ {
+  "id": "EN5-handoff-latest-language-dropped",
+  "part": "memory",
+  "file": "electron/memory/moving-memory/handoff.ts",
+  "find": "latest = this.options.messages(scope, 0, this.now() + 1).filter(m => !isLeakedDraft(m, { language }));",
+  "replace": "latest = this.options.messages(scope, 0, this.now() + 1).filter(m => !isLeakedDraft(m));",
+  "what": "「最触动她的那一刻」交接时重读记录不看角色语言",
+  "tests": [
+   "tests/english-drafts-memory.test.ts"
+  ]
+ },
+ {
+  "id": "EN6-prune-language-dropped",
+  "part": "memory",
+  "file": "electron/memory/moving-memory/wiring.ts",
+  "find": "filter(m => !isLeakedDraft(m, { language }))",
+  "replace": "filter(m => !isLeakedDraft(m))",
+  "what": "清理「那一刻」时不看角色语言（英文角色引用她自己回复的那一刻被误删）",
+  "tests": [
+   "tests/english-drafts-memory.test.ts"
+  ]
+ },
+ {
+  "part": "memory",
+  "id": "I207-milestone-recorded-twice",
+  "file": "electron/memory/relationship/host.ts",
+  "find": "    if (before.cardMilestone) return false;\n",
+  "replace": "",
+  "what": "I-207：她第二次写里程碑记号，日期被换成新的日期、体验记录又多一行（只该记第一次）",
+  "tests": [
+   "tests/i207-card-milestone.test.ts"
+  ]
+ },
+ {
+  "part": "memory",
+  "id": "I207-adopt-carries-milestone",
+  "file": "electron/memory/relationship/host.ts",
+  "find": "const { cardMilestone: _notCarried, objectNotes: _notesNotCarried, ...carried } = valid;",
+  "replace": "const carried = valid;",
+  "what": "I-207：转换出来的新角色带着旧角色“签收了”的状态（状态只属于发生它的那个角色）",
+  "tests": [
+   "tests/i207-card-milestone.test.ts"
+  ]
+ },
+ {
+  "part": "memory",
+  "id": "I208-archive-leaks-other-notes",
+  "file": "electron/memory/archive/reader.ts",
+  "find": "new Set(scopes.map(providerScope => this.ports.noteScope({ characterId, providerScope })))",
+  "replace": "new Set(this.ports.noteSegments(now).map(segment => segment.scope))",
+  "what": "I-208：档案把别的角色的聊天笔记也读进来（笔记只该取这个角色自己的聊天范围）",
+  "tests": [
+   "tests/i208-archive.test.ts"
+  ]
+ },
+ {
+  "part": "memory",
+  "id": "I208-archive-unknown-id-reads",
+  "file": "electron/memory/archive/reader.ts",
+  "find": "    if (!card) return { raw: empty, milestone: null, object: null }; // not one of her cards: no file is opened for it\n",
+  "replace": "    if (!card) { /* reads on */ }\n",
+  "what": "I-208：不是她的卡的编号也去读文件（只该答空，一个文件都不开）",
+  "tests": [
+   "tests/i208-archive.test.ts"
+  ]
+ },
+ {
+  "part": "memory",
+  "id": "I208-archive-request-takes-anything",
+  "file": "shared/memory/archive.ts",
+  "find": "  if (Object.keys(input).some(key => !['characterId', 'query', 'kind', 'offset', 'limit'].includes(key))) return fail();\n",
+  "replace": "",
+  "what": "I-208：档案的请求夹带多余的字段（路径、文件名）也照收",
+  "tests": [
+   "tests/i208-archive.test.ts"
+  ]
+ },
+ {
+  "part": "memory",
+  "id": "I208-archive-unbounded-page",
+  "file": "shared/memory/archive.ts",
+  "find": "limit: Math.min(limit ?? ARCHIVE_LIMITS.pageDefault, ARCHIVE_LIMITS.pageMax),",
+  "replace": "limit: limit ?? ARCHIVE_LIMITS.pageDefault,",
+  "what": "I-208：窗口要多少条就给多少条（一次回答没有上限）",
+  "tests": [
+   "tests/i208-archive.test.ts"
+  ]
+ },
+ {
+  "part": "memory",
+  "id": "I208-archive-host-open-to-all-windows",
+  "file": "electron/wiring/character-archive-wiring.ts",
+  "find": "ipc.host('getCharacterArchive', (request: unknown) => made().read(request));",
+  "replace": "ipc.host('getCharacterArchive', (request: unknown) => made().read(request), false);",
+  "what": "I-208：档案的读取不只给控制窗口（桌宠窗口也能读）",
+  "tests": [
+   "tests/i208-archive.test.ts"
+  ]
+ },
+ {
+  "part": "memory",
+  "id": "I208-archive-reaches-the-prompt",
+  "file": "electron/brain/companion.ts",
+  "find": "import { MoodJournal, herLifeInput, herNeedInput, herNeedReliefInput, poseInput, relationshipInput, userStateInput, type JournalSink } from '../memory';",
+  "replace": "import { MoodJournal, herLifeInput, herNeedInput, herNeedReliefInput, poseInput, relationshipInput, userStateInput, type JournalSink } from '../memory';\nimport { CharacterArchiveReader as ArchiveInThePrompt } from '../memory/archive/reader';\nvoid ArchiveInThePrompt;",
+  "what": "I-208：聊天的提示词那一侧开始用档案（档案只给用户看，一个字都不进提示词）",
+  "tests": [
+   "tests/i208-archive.test.ts"
+  ]
+ },
+ {
+  "part": "memory",
+  "id": "I208-archive-search-case-sensitive",
+  "file": "electron/memory/archive/search.ts",
+  "find": "export const fold = (text: string): string => text.normalize('NFKC').toLocaleLowerCase();",
+  "replace": "export const fold = (text: string): string => text;",
+  "what": "I-208：档案的搜索区分大小写和全角半角（搜 gene 找不到 Gene）",
+  "tests": [
+   "tests/i208-archive.test.ts"
+  ]
+ },
+ {
+  "id": "I209-speaker-lost-on-reload",
+  "part": "memory",
+  "file": "electron/memory/memory.ts",
+  "find": "for (const line of [event.user, event.assistant]) if (line.by !== undefined && !validSpeaker(line.by)) delete line.by;",
+  "replace": "for (const line of [event.user, event.assistant]) delete line.by;",
+  "what": "重新载入后聊天记录丢了\"是谁说的\"",
+  "tests": [
+   "tests/i209-speaker.test.ts"
+  ]
+ },
+ {
+  "id": "I209-store-tells-heard",
+  "part": "memory",
+  "file": "electron/memory/memory.ts",
+  "find": "      if (message.role === 'assistant' && (!message.by || message.by.characterId === scope.characterId)) this.tell({ kind: 'said', scope, turnId: line.id, at: line.at, text: line.text });",
+  "replace": "      this.tell({ kind: 'said', scope, turnId: line.id, at: line.at, text: line.text });",
+  "what": "I-209 第 4 步：聊天记忆把她只是听见的那句也当成她说的话通知出去（会被再传给别人）",
+  "tests": [
+   "tests/i209-stage-hearing.test.ts"
+  ]
+ },
+ {
+  "part": "memory",
+  "id": "I208-notes-not-keyed-by-character",
+  "file": "electron/memory/relationship/host.ts",
+  "find": "    const data = this.store.peek(characterId) ?? await this.store.load(characterId);\n    return (data.objectNotes ?? []).map(note => ({ ...note }));",
+  "replace": "    const data = await this.store.load('gene');\n    return (data.objectNotes ?? []).map(note => ({ ...note }));",
+  "what": "I-208：她的页边批注不再按角色分开读，另一个角色也读到 Gene 的批注",
+  "tests": [
+   "tests/i208-archive-step3.test.ts"
+  ]
+ },
+ {
+  "part": "memory",
+  "id": "I208-adopt-carries-notes",
+  "file": "electron/memory/relationship/host.ts",
+  "find": "objectNotes: _notesNotCarried, ",
+  "replace": "",
+  "what": "I-208：转换出来的新角色带着旧角色页边的批注（批注只属于写它的那个角色）",
+  "tests": [
+   "tests/i208-archive-step3.test.ts"
+  ]
+ },
+ {
+  "part": "memory",
+  "id": "I208-own-page-lost-on-reload",
+  "file": "electron/memory/relationship/store.ts",
+  "find": "...(note.own === true ? { own: true as const } : {})",
+  "replace": "",
+  "what": "I-208：她自己添的新一页读回来时不再算她的页，变成一条普通批注（重启、更新角色卡后就丢了\"她添的\"）",
+  "tests": [
+   "tests/i208-archive-step3.test.ts"
+  ]
+ },
+ {
+  "id": "M-I210-level-guidance-back",
+  "part": "memory",
+  "file": "shared/memory/relationship.ts",
+  "find": "（共 5 级：${levels}）。${numbers}",
+  "replace": "（共 5 级：${levels}）。你们已经很熟悉了：说话可以更随意，可以逗用户。${numbers}",
+  "what": "I-210：熟悉度只给她事实；按级别写“这一级可以怎样”的说明又回来了",
+  "tests": [
+   "tests/relationship.test.ts"
+  ]
+ },
+ {
+  "id": "M-I210-thresholds-back",
+  "part": "memory",
+  "file": "shared/memory/relationship.ts",
+  "find": "export const STAGE_BASE_THRESHOLDS = [1, 4, 12, 36] as const;",
+  "replace": "export const STAGE_BASE_THRESHOLDS = [3, 10, 30, 90] as const;",
+  "what": "I-210：普通角色的熟悉度基准天数改回 3/10/30/90（用户定的是约 2/5：1/4/12/36）",
+  "tests": [
+   "tests/relationship.test.ts"
+  ]
+ },
+ {
+  "id": "M-I210-reference-numbers-missing",
+  "part": "memory",
+  "file": "electron/memory/relationship/host.ts",
+  "find": "...(reference ? { reference } : {}), language,",
+  "replace": "language,",
+  "what": "I-210：她读到的关系那句里缺了“这一级已有效几天、到下一级还差几天”两个参考数",
+  "tests": [
+   "tests/relationship.test.ts"
+  ]
+ },
+ {
+  "id": "rules-removed-review-preach",
+  "part": "memory",
+  "file": "electron/memory/period-review/prompt.ts",
+  "find": "  '用户难过或受了委屈时，站在用户这边。',",
+  "replace": "  '你的在乎体现在陪伴里，不指点用户的人生：不说教，不劝用户去找别人、多社交、想开点。',\n  '用户难过或受了委屈时，站在用户这边。',",
+  "what": "回顾提示里\"不说教、不劝去找别人、多社交\"又被写回来",
+  "tests": [
+   "tests/rules-removed.test.ts"
+  ]
+ },
+ {
+  "id": "rules-removed-diary-preach",
+  "part": "memory",
+  "file": "electron/memory/diary/diary-prompt.ts",
+  "find": "而不是指点用户的人生。用户受了委屈时",
+  "replace": "而不是指点用户的人生：不说教，不写劝用户去找别人、多社交、想开点的话。用户受了委屈时",
+  "what": "日记提示里\"不说教、不写劝去找别人\"又被写回来",
+  "tests": [
+   "tests/rules-removed.test.ts"
+  ]
+ }
+]

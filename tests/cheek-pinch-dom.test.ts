@@ -1,6 +1,6 @@
 import test, { type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
-import { PetInteraction, type PetInteractionEvent, type PetInteractionFeedback, type PetInteractionState } from '../src/ui/PetInteraction';
+import { PetInteraction, type PetInteractionEvent, type PetInteractionFeedback, type PetInteractionState } from '../src/mood/PetInteraction';
 
 class Style {
   [key: string]: unknown;

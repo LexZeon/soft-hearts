@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { MemoryStore } from '../electron/memory';
-import type { MemoryInitiative, MemoryScope } from '../shared/memory';
+import { MemoryStore } from '../electron/memory/memory';
+import type { MemoryInitiative, MemoryScope } from '../shared/memory/memory';
 
 const now = 1_800_000_000_000;
 const scope: MemoryScope = { characterId: 'gene', providerScope: 'provider-a' };

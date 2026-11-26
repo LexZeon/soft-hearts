@@ -4,11 +4,11 @@ import { createHash } from 'node:crypto';
 import { mkdtemp, mkdir, realpath, lstat, readdir, readFile, writeFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { AudioReadingArchive, stageReadingArchive, type ReadingArchiveStage } from '../electron/audio-reading-archive';
-import { AmbientAudioStore } from '../electron/ambient-audio-store';
-import { atomicWriteFile } from '../electron/atomic-file';
-import type { AudioReadingPublication } from '../electron/audio-reading-host-broker';
-import type { AmbientScope, AmbientLanguage, AmbientTranscriptInput } from '../shared/ambient-audio';
+import { AudioReadingArchive, stageReadingArchive, type ReadingArchiveStage } from '../electron/voice/audio-reading-archive';
+import { AmbientAudioStore } from '../electron/senses/ambient-audio-store';
+import { atomicWriteFile } from '../electron/foundation/atomic-file';
+import type { AudioReadingPublication } from '../electron/voice/audio-reading-host-broker';
+import type { AmbientScope, AmbientLanguage, AmbientTranscriptInput } from '../shared/senses/ambient-audio';
 
 const NOW = 100_000;
 const SCOPE: AmbientScope = { characterId: 'public-audio-a', providerScope: 'local-fixture-a' };

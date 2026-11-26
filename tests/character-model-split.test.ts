@@ -6,13 +6,13 @@ import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CharacterCardStore, PRESET_GENE_MODEL_ERROR } from '../electron/character-cards';
-import { MODEL_SPLIT_BACKUP, planCardForModel, readModelIdentity, splitCardFromModelAtStartup } from '../electron/character-model-link';
-import { BUNDLED_CHARACTER_MODEL, defaultCharacterMoodTemplate, type CharacterDraft } from '../shared/character-cards';
+import { CharacterCardStore, PRESET_GENE_MODEL_ERROR } from '../electron/cards/character-cards';
+import { MODEL_SPLIT_BACKUP, planCardForModel, readModelIdentity, splitCardFromModelAtStartup } from '../electron/cards/character-model-link';
+import { BUNDLED_CHARACTER_MODEL, defaultCharacterMoodTemplate, type CharacterDraft } from '../shared/cards/character-cards';
 import {
   characterNameForModel, decideCharacterForModel, minimalCharacterDraft, normalizeCharacterName, readMmdModelNames,
   sameModelReference, startupNeedsModelSplit,
-} from '../shared/character-model';
+} from '../shared/cards/character-model';
 import { writePmx } from './helpers/pmx-write';
 
 const tinyModel = (name: string, englishName = name, encoding: 0 | 1 = 0) => writePmx({ name, englishName, encoding,

@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { DEFAULT_TTS_CONFIG, type ApprovedReplySpeechSegment } from '../shared/tts';
-import { CANCEL_SETTLE_MS, NO_PROGRESS_MS, QUICK_END_MS, SpeechOutput, type SystemSpeechEvent } from '../src/ui/speech';
-import { VoiceOutput } from '../src/ui/VoiceOutput';
-import { CompletedReplySpeechQueue } from '../src/ui/completed-reply-speech-queue';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { DEFAULT_TTS_CONFIG, type ApprovedReplySpeechSegment } from '../shared/voice/tts';
+import { CANCEL_SETTLE_MS, NO_PROGRESS_MS, QUICK_END_MS, SpeechOutput, type SystemSpeechEvent } from '../src/voice/speech';
+import { VoiceOutput } from '../src/voice/VoiceOutput';
+import { CompletedReplySpeechQueue } from '../src/voice/completed-reply-speech-queue';
 import { flush } from './helpers/r02-audio-world';
 import { engine } from './helpers/r02-speech-engine';
 

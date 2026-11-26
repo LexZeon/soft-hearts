@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import { appendReplyHistory } from '../src/ui/reply-history';
-import { validateChatRequest } from '../electron/validation';
-import { MoodReplyProtocol } from '../electron/mood-chat';
+import { appendReplyHistory } from '../src/brain/reply-history';
+import { validateChatRequest } from '../electron/settings/validation';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
 
 test('an interrupted original is available to the next continue request exactly once without display/error suffixes',()=>{
  const user={role:'user' as const,content:'比较休息和画画；先考虑疲惫和零预算。'};

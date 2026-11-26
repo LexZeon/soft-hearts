@@ -1,4 +1,4 @@
-import * as uiCopy from '../src/ui/ui-language';
+import * as uiCopy from '../src/foundation/ui-language';
 const { uiText, uiHtml, uiMarkup, uiTemplate } = uiCopy;
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
@@ -26,7 +26,7 @@ function elements(html:string): {id:string; ancestors:string[]}[] {
   return found;
 }
 test('both actual templates provide one separate voice slot and retain input/send controls',()=>{
-  for(const [path,name,insideForm] of [['../src/ui/PetUI.ts','renderPet',false],['../src/ui/layout.ts','renderControls',true]] as const){
+  for(const [path,name,insideForm] of [['../src/stage/PetUI.ts','renderPet',false],['../src/settings/layout.ts','renderControls',true]] as const){
     const nodes=elements(render(path,name));
     for(const id of ['voice-action-slot','chat-form','chat-input','send-chat','stop-chat'])assert.equal(nodes.filter(n=>n.id===id).length,1,`${name} ${id}`);
     const slot=nodes.find(n=>n.id==='voice-action-slot')!,input=nodes.find(n=>n.id==='chat-input')!,send=nodes.find(n=>n.id==='send-chat')!;

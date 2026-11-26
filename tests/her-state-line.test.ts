@@ -8,17 +8,17 @@ import path from 'node:path';
 import {
   CONTACT_MOOD_REASON, HER_CONTACTS, HER_CONTACT_RECENT_MS, HER_STATE_MAX, STAGE_MUSIC_STATES, asksAboutHearing, briefHearingWords, contactWords, contactsToTell, hearingInnerLoopLine,
   hearingWords, parseStageStateReport, type HearingNow, type HerContact, type HerStateNow, type StageMusicState,
-} from '../shared/her-state';
-import { PERCEPTION_LINE_MAX, SENSING_AND_HEARING_OFF_LINE, perceptionTurnLine, type PerceptionTurn } from '../shared/perception-rule';
-import { HearingTold, STAGE_STATE_TTL_MS, StageStateHost, createHerState, hearingSource } from '../electron/her-state-host';
+} from '../shared/mood/her-state';
+import { PERCEPTION_LINE_MAX, SENSING_AND_HEARING_OFF_LINE, perceptionTurnLine, type PerceptionTurn } from '../shared/brain/perception-rule';
+import { HearingTold, STAGE_STATE_TTL_MS, StageStateHost, createHerState, hearingSource } from '../electron/mood/her-state-host';
 import { musicPresence } from '../src/stage/music-presence';
-import { HER_STATE_REPORT_HEARTBEAT_MS, HerStateReporter } from '../src/ui/her-state-reporter';
-import { buildInnerLoopPrompt, innerLoopQuiet } from '../shared/inner-loop';
-import { innerLoopPrompt, type InnerLoopContextSources } from '../electron/inner-loop/context';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
-import { CompanionService } from '../electron/companion';
-import type { MoodInput } from '../shared/mood-runtime';
-import type { AudioCaptureState } from '../shared/audio-capture';
+import { HER_STATE_REPORT_HEARTBEAT_MS, HerStateReporter } from '../src/mood/her-state-reporter';
+import { buildInnerLoopPrompt, innerLoopQuiet } from '../shared/initiative/inner-loop';
+import { innerLoopPrompt, type InnerLoopContextSources } from '../electron/initiative/inner-loop/context';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
+import { CompanionService } from '../electron/brain/companion';
+import type { MoodInput } from '../shared/mood/mood-runtime';
+import type { AudioCaptureState } from '../shared/senses/audio-capture';
 
 const sight = (patch: Partial<PerceptionTurn> = {}): PerceptionTurn => ({ screen: false, camera: 'off', attached: { screen: false, camera: false }, asked: null, ...patch });
 const hearing = (source: HearingNow['source'], music: StageMusicState | null, always = false, transcript = false): HearingNow =>
@@ -36,7 +36,7 @@ test('典型几种情况的原文：默认最短，开着音乐照实说在不�
   assert.match(perceptionTurnLine(off, state(hearing('system-audio', 'nod'))), /你正跟着轻轻点头、晃一晃；你只听得到节奏，听不懂歌词。$/u);
   assert.match(perceptionTurnLine(off, state(hearing('system-audio', 'still'))), /现在在放有节奏的声音（像是歌），你没跟着动；/u);
   assert.match(perceptionTurnLine(off, state(hearing('system-audio', 'silent'))), /用户让你听到电脑里的声音，这会儿好像没声音。$/u);
-  // On, but the pet window has said nothing fresh: only what the host knows.
+  // On, but the companion window has said nothing fresh: only what the host knows.
   assert.match(perceptionTurnLine(off, state(hearing('system-audio', null))), /用户让你听到电脑里的声音；你只听得到声音和节奏，听不懂歌词。$/u);
   assert.match(perceptionTurnLine(off, state(hearing('microphone', 'dance'))), /用户让你听到麦克风里的声音/u);
   // A transcript block in this turn: the words are the transcript's, not "听不懂歌词".

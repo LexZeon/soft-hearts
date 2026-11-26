@@ -1,5 +1,5 @@
 /**
- * #32 on the real MoodHost (electron/mood.ts) with an isolated temporary profile: 20 days of one snack a day before (FixedFeedCue =
+ * #32 on the real MoodHost (electron/mood/mood.ts) with an isolated temporary profile: 20 days of one snack a day before (FixedFeedCue =
  * the old "啊～ / 嗯～") and after (FeedCueDirector); eating several in a row slows her down by #21's own freshness; #21's landing
  * reaches the bite; I-019's taste (its mood shift) colours the next snack for a while; her I-019 line keeps the word away; nothing
  * while 自动表现 is off; the why developer-only and never saved. FEED_CUE_REPORT=1 prints the 20 days and real why lines.
@@ -9,11 +9,11 @@ import test from 'node:test';
 import os from 'node:os';
 import path from 'node:path';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
-import { MoodHost } from '../electron/mood';
-import { DEFAULT_MOOD_PARAMETERS, type MoodParameters } from '../shared/mood';
-import type { MoodView } from '../shared/mood-runtime';
-import { FEED_SOUND_TEXT } from '../shared/feed-cue';
-import { FEED_MOOD_REASONS } from '../shared/feed-recognition';
+import { MoodHost } from '../electron/mood/mood';
+import { DEFAULT_MOOD_PARAMETERS, type MoodParameters } from '../shared/foundation/mood';
+import type { MoodView } from '../shared/mood/mood-runtime';
+import { FEED_SOUND_TEXT } from '../shared/initiative/feed-cue';
+import { FEED_MOOD_REASONS } from '../shared/senses/feed-recognition';
 import { FixedBoredomTiming } from '../shared/behaviors/boredom-timing/fake';
 import { TouchFeedEffectDirector } from '../shared/behaviors/touch-feed-effect/choose';
 import { FixedTouchFeedEffect } from '../shared/behaviors/touch-feed-effect/fake';
@@ -22,7 +22,7 @@ import type { TouchFeedEffectHost } from '../shared/behaviors/touch-feed-effect/
 import { FEED_LANDING_WORDS, FEED_LINE_FOLLOWS_WORDS, FeedCueDirector } from '../shared/behaviors/feed-cue/choose';
 import { FixedFeedCue } from '../shared/behaviors/feed-cue/fake';
 import type { FeedCueHost, FeedCueNow, FeedCueView } from '../shared/behaviors/feed-cue/interface';
-import { formatFeedCueLines } from '../src/ui/MoodPanel';
+import { formatFeedCueLines } from '../src/mood/MoodPanel';
 import { seeded } from './helpers/seeded';
 
 const DAY = 24 * 60 * 60_000;

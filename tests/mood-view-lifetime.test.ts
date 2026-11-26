@@ -7,8 +7,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import ts from 'typescript';
-import { MoodViewLifetime } from '../src/ui/mood-view-lifetime';
-import { FatigueHost, SYSTEM_FATIGUE_CLOCK } from '../electron/fatigue-host';
+import { MoodViewLifetime } from '../src/mood/mood-view-lifetime';
+import { FatigueHost, SYSTEM_FATIGUE_CLOCK } from '../electron/mood/fatigue-host';
 
 test('same revision cannot carry a different token/character and old reads cannot resurrect a reset scope', () => {
   const guard = new MoodViewLifetime();
@@ -25,9 +25,9 @@ test('same revision cannot carry a different token/character and old reads canno
 });
 
 test('actual host exports a larger revision even when a non-view refresh rotated its token', async () => {
-  const root = fileURLToPath(new URL('../', import.meta.url)), target = path.resolve(process.env.FATIGUE_MOOD_TEST_TARGET ?? path.join(root, 'electron/mood.ts'));
-  assert.ok([path.join(root, 'electron/mood.ts')].includes(target));
-  const text = await readFile(target, 'utf8'), requireBase = createRequire(path.join(root, 'electron/mood.ts'));
+  const root = fileURLToPath(new URL('../', import.meta.url)), target = path.resolve(process.env.FATIGUE_MOOD_TEST_TARGET ?? path.join(root, 'electron/mood/mood.ts'));
+  assert.ok([path.join(root, 'electron/mood/mood.ts')].includes(target));
+  const text = await readFile(target, 'utf8'), requireBase = createRequire(path.join(root, 'electron/mood/mood.ts'));
   const compiled = ts.transpileModule(text, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, esModuleInterop: true } }).outputText;
   const module = { exports: {} as any };
   new Function('require', 'module', 'exports', compiled)((name: string) => name === './fatigue-host' ? { FatigueHost, SYSTEM_FATIGUE_CLOCK } : requireBase(name), module, module.exports);

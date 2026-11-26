@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { EMPTY_RUNTIME, MediaRuntime } from "../electron/runtime";
+import { EMPTY_RUNTIME, MediaRuntime } from "../electron/senses/media-runtime";
 
 const frame = "data:image/jpeg;base64,aGVsbG8=";
 test("runtime toggles start off, remain ephemeral and assign only explicit callers", () => {

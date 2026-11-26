@@ -1,7 +1,9 @@
 /**
- * FROZEN COPY of shared/fatigue.ts as it was before I-022 (commit 5fde22d, 2026-11-04), only for tests/sleep-rhythm.test.ts:
+ * FROZEN COPY of shared/mood/fatigue.ts as it was before I-022 (commit 5fde22d, 2026-11-04), only for tests/sleep-rhythm.test.ts:
  * "白天的行为和原来一样" is checked step by step against this file. Never import it from app code and never edit it below
  * this comment; a change of the day behaviour must show up as a failing comparison, not as an edit here.
+ * One recorded exception (心情第二批): the E term of channelEffect follows that approved
+ * mood change (−0.015·E → +0.010·E). It failed these comparisons as intended; it is not part of I-022, which these tests isolate.
  *
  * Product simulation, not a physiological measurement. Pure, host-owned and character-scoped.
  */
@@ -127,7 +129,7 @@ function channelEffect(input: FatigueInput, p: Readonly<FatigueParameters>): num
     n[k] = clamp((v - b) / (v >= b ? 100 - b : b), -1, 1);
   }
   // Bounded product affect: relative alertness vs settled/tension presentation.
-  return clamp(-0.020*n.D + 0.015*n.O - 0.015*n.E - 0.035*n.N + 0.025*n.C, -p.hormoneCap, p.hormoneCap);
+  return clamp(-0.020*n.D + 0.015*n.O + 0.010*n.E - 0.035*n.N + 0.025*n.C, -p.hormoneCap, p.hormoneCap);
 }
 function transition(s: FatigueState, dt: number, blocked: boolean, p: Readonly<FatigueParameters>): FatigueState {
   let next: FatiguePhase | null = null, dwell = 0;

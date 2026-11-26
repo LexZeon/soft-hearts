@@ -19,10 +19,10 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { findClaude } from '../../electron/claude';
-import { claudeSessionSystemPrompt } from '../../electron/claude-session-prompt';
-import { PERCEPTION_RULE, perceptionTurnLine, type PerceptionTurn } from '../../shared/perception-rule';
-import { asksAboutHearing, type HerStateNow, type StageMusicState } from '../../shared/her-state';
+import { findClaude } from '../../electron/brain/claude';
+import { claudeSessionSystemPrompt } from '../../electron/brain/claude-session-prompt';
+import { PERCEPTION_RULE, perceptionTurnLine, type PerceptionTurn } from '../../shared/brain/perception-rule';
+import { asksAboutHearing, type HerStateNow, type StageMusicState } from '../../shared/mood/her-state';
 import { GENE_DAY_CARD } from '../inner-loop-day-cards';
 import { replay, type TurnRecord } from './prompt-eval-analysis';
 import type { EvalScenario } from './prompt-eval-scenarios';
@@ -52,7 +52,7 @@ export const stateWith = (music: StageMusicState | null): HerStateNow => ({
 export const OLD_LINE = perceptionTurnLine(SIGHT_OFF);
 export const lineFor = (music: StageMusicState | null, brief = false) => perceptionTurnLine(SIGHT_OFF, { ...stateWith(music), say: brief ? 'brief' : 'full' });
 /**
- * What electron/her-state-host.ts gives a conversation with the switch unchanged: full on its first turn, then brief on a message
+ * What electron/mood/her-state-host.ts gives a conversation with the switch unchanged: full on its first turn, then brief on a message
  * about it (asksAboutHearing) and nothing on the others (all three honest questions are about it).
  */
 const shippedLine = (music: StageMusicState | null) => ({ index, user }: { index: number; user: string }) =>

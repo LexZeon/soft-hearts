@@ -6,14 +6,14 @@ import { resolve } from 'node:path';
 import { Matrix4, Ray, ShaderMaterial, SkinnedMesh, Texture, Triangle, Vector3 } from 'three';
 import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
 import { ProceduralBlush, probeBlushAnchors, type BlushAnchors } from '../src/stage/procedural-blush';
-import { ProceduralTears } from '../src/stage/procedural-tears';
+import { ProceduralTears } from '../src/mood/procedural-tears';
 
 // Read only the hash-pinned public asset from the current project source.
 // No private model, browser, GPU, texture decoding or application is involved.
 const candidate = resolve('.');
 const geneSha256 = '0ef63a75a7699f58399ae655357f91542fc5209355aac925a589aac42669df37';
 async function gene() {
-  const manifest = JSON.parse(await readFile(resolve(candidate, 'shared/bundled-assets.json'), 'utf8'));
+  const manifest = JSON.parse(await readFile(resolve(candidate, 'shared/actions/bundled-assets.json'), 'utf8'));
   const bytes = await readFile(resolve(candidate, 'assets/bundled', manifest.root, manifest.model.relativePath));
   assert.equal(createHash('sha256').update(bytes).digest('hex'), geneSha256);
   assert.equal(manifest.model.sha256, geneSha256);

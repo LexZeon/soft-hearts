@@ -27,13 +27,32 @@ interface TransitionProperty { binding: Binding; from: readonly number[]; path: 
 export type PoseRates = (name: string) => readonly number[] | null;
 const DEFAULT_DURATION_MS = 400;
 /**
- * R29f: the captured start keeps moving the way it was and slows to a stop (its speed decays as exp(−k t) with
- * k = DRIFT_PER_DURATION / duration), while the weight carries it to the live target. Shown speed at the first
- * frame = the speed it had (no stop dead at the start of a hand-off); the extra way it coasts is at most
- * MAX_DRIFT_DEG (rotations), so a fast swing never flings past.
+ * R29f, hand-back velocity (docs/claude/2026-11-21-motion-handback-velocity.md): the captured start keeps moving the
+ * way it was and slows to a stop like a critically damped spring, while the weight carries it to the live target: its
+ * speed is v · (1 + a t) · e^(−a t). The shown speed at the first frame is the speed it had (no stop dead), the slowing
+ * starts from zero (no jolt) and is hardest early, at t = 1 / a, before the weight's own pull peaks (≈ 0.21 of the
+ * bridge); it coasts 2 v / a on in all. `a` (coastRate): an ordinary speed coasts a tenth of the bridge at that speed,
+ * at most MAX_DRIFT_DEG; a fast one (a wrist at 2–3° a frame), which would then slow harder than
+ * COAST_ACCELERATION_DEG, slows at that and coasts further, never more than MAX_FAST_DRIFT_DEG. Before, a speed above
+ * MAX_DRIFT_DEG · 4 / duration was cut down to it at the first frame: most of a fast wrist's speed was lost in one frame
+ * (old stage, Gene, 60 fps: 2.52° unexpected step), and the window / full-screen hand-back had no speed at all.
  */
-export const DRIFT_PER_DURATION = 4;
 export const MAX_DRIFT_DEG = 10;
+export const MAX_FAST_DRIFT_DEG = 30;
+export const COAST_ACCELERATION_DEG = 900;
+/** `a` (1/s) for a rotation speed (deg/s) in a bridge of `durationS`; positions (speedDeg 0) coast the ordinary way. */
+export function coastRate(speedDeg: number, durationS: number): number {
+  const ordinary = 20 / Math.max(0.05, durationS); // 2 v / a = v · duration / 10
+  if (!(speedDeg > 1e-6)) return ordinary;
+  const a = Math.max(ordinary, 2 * speedDeg / MAX_DRIFT_DEG);
+  if (a * speedDeg / Math.E <= COAST_ACCELERATION_DEG) return a;
+  return Math.max(Math.E * COAST_ACCELERATION_DEG / speedDeg, 2 * speedDeg / MAX_FAST_DRIFT_DEG);
+}
+/** How far the start has coasted by `t` (s), in seconds of its starting speed: ∫ (1 + a u) e^(−a u) du; 2 / a in all. */
+export function coastDistance(t: number, a: number): number {
+  if (!(a > 0) || !(t > 0)) return 0;
+  return 2 / a - (2 / a + t) * Math.exp(-a * t);
+}
 const finite = (values: readonly number[]) => values.every(Number.isFinite);
 const validQuaternion = (values: readonly number[]) => values.length === 4 && finite(values)
   && values.reduce((sum, value) => sum + value * value, 0) > 1e-12;
@@ -139,16 +158,18 @@ export class MotionTransition {
     this.elapsedMs = Math.min(this.durationMs, this.elapsedMs + (Number.isFinite(delta) ? Math.max(0, Math.min(0.1, delta)) : 0) * 1_000);
     this.weight = smooth(this.elapsedMs / this.durationMs);
     if (this.weight >= 1) { this.properties.clear(); return; }
-    // R29f: how far the captured start has coasted on its own speed (seconds of that speed), see DRIFT_PER_DURATION.
-    const k = DRIFT_PER_DURATION / Math.max(0.05, this.durationMs / 1000), coast = (1 - Math.exp(-k * this.elapsedMs / 1000)) / k;
+    // R29f: how far the captured start has coasted on its own speed (seconds of that speed), see coastRate.
+    const seconds = this.elapsedMs / 1000, durationS = this.durationMs / 1000;
     for (const [name, { binding, from, path, rate }] of this.properties) {
       const target = this.read(binding);
       if (!target || !this.valid(binding, target)) continue;
       this.bases.set(name, { binding, value: target });
+      const speedDeg = rate && binding.kind === 'quaternion' ? Math.hypot(rate[0], rate[1], rate[2]) * 180 / Math.PI : 0;
+      const coast = rate ? coastDistance(seconds, coastRate(speedDeg, durationS)) : 0;
       if (this.weight === 0 && !(rate && coast > 0)) { this.write(binding, from); path?.reset(); }
       else if (binding.kind === 'quaternion' && path) {
         this.fromQuaternion.fromArray(from);
-        if (rate && coast > 0) this.coastRotation(rate, coast, k);
+        if (rate && coast > 0) this.coastRotation(rate, coast);
         this.targetQuaternion.fromArray(target);
         if (this.weight === 0) { binding.bone.quaternion.copy(this.fromQuaternion); path.reset(); }
         else path.blend(this.fromQuaternion, this.targetQuaternion, this.weight, binding.bone.quaternion);
@@ -159,10 +180,9 @@ export class MotionTransition {
     }
   }
 
-  /** fromQuaternion ← from · exp(rate · coast), the way bounded by MAX_DRIFT_DEG in total (rate · 1/k). */
-  private coastRotation(rate: readonly number[], coast: number, k: number): void {
-    const speed = Math.hypot(rate[0], rate[1], rate[2]), limit = MAX_DRIFT_DEG * Math.PI / 180 * k;
-    const scale = speed > limit ? limit / speed : 1, angle = speed * scale * coast;
+  /** fromQuaternion ← from · exp(rate · coast); the whole way is bounded by coastRate (MAX_FAST_DRIFT_DEG at most). */
+  private coastRotation(rate: readonly number[], coast: number): void {
+    const speed = Math.hypot(rate[0], rate[1], rate[2]), angle = speed * coast;
     if (!(angle > 1e-9)) return;
     this.coast.set(rate[0] / speed, rate[1] / speed, rate[2] / speed);
     this.coastQuaternion.setFromAxisAngle(this.coast, angle);

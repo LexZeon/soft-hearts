@@ -2,9 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import ts from 'typescript';
-import { VoiceContinuationStatus } from '../src/ui/VoiceContinuationStatus';
+import { VoiceContinuationStatus } from '../src/voice/VoiceContinuationStatus';
+import { rendererSource as readRendererSource } from './helpers/renderer-source'; // overhaul step 5: src/main.ts and src/wiring/*.ts
 
-const source = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
+const source = readRendererSource();
 const ast = ts.createSourceFile('main.ts', source, ts.ScriptTarget.Latest, true);
 const rows: ts.IfStatement[] = [];
 function visit(node: ts.Node) { if (ts.isIfStatement(node) && node.expression.getText(ast) === 'voiceStatus') rows.push(node); ts.forEachChild(node, visit); }

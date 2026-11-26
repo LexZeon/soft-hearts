@@ -10,9 +10,9 @@
 import { spawnSync } from 'node:child_process';
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { MoodReplyProtocol } from '../../electron/mood-chat';
+import { MoodReplyProtocol } from '../../electron/mood/mood-chat';
 import { analyzeTurn, type TurnRecord } from './prompt-eval-analysis';
-import { USER_STATE_INSTRUCTION } from '../../shared/user-state';
+import { USER_STATE_INSTRUCTION } from '../../shared/senses/user-state';
 
 const root = path.resolve(import.meta.dirname, '..', '..');
 

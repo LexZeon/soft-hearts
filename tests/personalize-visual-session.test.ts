@@ -1,10 +1,10 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {randomUUID,createHash} from 'node:crypto';
 import {mkdtemp,rm,readFile,stat} from 'node:fs/promises';import os from 'node:os';import path from 'node:path';
-import {PersonalizeVisualAuthoring} from '../electron/personalize-visual-authoring';
-import {VisualBehaviorStore} from '../electron/visual-behavior-store';import {atomicWriteFile} from '../electron/atomic-file';
-import {withCodexImages} from '../electron/codex-images';import {BEHAVIOR_RECIPES} from '../shared/behavior-recipes';
-import {VISUAL_PURPOSE,VISUAL_GENE_SHA,VISUAL_MATERIAL_TTL,emptyVisualBehavior,type VisualAuthoringState} from '../shared/personalize-visual';
-import type {SelectedVisualImage} from '../electron/selected-visual-image';
+import {PersonalizeVisualAuthoring} from '../electron/stage/personalize-visual-authoring';
+import {VisualBehaviorStore} from '../electron/senses/visual-behavior-store';import {atomicWriteFile} from '../electron/foundation/atomic-file';
+import {withCodexImages} from '../electron/safety/codex-images';import {BEHAVIOR_RECIPES} from '../shared/actions/behavior-recipes';
+import {VISUAL_PURPOSE,VISUAL_GENE_SHA,VISUAL_MATERIAL_TTL,emptyVisualBehavior,type VisualAuthoringState} from '../shared/stage/personalize-visual';
+import type {SelectedVisualImage} from '../electron/senses/selected-visual-image';
 const deferred=()=>{let resolve!:()=>void;const promise=new Promise<void>(done=>{resolve=done;});return{promise,resolve};};
 const study=()=>({observations:[{region:'eyebrow',visibility:'visible',description:'合成参考眉毛略向上'}],inferences:[{label:'可能是好奇',rationale:'仅合成接口样例',unknown:'不能推断真实情绪'}],questions:['这是好奇还是惊讶？'],insufficient:'单张静图不含动态过程'});
 const selection={semantic:'mood.content',bindingId:'face.smile',label:'用户自选的合成眉眼',strength:0.34} as const;

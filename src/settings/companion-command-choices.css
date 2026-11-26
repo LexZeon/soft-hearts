@@ -1,0 +1,6 @@
+.companion-command-choices { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.companion-command-choices__prompt, .companion-command-choices__result { flex-basis: 100%; color: #a9bac0; font-size: 11px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.companion-command-choices button { padding: 5px 10px; border: 1px solid #b7dfcc30; border-radius: 8px; background: #222f38; color: #d8e8df; font-size: 11px; }
+.companion-command-choices button:hover:not(:disabled) { background: #30443e; border-color: #b7dfcc70; }
+.companion-command-choices button:disabled { opacity: .45; cursor: default; }
+.companion-command-choices button:focus-visible { outline: 2px solid #b7dfcc; outline-offset: 2px; }

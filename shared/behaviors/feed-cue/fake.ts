@@ -2,7 +2,7 @@
  * #32 的假实现：每一份点心都是原来的"啊～""嗯～"、照常的吃法（= 原来的做法）。
  * 守约测试（tests/feed-cue.test.ts）拿它和真实现跑同一组约定；以后接新实现，先拿它对一遍。
  */
-import type { TouchFeedLandingId } from '../touch-feed-effect/knobs';
+import type { TouchFeedLandingId } from '../../mood';
 import { FEED_CUE_VIEW_AFTER_BITE_MS, FEED_CUE_VIEW_BEFORE_BITE_MS } from './choose';
 import type { FeedCueHost, FeedCueNow, FeedCueView, FeedCueWhy } from './interface';
 

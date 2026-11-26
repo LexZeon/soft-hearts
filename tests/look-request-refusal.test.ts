@@ -2,8 +2,8 @@
 // 各取了一帧屏幕。修正：说法认否定和转述，宁可漏认（按钮总能用），不能误认。docs/claude/2026-11-03-image-depth-step1.md。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { isLookAffirmation, scanLookRequest } from '../shared/look-request';
-import { LookTurns } from '../electron/look-turns';
+import { isLookAffirmation, scanLookRequest } from '../shared/senses/look-request';
+import { LookTurns } from '../electron/senses/look-turns';
 
 /** Codex 报告里的五句原句（V02）和转述原句（V03）。 */
 const CODEX_REFUSALS = ['不要看我的屏幕', '别看我屏幕', '不用看屏幕', '你先别看我屏幕', '我不想让你看我的屏幕'];

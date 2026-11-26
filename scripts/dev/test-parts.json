@@ -1,0 +1,9222 @@
+{
+ "tests/about-letter.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "foundation"
+  ]
+ },
+ "tests/action-ends-gene.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/action-ends.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "memory",
+   "unbound"
+  ]
+ },
+ "tests/actions-channel.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "settings",
+   "stage",
+   "brain",
+   "safety",
+   "actions"
+  ]
+ },
+ "tests/additional-motions.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "actions"
+  ]
+ },
+ "tests/agent-channel-close.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/agent-channel-gates.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety"
+  ]
+ },
+ "tests/agent-channel-panel.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/agent-channel-registry.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/agent-channel-transport.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety"
+  ]
+ },
+ "tests/ambient-asr.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/ambient-attention.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/ambient-audio-controller.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "wiring"
+  ]
+ },
+ "tests/ambient-audio-runtime.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "foundation"
+  ]
+ },
+ "tests/ambient-audio-segments.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/ambient-audio-store.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "foundation"
+  ]
+ },
+ "tests/ambient-comments.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/ambient-conversation-history.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "settings",
+   "brain"
+  ]
+ },
+ "tests/ambient-local-asr.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "settings",
+   "senses",
+   "memory",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/ambient-transcript-history.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/ammo-runtime.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/app-identity.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "cards",
+   "voice",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/app-session.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "mood",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/app-tools-golden.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/asleep-in-flight.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "mood",
+   "brain",
+   "initiative"
+  ]
+ },
+ "tests/asr-worker-end.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/asr.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "settings",
+   "senses",
+   "foundation"
+  ]
+ },
+ "tests/assistant-handbook.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety"
+  ]
+ },
+ "tests/assistant-history-left-out-kinds.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety",
+   "cards"
+  ]
+ },
+ "tests/assistant-panel.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/assistant-touching-handbook.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety"
+  ]
+ },
+ "tests/assistant.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety"
+  ]
+ },
+ "tests/atomic-file-stores.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "cards",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/atomic-file.test.ts": {
+  "owner": "foundation",
+  "parts": [
+   "foundation"
+  ]
+ },
+ "tests/audio-capture-host.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "voice"
+  ]
+ },
+ "tests/audio-capture-release-race.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/audio-dance-client.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/audio-dance-input.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "wiring"
+  ]
+ },
+ "tests/audio-idle-keep-warm.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/audio-reading-app-wiring.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "mood",
+   "initiative",
+   "voice",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/audio-reading-archive.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/audio-reading-client-race.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "voice"
+  ]
+ },
+ "tests/audio-reading-copy-recovery.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory",
+   "voice"
+  ]
+ },
+ "tests/audio-reading-preload.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety",
+   "wiring"
+  ]
+ },
+ "tests/audio-reading-recognition.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/audio-start-freeze.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "initiative",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/b06-feed-cue-prefetch.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "initiative",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/b06-feed-cues.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "senses",
+   "mood",
+   "initiative",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/b06-feed-pause-speech.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "brain",
+   "initiative",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/b06-pat-speech-proof.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/backend.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "brain",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/baseline.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/behavior-body-real.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/behavior-body.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/behavior-map-page.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/behavior-map.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/behavior-motion-host.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/behavior-motion-resources.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "actions"
+  ]
+ },
+ "tests/behavior-motion.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/behavior-recipes.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "actions"
+  ]
+ },
+ "tests/blush-calibration-ui.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/blush-calibration.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood"
+  ]
+ },
+ "tests/blush-channel.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/blush-follow.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "foundation"
+  ]
+ },
+ "tests/blush-host.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/blush-procedural-depth.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/blush-vroid-eye-names.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/blush.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/body-motion-access.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "actions"
+  ]
+ },
+ "tests/body-motion-host.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "mood",
+   "actions"
+  ]
+ },
+ "tests/body-motion-qa.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "actions"
+  ]
+ },
+ "tests/body-motion-stage.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "actions"
+  ]
+ },
+ "tests/boredom-timing-host.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "stage",
+   "mood",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/boredom-timing-t207.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "mood",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/boredom-timing.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/brain-gates.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "wiring"
+  ]
+ },
+ "tests/bubble-follow-core.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/bubble-follow-host.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "mood",
+   "brain",
+   "unbound",
+   "voice",
+   "wiring"
+  ]
+ },
+ "tests/bubble-follow-journal.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/bubble-follow-unbound.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/bubble-follow-voice.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/bubble-follow-window.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "stage",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/bubble-hold-read-pause.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/bubble-linger-one-rule.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "unbound"
+  ]
+ },
+ "tests/bundle-inputs.test.mjs": {
+  "owner": "safety",
+  "parts": [
+   "safety",
+   "wiring"
+  ]
+ },
+ "tests/bundled-assets.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/bundled-attribution.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/busy-chat-speech.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/bvh-to-gene.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/c1-startup-split-records.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards"
+  ]
+ },
+ "tests/c2-character-page.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "memory",
+   "brain",
+   "initiative",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/c2-switch-shows-her-chat.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/c3-card-update-in-place.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/c3-card-update-surfaces.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "safety",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/c3-update-keeps-conversation.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/call-her-voice.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "senses",
+   "memory",
+   "voice"
+  ]
+ },
+ "tests/call-look-first-char.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/call-offers.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "senses",
+   "brain",
+   "initiative",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/call-stop-volume.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/camera-refusal.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "settings",
+   "senses",
+   "foundation"
+  ]
+ },
+ "tests/camera-sample.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/camera-two-switches.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "settings",
+   "stage",
+   "senses",
+   "brain",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/capability-coverage.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "mood"
+  ]
+ },
+ "tests/capability-preview.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/capability-registry.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/capture-smoothing.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses"
+  ]
+ },
+ "tests/capture.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/card-slips.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "initiative",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/care-asked.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "brain"
+  ]
+ },
+ "tests/channel-compositors.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/channel-gates.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "settings",
+   "stage",
+   "senses",
+   "unbound",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/channel-talk-state.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "settings",
+   "mood",
+   "brain",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/channel-voice-spend.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "settings",
+   "safety",
+   "voice"
+  ]
+ },
+ "tests/character-card-export-allowlist.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards"
+  ]
+ },
+ "tests/character-card-lint.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/character-cards-ui.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/character-cards.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards"
+  ]
+ },
+ "tests/character-context-lifecycle.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "senses",
+   "brain",
+   "cards",
+   "voice",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/character-gene-binding.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards"
+  ]
+ },
+ "tests/character-model-split.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards"
+  ]
+ },
+ "tests/character-mood-template.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/character-response-host.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "cards"
+  ]
+ },
+ "tests/character-response-portable.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards"
+  ]
+ },
+ "tests/character-response-store.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/character-response-ui.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/character-response.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/character-scope-isolation.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "brain",
+   "initiative"
+  ]
+ },
+ "tests/character-sticker-controls.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "stage",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/character-sticker-host.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards",
+   "wiring"
+  ]
+ },
+ "tests/character-sticker-png.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards"
+  ]
+ },
+ "tests/character-sticker-stage.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "cards",
+   "wiring"
+  ]
+ },
+ "tests/character-understanding.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "brain",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/character-voice-card.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/character-voice-paths.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "safety",
+   "voice",
+   "wiring"
+  ]
+ },
+ "tests/character-voice-resolver.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/character-voice-step2.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "initiative",
+   "cards",
+   "voice"
+  ]
+ },
+ "tests/character-voice-ui.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/chat-acceptance-model.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/chat-acceptance-senses.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/chat-acceptance-warm.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/chat-acceptance.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/chat-availability-copy.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/chat-availability-host.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/chat-availability-notice.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/chat-availability-session.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/chat-availability-wiring.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "safety"
+  ]
+ },
+ "tests/chat-availability.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/chat-gesture-host.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "mood",
+   "brain",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/chat-gesture-selector.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/chat-gesture.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/chat-outage.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/chat-refusal-fallback.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/chat-settings-card.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/chat-settings-unlisted-line.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/chat-settings.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/chat-unavailable-alive.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/cheek-pinch-dom.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood"
+  ]
+ },
+ "tests/cheek-pinch-host.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/cheek-pinch-region.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "stage",
+   "mood"
+  ]
+ },
+ "tests/cheek-pinch.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood"
+  ]
+ },
+ "tests/chest-hand-collision.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/claude-code-repoint-c089.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety"
+  ]
+ },
+ "tests/claude-code-repoint.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety"
+  ]
+ },
+ "tests/claude-env-from-session.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory",
+   "mood",
+   "brain",
+   "safety",
+   "wiring"
+  ]
+ },
+ "tests/claude-env-launch.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/claude-failure.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/claude-launch-off-main.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/claude-launch-up-gate.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/claude-names.test.mjs": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/claude-peer-refuse.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "memory",
+   "brain",
+   "safety",
+   "wiring"
+  ]
+ },
+ "tests/claude-per-message-frames.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "wiring"
+  ]
+ },
+ "tests/claude-session-pool.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/claude-session-prompt.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/claude-session-reuse.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "memory",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/claude-session-shown.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "senses",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/claude-session.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/claude-simulated-failure.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/claude-smoke-fixture.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/claude-start-gate.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/claude-system-prompt.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "initiative"
+  ]
+ },
+ "tests/claude-tasks-policy.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "brain",
+   "safety"
+  ]
+ },
+ "tests/claude-tasks.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "brain",
+   "safety"
+  ]
+ },
+ "tests/claude.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/click-through-default.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "foundation"
+  ]
+ },
+ "tests/click-through-interactive.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/click-through-tight.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "unbound"
+  ]
+ },
+ "tests/clipboard-permission.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety",
+   "wiring"
+  ]
+ },
+ "tests/close-beat-deadlock.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "brain",
+   "unbound"
+  ]
+ },
+ "tests/close-beat-order.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "brain",
+   "unbound",
+   "voice"
+  ]
+ },
+ "tests/close-moments-1626-gene.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/close-moments-1626.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "memory",
+   "brain",
+   "unbound",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/closer-no-frame.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/codex-discovery.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/codex-images.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety"
+  ]
+ },
+ "tests/codex-task-ui.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/codex-tasks.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety"
+  ]
+ },
+ "tests/collision-proxy.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/color-block-log.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/companion-breath.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "stage",
+   "brain",
+   "voice",
+   "actions",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/companion-command-adapter.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "stage",
+   "wiring"
+  ]
+ },
+ "tests/companion-command-host.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings"
+  ]
+ },
+ "tests/companion-command-language.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/companion-flush.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/companion-follow-mouse-dialogue-coupling.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings"
+  ]
+ },
+ "tests/companion-follow-mouse-intent.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings"
+  ]
+ },
+ "tests/companion-framing.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "stage",
+   "brain",
+   "safety",
+   "voice",
+   "actions",
+   "wiring"
+  ]
+ },
+ "tests/companion-mood-template.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "brain",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/companion-readout-latency.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "voice"
+  ]
+ },
+ "tests/companion-readout-volume-intent.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings"
+  ]
+ },
+ "tests/companion-refusal-rules.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/companion-rules.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/companion-step-aside.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/companion-stop-readout-intent.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "voice"
+  ]
+ },
+ "tests/companion-visibility-dialogue-coupling.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings"
+  ]
+ },
+ "tests/companion-visibility-intent.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings"
+  ]
+ },
+ "tests/companion.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/completed-prefix-proof.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/completed-reply-commit.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/completed-reply-full-body.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/completed-reply-ready-expiry.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/continuous-expression.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood"
+  ]
+ },
+ "tests/contracts-surface.test.mjs": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "stage",
+   "senses",
+   "memory",
+   "mood",
+   "brain",
+   "unbound",
+   "initiative",
+   "safety",
+   "cards",
+   "voice",
+   "actions",
+   "wiring"
+  ]
+ },
+ "tests/control-avoid-wiring.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/control-awake.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/control-chat-layout.test.mjs": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "mood"
+  ]
+ },
+ "tests/control-navigation-roots.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings"
+  ]
+ },
+ "tests/control-navigation.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings"
+  ]
+ },
+ "tests/conversation-context.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/conversation-flow.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "settings",
+   "stage",
+   "senses",
+   "mood",
+   "brain",
+   "voice",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/conversation-history-boundary.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/conversation-limits.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings"
+  ]
+ },
+ "tests/crying-timeline.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/daily-check-shutdown.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/dance-request.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "actions"
+  ]
+ },
+ "tests/data-map.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "senses",
+   "memory",
+   "brain",
+   "initiative",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/default-place-near-first.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/default-place-near.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "stage",
+   "senses",
+   "unbound",
+   "voice"
+  ]
+ },
+ "tests/default-pose.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "stage",
+   "actions"
+  ]
+ },
+ "tests/desktop-channel.test.ts": {
+  "owner": "foundation",
+  "parts": [
+   "foundation"
+  ]
+ },
+ "tests/desktop-channels.test.mjs": {
+  "owner": "foundation",
+  "parts": [
+   "foundation"
+  ]
+ },
+ "tests/desktop-entry-chain.test.ts": {
+  "owner": "wiring",
+  "parts": [
+   "wiring"
+  ]
+ },
+ "tests/desktop-profiles.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/desktop-shortcut.test.ts": {
+  "owner": "foundation",
+  "parts": [
+   "foundation"
+  ]
+ },
+ "tests/dev-build-candidate.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/diary-panel.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "foundation"
+  ]
+ },
+ "tests/diary.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "brain",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/draft-fill.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "brain"
+  ]
+ },
+ "tests/draft-leak-probe.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "initiative"
+  ]
+ },
+ "tests/draw-order.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood",
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/drowsy-expression.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/drowsy-public-gene.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/drowsy-targets.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/e1-expression-preview-ui.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/e1-expression-show.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/electron-cleanup.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/emotional-voice.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/emphasis-marks.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/english-drafts-memory.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "brain"
+  ]
+ },
+ "tests/english-settings-memorial.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "foundation"
+  ]
+ },
+ "tests/english-ui-audit.test.ts": {
+  "owner": "foundation",
+  "parts": [
+   "foundation"
+  ]
+ },
+ "tests/envoice-english-system-voice.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/experience-archive.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/experience-backup-data-map.test.ts": {
+  "owner": "foundation",
+  "parts": [
+   "foundation"
+  ]
+ },
+ "tests/experience-backup-voice-keep.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/experience-backup.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/experience-daily-check.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/experience-nightly-stable.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/experience-quit-app.test.mjs": {
+  "owner": "foundation",
+  "parts": [
+   "foundation"
+  ]
+ },
+ "tests/eye-head-gene.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/eye-head.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "unbound"
+  ]
+ },
+ "tests/f7-pause-talk.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "settings",
+   "memory",
+   "mood",
+   "brain",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/face-chat.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory",
+   "brain"
+  ]
+ },
+ "tests/face-check-core.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/face-check-host.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "safety"
+  ]
+ },
+ "tests/face-check-panel.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory",
+   "foundation"
+  ]
+ },
+ "tests/face-check-real-models.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/face-check-restart.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory"
+  ]
+ },
+ "tests/face-exclusive.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "actions"
+  ]
+ },
+ "tests/face-head-twitch.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/face-twitch-round2.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "memory",
+   "mood",
+   "brain",
+   "actions"
+  ]
+ },
+ "tests/face-twitch-round3.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "stage",
+   "mood"
+  ]
+ },
+ "tests/familiarity-eval.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory"
+  ]
+ },
+ "tests/fatigue-algorithm.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/fatigue-host.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood"
+  ]
+ },
+ "tests/fatigue-panel-view.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood"
+  ]
+ },
+ "tests/fatigue-presentation.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood"
+  ]
+ },
+ "tests/fatigue-speech-composer.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "voice"
+  ]
+ },
+ "tests/feed-cue-host.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "senses",
+   "mood",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/feed-cue-timing.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "mood",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/feed-cue.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "senses",
+   "mood",
+   "initiative",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/fidelity-card-files.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards"
+  ]
+ },
+ "tests/fidelity-refusal.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/fidelity-rules.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/fidelity.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/first-start-harness.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/follow-mouse-short-phrases.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings"
+  ]
+ },
+ "tests/foreground-asr.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/frozen-inputs.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/gaze-at-user.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "unbound"
+  ]
+ },
+ "tests/gaze-debug-window.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "stage",
+   "senses",
+   "unbound"
+  ]
+ },
+ "tests/gaze-debug.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/gene-preinstalled-card.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/gene-v2-card.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "cards",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/gpu-choice.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "memory",
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/gpu-reset-host.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/gpu-reset-stage.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/graceful-quit.test.ts": {
+  "owner": "foundation",
+  "parts": [
+   "foundation"
+  ]
+ },
+ "tests/greeting-on-switch.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/guard-paths-hook.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/hardcoded-zh-check.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/head-contact.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/head-pat-side.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood"
+  ]
+ },
+ "tests/her-action-host.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "actions"
+  ]
+ },
+ "tests/her-action-models.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "senses",
+   "initiative",
+   "actions"
+  ]
+ },
+ "tests/her-folder-mention.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "memory",
+   "mood",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/her-folder.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "memory",
+   "mood",
+   "initiative"
+  ]
+ },
+ "tests/her-keepsake.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/her-life-stage.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/her-life.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/her-needs-host.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/her-needs-stage.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood"
+  ]
+ },
+ "tests/her-needs-visibility.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood"
+  ]
+ },
+ "tests/her-needs.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood"
+  ]
+ },
+ "tests/her-note.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "brain"
+  ]
+ },
+ "tests/her-state-line.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "stage",
+   "senses",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/history-production-boundary.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/hover-visibility.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/hover-zones.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/i006-pause-stretch.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses",
+   "memory",
+   "mood",
+   "brain",
+   "actions"
+  ]
+ },
+ "tests/i006-watch-along.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "stage",
+   "senses",
+   "foundation"
+  ]
+ },
+ "tests/i019-feed-line-wait.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory"
+  ]
+ },
+ "tests/i019-feed-recognition.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "mood",
+   "brain",
+   "initiative"
+  ]
+ },
+ "tests/i024-capability-host.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/i024-capability-ui.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "settings",
+   "stage",
+   "brain",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/i024-model-capability-check.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/i025-gaps.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "settings",
+   "brain",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/i025-voice-input.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "settings",
+   "senses",
+   "memory",
+   "brain",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/i027-mood-judge.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "settings",
+   "memory",
+   "mood",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/i028-collapse-panels.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses",
+   "memory",
+   "mood",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i029-first-chunk.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "settings",
+   "brain",
+   "safety",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i037-reaction-small-fixes.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/i037-reactions-warm-haiku.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/i037-reactions.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "settings",
+   "memory",
+   "mood",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/i038-face-effects.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood"
+  ]
+ },
+ "tests/i038-universal-part-a.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood",
+   "actions"
+  ]
+ },
+ "tests/i040-sense-router.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "senses",
+   "mood",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/i047-watch-timely.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/i048-watch-recycle.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "senses",
+   "memory"
+  ]
+ },
+ "tests/i048-watch-session.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory"
+  ]
+ },
+ "tests/i049-keyword-wiring.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory"
+  ]
+ },
+ "tests/i059-special-day.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "mood"
+  ]
+ },
+ "tests/i061-daily-check-link.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/i061-diagnostics.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "memory",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/i061-link-read.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety"
+  ]
+ },
+ "tests/i065-channel-voice-style.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "initiative",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/i066-daily-check.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/i066-presence.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i070-drama3-character.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i070-drama3.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "settings",
+   "mood",
+   "initiative",
+   "safety",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i071-card-language-wiring.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "memory",
+   "brain",
+   "safety",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i071-card-languages.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "brain",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/i071-convert-entry.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "initiative",
+   "safety",
+   "cards"
+  ]
+ },
+ "tests/i071-convert-fix3.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "memory",
+   "safety",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/i071-convert-fix4.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "memory",
+   "safety",
+   "cards"
+  ]
+ },
+ "tests/i071-convert-fix5.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "memory",
+   "safety",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/i071-convert-fix6.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "brain",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/i071-convert-fix7.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/i071-convert-fix8-units.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/i071-convert-fix8.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "memory",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/i071-convert-fixes.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "cards"
+  ]
+ },
+ "tests/i071-convert.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "brain",
+   "cards"
+  ]
+ },
+ "tests/i071-draft-guard-language.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/i071-english-templates.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "foundation"
+  ]
+ },
+ "tests/i073-mood-face.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "stage",
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/i073-speaking-expressions.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "stage",
+   "voice"
+  ]
+ },
+ "tests/i077-music-reactions.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "memory",
+   "mood",
+   "initiative",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i077-step2.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses",
+   "memory",
+   "mood",
+   "initiative",
+   "safety",
+   "cards",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i078-sleep-habit-card.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "stage",
+   "cards"
+  ]
+ },
+ "tests/i078-sleep-step2-stage.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood"
+  ]
+ },
+ "tests/i078-sleep-step2.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/i078-sleep.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood",
+   "voice"
+  ]
+ },
+ "tests/i081-gaze.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "stage",
+   "senses",
+   "memory",
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/i082-listen-fresh.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "senses",
+   "mood",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/i084-look-at-me.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory",
+   "brain",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/i085-chat-look.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/i085-self-look.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "settings",
+   "memory",
+   "mood",
+   "initiative",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/i085-steps-2-4.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "memory",
+   "mood",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/i085-text-first.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "settings",
+   "senses",
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/i086-give-stage.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "initiative"
+  ]
+ },
+ "tests/i086-give-wiring.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/i086-give.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/i087-hands-stage.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "initiative"
+  ]
+ },
+ "tests/i087-hands-wiring.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "memory",
+   "initiative"
+  ]
+ },
+ "tests/i087-hands.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "senses",
+   "memory",
+   "mood",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/i088-period-review-panel.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "foundation"
+  ]
+ },
+ "tests/i088-period-review-writer.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/i088-period-review.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory"
+  ]
+ },
+ "tests/i089-day-read.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "brain",
+   "initiative"
+  ]
+ },
+ "tests/i089-item2-supersede.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory"
+  ]
+ },
+ "tests/i089-now-playing.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/i089-recall-matter.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory"
+  ]
+ },
+ "tests/i091-call-step4.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "senses",
+   "memory",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i091-filler-mouth.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "unbound",
+   "voice"
+  ]
+ },
+ "tests/i091-per-character-voice.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "safety",
+   "cards",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i091-voice-call.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "senses",
+   "memory",
+   "brain",
+   "safety",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i098-speak-only-on.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "senses",
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/i099-call-listening-real.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "senses",
+   "voice"
+  ]
+ },
+ "tests/i099-call-listening.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i099-smart-turn-real.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "voice"
+  ]
+ },
+ "tests/i099-smart-turn.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory",
+   "voice"
+  ]
+ },
+ "tests/i110-stance-notice.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "foundation"
+  ]
+ },
+ "tests/i112-i115-blind.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/i112-i115-prompts.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/i112-i115-round2.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/i115-scenarios.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/i117-safety-card-ui.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety"
+  ]
+ },
+ "tests/i117-safety.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "settings",
+   "mood",
+   "brain",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/i134-replay.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "brain"
+  ]
+ },
+ "tests/i136-touch-brain.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/i137-sense-cards.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "brain",
+   "initiative",
+   "safety",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i138-restart-drift.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "memory",
+   "brain"
+  ]
+ },
+ "tests/i139-chat.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "senses",
+   "mood",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i139-defences.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "senses",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/i139-draft-guard-listener.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain"
+  ]
+ },
+ "tests/i139-gate.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/i139-her-voice.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "senses",
+   "memory",
+   "brain",
+   "initiative",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i139-moving-memory-review.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "brain"
+  ]
+ },
+ "tests/i139-moving-memory.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/i139-switch-off-golden.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "senses",
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/i139-texts.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/i144-recycle-bin.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "foundation"
+  ]
+ },
+ "tests/i144-recycle-host.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/i144-recycle-ui.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/i144b-recycle-items.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "safety",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i144b-recycle-ui.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "senses",
+   "memory",
+   "foundation"
+  ]
+ },
+ "tests/i158-speech-recognition-note.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "senses",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i161-call-frames.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i161-call-glance-held.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i161-call-look-carry-over.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/i161-call-screen-look.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i161-call-semantic-look.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "mood",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i161-can-see-screen.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/i161-spoken-look.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/i166-bare-marker.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "senses",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/i166-see-and-say.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory",
+   "brain",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/i168-she-decides-to-look.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "brain",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/i170-calm-head.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "mood",
+   "unbound"
+  ]
+ },
+ "tests/i171-step-away.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/i173-channel-voice-delete.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety",
+   "voice"
+  ]
+ },
+ "tests/i173-reachable-options.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "settings",
+   "initiative",
+   "safety"
+  ]
+ },
+ "tests/i174-beat-gates.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/i174-clear-after-reply.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/i174-here.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/i174-own-line.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "initiative",
+   "voice",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/i174-pull-asleep.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "unbound"
+  ]
+ },
+ "tests/i174-rest-pose.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/i174-speech-owner.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound",
+   "voice"
+  ]
+ },
+ "tests/i174-touchable.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "mood",
+   "unbound"
+  ]
+ },
+ "tests/i174-window-arbiter.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/i175-how-long.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "brain",
+   "unbound"
+  ]
+ },
+ "tests/i175-lids-head.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "unbound"
+  ]
+ },
+ "tests/i175-talk-through.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "stage",
+   "brain",
+   "unbound",
+   "actions"
+  ]
+ },
+ "tests/i177-call-device-judge.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/i177-call-devices.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "senses",
+   "voice"
+  ]
+ },
+ "tests/i177-call-duck.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "memory",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i177-output-sink.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/i178-proactive-context.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory",
+   "brain",
+   "initiative",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/i179-mood-journal.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/i179-mood-timeline-script.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/i185-kiss-hug-gene.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "unbound"
+  ]
+ },
+ "tests/i185-kiss-hug.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "brain",
+   "unbound",
+   "wiring"
+  ]
+ },
+ "tests/i187-audio-frame-clock.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/i187-watch-together.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "stage",
+   "senses",
+   "memory",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i188-moments.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/i188-reminder-parse.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "initiative"
+  ]
+ },
+ "tests/i188-screen-events.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/i189-nod-deliberate.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/i189-pose-uses.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory",
+   "initiative"
+  ]
+ },
+ "tests/i189-read-pause.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "initiative",
+   "voice"
+  ]
+ },
+ "tests/i190-source-pickers.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "unbound",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i190-toolbar.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "foundation"
+  ]
+ },
+ "tests/i190-unbound-watch.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "unbound",
+   "voice"
+  ]
+ },
+ "tests/i192-arrival-models.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/i192-arrival-targets.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/i192-lean-in-hold.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/i192b-arrival-framing.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/i193-her-position.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "brain",
+   "unbound"
+  ]
+ },
+ "tests/i193-walk-by-screen.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "memory",
+   "brain",
+   "unbound"
+  ]
+ },
+ "tests/i193-walk-log.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "memory",
+   "unbound"
+  ]
+ },
+ "tests/i194-click-not-touch.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/i195-her-alarms.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "brain",
+   "initiative"
+  ]
+ },
+ "tests/i196-held-button-no-stroke.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood"
+  ]
+ },
+ "tests/i196-joystick-pull.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/i197-add-on-records.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "memory",
+   "voice"
+  ]
+ },
+ "tests/i197-call-add-on.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/i199-fullscreen-never-hides.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/i203-close-frames.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/i203-frames-gene.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/i203-frames.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "brain",
+   "unbound",
+   "initiative"
+  ]
+ },
+ "tests/i204-barge-in.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "senses",
+   "memory",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i205-judge-chat.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "brain",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/i205b-chosen-spot.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/i206-no-guilt-lines.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/i207-card-milestone.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "memory",
+   "brain",
+   "initiative",
+   "cards",
+   "wiring"
+  ]
+ },
+ "tests/i208-archive-step3.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "brain",
+   "initiative",
+   "cards",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/i208-archive.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "brain",
+   "safety",
+   "cards",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/i209-chime-in.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "unbound"
+  ]
+ },
+ "tests/i209-chime-turns.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "senses",
+   "mood",
+   "brain",
+   "unbound"
+  ]
+ },
+ "tests/i209-company-boundaries.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "memory",
+   "mood",
+   "brain",
+   "unbound",
+   "initiative"
+  ]
+ },
+ "tests/i209-company-lanes.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/i209-company-places.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/i209-company-presence.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "unbound",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/i209-speaker.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory"
+  ]
+ },
+ "tests/i209-stage-apart.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/i209-stage-bodies.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/i209-stage-hearing.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "memory",
+   "brain"
+  ]
+ },
+ "tests/i209-stage-height.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/i209-stage-instances.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "brain",
+   "unbound"
+  ]
+ },
+ "tests/i209-stage-mouth.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/i209-stage-places.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/i209-stage-voice.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "senses",
+   "memory",
+   "mood",
+   "brain",
+   "unbound",
+   "voice",
+   "wiring"
+  ]
+ },
+ "tests/i209-three-on-stage-gate.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/i209-turn-owner-pins.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/i209-turn-owner.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "senses",
+   "memory",
+   "mood",
+   "brain",
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/i212-screen-terms.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "brain",
+   "unbound"
+  ]
+ },
+ "tests/i219-first-language.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "settings",
+   "unbound",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/idle-gesture-host.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "stage",
+   "mood",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/idle-gesture-stage.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses",
+   "mood"
+  ]
+ },
+ "tests/idle-gesture-t207.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/idle-gesture.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/idle-motion.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "actions"
+  ]
+ },
+ "tests/image-depth-step1.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "senses",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/immersive-action.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/immersive-main.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/immersive-notice.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/immersive-popover.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/initial-controls.test.ts": {
+  "owner": "foundation",
+  "parts": [
+   "foundation"
+  ]
+ },
+ "tests/initiative-gates.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "senses",
+   "initiative",
+   "wiring"
+  ]
+ },
+ "tests/inner-loop-day.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "mood",
+   "initiative"
+  ]
+ },
+ "tests/inner-loop-engine.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "senses",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/inner-loop-host.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/inner-loop-mood.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/inner-loop-settings.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "foundation"
+  ]
+ },
+ "tests/inner-loop.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "mood",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/inner-rhythm.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/interaction-budget-day.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/interaction-budget.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "senses",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/interconnect-off-race.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety"
+  ]
+ },
+ "tests/interrupt-gate.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "senses",
+   "memory",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/ipc-shells.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety",
+   "wiring"
+  ]
+ },
+ "tests/jelly-follow.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/jelly-soft.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/jelly-touch.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/jelly-tuning.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/jelly-uniforms-reuse.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/journal-app.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "settings",
+   "memory",
+   "brain",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/journal-batch1.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "memory",
+   "mood",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/journal-behaviour.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory"
+  ]
+ },
+ "tests/journal-boundaries.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "mood",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/journal-entry.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "foundation"
+  ]
+ },
+ "tests/journal-panel.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "foundation"
+  ]
+ },
+ "tests/journal-slices.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "foundation"
+  ]
+ },
+ "tests/journal-sources.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/journal-surface.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/journal-writer.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory"
+  ]
+ },
+ "tests/k14-hug-regression.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain",
+   "unbound",
+   "voice"
+  ]
+ },
+ "tests/k14-pull-sideways.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/k14-unbound-day.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/keep-unknown-fields.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "memory",
+   "cards",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/knobs-table.test.mjs": {
+  "owner": "mood",
+  "parts": [
+   "stage",
+   "mood",
+   "brain",
+   "initiative"
+  ]
+ },
+ "tests/l2-look-up-any-interaction.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/latched-signal.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/late-controls.test.ts": {
+  "owner": "wiring",
+  "parts": [
+   "wiring"
+  ]
+ },
+ "tests/layer-check.test.mjs": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "mood",
+   "brain",
+   "safety",
+   "cards",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/lazy-parts.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety",
+   "wiring"
+  ]
+ },
+ "tests/link-path-identity-x449.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety"
+  ]
+ },
+ "tests/link-unreadable-diagnostic.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "memory",
+   "safety"
+  ]
+ },
+ "tests/listen-kind-detect.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/listen-kind-host.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/listen-kind.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/listen-late-window.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "settings",
+   "senses",
+   "memory",
+   "brain",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/listen-t207-round2.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "stage",
+   "senses",
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/listen-t207-round4.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/listen-t207-round5.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/listen-t207-round6.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/listen-t207.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "settings",
+   "stage",
+   "senses",
+   "mood",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/listen-talk-memory.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "mood",
+   "brain"
+  ]
+ },
+ "tests/listen-together.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "stage",
+   "senses",
+   "mood",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/lnk-plain-path.test.ts": {
+  "owner": "foundation",
+  "parts": [
+   "foundation"
+  ]
+ },
+ "tests/local-asr-component.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "foundation"
+  ]
+ },
+ "tests/local-asr-decode.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/local-asr-features.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/local-asr-host.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "foundation"
+  ]
+ },
+ "tests/local-asr-level.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/long-chat-history.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/long-chat-prewarm.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/long-chat-session.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/long-chat-voice-greeting.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "senses",
+   "memory",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/long-chat-window.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "memory",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/look-frame-source.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "settings",
+   "senses",
+   "brain",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/look-offer-prompt.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "stage",
+   "senses",
+   "foundation"
+  ]
+ },
+ "tests/look-opening.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "senses",
+   "brain"
+  ]
+ },
+ "tests/look-refusal-send-path.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "settings",
+   "senses",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/look-relayed-to-you.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "settings",
+   "senses",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/look-reported-before.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "settings",
+   "senses",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/look-request-refusal.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/look-request.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/look-stale-frame.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "settings",
+   "senses",
+   "brain",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/look-ticket-binding.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "settings",
+   "senses",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/look-turns.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/look-watch-invite.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "brain"
+  ]
+ },
+ "tests/loosen.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "senses",
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/m1-dance-request-host.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "brain"
+  ]
+ },
+ "tests/m1-music-desire-panel.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood"
+  ]
+ },
+ "tests/media-input.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "voice",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/media-speaking-transition.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "voice"
+  ]
+ },
+ "tests/memory-keywords.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "senses",
+   "memory"
+  ]
+ },
+ "tests/memory-notes-delete.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "settings",
+   "memory",
+   "brain",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/memory-notes.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/memory-panel.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "foundation"
+  ]
+ },
+ "tests/memory-privacy-gates.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "cards",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/memory-semantic-real.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory"
+  ]
+ },
+ "tests/memory-semantic-recall.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "senses",
+   "memory"
+  ]
+ },
+ "tests/memory-semantic.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "senses",
+   "memory"
+  ]
+ },
+ "tests/memory-windows-rename.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory"
+  ]
+ },
+ "tests/memory.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory"
+  ]
+ },
+ "tests/message-expectation.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "settings",
+   "stage",
+   "senses",
+   "memory",
+   "brain",
+   "voice",
+   "actions",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/model-capability.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/model-lab.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "actions"
+  ]
+ },
+ "tests/model-physics-ammo.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/model-physics-settings.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/model-physics-store.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "foundation"
+  ]
+ },
+ "tests/model-physics-wiring.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/model-physics.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/model-profile-store.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/model-profile.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood"
+  ]
+ },
+ "tests/module-router.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/mojibake-reply-path.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "senses",
+   "brain",
+   "initiative",
+   "voice"
+  ]
+ },
+ "tests/mojibake-t207-round2.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/mojibake-t207.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/mojibake.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/mood-batch1-guide.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/mood-batch2-afraid-face.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "stage",
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/mood-batch2-daily-check.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/mood-batch2-moments.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/mood-brow-continuity.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/mood-chat.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood"
+  ]
+ },
+ "tests/mood-companion-layout.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/mood-companion-lifetime.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/mood-companion.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/mood-feedback.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/mood-fright-context.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/mood-gate-unanswered-param.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/mood-gates.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain",
+   "wiring"
+  ]
+ },
+ "tests/mood-host.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/mood-longing-ease.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/mood-router-reentry.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "brain"
+  ]
+ },
+ "tests/mood-tendency.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "stage",
+   "mood",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/mood-touch-channel.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood"
+  ]
+ },
+ "tests/mood-view-lifetime.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood"
+  ]
+ },
+ "tests/mood.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/motion-coverage.test.ts": {
+  "owner": "foundation",
+  "parts": [
+   "foundation"
+  ]
+ },
+ "tests/motion-filters.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "actions"
+  ]
+ },
+ "tests/motion-fit-ui.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/motion-fit.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "stage",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/motion-glitch.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "stage",
+   "memory"
+  ]
+ },
+ "tests/motion-handback-velocity.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "stage",
+   "unbound",
+   "actions"
+  ]
+ },
+ "tests/motion-layer-settings.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/motion-layers.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/motion-library.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "actions"
+  ]
+ },
+ "tests/motion-preview-host.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "actions"
+  ]
+ },
+ "tests/motion-preview.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/motion-retarget-stage.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "stage",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/motion-retarget.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "stage",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/motion-track-coverage-ui.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/motion-track-coverage.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "safety",
+   "actions",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/motion-track-exclusion.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/motion-track-relations.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/motion-transition.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/motion-weights-ipc.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety",
+   "wiring"
+  ]
+ },
+ "tests/motion-weights-ui.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/motion-weights.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "actions"
+  ]
+ },
+ "tests/mouth-reading-journal.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "memory",
+   "unbound"
+  ]
+ },
+ "tests/mouth-shut-while-talking.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "unbound"
+  ]
+ },
+ "tests/move-files.test.mjs": {
+  "owner": "mood",
+  "parts": [
+   "senses",
+   "mood",
+   "wiring"
+  ]
+ },
+ "tests/music-choice.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses"
+  ]
+ },
+ "tests/music-cut-every-10s.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses",
+   "unbound"
+  ]
+ },
+ "tests/music-dance-enhancement.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/music-dance.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/music-desire.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses",
+   "actions"
+  ]
+ },
+ "tests/music-i053.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "stage",
+   "senses",
+   "memory",
+   "foundation"
+  ]
+ },
+ "tests/music-i072-round2.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses"
+  ]
+ },
+ "tests/music-i072.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "stage",
+   "senses"
+  ]
+ },
+ "tests/music-nod-full.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood",
+   "unbound"
+  ]
+ },
+ "tests/music-nod-window.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/music-settings-always.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/music-settings-wiring.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/music-settings.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/mutate.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/nickname-panel.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "foundation"
+  ]
+ },
+ "tests/nickname-table.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory"
+  ]
+ },
+ "tests/nicknames.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "memory",
+   "brain"
+  ]
+ },
+ "tests/no-interrupt.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "senses",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/no-pet-check.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/non-gene-gesture.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses",
+   "initiative",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/occupancy-tidy.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/off-switch-interrupts.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory",
+   "brain",
+   "voice",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/opening-choice-frequency.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/opening-choice.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "senses",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/opening-reminder-end.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/ops.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/outage-lines.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/output-wake.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "memory",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/p001-steps-2-3.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "initiative"
+  ]
+ },
+ "tests/p001-upcoming-contract.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory"
+  ]
+ },
+ "tests/p001-upcoming-due.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory"
+  ]
+ },
+ "tests/p001-upcoming-early.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory"
+  ]
+ },
+ "tests/p001-upcoming-note.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory"
+  ]
+ },
+ "tests/p001-upcoming-profile.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "memory",
+   "cards"
+  ]
+ },
+ "tests/p001-upcoming-state.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory"
+  ]
+ },
+ "tests/p001-upcoming-wiring.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory"
+  ]
+ },
+ "tests/paced-stream-target.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "settings",
+   "stage",
+   "senses",
+   "mood",
+   "brain",
+   "voice",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/part-health-notice.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/part-index.test.mjs": {
+  "owner": "cards",
+  "parts": [
+   "mood",
+   "cards",
+   "wiring"
+  ]
+ },
+ "tests/part-isolation.test.ts": {
+  "owner": "wiring",
+  "parts": [
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/part-mix.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "brain",
+   "unbound",
+   "actions"
+  ]
+ },
+ "tests/part-runner.test.ts": {
+  "owner": "wiring",
+  "parts": [
+   "wiring"
+  ]
+ },
+ "tests/part-table.test.ts": {
+  "owner": "wiring",
+  "parts": [
+   "wiring"
+  ]
+ },
+ "tests/part-units.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "mood",
+   "initiative",
+   "safety",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/people-things.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/perception-off-no-screen.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "stage",
+   "senses",
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/persona-openings.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards"
+  ]
+ },
+ "tests/personalize-authoring-host.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "safety",
+   "cards",
+   "wiring"
+  ]
+ },
+ "tests/personalize-authoring-lifetime.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards",
+   "wiring"
+  ]
+ },
+ "tests/personalize-authoring-ui.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/personalize-authoring.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards"
+  ]
+ },
+ "tests/personalize-body-advice-ui.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses"
+  ]
+ },
+ "tests/personalize-body-advice.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses"
+  ]
+ },
+ "tests/personalize-body-binding.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/personalize-body-busy-edit.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/personalize-body-presentation.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "actions"
+  ]
+ },
+ "tests/personalize-body-session.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses"
+  ]
+ },
+ "tests/personalize-body-tweak-ui.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/personalize-body-tweak.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/personalize-body-ui.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses"
+  ]
+ },
+ "tests/personalize-body.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/personalize-expression.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses",
+   "safety",
+   "cards",
+   "actions",
+   "wiring"
+  ]
+ },
+ "tests/personalize-head-tilt.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses"
+  ]
+ },
+ "tests/personalize-language-host.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "senses",
+   "brain",
+   "safety",
+   "cards",
+   "voice",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/personalize-language-store.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/personalize-language-ui.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/personalize-right-arm-ui.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses"
+  ]
+ },
+ "tests/personalize-right-arm.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses"
+  ]
+ },
+ "tests/personalize-static-pose.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/personalize-torso-tilt.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/personalize-visual-cues.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "mood",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/personalize-visual-host.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses",
+   "safety",
+   "actions",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/personalize-visual-session.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses",
+   "safety",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/personalize-visual-ui.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/pet-always-on-top-host.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/pet-cursor-never-vanishes.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "settings",
+   "mood",
+   "initiative"
+  ]
+ },
+ "tests/pet-interaction-cursor.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood"
+  ]
+ },
+ "tests/pet-interaction-session.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood"
+  ]
+ },
+ "tests/pet-interaction.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood"
+  ]
+ },
+ "tests/pet-native-contact-cancel.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood"
+  ]
+ },
+ "tests/pet-placement.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/pet-presentation-probe.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/pet-profile-interaction.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/pet-recovery.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "foundation"
+  ]
+ },
+ "tests/pet-reply-speech.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/pet-restore.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/pet-toolbar-collapse.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood"
+  ]
+ },
+ "tests/pet-topmost-band.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/pet-topmost.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/pet-ui-reservation.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood"
+  ]
+ },
+ "tests/pet-view.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "foundation"
+  ]
+ },
+ "tests/pet-visibility-pending.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "wiring"
+  ]
+ },
+ "tests/pet-window-diagnostics-panel.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/pet-window-drag.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/physics-lab-fixes.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/physics-lab-presets.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/physics-rest-headroom.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/physics-rig.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/physics-tuning.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "stage",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/pin-delivery.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/pmx-utf8.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/pose-components.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "foundation"
+  ]
+ },
+ "tests/pose-confidence.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/pose-continuity-previews.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "mood",
+   "initiative"
+  ]
+ },
+ "tests/pose-continuity-vmd.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/pose-continuity.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/pose-engine.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/pose-exit.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/pose-features.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/pose-panel.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "foundation"
+  ]
+ },
+ "tests/pose-privacy.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "safety",
+   "wiring"
+  ]
+ },
+ "tests/pose-reaction-stage.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses",
+   "mood"
+  ]
+ },
+ "tests/pose-reactions.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "senses",
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/pose-route.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/pose-signals.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "settings",
+   "senses",
+   "safety"
+  ]
+ },
+ "tests/pose-small-package.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "foundation"
+  ]
+ },
+ "tests/pose-supervisor.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/pose-worker-self-end.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/pose-worker.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/preinstalled-six-characters.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards"
+  ]
+ },
+ "tests/presence-gate.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/pretrial-claude-counter.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/pretrial-expression-reel.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/pretrial-functional.test.mjs": {
+  "owner": "safety",
+  "parts": [
+   "safety"
+  ]
+ },
+ "tests/pretrial-old-line.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/pretrial-unbound.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/pretrial.test.mjs": {
+  "owner": "cards",
+  "parts": [
+   "cards"
+  ]
+ },
+ "tests/preview-performance.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood",
+   "initiative"
+  ]
+ },
+ "tests/prewarm-free.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/privacy-part-off.test.ts": {
+  "owner": "wiring",
+  "parts": [
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/private-dir.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/proactive-camera-held.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/proactive-language.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "senses",
+   "brain",
+   "initiative",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/proactive-memory.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory"
+  ]
+ },
+ "tests/proactive-speech-cancel.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/proactive-speech-gate.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "initiative"
+  ]
+ },
+ "tests/proactive-talk-host.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/proactive-talk.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "brain",
+   "initiative"
+  ]
+ },
+ "tests/proactive-vision-delivery.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/proactive-vision.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/procedural-blush.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "actions"
+  ]
+ },
+ "tests/procedural-life-toggle.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/procedural-life.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/procedural-tears-cover.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood",
+   "actions"
+  ]
+ },
+ "tests/procedural-tears.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood",
+   "actions"
+  ]
+ },
+ "tests/profile-panel.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "foundation"
+  ]
+ },
+ "tests/profile.test.ts": {
+  "owner": "foundation",
+  "parts": [
+   "foundation"
+  ]
+ },
+ "tests/project-pet-visibility.test.ts": {
+  "owner": "wiring",
+  "parts": [
+   "wiring"
+  ]
+ },
+ "tests/prompt-eval.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/public-export-clean.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/public-snapshot-attribution.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/public-snapshot-owner-quotes.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/public-snapshot.test.mjs": {
+  "owner": "wiring",
+  "parts": [
+   "wiring"
+  ]
+ },
+ "tests/pucker-fallback-index.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/pull-attitude.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "stage",
+   "mood"
+  ]
+ },
+ "tests/pull-session.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood"
+  ]
+ },
+ "tests/push-to-talk.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/quiet-when-asleep.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "senses",
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/quit-order.test.ts": {
+  "owner": "wiring",
+  "parts": [
+   "wiring"
+  ]
+ },
+ "tests/quit-settle.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "foundation"
+  ]
+ },
+ "tests/quit-wait-wiring.test.ts": {
+  "owner": "wiring",
+  "parts": [
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/quit-wait.test.ts": {
+  "owner": "foundation",
+  "parts": [
+   "foundation"
+  ]
+ },
+ "tests/quit-watch.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/r02-audio-wait-budget.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/r02-bailian-turn-mood.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "mood",
+   "voice"
+  ]
+ },
+ "tests/r02-cancel-before-device.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/r02-mute-after-hidden-start.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/r02-reply-speech.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/r02-speech-diagnostics.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/r02-speech-instruction.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "mood",
+   "voice"
+  ]
+ },
+ "tests/r02-streaming-reply-speech.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "mood",
+   "voice"
+  ]
+ },
+ "tests/r02-system-voice-mood.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "settings",
+   "mood",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/r02-system-voice.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/r02-voice-latency.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/r05-cheek-region.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood"
+  ]
+ },
+ "tests/r18-heard-music.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/r20-offer-dialogue.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "initiative"
+  ]
+ },
+ "tests/r20-proactive-offer-host.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "initiative"
+  ]
+ },
+ "tests/r20-proactive-offer-main.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "brain",
+   "initiative",
+   "wiring"
+  ]
+ },
+ "tests/r20-proactive-offer-ui.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "initiative",
+   "safety",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/r27-completed-prefix-renderer.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "settings",
+   "stage",
+   "mood",
+   "brain",
+   "voice",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/r27-expect-pet-state.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/r27-native-prefix-wrapper.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "voice"
+  ]
+ },
+ "tests/r27-pet-bubbles.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "stage",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/r27-prefix-host-caller.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "mood",
+   "brain",
+   "unbound",
+   "voice",
+   "wiring"
+  ]
+ },
+ "tests/r27-reply-bubbles.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/r27-reply-latency.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/r27-reply-pieces-window.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/r27-streaming-readout.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/r29-pat-feed.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood"
+  ]
+ },
+ "tests/r29b-continuity.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood"
+  ]
+ },
+ "tests/r29d-continuity.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/r29e-half-turn.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses"
+  ]
+ },
+ "tests/r33-continuous-voice.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "senses",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/r33-correction-wording.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/r34-main-integration.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "mood",
+   "voice",
+   "wiring"
+  ]
+ },
+ "tests/r34-playback-host.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "senses",
+   "mood",
+   "voice",
+   "wiring"
+  ]
+ },
+ "tests/r41-visibility-domain.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings"
+  ]
+ },
+ "tests/r41-visibility-host-path.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "settings",
+   "stage",
+   "senses",
+   "memory",
+   "brain",
+   "initiative",
+   "voice",
+   "actions",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/r46-setting-card-settle.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/reading-map.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "cards",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/readout-control-renderer.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "brain",
+   "voice",
+   "actions",
+   "wiring"
+  ]
+ },
+ "tests/real-disk.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/realer-emotions-timer.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "safety",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/realer-emotions.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain",
+   "initiative",
+   "safety",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/recall-late-window.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "settings",
+   "senses",
+   "memory",
+   "brain",
+   "voice",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/relationship-card.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "memory",
+   "brain",
+   "safety",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/relationship-companion.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "memory",
+   "mood",
+   "brain"
+  ]
+ },
+ "tests/relationship-diary.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "foundation"
+  ]
+ },
+ "tests/relationship.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "mood"
+  ]
+ },
+ "tests/relay-retire-hook.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/renderer-gates.test.ts": {
+  "owner": "wiring",
+  "parts": [
+   "wiring"
+  ]
+ },
+ "tests/renderer-golden.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/renderer-window-visibility.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/reply-anchor-rps.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "stage",
+   "brain"
+  ]
+ },
+ "tests/reply-avoid.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/reply-continuity.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "mood",
+   "brain"
+  ]
+ },
+ "tests/reply-cut-record.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/reply-delivery-mode.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety"
+  ]
+ },
+ "tests/reply-draft-chunk-boundaries.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain"
+  ]
+ },
+ "tests/reply-draft-cn-plan-block.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain"
+  ]
+ },
+ "tests/reply-draft-guard-chinese.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain"
+  ]
+ },
+ "tests/reply-draft-guard-fragment-plan.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/reply-draft-guard-role-ack.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "brain"
+  ]
+ },
+ "tests/reply-draft-guard.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain"
+  ]
+ },
+ "tests/reply-draft-last-paths.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain"
+  ]
+ },
+ "tests/reply-draft-long-english-note.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/reply-draft-numbered-plan.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/reply-draft-plan-block.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "brain"
+  ]
+ },
+ "tests/reply-draft-plan-false-positives.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain"
+  ]
+ },
+ "tests/reply-draft-tag-line.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "brain"
+  ]
+ },
+ "tests/reply-input.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/reply-layout.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/reply-lifetime.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/reply-linger-t207-round2.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "stage",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/reply-linger-t207.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "stage",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/reply-linger-window.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/reply-linger.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain",
+   "voice"
+  ]
+ },
+ "tests/reply-opening.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "memory",
+   "mood",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/reply-placement-stable.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "voice"
+  ]
+ },
+ "tests/reply-presentation-window.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/reply-presentation.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/reply-reader.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "stage",
+   "mood",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/reply-readout.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "brain",
+   "voice"
+  ]
+ },
+ "tests/reply-rhythm-host.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "memory",
+   "mood",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/reply-rhythm-readout.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/reply-rhythm-voice.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "stage",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/reply-rhythm.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/reply-segments.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/reply-speech-host-plan.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/reply-speech-host-queue.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/reply-speech-host-transport.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "mood",
+   "voice"
+  ]
+ },
+ "tests/reply-speech-native-receipt.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "mood",
+   "brain",
+   "voice",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/reply-speech.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/reply-tag-leak.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain"
+  ]
+ },
+ "tests/reply-waiting-presentation.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/reply-waiting-window.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/reply-wrapper-tag.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/reported-model-call-tee.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "memory",
+   "brain",
+   "voice"
+  ]
+ },
+ "tests/reported-model-diagnostics.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety"
+  ]
+ },
+ "tests/reported-model.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "memory",
+   "brain"
+  ]
+ },
+ "tests/retarget-imports.test.mjs": {
+  "owner": "foundation",
+  "parts": [
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/rotation-path.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/rps-1628.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "memory",
+   "brain",
+   "unbound",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/rps-continuity.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "initiative"
+  ]
+ },
+ "tests/rps-game.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/rps-host.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/rps-overlay.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/rps-personality.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/rps-read-aloud-1126.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "brain",
+   "unbound"
+  ]
+ },
+ "tests/rps-stage.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "stage",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/rps-voice.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/rps-wiring.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "memory",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/rules-removed.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/runtime.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/scan-follow-mouse-request.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings"
+  ]
+ },
+ "tests/scan-pet-visibility-request.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings"
+  ]
+ },
+ "tests/scorer-page.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/scorer-trial-cards.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/screen-glance.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/screen-rough-only.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "settings",
+   "senses",
+   "mood",
+   "brain",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/screen-sharing-options.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "foundation"
+  ]
+ },
+ "tests/screen-snapshots.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "foundation"
+  ]
+ },
+ "tests/selected-visual-image.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/senses-privacy-gates.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "wiring"
+  ]
+ },
+ "tests/sensitive-always-dialog.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "settings",
+   "memory",
+   "safety",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/session-pool-wiring.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "memory",
+   "brain",
+   "wiring"
+  ]
+ },
+ "tests/settings-startup-updates.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings"
+  ]
+ },
+ "tests/setup-platform.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/she-chooses.test.ts": {
+  "owner": "foundation",
+  "parts": [
+   "foundation"
+  ]
+ },
+ "tests/single-emoji-controls.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "foundation"
+  ]
+ },
+ "tests/single-emoji-runtime.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/single-emoji-settings.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "foundation"
+  ]
+ },
+ "tests/single-emoji-window.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/size-check.test.mjs": {
+  "owner": "wiring",
+  "parts": [
+   "wiring"
+  ]
+ },
+ "tests/skeleton-step1.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "stage",
+   "brain",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/skeleton-step2.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/skeleton-step3.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "stage",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/skeleton-step4.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "stage",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/skeleton-step5-chat-actions.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "stage",
+   "mood",
+   "brain",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/skeleton-step5.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "stage",
+   "brain",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/sleep-entry-ready.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "wiring"
+  ]
+ },
+ "tests/sleep-pose.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/sleep-rhythm.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "initiative"
+  ]
+ },
+ "tests/slow-warmup-default.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/smoke-entry-gates.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/smoke-expectations.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "senses",
+   "foundation"
+  ]
+ },
+ "tests/smoke-fake-claude.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/smoke-isolation.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety"
+  ]
+ },
+ "tests/smoke-quit.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/soak.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/source-profile.test.mjs": {
+  "owner": "foundation",
+  "parts": [
+   "foundation"
+  ]
+ },
+ "tests/speak-only.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/speakable-text.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "brain",
+   "voice"
+  ]
+ },
+ "tests/speech-beats-call.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "unbound",
+   "wiring"
+  ]
+ },
+ "tests/speech-beats-grey-reload.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/speech-beats-measure.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/speech-beats-opening-marker.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain"
+  ]
+ },
+ "tests/speech-beats-privacy.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "brain",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/speech-beats-reply-path.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "memory",
+   "brain",
+   "wiring"
+  ]
+ },
+ "tests/speech-beats-span.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "stage",
+   "brain",
+   "unbound"
+  ]
+ },
+ "tests/speech-beats-timing.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/speech-beats-unbound.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "brain",
+   "unbound"
+  ]
+ },
+ "tests/speech-beats-view.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/speech-beats.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "unbound"
+  ]
+ },
+ "tests/speech-character-preview.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "mood",
+   "voice"
+  ]
+ },
+ "tests/speech-emotion.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "mood",
+   "brain",
+   "voice"
+  ]
+ },
+ "tests/speech-failure-journal.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "memory",
+   "voice"
+  ]
+ },
+ "tests/speech-pause-release.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory",
+   "voice"
+  ]
+ },
+ "tests/speech-persona-integration.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "mood",
+   "voice"
+  ]
+ },
+ "tests/speech-persona.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/speech-playback-activity.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/speech-playback-admission.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice",
+   "wiring"
+  ]
+ },
+ "tests/speech-runtime.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/speech.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/stage-behavior-motion.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "stage",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/stage-camera.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "foundation"
+  ]
+ },
+ "tests/stage-cheek-pinch.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood"
+  ]
+ },
+ "tests/stage-frame-clock.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "voice"
+  ]
+ },
+ "tests/stage-framing.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/stage-gates.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "initiative",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/stage-gaze.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "foundation"
+  ]
+ },
+ "tests/stage-motion.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/stage-pace.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/stage-smooth.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/stage-source-files.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/stage-textures.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/stage.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/start-cmd-gate.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/start-latest.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/start-warm-paid.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/staystill-idle.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/step5-handlers.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "initiative",
+   "wiring"
+  ]
+ },
+ "tests/step6-probe.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/stray-pixels.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "memory"
+  ]
+ },
+ "tests/structure-inventory.test.mjs": {
+  "owner": "brain",
+  "parts": [
+   "settings",
+   "stage",
+   "senses",
+   "memory",
+   "mood",
+   "brain",
+   "unbound",
+   "initiative",
+   "safety",
+   "cards",
+   "voice",
+   "actions",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/style-check.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/surprise-preview-host.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "initiative"
+  ]
+ },
+ "tests/surprise-preview-overlay.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood"
+  ]
+ },
+ "tests/surprise-preview-session.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/surprise-preview-stage.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "initiative"
+  ]
+ },
+ "tests/surprise-preview-wiring.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "settings",
+   "stage",
+   "initiative",
+   "safety",
+   "actions",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/switch-lock.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "brain",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/sync-form-pending.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/system-audio-input.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "foundation"
+  ]
+ },
+ "tests/system-audio.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/t213-model-adaptation.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "stage",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/t239-channel-fixes.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/t264-arrival-not-done.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/take-me-there-character-name.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "initiative"
+  ]
+ },
+ "tests/take-me-there-coverage.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "settings",
+   "mood",
+   "initiative",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/take-me-there-places.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "settings",
+   "initiative"
+  ]
+ },
+ "tests/take-me-there.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "settings",
+   "brain",
+   "initiative",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/tears-visibility.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "stage",
+   "mood",
+   "actions"
+  ]
+ },
+ "tests/test-affected.test.mjs": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/test-command-background-calls.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "initiative",
+   "safety"
+  ]
+ },
+ "tests/test-command-entries.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "senses",
+   "safety",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/test-command-features.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "stage",
+   "senses",
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/test-command-host.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "mood",
+   "brain",
+   "initiative",
+   "safety"
+  ]
+ },
+ "tests/test-command-match.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety"
+  ]
+ },
+ "tests/test-command-mood-presets.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/test-command-notes.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety"
+  ]
+ },
+ "tests/test-command-prompt-golden.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/test-command-wiring.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "senses",
+   "brain",
+   "safety",
+   "wiring"
+  ]
+ },
+ "tests/test-env.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/test-hygiene.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/test-parts.test.mjs": {
+  "owner": "wiring",
+  "parts": [
+   "wiring"
+  ]
+ },
+ "tests/text-invitation-archive.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "initiative",
+   "wiring"
+  ]
+ },
+ "tests/text-memorial-host.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "initiative"
+  ]
+ },
+ "tests/text-memorial-presentation-coordination.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "brain",
+   "wiring"
+  ]
+ },
+ "tests/text-memorial-question-binding.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "brain",
+   "initiative",
+   "wiring"
+  ]
+ },
+ "tests/text-memorial-ui.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "brain",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/text-memorials.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/three-way-interconnect.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "memory",
+   "mood",
+   "brain",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/touch-event.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood"
+  ]
+ },
+ "tests/touch-feed-effect-host.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "senses",
+   "mood",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/touch-feed-effect.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "foundation"
+  ]
+ },
+ "tests/touch-target-radius.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "initiative"
+  ]
+ },
+ "tests/tts-settings.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "stage",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/tts.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/turn-awareness.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "memory",
+   "mood",
+   "brain",
+   "voice"
+  ]
+ },
+ "tests/typed-line-drops.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "settings",
+   "stage",
+   "senses",
+   "memory",
+   "brain",
+   "unbound",
+   "voice",
+   "actions",
+   "wiring"
+  ]
+ },
+ "tests/typed-send-deep.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "settings",
+   "brain",
+   "unbound",
+   "wiring"
+  ]
+ },
+ "tests/ui-language-audio.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/ui-language-character.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "stage",
+   "mood",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/ui-language-entry.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "stage",
+   "safety",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/ui-language-registry.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "foundation"
+  ]
+ },
+ "tests/ui-language-store.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings"
+  ]
+ },
+ "tests/ui-language.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "foundation"
+  ]
+ },
+ "tests/ui-settings.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings"
+  ]
+ },
+ "tests/unbound-autonomy-body.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-autonomy.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-body.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/unbound-bundle-camera-images.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "senses",
+   "unbound",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/unbound-bundled-idle.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-call.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "unbound",
+   "voice"
+  ]
+ },
+ "tests/unbound-camera-look.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "senses",
+   "memory",
+   "voice",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/unbound-close-moment-gene.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-close-moments-host.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-close-moments.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "mood",
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/unbound-contact.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "unbound"
+  ]
+ },
+ "tests/unbound-control-switch-refresh.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-default-place.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "unbound",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/unbound-drop-zone.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood",
+   "unbound"
+  ]
+ },
+ "tests/unbound-entry-wait.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/unbound-eye-turn-gain.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "unbound"
+  ]
+ },
+ "tests/unbound-floor-follow.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "unbound",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/unbound-floor-line.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "unbound",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/unbound-full-ach-gene.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood",
+   "unbound",
+   "actions"
+  ]
+ },
+ "tests/unbound-full-ach.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood",
+   "unbound",
+   "voice",
+   "actions"
+  ]
+ },
+ "tests/unbound-full-bg-vrm.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood",
+   "unbound"
+  ]
+ },
+ "tests/unbound-full-face-gene.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "mood",
+   "unbound"
+  ]
+ },
+ "tests/unbound-full-games-gene.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound",
+   "initiative"
+  ]
+ },
+ "tests/unbound-full-games.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound",
+   "initiative",
+   "foundation"
+  ]
+ },
+ "tests/unbound-full-senses-gene.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood",
+   "unbound"
+  ]
+ },
+ "tests/unbound-full-senses.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "senses",
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/unbound-full-shares.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "mood",
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/unbound-full-sleep-gene.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood",
+   "unbound"
+  ]
+ },
+ "tests/unbound-gait.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "unbound"
+  ]
+ },
+ "tests/unbound-hit-test.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/unbound-idle-round2.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-idle.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-input-call.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/unbound-input-language.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/unbound-jelly-warm.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "unbound"
+  ]
+ },
+ "tests/unbound-keep-watch.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory",
+   "unbound"
+  ]
+ },
+ "tests/unbound-life-body.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-life-history.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "senses",
+   "memory",
+   "unbound"
+  ]
+ },
+ "tests/unbound-life-host.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-life.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-mode.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/unbound-model-asset-grant.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "settings",
+   "unbound",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/unbound-off-main-spawn.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-out-look-line.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory",
+   "brain",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/unbound-peek-body.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-peek-host.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/unbound-peek.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/unbound-perf-manager.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-perf-tiers.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-permission-bundle.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/unbound-preload.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-pull-back-near.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-pull-body.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-pull-near.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-pull.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-read-aloud.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "senses",
+   "mood",
+   "brain",
+   "unbound",
+   "initiative",
+   "voice",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/unbound-rest-pose.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "unbound",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/unbound-send-interrupt.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "settings",
+   "brain",
+   "unbound"
+  ]
+ },
+ "tests/unbound-sense-cards.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "brain",
+   "unbound",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/unbound-senses-mouth.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound",
+   "safety"
+  ]
+ },
+ "tests/unbound-showcase-blush.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/unbound-showcase-fit.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-showcase-glitch-scan.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-showcase.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-speech-beat.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-speech-body.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-surfaces.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-touch-part.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "mood"
+  ]
+ },
+ "tests/unbound-typing.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "mood",
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/unbound-vrm-body.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/unbound-vrm-face.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "mood",
+   "unbound",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/unbound-vrm-gaps-loop.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "mood",
+   "unbound",
+   "actions"
+  ]
+ },
+ "tests/unbound-vrm-interaction.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "mood",
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/unbound-vrm-sleep.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood",
+   "unbound"
+  ]
+ },
+ "tests/unbound-wide.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "mood",
+   "unbound"
+  ]
+ },
+ "tests/unbound-window-blush-stage.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "unbound"
+  ]
+ },
+ "tests/unbound-window-engine.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "unbound"
+  ]
+ },
+ "tests/unbound-window-face-gene.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "mood",
+   "unbound"
+  ]
+ },
+ "tests/unbound-window-face.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "mood",
+   "unbound"
+  ]
+ },
+ "tests/unbound-window-games.test.ts": {
+  "owner": "initiative",
+  "parts": [
+   "unbound",
+   "initiative"
+  ]
+ },
+ "tests/unbound-window-life.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood",
+   "unbound",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/unbound-window-lively.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses",
+   "mood",
+   "unbound"
+  ]
+ },
+ "tests/unbound-window-motions.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "unbound",
+   "actions"
+  ]
+ },
+ "tests/unbound-window-pace.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "unbound"
+  ]
+ },
+ "tests/unbound-window-physics.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "unbound"
+  ]
+ },
+ "tests/unbound-window-preview-status.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "unbound"
+  ]
+ },
+ "tests/unbound-window-preview.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood",
+   "unbound",
+   "actions"
+  ]
+ },
+ "tests/unbound-window-pull.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood",
+   "unbound"
+  ]
+ },
+ "tests/unbound-window-readouts.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unbound-window-touch.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "stage",
+   "mood",
+   "unbound"
+  ]
+ },
+ "tests/unbound-world.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "unbound"
+  ]
+ },
+ "tests/unit-test-batches.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/unsaved-sign.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "stage",
+   "mood",
+   "cards",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/update-desktop-optional-inputs.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/user-activity.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "stage",
+   "senses",
+   "mood",
+   "brain",
+   "initiative",
+   "safety",
+   "foundation"
+  ]
+ },
+ "tests/user-away-stage.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "wiring"
+  ]
+ },
+ "tests/user-manuals.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety"
+  ]
+ },
+ "tests/user-profile-chat-wiring.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "settings",
+   "stage",
+   "senses",
+   "memory",
+   "mood",
+   "brain",
+   "initiative",
+   "voice",
+   "actions",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/user-profile-context.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory",
+   "brain",
+   "safety",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/user-profile-host-wiring.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "wiring"
+  ]
+ },
+ "tests/user-profile-management.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory"
+  ]
+ },
+ "tests/user-profile-remember-recording.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory"
+  ]
+ },
+ "tests/user-profile-reply.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "brain"
+  ]
+ },
+ "tests/user-profile.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory"
+  ]
+ },
+ "tests/user-state-eval.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/user-state.test.ts": {
+  "owner": "mood",
+  "parts": [
+   "senses",
+   "mood",
+   "brain",
+   "initiative",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/validation-inputs.test.mjs": {
+  "owner": "wiring",
+  "parts": [
+   "wiring"
+  ]
+ },
+ "tests/verify-bundled-assets.test.mjs": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/version-shown.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings"
+  ]
+ },
+ "tests/vision-presentation-adapter.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/vision-reply-receipt.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "brain",
+   "initiative"
+  ]
+ },
+ "tests/vision-support.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "foundation"
+  ]
+ },
+ "tests/visual-behavior-store.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "senses",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/visual-self-context.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/visual-self-main-wiring.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "voice",
+   "wiring"
+  ]
+ },
+ "tests/visual-self-runtime.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/vmd-duration.test.ts": {
+  "owner": "actions",
+  "parts": [
+   "stage",
+   "actions"
+  ]
+ },
+ "tests/vmd-header.test.ts": {
+  "owner": "foundation",
+  "parts": [
+   "foundation"
+  ]
+ },
+ "tests/vmd-tracks.test.ts": {
+  "owner": "foundation",
+  "parts": [
+   "foundation"
+  ]
+ },
+ "tests/voice-bubble-1226-1234.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "senses",
+   "memory",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/voice-companion.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "brain",
+   "voice"
+  ]
+ },
+ "tests/voice-continuation-caller.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "senses",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/voice-draft-input.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/voice-follows-character.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/voice-gaps-journal.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "memory",
+   "brain",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/voice-gaps-output.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/voice-gaps-retry.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "memory",
+   "voice"
+  ]
+ },
+ "tests/voice-input-route.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "settings",
+   "senses",
+   "memory",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/voice-input-status-ui.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice",
+   "wiring"
+  ]
+ },
+ "tests/voice-keep.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "settings",
+   "safety",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/voice-level.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "voice"
+  ]
+ },
+ "tests/voice-media-input.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/voice-mic-finish-sentence.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "senses",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/voice-output-activity.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice"
+  ]
+ },
+ "tests/voice-output.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/voice-playback-regression.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "mood",
+   "voice"
+  ]
+ },
+ "tests/voice-slots.test.ts": {
+  "owner": "settings",
+  "parts": [
+   "settings",
+   "stage",
+   "foundation"
+  ]
+ },
+ "tests/voice-ui-language.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/voice-unheard.test.ts": {
+  "owner": "voice",
+  "parts": [
+   "settings",
+   "senses",
+   "memory",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/voice-wiring-gaps.test.ts": {
+  "owner": "wiring",
+  "parts": [
+   "wiring"
+  ]
+ },
+ "tests/voiceprint-real.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/voiceprint.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/vrm-native-load.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "foundation"
+  ]
+ },
+ "tests/vrm-native-safety.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "mood",
+   "safety",
+   "cards",
+   "foundation"
+  ]
+ },
+ "tests/vrm-springs-loop.test.ts": {
+  "owner": "none",
+  "parts": []
+ },
+ "tests/vrm-springs.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "unbound"
+  ]
+ },
+ "tests/vrm-to-pmx-face-mixes.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "foundation"
+  ]
+ },
+ "tests/vrm-to-pmx.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/warm-reuse-diverged.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "memory",
+   "brain",
+   "unbound",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/warm-small-frames.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "brain",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/watch-continuity.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "stage",
+   "senses",
+   "memory"
+  ]
+ },
+ "tests/watch-off-reasons.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory",
+   "voice"
+  ]
+ },
+ "tests/watch-timeline.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses"
+  ]
+ },
+ "tests/watch-turns-off.test.ts": {
+  "owner": "senses",
+  "parts": [
+   "senses",
+   "memory"
+  ]
+ },
+ "tests/whole-body-twitch.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "mood"
+  ]
+ },
+ "tests/window-camera-edit.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "unbound",
+   "foundation"
+  ]
+ },
+ "tests/window-events-order.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/window-idle-pose.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "unbound",
+   "actions",
+   "foundation"
+  ]
+ },
+ "tests/window-no-air-hug.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "safety",
+   "actions"
+  ]
+ },
+ "tests/window-no-close.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "unbound",
+   "wiring"
+  ]
+ },
+ "tests/window-visibility.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/wiring-golden.test.mjs": {
+  "owner": "memory",
+  "parts": [
+   "memory",
+   "safety",
+   "foundation",
+   "wiring"
+  ]
+ },
+ "tests/wiring-parts.test.ts": {
+  "owner": "safety",
+  "parts": [
+   "safety",
+   "wiring"
+  ]
+ },
+ "tests/wiring-skeleton.test.ts": {
+  "owner": "unbound",
+  "parts": [
+   "stage",
+   "senses",
+   "brain",
+   "unbound",
+   "wiring"
+  ]
+ },
+ "tests/x1-reply-thinking.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "senses",
+   "brain",
+   "initiative",
+   "voice",
+   "foundation"
+  ]
+ },
+ "tests/x1-waiting-expression.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain",
+   "foundation"
+  ]
+ },
+ "tests/x2-offline-fail-fast.test.ts": {
+  "owner": "brain",
+  "parts": [
+   "brain"
+  ]
+ },
+ "tests/x343-show-clock.test.ts": {
+  "owner": "stage",
+  "parts": [
+   "stage"
+  ]
+ },
+ "tests/x435-convert-quit.test.ts": {
+  "owner": "cards",
+  "parts": [
+   "cards"
+  ]
+ },
+ "tests/x495-recall-contracts.test.ts": {
+  "owner": "memory",
+  "parts": [
+   "memory"
+  ]
+ }
+}

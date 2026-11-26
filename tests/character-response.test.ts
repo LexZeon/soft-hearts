@@ -7,9 +7,9 @@ import {
   defaultCharacterResponseRule, matchCharacterResponseRule, validateCharacterResponseProfile,
   type CharacterResponseProfile, type CharacterResponseRule, type CharacterResponseSnapshot,
   type CharacterResponseWhen,
-} from '../shared/character-response';
-import { DEFAULT_MOOD_PARAMETERS, createMoodState, getMoodSnapshot } from '../shared/mood';
-import { MOOD_LABELS } from '../shared/mood-runtime';
+} from '../shared/cards/character-response';
+import { DEFAULT_MOOD_PARAMETERS, createMoodState, getMoodSnapshot } from '../shared/foundation/mood';
+import { MOOD_LABELS } from '../shared/mood/mood-runtime';
 
 const now = 1_800_000_000_000;
 function baseSnapshot(parameters = structuredClone(DEFAULT_MOOD_PARAMETERS)) {
@@ -37,8 +37,8 @@ function freezeDeep<T>(value: T): T {
   return value;
 }
 
-test('response selectors use the actual twelve labels and only finite host phases and contexts', () => {
-  assert.equal(CHARACTER_RESPONSE_MOODS.length, 12);
+test('response selectors use the actual thirteen labels (I-076 added afraid) and only finite host phases and contexts', () => {
+  assert.equal(CHARACTER_RESPONSE_MOODS.length, 13);
   assert.deepEqual(new Set(CHARACTER_RESPONSE_MOODS), new Set(Object.keys(MOOD_LABELS)));
   assert.deepEqual(CHARACTER_RESPONSE_PHASES, ['idle', 'rua', 'food-wait', 'food-ready', 'food-eating', 'cheek']);
   assert.deepEqual(CHARACTER_RESPONSE_CONTEXTS, ['neutral', 'positive', 'support', 'concern', 'disappointment', 'offense']);
@@ -211,7 +211,8 @@ test('selector identity ignores object property order but distinguishes mood, ph
 });
 
 test('twenty-four sparse rules are accepted and a twenty-fifth is rejected', () => {
-  const rules = CHARACTER_RESPONSE_MOODS.flatMap(mood => [rule({ mood }), rule({ mood, phase: 'rua' })]);
+  // Two per label for the first twelve labels (the limit stayed 24 when I-076 added the thirteenth).
+  const rules = CHARACTER_RESPONSE_MOODS.slice(0, 12).flatMap(mood => [rule({ mood }), rule({ mood, phase: 'rua' })]);
   assert.equal(rules.length, MAX_CHARACTER_RESPONSE_RULES);
   assert.equal(profile(...rules).rules.length, 24);
   assert.throws(() => profile(...rules, rule({ mood: 'calm', context: 'positive' })), /at most 24/);

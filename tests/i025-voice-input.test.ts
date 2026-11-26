@@ -3,31 +3,31 @@
 // from the conversation, or nothing happens; no dialog. Fake bridges and temp data only: nothing is downloaded, no real profile.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import type { AppSettings } from '../shared/contracts';
-import type { LocalAsrView } from '../shared/local-asr';
-import { AGENT_SETTINGS, AGENT_TOOLS } from '../shared/agent-channel';
-import type { ChatSettingCardView } from '../shared/chat-settings';
-import { buildJournalEntry, describeJournalEntry, readJournalLine } from '../shared/journal';
-import { setUiLanguage } from '../shared/ui-language';
-import { uiText } from '../src/ui/ui-language';
-import { readChatSettingCard, renderChatSettingCard } from '../src/ui/ChatSettingCard';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import type { AppSettings } from '../shared/foundation/settings';
+import type { LocalAsrView } from '../shared/senses/local-asr';
+import { AGENT_SETTINGS, AGENT_TOOLS } from '../shared/safety/agent-channel';
+import type { ChatSettingCardView } from '../shared/brain/chat-settings';
+import { buildJournalEntry, describeJournalEntry, readJournalLine } from '../shared/memory/journal';
+import { setUiLanguage } from '../shared/foundation/ui-language';
+import { uiText } from '../src/foundation/ui-language';
+import { readChatSettingCard, renderChatSettingCard } from '../src/brain/ChatSettingCard';
 import {
   AGENT_USER_WORDS_MISSING, AgentToolRegistry, type AgentAuditEntry, type AgentConfirmRequest, type AgentWordsUse,
-} from '../electron/agent-channel/registry';
-import { sanitizeAuditEntry } from '../electron/agent-channel/audit';
-import { ASR_MODEL_BYTES, createAppTools, settingExtras, type AgentAppBridge } from '../electron/agent-channel/app-tools';
-import { AGENT_HOST_OPERATIONS, createHostBridge, type IpcHandler } from '../electron/agent-channel/bridge';
-import { SENSEVOICE_REPO } from '../electron/asr/manifest';
-import { ChatSettingProposals, chatSettingApplier, chatSettingsSystemText, currentSettingsText, mentionsSettings } from '../electron/chat-settings';
-import { handbookCategory } from '../shared/capability-handbook';
+} from '../electron/safety/agent-channel/registry';
+import { sanitizeAuditEntry } from '../electron/safety/agent-channel/audit';
+import { ASR_MODEL_BYTES, createAppTools, settingExtras, type AgentAppBridge } from '../electron/safety/agent-channel/app-tools';
+import { AGENT_HOST_OPERATIONS, createHostBridge, type IpcHandler } from '../electron/safety/agent-channel/bridge';
+import { SENSEVOICE_REPO } from '../electron/foundation/asr-manifest';
+import { ChatSettingProposals, chatSettingApplier, chatSettingsSystemText, currentSettingsText, mentionsSettings } from '../electron/brain/chat-settings';
+import { handbookCategory } from '../shared/settings/capability-handbook';
 
 setUiLanguage('zh-CN');
 const CARD = '0f8fad5b-d9cb-469f-a165-70867728950e';
 const WORDS = '帮我把语音输入下载一下吧';
 const DOWNLOAD = 355_000_000;
 
-/** soft hearts as the channel sees it: settings, the pet, the microphone switch and the local recognizer (a state machine). */
+/** soft hearts as the channel sees it: settings, the companion, the microphone switch and the local recognizer (a state machine). */
 function world(options: { phase?: LocalAsrView['phase']; pet?: boolean; interconnect?: boolean } = {}) {
   const settings: AppSettings = structuredClone(DEFAULT_SETTINGS);
   let mic = false, interconnect = options.interconnect ?? true;
@@ -61,7 +61,8 @@ function world(options: { phase?: LocalAsrView['phase']; pet?: boolean; intercon
 async function undoOffers(w: ReturnType<typeof world>, args: unknown): Promise<string[]> {
   const tool = createAppTools(w.bridge).find(item => item.name === 'set_setting')!;
   const offers: string[] = [];
-  await tool.run(tool.validate(args), { signal: new AbortController().signal, check: () => {}, offerUndo: offer => offers.push(offer.label) });
+  // T-239: the request's target is taken in prepare.
+  await tool.run(await tool.prepare!(tool.validate(args)), { signal: new AbortController().signal, check: () => {}, offerUndo: offer => offers.push(offer.label) });
   return offers;
 }
 
@@ -100,20 +101,23 @@ test('三方互通 on: a call that needs consent, without the user\'s own words,
   }
 });
 
-test('with the user\'s words it runs at once: the notice says what and how much; the record keeps the item, the value and the length only', async () => {
+test('with the user\'s words a download still asks in the dialog (敏感操作弹窗), which shows the words; the notice says what and how much; the record keeps the item, the value, the length and the answer only', async () => {
   const w = world(), c = channel(w);
   const result = await c.call('set_setting', { id: 'local_asr', value: 'installed', userWords: `  ${WORDS}  ` });
   assert.ok(result.ok, JSON.stringify(result));
   assert.deepEqual(w.calls, ['download']);
   assert.equal((result.result as any).value, 'downloading');
   assert.match((result.result as any).note, /进度在控制窗口/u);
-  assert.deepEqual(c.asked, [], 'no dialog');
+  // 敏感操作弹窗: a download is "files": the dialog asks even with the words, and shows them (trimmed).
+  assert.equal(c.asked.length, 1);
+  assert.equal(c.asked[0].title, 'Claude 请求下载本机语音识别');
+  assert.ok(c.asked[0].detail.includes(`你在 Claude 里说：「${WORDS}」`), c.asked[0].detail);
   assert.deepEqual(c.notices, ['调整设置（开始下载本机语音识别（约 355 MB，来自 Hugging Face））']);
-  assert.deepEqual(c.used, [{ tool: 'set_setting', item: 'local_asr', value: 'installed', words: [...WORDS].length }]);
+  assert.deepEqual(c.used, [{ tool: 'set_setting', item: 'local_asr', value: 'installed', words: [...WORDS].length, dialog: 'allowed' }]);
   const last = c.audit.at(-1)!;
-  assert.equal(last.approval, 'user-words');
+  assert.equal(last.approval, 'dialog');
   assert.equal(last.words, [...WORDS].length);
-  assert.deepEqual(sanitizeAuditEntry(last), { at: last.at, tool: 'set_setting', tier: 'confirm', outcome: 'allowed', approval: 'user-words', words: [...WORDS].length, ms: last.ms });
+  assert.deepEqual(sanitizeAuditEntry(last), { at: last.at, tool: 'set_setting', tier: 'confirm', outcome: 'allowed', approval: 'dialog', words: [...WORDS].length, ms: last.ms });
   const kept = JSON.stringify([c.audit, c.used, c.notices, result]);
   assert.ok(!kept.includes(WORDS) && !kept.includes('下载一下'), 'the words themselves are never kept');
   // A second "download" while it downloads changes nothing (no second download).
@@ -161,7 +165,8 @@ test('voice_input: on needs the words and the pet; it says when the recognizer i
   assert.ok((await d.call('set_setting', { id: 'voice_input', value: true, userWords: '打开语音输入' })).ok);
   assert.equal(ready.mic(), true);
   assert.match(d.notices.at(-1)!, /打开语音输入（麦克风）/u);
-  assert.deepEqual(d.used.at(-1), { tool: 'set_setting', item: 'voice_input', value: true, words: 6 });
+  assert.deepEqual(d.used.at(-1), { tool: 'set_setting', item: 'voice_input', value: true, words: 6, dialog: 'allowed' });
+  assert.equal(d.asked.at(-1)!.title, 'Claude 请求打开语音输入（会用麦克风）', '敏感操作弹窗: the microphone asks in the dialog too');
   const off = await d.call('set_setting', { id: 'voice_input', value: false });
   assert.ok(off.ok, 'turning the microphone off needs nothing');
   assert.equal(ready.mic(), false);
@@ -246,7 +251,7 @@ test('对她说「下载语音输入」: a card says how much and from where; th
   assert.match(applied!.message!, /已开始下载本机语音识别/u);
   assert.deepEqual(h.confirms, [], 'the card was the consent');
   assert.deepEqual(w.calls, ['download']);
-  // The card as the pet shows it: the detail line is plain text.
+  // The card as the companion shows it: the detail line is plain text.
   const read = readChatSettingCard(JSON.parse(JSON.stringify(card)))!;
   assert.equal(read.detail, card.detail);
   const nodes: any[] = [];

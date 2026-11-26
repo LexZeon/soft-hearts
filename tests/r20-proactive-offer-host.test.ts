@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ProactiveSpeechGate } from '../electron/proactive-speech-gate';
-import { R20ProactiveOffers, type R20ProactiveOfferDependencies } from '../electron/r20-proactive-offer';
-import type { R20ProactiveOfferView } from '../shared/r20-proactive-offer';
+import { ProactiveSpeechGate } from '../electron/initiative/proactive-speech-gate';
+import { R20ProactiveOffers, type R20ProactiveOfferDependencies } from '../electron/initiative/r20-proactive-offer';
+import type { R20ProactiveOfferView } from '../shared/initiative/r20-proactive-offer';
 
 const candidate = JSON.stringify({ question: '需要我先帮你梳理计划吗？', goal: '整理安排', plan: '先列出步骤和取舍。', scopeHint: '确认目标和范围' });
 function deferred<T>() { let resolve!: (value: T) => void; const promise = new Promise<T>(done => { resolve = done; }); return { promise, resolve }; }

@@ -3,9 +3,9 @@ import test from 'node:test';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { BehaviorMotionController } from '../electron/behavior-motion';
-import { MoodHost } from '../electron/mood';
-import { createMoodState, getMoodSnapshot, type MoodSnapshot } from '../shared/mood';
+import { BehaviorMotionController } from '../electron/actions/behavior-motion';
+import { MoodHost } from '../electron/mood/mood';
+import { createMoodState, getMoodSnapshot, type MoodSnapshot } from '../shared/foundation/mood';
 
 const start = 1_000_000;
 const snapshot = (): MoodSnapshot => ({ ...getMoodSnapshot(createMoodState(start)), primary: 'happy' });

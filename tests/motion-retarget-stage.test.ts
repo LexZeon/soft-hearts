@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { Bone, Skeleton, SkinnedMesh } from 'three';
-import { FINGERS, FINGER_JOINTS, buildModelProfile, type Vec3 } from '../shared/model-profile';
-import { PROXY_SEGMENTS, acceptCollisionProxy, type CollisionProxy } from '../shared/collision-proxy';
-import { adaptMotion, usesFittedBody } from '../shared/motion-fit';
-import type { RetargetRig } from '../shared/motion-retarget';
-import { stripDefaultVmdTracks } from '../src/stage/vmd-tracks';
+import { FINGERS, FINGER_JOINTS, buildModelProfile, type Vec3 } from '../shared/stage/model-profile';
+import { PROXY_SEGMENTS, acceptCollisionProxy, type CollisionProxy } from '../shared/foundation/collision-proxy';
+import { adaptMotion, usesFittedBody } from '../shared/actions/motion-fit';
+import type { RetargetRig } from '../shared/actions/motion-retarget';
+import { stripDefaultVmdTracks } from '../src/foundation/vmd-tracks';
 import {
   CATALOG_MOTION_COUNT, GENE_SOURCE_RIG, RETARGET_CACHE_LIMIT, StageMotionRetarget, clearRetargetCache, meshRigBones, retargetCacheSize, retargetCacheStats,
   retargetInputKey, type MotionFitView,
-} from '../src/stage/motion-retarget';
+} from '../src/actions/motion-retarget';
 import { readVmdLite } from './helpers/vmd-lite';
 import { bundledMotionBytes, catalogMotions, readGene } from './helpers/bundled-motions';
 import { profileInput, toThreeMesh, toyModel, type ModelData, type ToyOptions } from './helpers/model-fixtures';
