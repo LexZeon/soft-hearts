@@ -4,16 +4,16 @@
 // No Electron is started here; the smokes themselves are maintainer-only and are not run by this test.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { spawn as realSpawn } from 'node:child_process';
 import { mkdtemp, readdir, readFile, realpath, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createContext, runInContext } from 'node:vm';
-import type { ChatMessage } from '../shared/contracts';
-import { ClaudeStreamReader, claudeArguments, claudeInput, streamClaude } from '../electron/claude';
-import { ClaudeChatProcess } from '../electron/claude-process';
-import { CLAUDE_FOLLOW_UP_HEADER, CLAUDE_SESSION_SYSTEM_PROMPT, composeSessionPrompt } from '../electron/claude-session-prompt';
+import type { ChatMessage } from '../shared/foundation/chat';
+import { ClaudeStreamReader, claudeArguments, claudeInput, streamClaude } from '../electron/brain/claude';
+import { ClaudeChatProcess } from '../electron/brain/claude-process';
+import { CLAUDE_LAUNCH_HOOK, launchClaudeOffMain, type ClaudeChild, type ClaudeLaunch, type ClaudeLaunchHook } from '../electron/brain/claude-launch';
+import { CLAUDE_FOLLOW_UP_HEADER, CLAUDE_SESSION_SYSTEM_PROMPT, composeSessionPrompt } from '../electron/brain/claude-session-prompt';
 import { FAKE_CLAUDE_RELAY_MARKER, createRelayFakeClaude } from '../scripts/lib/fake-claude-relay.mjs';
 import { FIXTURE_MAX_SPAWNS, createClaudeFixture, createClaudeIsolation, isolatedClaudeEnvironment, personaPart, readConversation, type FixtureTurn } from '../scripts/lib/claude-smoke-fixture.mjs';
 
@@ -111,13 +111,16 @@ test('isolation environment drops inherited Claude/Codex variables and names onl
   const owned = { codexHome: 'H', sentinel: 'S', claudeHome: 'C', claudePlaceholder: 'P' };
   const env = isolatedClaudeEnvironment({ PATH: 'x', CLAUDECODE: '1', claude_code_entrypoint: 'cli', CLAUDE_CONFIG_DIR: 'real', CODEX_PATH: 'real-codex', CODEX_HOME: 'real-home',
     ELECTRON_RUN_AS_NODE: '1', ANTHROPIC_MODEL: 'kept-not-used', MMD_DESK_USER_DATA: 'profile' }, owned);
-  assert.deepEqual(env, { PATH: 'x', ANTHROPIC_MODEL: 'kept-not-used', MMD_DESK_USER_DATA: 'profile', CODEX_HOME: 'H', CODEX_PATH: 'S', CLAUDE_PATH: 'P', CLAUDE_CONFIG_DIR: 'C' });
+  assert.deepEqual(env, { PATH: 'x', ANTHROPIC_MODEL: 'kept-not-used', MMD_DESK_USER_DATA: 'profile', CODEX_HOME: 'H', CODEX_PATH: 'S', CLAUDE_PATH: 'P', CLAUDE_CONFIG_DIR: 'C',
+    SOFT_HEARTS_STAGE_DIAGNOSTICS: '1' }); // P1 舞台少画: the smokes read the stage's canvas readouts
   assert.throws(() => isolatedClaudeEnvironment({}, { ...owned, claudeHome: undefined } as never), /Owned child path/);
   assert.equal(readConversation('no data'), null);
 });
 
-function vmInstance(spawnImpl: Function) {
-  const module = { spawn: spawnImpl };
+/** The app's main process, in another realm: the main thread's own spawn (refuses Claude Code once the interposer is in) and `hook`, the app's way in
+ * (electron/brain/claude-launch launchClaude: the installed hook, given `launch`, the app's off-main launch or a stand-in). */
+function vmInstance(launch: ClaudeLaunch) {
+  const module = { spawn: (): unknown => { throw Error('the main thread\'s own spawn is not used here'); } };
   const context = createContext({ electron: {}, process: { platform: process.platform, getBuiltinModule: (name: string) =>
     name === 'node:child_process' ? module : name === 'node:path' ? path : name === 'node:module' ? { syncBuiltinESMExports() {} } : undefined } });
   // Like Playwright's evaluate: the function runs in the other realm and only serialized data comes back.
@@ -126,19 +129,21 @@ function vmInstance(spawnImpl: Function) {
     const value = runInContext(`(${fn.toString()})(electron, expected)`, context);
     return value === undefined ? undefined : JSON.parse(JSON.stringify(value));
   } };
-  return { module, context, instance };
+  const hook: ClaudeLaunch = (file, args, options) => ((context as Record<string, unknown>)[CLAUDE_LAUNCH_HOOK] as ClaudeLaunchHook)(file, args, options, launch);
+  return { module, context, instance, hook };
 }
 
 test('interposer launch limit: the packaging smoke keeps 8, source smokes may raise it', () => {
   const args = claudeArguments({ model: 'haiku' });
-  const options = { cwd: path.join(os.tmpdir(), 'soft-hearts-claude', 'claude-chat', 'turn-x'), shell: false, windowsHide: true, env: { NO_COLOR: '1', DISABLE_AUTOUPDATER: '1' } };
+  const options = { cwd: path.join(os.tmpdir(), 'soft-hearts-claude', 'claude-chat', 'turn-x'), shell: false as const, windowsHide: true as const,
+    stdio: ['pipe', 'pipe', 'pipe'] as ['pipe', 'pipe', 'pipe'], env: { NO_COLOR: '1', DISABLE_AUTOUPDATER: '1' } };
   for (const [maxSpawns, allowed] of [[undefined, 8], [FIXTURE_MAX_SPAWNS, FIXTURE_MAX_SPAWNS], [0, 8], [10_000, 8]] as const) {
     let calls = 0;
-    const rig = vmInstance(() => { calls++; return { pid: 1 }; });
+    const rig = vmInstance(() => { calls++; return { pid: 1 } as unknown as ClaudeChild; });
     const placeholder = path.join(os.tmpdir(), 'soft-hearts-smoke-limit', 'claude-placeholder.exe');
     runInContext(`(${helper.installClaudeInterposer.toString()})(electron, ${JSON.stringify({ marker: 'm', claudePlaceholder: placeholder, claudeHome: 'h', fakeLog: 'l', fakeNode: 'n', fakeScript: 's', fakeMarker: 'k', maxSpawns })})`, rig.context);
-    for (let index = 0; index < allowed; index++) rig.module.spawn(placeholder, args, options);
-    assert.throws(() => rig.module.spawn(placeholder, args, options), /too many Claude Code processes/);
+    for (let index = 0; index < allowed; index++) rig.hook(placeholder, args, options);
+    assert.throws(() => rig.hook(placeholder, args, options), /too many Claude Code processes/);
     assert.equal(calls, allowed, String(maxSpawns));
   }
 });
@@ -158,9 +163,9 @@ test('a real relay process serves the app\'s persistent Claude Code process: rep
   try {
     for (const key of Object.keys(saved)) delete process.env[key];
     Object.assign(process.env, fixture.environment({}));
-    const rig = vmInstance(realSpawn);
+    const rig = vmInstance(launchClaudeOffMain); // the app's real off-main launch behind the fixture's hook
     await fixture.install(rig.instance);
-    const spawn = rig.module.spawn as typeof realSpawn;
+    const spawn = rig.hook;
     chat = await ClaudeChatProcess.start({ binary: fixture.claudePlaceholder, model: 'haiku', systemPrompt: CLAUDE_SESSION_SYSTEM_PROMPT, spawn });
     const deltas: string[] = [];
     const emit = (type: string, text: string) => { if (type === 'delta') deltas.push(text); };
@@ -237,7 +242,8 @@ test('isolation-only folders and the Chat Completions-style view used by migrate
     assert.deepEqual(await readdir(isolation.claudeHome), []); assert.equal(await isolation.claudeHomeEmpty(), true);
     await assert.rejects(readFile(isolation.sentinel), { code: 'ENOENT' }, 'CODEX_PATH names a file that does not exist');
     const env = isolation.environment({ PATH: 'p', CLAUDE_CODE_ENTRYPOINT: 'cli' });
-    assert.deepEqual(env, { PATH: 'p', CODEX_HOME: isolation.codexHome, CODEX_PATH: isolation.sentinel, CLAUDE_PATH: isolation.claudePlaceholder, CLAUDE_CONFIG_DIR: isolation.claudeHome });
+    assert.deepEqual(env, { PATH: 'p', CODEX_HOME: isolation.codexHome, CODEX_PATH: isolation.sentinel, CLAUDE_PATH: isolation.claudePlaceholder, CLAUDE_CONFIG_DIR: isolation.claudeHome,
+      SOFT_HEARTS_STAGE_DIAGNOSTICS: '1' });
     assert.deepEqual(isolation.provider, { kind: 'claude', model: 'haiku' });
   } finally { await rm(path.dirname(isolation.base), { recursive: true, force: true }); }
   const history: ChatMessage[] = [{ role: 'assistant', content: '问候' }];

@@ -6,11 +6,11 @@ import { CallBudget, runFidelity } from '../scripts/lib/fidelity-run';
 import { evalRelationshipData } from '../scripts/lib/prompt-eval-runner';
 import { PAIR_SYSTEM_PROMPT, buildPairPrompt, parsePairOutput, ratePairs } from '../scripts/lib/familiarity-pair';
 import { PROBE_RELATIONSHIP, probeNickname, readProbe } from '../scripts/lib/familiarity-probe';
-import { NICKNAME_ASK_INSTRUCTION } from '../shared/relationship';
+import { NICKNAME_ASK_INSTRUCTION } from '../shared/memory/relationship';
 import { FIDELITY_CARDS, scenarioById } from '../scripts/lib/fidelity-scenarios';
 import type { FidelityRun } from '../scripts/lib/fidelity-report';
-import { dayNumber, effectiveDays, stageFor, stageThresholds } from '../shared/relationship';
-import { localDateKey } from '../electron/diary/diary-dates';
+import { dayNumber, effectiveDays, stageFor, stageThresholds } from '../shared/memory/relationship';
+import { localDateKey } from '../electron/memory/diary/diary-dates';
 
 const fakeScript = path.join(import.meta.dirname, '..', 'scripts', 'lib', 'prompt-eval-fake-claude.mjs');
 const fake = { binary: process.execPath, binaryArgs: [fakeScript] };
@@ -23,9 +23,9 @@ test('the evaluation settings come out as the stages they are named after, on th
       const data = evalRelationshipData(EVAL_RELATIONSHIPS[key]!, now);
       return { stage: stageFor(effectiveDays(data), thresholds), day: dayNumber(data.metDate, today), together: data.days.length, nickname: data.nickname };
     };
-    assert.deepEqual(stageOf('new'), { stage: 'new', day: 2, together: 1, nickname: null }, card.id);
-    assert.deepEqual(stageOf('familiar'), { stage: 'familiar', day: 40, together: 14, nickname: null }, card.id);
-    assert.equal(stageOf('familiar-default').together, 14);
+    assert.deepEqual(stageOf('new'), { stage: 'new', day: 2, together: 0, nickname: null }, card.id);
+    assert.deepEqual(stageOf('familiar'), { stage: 'familiar', day: 40, together: 6, nickname: null }, card.id);
+    assert.equal(stageOf('familiar-default').together, 6);
   }
   assert.equal(EVAL_RELATIONSHIPS.off, undefined, 'the default run is a first-day user on the app\'s own defaults');
   assert.equal(EVAL_RELATIONSHIPS['familiar-default']!.slowWarmUp, false);
@@ -45,11 +45,11 @@ test('the real chat path gets the seeded relationship: lines after the persona i
     prompts[key] = result.records[0].prompt ?? '';
   }
   assert.match(prompts.off, /你们认识第 1 天/);
-  assert.doesNotMatch(prompts.off, /现在的关系/);
-  assert.match(prompts.new, /你们认识第 2 天，现在的关系：初识/);
-  assert.match(prompts.familiar, /你们认识第 40 天，现在的关系：熟悉/);
+  assert.doesNotMatch(prompts.off, /熟悉度第/);
+  assert.match(prompts.new, /你们认识第 2 天。熟悉度第 1 级「还不太熟」/);
+  assert.match(prompts.familiar, /你们认识第 40 天。熟悉度第 3 级「熟悉」/);
   assert.match(prompts['familiar-default'], /你们认识第 40 天。这只是日期/);
-  assert.doesNotMatch(prompts['familiar-default'], /现在的关系/);
+  assert.doesNotMatch(prompts['familiar-default'], /熟悉度第/);
   for (const key of ['off', 'new']) assert.doesNotMatch(prompts[key], /下雨天互道晚安要说两遍/, key + ': nothing to remember yet');
   for (const key of ['familiar', 'familiar-default']) {
     assert.match(prompts[key], /<private-user-profile-data>[\s\S]*下雨天互道晚安要说两遍[\s\S]*<\/private-user-profile-data>/, key);

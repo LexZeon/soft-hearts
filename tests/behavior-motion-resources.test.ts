@@ -4,11 +4,11 @@ import { createHash } from 'node:crypto';
 import { mkdtemp, mkdir, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import catalogData from '../shared/motion-catalog.json';
-import type { MotionCatalog } from '../shared/motion-library';
-import type { BehaviorFaceMotionId, BehaviorMotionCue } from '../shared/behavior-motion';
-import { MotionLibrary } from '../electron/motion-library';
-import { resolveBehaviorMotionResource } from '../electron/behavior-motion-bindings';
+import catalogData from '../shared/actions/motion-catalog.json';
+import type { MotionCatalog } from '../shared/actions/motion-library';
+import type { BehaviorFaceMotionId, BehaviorMotionCue } from '../shared/actions/behavior-motion';
+import { MotionLibrary } from '../electron/actions/motion-library';
+import { resolveBehaviorMotionResource } from '../electron/actions/behavior-motion-bindings';
 
 const pinned = [
   ['smile', '87cfd8818c6474a968ed83f8c6040d3a9657d8947a2eab7f47675a3fa50fb2b3'],

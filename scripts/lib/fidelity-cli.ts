@@ -3,7 +3,7 @@
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { findClaude } from '../../electron/claude';
+import { findClaude } from '../../electron/brain/claude';
 import { claudeJudge, JUDGE_MODEL, parseJudgeOutput, type JudgeRunner } from './fidelity-judge';
 import { checkHardRules } from './fidelity-rules';
 import { abCompare, abMarkdown, fidelityMarkdown, groupSummaryLines, modelsMarkdown, type FidelityRun } from './fidelity-report';
@@ -11,17 +11,19 @@ import { CallBudget, hardOptions, overall, runFidelity, verdictFor } from './fid
 import { runAb } from './fidelity-ab';
 import { legacyPersona } from './fidelity-openings';
 import { fidelityCalls, groupOf, scenarioById, selectCards, selectFidelity } from './fidelity-scenarios';
-import { claudeSessionSystemPrompt } from '../../electron/claude-session-prompt';
-import { COMPANION_REFUSAL_RULES_LONG, COMPANION_REFUSAL_RULES_SHORT } from '../../shared/companion-refusal-rules';
+import { claudeSessionSystemPrompt } from '../../electron/brain/claude-session-prompt';
+import { COMPANION_REFUSAL_RULES_LONG, COMPANION_REFUSAL_RULES_SHORT } from '../../shared/brain/companion-refusal-rules';
 import type { EvalRelationship } from './prompt-eval-runner';
 import { claudePairJudge, pairMarkdown, ratePairs } from './familiarity-pair';
+import { loadCardFiles, requestCeiling, resolveOutDir } from './fidelity-card-files';
 import { NICKNAME_PROBE, probeMarkdown, probeNickname } from './familiarity-probe';
 
 const root = path.resolve(import.meta.dirname, '..', '..');
 export const FIDELITY_DIR = path.join(root, '.local', 'fidelity');
 const ledgerFile = path.join(FIDELITY_DIR, 'ledger.json');
-/** All real requests of the suite, every run included (replies and scoring calls alike). */
-export const TOTAL_CAP = 650;
+/** All real requests of the suite, every run included (replies and scoring calls alike). 650 → 700 on 2026-11-10 for the
+ *  private card v1.3 check the user asked for ("也改卡"): the ledger stood at 650 after the v0.4/v1.2 comparison. */
+export const TOTAL_CAP = 700;
 /** One invocation never starts above this many requests (110 since F6 made a full F1 run 102: 16 situations × 3 cards + scoring). */
 export const RUN_CAP = 110;
 
@@ -29,16 +31,16 @@ interface LedgerEntry { at: string; label: string; kind: 'run' | 'ab' | 'pair'; 
 
 /**
  * 熟悉度 runs (docs/claude/2026-11-02-familiarity.md). `off` is the app's default for a user on the first day: no seeded
- * numbers, the card does not warm up slowly. `new` and `familiar` turn "关系慢慢升温" on and seed how long they have known
+ * numbers, the card does not get familiar slowly. `new` and `familiar` turn "慢慢熟悉" on and seed how long they have known
  * each other, so the stage comes out as 初识 / 熟悉 for a neutral card. `familiar` also carries two in-jokes in the opening block.
  */
 export const EVAL_MEMES: readonly string[] = ['11-01：你说“马上就好”其实要等一个小时', '10-27：下雨天互道晚安要说两遍'];
 export const EVAL_MEME_WORDS: readonly string[] = ['马上就好', '一个小时', '两遍', '下雨天'];
 export const EVAL_RELATIONSHIPS: Readonly<Record<string, EvalRelationship | undefined>> = {
   off: undefined,
-  new: { slowWarmUp: true, dayNumber: 2, togetherDays: 1 },
-  familiar: { slowWarmUp: true, dayNumber: 40, togetherDays: 14, memes: EVAL_MEMES },
-  'familiar-default': { slowWarmUp: false, dayNumber: 40, togetherDays: 14, memes: EVAL_MEMES },
+  new: { slowWarmUp: true, dayNumber: 2, togetherDays: 0 },
+  familiar: { slowWarmUp: true, dayNumber: 40, togetherDays: 6, memes: EVAL_MEMES },
+  'familiar-default': { slowWarmUp: false, dayNumber: 40, togetherDays: 6, memes: EVAL_MEMES },
 };
 
 function option(name: string, fallback = ''): string {
@@ -60,13 +62,13 @@ async function readLedger(): Promise<LedgerEntry[]> {
 const gitValue = (args: string[]): string => { try { return execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim(); } catch { return ''; } };
 
 /** The last run of the same chat model that shares at least one situation with this one (an F1 run is no comparison for a refusal-group run). */
-async function previousRun(current: { dry: boolean; chatModel: string; label: string; scenarios?: readonly string[] }, explicit: string): Promise<FidelityRun | null> {
+async function previousRun(current: { dry: boolean; chatModel: string; label: string; scenarios?: readonly string[] }, explicit: string, dir = FIDELITY_DIR): Promise<FidelityRun | null> {
   if (explicit) return JSON.parse(await readFile(path.resolve(explicit), 'utf8')) as FidelityRun;
   let names: string[] = [];
-  try { names = (await readdir(FIDELITY_DIR)).filter(name => name.endsWith('.json') && !name.includes('-ab-') && name !== 'ledger.json').sort(); } catch { return null; }
+  try { names = (await readdir(dir)).filter(name => name.endsWith('.json') && !name.includes('-ab-') && name !== 'ledger.json').sort(); } catch { return null; }
   for (const name of names.reverse()) {
     try {
-      const run = JSON.parse(await readFile(path.join(FIDELITY_DIR, name), 'utf8')) as FidelityRun;
+      const run = JSON.parse(await readFile(path.join(dir, name), 'utf8')) as FidelityRun;
       if (run.version === 1 && Array.isArray(run.cases) && run.dry === current.dry && run.chatModel === current.chatModel && run.label !== current.label
         && (!current.scenarios || run.scenarios.some(id => current.scenarios!.includes(id)))) return run;
     } catch { /* Not a run file. */ }
@@ -182,12 +184,18 @@ export async function runFidelityCli(): Promise<void> {
 
   const dry = flag('dry');
   const label = option('label', dry ? 'dry' : 'run');
+  // --card-file [label=]path (repeatable): private cards read with the app's own importer; --out <dir> is then required (never OneDrive or the repo).
+  const cardFileSpecs = process.argv.flatMap((value, index) => value === '--card-file' ? [process.argv[index + 1] ?? ''] : []);
+  const outRoot = await resolveOutDir(option('out'), cardFileSpecs.length > 0);
+  const cardFiles = await loadCardFiles(cardFileSpecs);
+  const maxRequests = requestCeiling(option('max-requests'), cardFiles.length > 0);
   const model = option('model', 'default') === 'default' ? '' : option('model');
   // --group core (default: F1's 14 situations) | refuse | open | refusal (both) | all; --scenarios picks by id from any group.
   const group = option('group', 'core');
   const scenarios = selectFidelity(list(option('scenarios')), group);
   // --legacy-persona: the cards' persona as compiled before the example-lines / ellipsis wording (the "before" side of a measurement).
-  const cards = selectCards(list(option('cards')), scenarios).map(card => flag('legacy-persona') ? { ...card, persona: legacyPersona(card.persona) } : card);
+  // A card file is used instead of the bundled cards, or next to them when --cards names some.
+  const cards = [...(cardFiles.length && !option('cards') ? [] : selectCards(list(option('cards')), scenarios)).map(card => flag('legacy-persona') ? { ...card, persona: legacyPersona(card.persona) } : card), ...cardFiles.map(item => item.card)];
   if (!cards.length || !scenarios.length) throw new Error('没有选中任何卡或情景。');
   const entries = await readLedger();
   const used = entries.reduce((sum, entry) => sum + entry.replies + entry.judges, 0);
@@ -198,7 +206,9 @@ export async function runFidelityCli(): Promise<void> {
   const prewarmMs = Number(option('prewarm-ms', dry ? '100' : '3000'));
   const commit = gitValue(['rev-parse', '--short', 'HEAD']) || '?';
   const dirty = gitValue(['status', '--porcelain', '--', 'electron', 'shared']).split('\n').filter(Boolean).length;
-  const base = path.join(FIDELITY_DIR, `${stamp}-${label}`);
+  const outDir = outRoot ?? FIDELITY_DIR;
+  const base = path.join(outDir, `${stamp}-${label}`);
+  if (cardFiles.length) console.log(`[fidelity] 私人角色卡 ${cardFiles.map(item => `${item.label}#${item.hash}`).join('、')}（只记标签和短哈希；产物都写进 --out）`);
 
   if (flag('nickname-probe')) {
     // Two turns per card: she may ask once, then a plain yes (熟悉度). No scoring request.
@@ -255,7 +265,7 @@ export async function runFidelityCli(): Promise<void> {
     const promptTexts = await Promise.all(promptFiles.map(file => readFile(path.resolve(file), 'utf8')));
     const aName = promptTexts.length ? `A（${path.basename(promptFiles[0])}）` : refusalAb ? 'rules（陪伴规则）' : 'plain（无陪伴规则）';
     const bName = promptTexts.length ? `B（${path.basename(promptFiles[1])}）` : refusalAb ? `refusal（陪伴规则 + 婉拒也要像她${variantName}）` : 'rules（有陪伴规则）';
-    const abBase = path.join(FIDELITY_DIR, `${stamp}-ab-${label}`);
+    const abBase = path.join(outDir, `${stamp}-ab-${label}`);
     const abScenarios = selectFidelity(list(option('scenarios', 'betrayed,pudding,remember-exam')));
     const repeat = Math.max(1, Number(option('repeat', '1')) || 1);
     const turns = abScenarios.reduce((sum, scenario) => sum + scenario.turns.length, 0) * cards.length * repeat;
@@ -296,6 +306,7 @@ export async function runFidelityCli(): Promise<void> {
   const calls = fidelityCalls(scenarios, cards);
   const estimate = flag('no-judge') ? calls.replies : calls.total;
   console.log(`[fidelity] ${label}：${cards.length} 张卡 × ${scenarios.length} 个情景 = ${calls.replies} 次回复${flag('no-judge') ? '' : ` + ${calls.judges} 次评分`} = ${estimate} 次请求；聊天模型 ${model || 'default'}；评分模型 ${flag('no-judge') ? '（不评分）' : JUDGE_MODEL}${dry ? '（假 Claude，不计额度）' : `；已用 ${used}，总上限 ${total}，单次上限 ${runCap}`}`);
+  if (maxRequests !== null && estimate > maxRequests) throw new Error(`计划 ${estimate} 次请求，超过 --max-requests ${maxRequests}，没有开始。`);
   if (!dry && estimate > runCap) throw new Error(`单次运行不能超过 ${runCap} 次（本次 ${estimate}），没有开始。`);
   if (!dry && used + estimate > total) throw new Error(`会超过总上限 ${total}（已用 ${used}，本次 ${estimate}），没有开始。`);
   const budget = new CallBudget(used, total, dry ? Infinity : runCap, !dry);
@@ -309,14 +320,14 @@ export async function runFidelityCli(): Promise<void> {
   }
   const run: FidelityRun = {
     ...partial, version: 1, label, at: new Date().toISOString(), commit, dirty, dry, chatModel: model, judgeModel: flag('no-judge') ? null : JUDGE_MODEL,
-    promptVariant: systemChoice === 'app' ? '代码当前发送的（electron/claude-session-prompt.ts）' : systemChoice === 'plain' ? '无陪伴规则（对照）'
+    promptVariant: systemChoice === 'app' ? '代码当前发送的（electron/brain/claude-session-prompt.ts）' : systemChoice === 'plain' ? '无陪伴规则（对照）'
       : systemChoice === 'rules' ? '有陪伴规则、没有“婉拒也要像她”一节（F1 的提示词）' : `陪伴规则 + “婉拒也要像她”一节${variantName}`,
     cards: cards.map(card => card.id), scenarios: scenarios.map(scenario => scenario.id), ...(realer ? { realer: true } : {}),
-    notes: [dry ? '假运行：不计入额度账本。' : `真实请求累计 ${used + budget.calls} 次（含本次 ${budget.calls} 次；总上限 ${total}，单次上限 ${runCap}）。`,
+    notes: [...(cardFiles.length ? [`私人角色卡（只记标签和短哈希，卡的原文不在记录里）：${cardFiles.map(item => `${item.label}#${item.hash}`).join('、')}`] : []), dry ? '假运行：不计入额度账本。' : `真实请求累计 ${used + budget.calls} 次（含本次 ${budget.calls} 次；总上限 ${total}，单次上限 ${runCap}）。`,
       ...(realer ? ['每张卡都打开了“更真实的情绪”（F6）：开场多一段说明；硬规则和评分表用这一模式的（用户没难过时撒娇式抱怨和更重的别扭都不扣分，用户难过时照旧）。'] : []),
       ...(relationshipKey !== 'off' ? [`熟悉度设定 ${relationshipKey}：${JSON.stringify(relationship)}`] : [])],
   };
-  const previous = await previousRun(run, flag('no-compare') ? '' : option('compare'));
+  const previous = cardFiles.length && !option('compare') ? null : await previousRun(run, flag('no-compare') ? '' : option('compare'), outDir);
   await write(base, run, flag('no-compare') ? null : previous);
   console.log(overallLine(run));
 }

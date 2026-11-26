@@ -3,7 +3,7 @@
  * 宿主装配照 electron/main.ts 心情回调和心情时钟那几行：真 MoodHost（隔离临时目录，fatigue-state.json 预置困倦阶段）、
  * 真 ProactiveSpeechGate、真内心循环（createInnerLoopHost）、真屏幕主动聊天（ProactiveVision）、真一起听停顿点开口
  * （ListenProactive）、真纪念邀请（TextMemorials）；截图、模型都是计数的假实现。每一种状态给一次开口时机，数各路做了什么。
- * #10 以后（I-020，electron/inner-loop/opening-host.ts）认领走"她来挑"：这里用固定顺序的假挑法（shared/behaviors/opening-choice/fake.ts）
+ * #10 以后（I-020，electron/brain/opening-host.ts）认领走"她来挑"：这里用固定顺序的假挑法（shared/behaviors/opening-choice/fake.ts）
  * 把每一条路固定住，看那条路被挑中时自己的行为照旧；深夜、困了时她更常不说、屏幕和一起听压低，是真挑法的事（tests/opening-choice.test.ts）。
  */
 import test from 'node:test';
@@ -11,22 +11,22 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { MoodHost } from '../electron/mood';
-import { ProactiveSpeechGate } from '../electron/proactive-speech-gate';
-import { createInnerLoopHost } from '../electron/inner-loop/host';
-import { InnerLoop } from '../electron/inner-loop/inner-loop';
-import { claimMoodCue, claimedView, type MoodCueOwner } from '../electron/inner-loop/claim';
-import { ProactiveVision } from '../electron/proactive-vision';
-import { ListenProactive } from '../electron/listen-together/proactive';
-import { TextMemorials } from '../electron/text-memorials';
-import { isVisualAttentionCue } from '../shared/vision-runtime';
+import { MoodHost } from '../electron/mood/mood';
+import { ProactiveSpeechGate } from '../electron/initiative/proactive-speech-gate';
+import { createInnerLoopHost } from '../electron/initiative/inner-loop/host';
+import { InnerLoop } from '../electron/initiative/inner-loop/inner-loop';
+import { claimMoodCue, claimedView, type MoodCueOwner } from '../electron/initiative/inner-loop/claim';
+import { ProactiveVision } from '../electron/senses/proactive-vision';
+import { ListenProactive } from '../electron/senses/listen-together/proactive';
+import { TextMemorials } from '../electron/memory/text-memorials';
+import { isVisualAttentionCue } from '../shared/senses/vision-runtime';
 import { FixedOpeningChoice } from '../shared/behaviors/opening-choice/fake';
 import type { OpeningCandidateId } from '../shared/behaviors/opening-choice/interface';
-import { DEFAULT_MOOD_PARAMETERS, createMoodState, getMoodSnapshot, type MoodCue } from '../shared/mood';
-import type { FatiguePhase } from '../shared/fatigue';
-import type { InnerLoopDiagnostic } from '../shared/inner-loop';
-import type { ListenNote } from '../shared/listen-together';
-import type { MoodView } from '../shared/mood-runtime';
+import { DEFAULT_MOOD_PARAMETERS, createMoodState, getMoodSnapshot, type MoodCue } from '../shared/foundation/mood';
+import type { FatiguePhase } from '../shared/mood/fatigue';
+import type { InnerLoopDiagnostic } from '../shared/initiative/inner-loop';
+import type { ListenNote } from '../shared/senses/listen-together';
+import type { MoodView } from '../shared/mood/mood-runtime';
 
 type State = 'day' | 'night-awake' | 'drowsy' | 'asleep';
 type Route = 'vision' | 'listen' | 'memorial' | 'inner' | 'inner-off';

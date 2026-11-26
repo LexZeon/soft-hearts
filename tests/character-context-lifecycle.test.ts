@@ -4,49 +4,76 @@ import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import ts from 'typescript';
-import { CompletedReplySpeech } from '../electron/completed-reply-speech';
-import { VisualSelfRuntime } from '../electron/visual-self-runtime';
-import { VoiceChatHost } from '../electron/voice-chat-host';
-import { cameraImagesRevoked } from '../electron/runtime';
-import { t } from '../shared/ui-language';
+import { CompletedReplySpeech } from '../electron/voice/completed-reply-speech';
+import { VisualSelfRuntime } from '../electron/senses/visual-self-runtime';
+import { VoiceChatHost } from '../electron/voice/voice-chat-host';
+import { cameraImagesRevoked } from '../electron/senses/media-runtime';
+import { t } from '../shared/foundation/ui-language';
+import { WIRING_PRELUDE, wiringSource } from './helpers/wiring-source';
 
 // In a normal checkout, use ordinary project dependencies. The ignored overlay
 // reuses pinned baseline modules; no app, store instance or service is launched.
 const sourceRoot = fileURLToPath(new URL('../', import.meta.url));
-const baseline = existsSync(path.join(sourceRoot, 'shared/character-cards.ts')) ? null
+const baseline = existsSync(path.join(sourceRoot, 'shared/cards/character-cards.ts')) ? null
   : JSON.parse(readFileSync(new URL('../../baseline.json', import.meta.url), 'utf8'));
 const dependencyRoot = baseline ? path.resolve(baseline.source) : sourceRoot;
-const cardsApi = await import(pathToFileURL(path.join(dependencyRoot, 'shared/character-cards.ts')).href);
-const { memoryProviderScope } = await import(pathToFileURL(path.join(dependencyRoot, 'electron/companion.ts')).href);
-const updatedText = readFileSync(new URL('../electron/main.ts', import.meta.url), 'utf8');
+const cardsApi = await import(pathToFileURL(path.join(dependencyRoot, 'shared/cards/character-cards.ts')).href);
+const { memoryProviderScope } = await import(pathToFileURL(path.join(dependencyRoot, 'electron/brain/companion.ts')).href);
+// I-067: the import handler adds card reminders to its notice; the real helper, from the current source (older baselines never call it).
+const { withCardLint } = await import(pathToFileURL(path.join(sourceRoot, 'electron/cards/character-card-lint.ts')).href);
+// Switch lock (2026-11-23): the real helpers activation runs through (a switch the conversation did not take puts the card back).
+const { activateCardCommitted } = await import(pathToFileURL(path.join(sourceRoot, 'electron/cards/character-switch.ts')).href);
+const { settledScope } = await import(pathToFileURL(path.join(sourceRoot, 'electron/foundation/settled-scope.ts')).href);
+// I-209 step 2: a context change of the desktop companion stops only her own chat task (the real rule, from the current source).
+const { companionChangeStops } = await import(pathToFileURL(path.join(sourceRoot, 'electron/brain/turn-owner/owners.ts')).href);
+// Wiring rewrite step 4: the card handlers are in electron/wiring/cards-wiring.ts; the wiring is read across main.ts and electron/wiring/*.ts.
+const updatedText = wiringSource();
 const originalText = baseline ? readFileSync(path.join(dependencyRoot, 'electron/main.ts'), 'utf8') : null;
 const handlerNames = ['saveCharacterCard', 'activateCharacterCard', 'deleteCharacterCard', 'bindCharacterModel', 'importCharacterCard'];
 const tree = (text: string) => ts.createSourceFile('electron/main.ts', text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+// Wiring rewrite step 4: a part's own functions and objects are declared inside its wire function (声音: cancelCompletedReply,
+// clearReplySpeech, completedReplySpeech in electron/wiring/voice-wiring.ts wireVoice); one not at the top level is searched at any depth.
+function nested<T extends ts.Node>(ast: ts.SourceFile, match: (node: ts.Node) => node is T): T[] {
+  const top = (ast.statements as readonly ts.Node[]).filter(match);
+  if (top.length) return top;
+  const out: T[] = [];
+  const visit = (node: ts.Node) => { if (match(node)) out.push(node); ts.forEachChild(node, visit); };
+  visit(ast);
+  return out;
+}
 function declaration(ast: ts.SourceFile, name: string) {
-  const nodes = ast.statements.filter((node): node is ts.FunctionDeclaration => ts.isFunctionDeclaration(node) && node.name?.text === name);
+  const nodes = nested(ast, (node): node is ts.FunctionDeclaration => ts.isFunctionDeclaration(node) && node.name?.text === name);
   assert.equal(nodes.length, 1, 'Extract one actual host declaration: ' + name);
-  return nodes[0].getText(ast);
+  return nodes[0].getText(ast).replace(/^export\s+/, '');
 }
 function variableStatement(ast: ts.SourceFile, name: string) {
-  const nodes = ast.statements.filter((node): node is ts.VariableStatement => ts.isVariableStatement(node)
-    && node.declarationList.declarations.some(value => ts.isIdentifier(value.name) && value.name.text === name));
+  // (Wiring rewrite step 4c: `let voiceHost!: VoiceChatHost;` in electron/wiring/senses-wiring.ts is the save steps' binding, not the host.)
+  const nodes = nested(ast, (node): node is ts.VariableStatement => ts.isVariableStatement(node)
+    && node.declarationList.declarations.some(value => ts.isIdentifier(value.name) && value.name.text === name && !value.exclamationToken));
   assert.equal(nodes.length, 1, 'Extract one actual host initial state: ' + name);
-  return nodes[0].getText(ast);
+  return nodes[0].getText(ast).replace(/^export\s+/, '');
 }
 function registration(ast: ts.SourceFile, name: string) {
-  const register = ast.statements.find((node): node is ts.FunctionDeclaration => ts.isFunctionDeclaration(node) && node.name?.text === 'registerIPC')!;
+  // Every function body of the wiring (registerIPC, and since step 4 a part's register): still exactly one registration.
+  const statements: ts.Statement[] = [];
+  const collect = (node: ts.Node) => { if (ts.isBlock(node)) statements.push(...node.statements); ts.forEachChild(node, collect); };
+  collect(ast);
+  const register = { body: { statements } };
   const matches = register.body!.statements.filter(node => ts.isExpressionStatement(node) && ts.isCallExpression(node.expression)
     && ['host', 'scopedHost'].includes(node.expression.expression.getText(ast))
     && ts.isStringLiteral(node.expression.arguments[0]) && node.expression.arguments[0].text === name);
   assert.equal(matches.length, 1, 'Extract one actual IPC registration: ' + name);
   // The import handler shares its card-import step with the agent channel; extract that actual helper too.
-  const helpers = name === 'importCharacterCard' ? register.body!.statements.filter(node => ts.isVariableStatement(node)
-    && node.declarationList.declarations.some(value => ts.isIdentifier(value.name) && value.name.text === 'importCharacterCardContent')) : [];
+  // Switch lock (2026-11-23): activation is the shared activateCard step (the 角色页's switch runs it too); extract it the same way.
+  const helper = name === 'importCharacterCard' ? 'importCharacterCardContent' : name === 'activateCharacterCard' ? 'activateCard' : null;
+  const helpers = helper ? register.body!.statements.filter(node => ts.isVariableStatement(node)
+    && node.declarationList.declarations.some(value => ts.isIdentifier(value.name) && value.name.text === helper)) : [];
   return [...helpers, matches[0]].map(node => node.getText(ast)).join('\n');
 }
 function factory(text: string) {
   const ast = tree(text);
-  const declarations = ['clearVisionContext', 'syncCharacter', 'mediaChanged'].map(name => declaration(ast, name)).join('\n');
+  // I-221 (2026-11-26): a sense off goes through sightOff (clearVisionContext keeping her reply and the page); older sources have none.
+  const declarations = ['clearVisionContext', 'syncCharacter', 'mediaChanged', ...(/function sightOff\(/.test(text) ? ['sightOff'] : [])].map(name => declaration(ast, name)).join('\n');
   // Current lifecycle code calls the real voice revoker. Extract its actual
   // no-capture host (the real VoiceChatHost, R33) too; never replace the new
   // dependency with a no-op. Historical source without this call needs no substituted voice capability.
@@ -60,27 +87,41 @@ function factory(text: string) {
   const visualLifecycle = /\bvisualSelfRuntime\b/.test(declarations)
     ? ['visualSelfRuntime', 'visualSelfIdentity', 'visualSelfScreenSourceId', 'visualSelfCameraOwnerId']
       .map(name => variableStatement(ast, name)).join('\n') : '';
+  // Wiring rewrite step 4c: another part writes 感知's vision state through its setter (electron/wiring/senses-wiring.ts); the real one, over this fixture's state.
+  const visionSetters = /\bsetVisionSupported\s*\(/.test(declarations) ? declaration(ast, 'setVisionSupported') : '';
   const handlers = handlerNames.map(name => registration(ast, name)).join('\n');
   const code = ts.transpileModule(`function create(deps: any) {
     const {characterCards,characterResponseService,store,companion,pending,media,screenSnapshots,screenGlance,
       stopSystemAudio,ambientComments,proactiveSpeechGate,cancelProactiveVision,speechRuntime,
-      replySpeechStyles,broadcast,refreshVisionContext,publishVisionState,bundledAssets,assets,
+      replySpeechStyles,broadcast,refreshVisionContext,publishVisionState,bundledAssets,assets,bundledReferenceForPath,resolveBundledCharacterModel,isBundledModelKey,canonicalModelReference,
       motionLibrary,sync,compileCharacterPersona,effectiveCharacterMood,memoryProviderScope,
-      dialog,controls,stat,readFile,CompletedReplySpeech,VisualSelfRuntime,VoiceChatHost,suspendAmbientSpeech,windows,bodyAuthoring} = deps;
+      dialog,controls,stat,readFile,CompletedReplySpeech,VisualSelfRuntime,VoiceChatHost,suspendAmbientSpeech,windows,bodyAuthoring,voiceCall,CallOffers,voiceSegmentSenses,takeMeThere,chatSettings,agentInterconnected} = deps;
     // Optional profile management is outside this legacy character/media fixture.
     const userProfileManagement = undefined, languageAuthoring = undefined, visualAuthoring = undefined, surprisePreviewHost = undefined, activateUserProfile = async () => {};
-    const poseSensing = undefined; // local pose sensing (electron/pose/) is outside this fixture too
+    const poseSensing = undefined; // local pose sensing (electron/senses/pose/) is outside this fixture too
+    const faceCheck = undefined; // I-135 face check (electron/senses/face/) likewise
+    // I-144b: deleteCharacterCard goes through the recycle bin; here the bin passes straight through (tests/i144b-recycle-items.test.ts covers it).
+    const recycleHost = { async deleteCharacter(_id: string, _forget: boolean, removeCard: () => Promise<void>) { await removeCard(); return { entry: null, failed: [] }; } };
     // I-036: the camera's 「发图片」 rule and the tray eye are outside this fixture too; the revocation rule is the real one.
     const cameraGlance = { reset() {} }, cameraEye = { images() {} }, cameraImagesRevoked = deps.cameraImagesRevoked;
-    const localAsr = undefined, voiceRoute = { engine: 'compatible' }; // the local speech recognizer (electron/asr/) too
-    const appJournal = { characters() {} }; // 体验记录 (electron/journal/) only observes the card state; outside this fixture too
+    const selfLook = { cancel() {}, mediaChanged() {} }; // I-085 (tests/i085-self-look.test.ts covers it)
+    const forgetCallFrames = () => {}, callGlancesRevoked = () => false; // I-161 A: her call's Claude process (tests/i161-call-glance-held.test.ts covers it)
+    const publishSenses = () => {}; // Unbound v1 step 2: the light near her (tests/unbound-typing.test.ts covers the host side)
+    const relayCameraHeld = () => {}; // batch D: "别看" for her full-screen page (tests/unbound-full-senses.test.ts covers it)
+    const localAsr = undefined, voiceRoute = { engine: 'compatible' }; // the local speech recognizer (electron/senses/asr/) too
+    const appJournal = { characters() {} }; // 体验记录 (electron/memory/journal/) only observes the card state; outside this fixture too
     let moodModel = deps.moodModel, visionGeneration = 4, visionContextIdentity = 'synthetic-current-context',
       lookAttachments = deps.lookAttachments, lookTurns = deps.lookTurns, visionSupported = true, motionSelectionGeneration = 0,
       asrTask = null;
+    // Wiring rewrite step 5: syncCharacter (now in electron/wiring/cards-wiring.ts) notes a model change through needs; electron/main.ts's
+    // part table gives the same increment (noteModelSelection: () => { motionSelectionGeneration++; }).
+    const noteModelSelection = () => { motionSelectionGeneration++; };
     let mutationQueue = Promise.resolve();
     const mutate = operation => { const result = mutationQueue.then(operation, operation); mutationQueue = result.catch(() => {}); return result; };
     const registrations = new Map();
     const host = (name, callback, controlOnly = true) => registrations.set(name, {callback, controlOnly});
+    ${WIRING_PRELUDE}
+    ${visionSetters}
     ${voiceLifecycle}
     ${replyLifecycle}
     ${visualLifecycle}
@@ -89,7 +130,7 @@ function factory(text: string) {
     return {registrations, syncCharacter, mediaChanged,
       state: () => ({visionGeneration,visionContextIdentity,visionSupported,motionSelectionGeneration})};
   }`, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None } }).outputText;
-  return new Function('t', code + '\nreturn create;')(t) as (deps: Record<string, any>) => any;
+  return new Function('t', 'withCardLint', 'activateCardCommitted', 'settledScope', 'companionChangeStops', code + '\nreturn create;')(t, withCardLint, activateCardCommitted, settledScope, companionChangeStops) as (deps: Record<string, any>) => any;
 }
 const makeUpdated = factory(updatedText);
 type Card = Record<string, any>;
@@ -138,24 +179,25 @@ function fixture(make = makeUpdated) {
       } },
     pending: new Map([['chat', { kind: 'chat', controller: chat }], ['agent', { kind: 'agent', controller: agent }]]),
     media, screenSnapshots, moodModel: current.model.path,
-    // 屏幕只读大概: the rough reading (electron/screen-glance.ts) starts and stops with sharing.
+    // 屏幕只读大概: the rough reading (electron/senses/screen-glance.ts) starts and stops with sharing.
     screenGlance: { setSharing(on: boolean) { effects.glance = on; } },
     bodyAuthoring: { invalidate() { effects.bodyInvalidations++; } },
-    // The frame being taken for a message (electron/look-attachments.ts): clearing the vision context drops it.
+    // The frame being taken for a message (electron/senses/look-attachments.ts): clearing the vision context drops it.
     lookAttachments: { abort() { shared.abort(); }, get busy() { return !shared.signal.aborted; } },
-    // 屏幕只读大概: clearing the vision context also closes her look offer (and the pet's prompt).
+    // 屏幕只读大概: clearing the vision context also closes her look offer (and the companion's prompt).
     lookTurns: { clear() { effects.lookOfferClears = (effects.lookOfferClears ?? 0) + 1; } },
     stopSystemAudio() { effects.stops++; }, ambientComments: { clear() { effects.comments++; } },
     proactiveSpeechGate: { cancel() { effects.cueCancels++; } }, cancelProactiveVision() { effects.visionCancels++; },
     speechRuntime: { stop() { effects.speechStops++; effects.playing = false; } }, replySpeechStyles: { clear() { effects.styleClears++; } },
     broadcast(channel: string, value: any) { effects.events.push({ channel, value }); if (channel === 'desk:vision-context-cleared') effects.body = ''; },
-    refreshVisionContext() { effects.refreshed++; }, publishVisionState() { effects.published++; },
-    bundledAssets: { async getDefaultAssets() { return effects.load ? await effects.load : { model: { path: '/synthetic/gene.pmx' } }; } },
+    refreshVisionContext() { effects.refreshed++; }, publishVisionState() { effects.published++; }, voiceCall: { check() {} }, // I-091
+    bundledAssets: { directory: '/synthetic/bundled', async getDefaultAssets() { return effects.load ? await effects.load : { model: { path: '/synthetic/gene.pmx' } }; } },
+    bundledReferenceForPath: (_directory: string, modelPath: string) => modelPath, resolveBundledCharacterModel: async () => ({ path: '/synthetic/bundled.pmx' }), isBundledModelKey: (value: unknown) => value === 'bundled:gene', canonicalModelReference: (value: unknown) => value, // 0.2.0; 2026-11-26: synthetic paths are never bundled
     assets: { async register(modelPath: string) { return { path: modelPath }; } }, motionLibrary: { cancel() {} },
     compileCharacterPersona: cardsApi.compileCharacterPersona, effectiveCharacterMood: cardsApi.effectiveCharacterMood, memoryProviderScope,
     dialog: { async showOpenDialog() { return { canceled: false, filePaths: ['/synthetic/import.json'] }; } }, controls: {},
     async stat() { return { size: 256 }; }, async readFile() { return JSON.stringify(draft(card('imported'))); },
-    CompletedReplySpeech, VisualSelfRuntime, VoiceChatHost, suspendAmbientSpeech() { effects.readingPauseRequests++; }, windows: () => [],
+    CompletedReplySpeech, VisualSelfRuntime, VoiceChatHost, CallOffers: class { constructor(public ports: unknown) {} }, voiceSegmentSenses: () => undefined, takeMeThere: {}, chatSettings: {}, agentInterconnected: () => true, suspendAmbientSpeech() { effects.readingPauseRequests++; }, windows: () => [],
   };
   // Actual sync() is an external port here; its model/privacy implementation is
   // separately checked byte-identical below, rather than copied into this fixture.
@@ -240,10 +282,11 @@ test('explicit activation cancels before awaiting associated model resolution; f
   reject(new Error('synthetic missing model')); const state = await changing;
   assert.ok(state.notice); assert.equal(f.current.model.path, '/synthetic/current.pmx'); revoked(f);
 });
-test('sharing off retains actual mediaChanged privacy clear and abort; provider handler and controls-only writes remain unchanged', async () => {
+test('sharing off retains actual mediaChanged privacy clear; her reply in progress is not aborted (2026-11-25); provider handler and controls-only writes remain unchanged', async () => {
   const f = fixture(), previous = { ...f.media.state }; f.media.state.screenSharing = false;
   f.api.mediaChanged(previous);
-  assert.equal(f.effects.body, ''); assert.equal(f.shared.signal.aborted, true); assert.equal(f.chat.signal.aborted, true);
+  // 2026-11-25 (user: only cutting in interrupts her, docs/claude/2026-11-25-no-interrupt.md): what she was shown is dropped (the look tickets abort), but the chat turn that is already replying is left to finish.
+  assert.equal(f.effects.body, ''); assert.equal(f.shared.signal.aborted, true); assert.equal(f.chat.signal.aborted, false);
   assert.equal(f.effects.bodyInvalidations, 1, 'sharing-off revokes the actual body authoring dependency');
   assert.equal(f.effects.glance, false, 'sharing off stops the rough reading');
   assert.equal(f.effects.lookOfferClears, 1, 'and closes her look offer');

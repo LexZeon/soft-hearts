@@ -1,10 +1,10 @@
 import { AnimationClip, type Interpolant, type KeyframeTrack, type SkinnedMesh } from 'three';
-import { EXPRESSION_MORPHS, EXPRESSION_GENE_SHA, EXPRESSION_MASK, validateExpressionRecipe, type ExpressionResource } from '../../shared/expression-composition';
+import { EXPRESSION_MORPHS, EXPRESSION_GENE_SHA, EXPRESSION_MASK, validateExpressionRecipe, type ExpressionResource } from '../../shared/actions';
 import {
   BEHAVIOR_SEMANTICS, isBehaviorFaceBindingId, isBehaviorSemantic,
   MAX_BEHAVIOR_CUE_AGE_MS, MAX_BEHAVIOR_CUE_LIFETIME_MS, MAX_BEHAVIOR_FACE_STRENGTH,
   type BehaviorFaceBindingId, type BehaviorMotionCue, type BehaviorMotionPlan, type BehaviorMotionResource,
-} from '../../shared/behavior-motion';
+} from '../../shared/actions';
 import type { UniversalTarget } from './universal-target';
 
 export interface BehaviorMotionGates {

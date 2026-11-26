@@ -1,9 +1,9 @@
 import { AnimationClip, type SkinnedMesh } from 'three';
-import { BEHAVIOR_RECIPES } from '../../shared/behavior-recipes';
+import { BEHAVIOR_RECIPES } from '../../shared/actions';
 import { BODY_START_AGE_MS, BODY_MOTION_REASONS, BODY_IDLE_REPORT_INTERVAL_MS, bodyIdentity, isBodyMotionCue,
-  type BodyStageObservation, type BodyMotionCue, type BodyMotionPlan, type BodyMotionResource } from '../../shared/body-motion';
+  type BodyStageObservation, type BodyMotionCue, type BodyMotionPlan, type BodyMotionResource } from '../../shared/actions';
 import type { BehaviorBodyPlay, BehaviorBodyState } from './behavior-body';
-import { vmdDurationSeconds } from '../../shared/vmd-duration';
+import { vmdDurationSeconds } from '../../shared/actions';
 
 export interface BodyStageGates {
   readonly ready: boolean;
@@ -239,7 +239,7 @@ export class BodyMotionController {
       if (!resource) { this.reason = 'invalid-resource'; return; }
       const clip = await this.dependencies.load(resource, this.mesh);
       if (!current()) return;
-      // One canonical duration (shared/vmd-duration.ts): the loader replaced
+      // One canonical duration (shared/actions/vmd-duration.ts): the loader replaced
       // MMDLoader's Float32 keyframe time with the parser's frames/30, the same
       // double the host recipe holds. Anything else is a trimmed/retimed source.
       if (!(clip instanceof AnimationClip) || clip.duration !== vmdDurationSeconds(cue.durationMs)) {

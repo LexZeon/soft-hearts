@@ -2,8 +2,8 @@
  * I-039: after a busy stretch of chatting her own speech caps rise (speechIntervalMs shorter, speechPerHour larger), and fall back as the
  * messages age out. Pure functions; the numbers are in knobs.ts. Never touches speechWithoutReply. No floor, no ceiling.
  */
-import type { MoodParameters } from '../../mood';
-import { deriveDispositions } from '../reactions/dispositions';
+import type { MoodParameters } from '../../foundation/mood';
+import { deriveDispositions } from '../../mood';
 import { BUSY_CHAT_KNOBS, type BusyChatKnobs } from './knobs';
 
 const MINUTE = 60_000;

@@ -1,7 +1,8 @@
 import test, { type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
-import { PetUI, renderPet } from '../src/ui/PetUI';
-import { isPetControlPoint } from '../src/ui/MoodCompanion';
+import { readFileSync } from 'node:fs';
+import { PetUI, renderPet } from '../src/stage/PetUI';
+import { isPetControlPoint } from '../src/mood/MoodCompanion';
 
 class Classes {
   private readonly names = new Set<string>();
@@ -141,21 +142,43 @@ test('framing reads the expanded toolbar bottom even while folded, and the fold 
 });
 
 test('fresh rendering exposes a standard expanded button without a persisted preference', () => {
-  const target = { innerHTML: '' }; renderPet(target as HTMLElement);
+  const target = { innerHTML: '' }; renderPet(target as HTMLElement); // no-pet-ok: existing element ids and names
   assert.match(target.innerHTML, /id="pet-toolbar-toggle" type="button"[^>]*aria-expanded="true"[^>]*>&gt;<\/button>/);
   assert.doesNotMatch(target.innerHTML, /class="pet-toolbar is-collapsed"/);
 });
 
-test('和她一起看: one button, on only while both listening and screen sharing are on; a click asks the page to switch both', t => {
+test('和她一起看 (I-187): one button, on while the screen and the dialogue are both on; marked while she sees but does not hear; a click asks the page', t => {
   const f = fixture(t), watch = f.byId('pet-watch-together');
+  const reading = (movie: boolean, phase: 'ready' | 'paused' | 'waiting' = 'ready') => {
+    const cell = (on: boolean) => ({ revision: 1, intent: on, phase: on ? phase : 'off' as const, status: '' });
+    const off = { capture: { revision: 0, active: false, phase: 'off' as const, status: '' }, music: cell(false), movie: cell(false) };
+    return { sources: { 'system-audio': { capture: { revision: 1, active: movie && phase === 'ready', phase: movie ? phase : 'off' as const, status: '' }, music: cell(false), movie: cell(movie) }, microphone: off } };
+  };
   f.ui.applyRuntime({ voiceInput: false, screenSharing: true, cameraSharing: false, voiceOwner: 'pet', cameraOwner: 'pet' });
   assert.equal(watch.attributes.get('aria-pressed'), 'false', 'screen sharing alone is not watching together');
+  assert.equal(watch.dataset.notHeard, 'true', 'she sees the screen and hears nothing: marked');
+  assert.match(watch.dataset.tooltip, /台词没在听/);
   f.ui.setSystemAudioState({ active: true });
-  assert.equal(watch.attributes.get('aria-pressed'), 'true');
-  assert.match(watch.dataset.tooltip, /开着/);
+  assert.equal(watch.attributes.get('aria-pressed'), 'false', 'the rhythm capture alone is not the dialogue');
+  f.ui.watchButton.setView(reading(true, 'paused'));
+  assert.deepEqual([watch.attributes.get('aria-pressed'), watch.dataset.notHeard], ['true', 'true'], 'on, the dialogue paused: still marked');
+  f.ui.watchButton.setView(reading(true));
+  assert.deepEqual([watch.attributes.get('aria-pressed'), watch.dataset.notHeard], ['true', 'false']);
+  assert.match(watch.dataset.tooltip, /在听台词/);
+  assert.deepEqual([f.ui.watchButton.look.seeing, f.ui.watchButton.look.dialogue], [true, true]);
   f.ui.applyRuntime({ voiceInput: false, screenSharing: false, cameraSharing: false, voiceOwner: 'pet', cameraOwner: 'pet' });
-  assert.equal(watch.attributes.get('aria-pressed'), 'false', 'listening alone is not watching together');
-  assert.match(watch.dataset.tooltip, /同时打开/);
+  assert.equal(watch.attributes.get('aria-pressed'), 'false', 'the dialogue alone is not watching together');
+  assert.match(watch.dataset.tooltip, /画面没在看/);
   watch.click();
   assert.equal(f.actionCalls.at(-1), 'watch');
+});
+
+test('the window size readout shows only while adjusting the window (I-187)', () => {
+  const target = { innerHTML: '' }; renderPet(target as HTMLElement); // no-pet-ok: existing element ids and names
+  assert.match(target.innerHTML, /<output id="pet-window-size" class="pet-window-size"/); // no-pet-ok: existing element ids and names
+  const css = readFileSync(new URL('../src/stage/pet.css', import.meta.url), 'utf8'); // no-pet-ok: existing element ids and names
+  assert.match(css, /\.pet-window-size \{ display:none;/, 'hidden by default'); // no-pet-ok: existing element ids and names
+  assert.match(css, /\.window-adjusting \.pet-window-size \{ display:block; \}/, 'shown in the adjusting mode'); // no-pet-ok: existing element ids and names
+  assert.match(css, /\.pet-toolbar\.is-visible:not\(\.is-collapsed\) ~ \.pet-media-indicator \{ opacity:0; visibility:hidden; \}/, 'the status line never sits half-visible behind the buttons'); // no-pet-ok: existing element ids and names
+  assert.match(css, /#pet-watch-together\[data-not-heard="true"\]::after/, 'the not-heard mark is drawn'); // no-pet-ok: existing element ids and names
 });

@@ -4,12 +4,12 @@ import { randomUUID } from 'node:crypto';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { BODY_TWEAK_BASE, BODY_TWEAK_TARGET, BODY_TWEAK_BINDING, makeBodyPoseTweak, validateBodyPoseProfile, validateBodyPoseSelection } from '../shared/personalize-body';
-import { bodyPoseBinding } from '../shared/personalize-body-bindings';
-import { applyBodyPoseTweak, bodyBindingForProfile } from '../electron/personalize-body-tweak';
-import { PersonalizeBodyAuthoring } from '../electron/personalize-body-authoring';
-import { PersonalizeBodyStore } from '../electron/personalize-body-store';
-import { selectBodyPosePresentation } from '../shared/personalize-body-presentation';
+import { BODY_TWEAK_BASE, BODY_TWEAK_TARGET, BODY_TWEAK_BINDING, makeBodyPoseTweak, validateBodyPoseProfile, validateBodyPoseSelection } from '../shared/stage/personalize-body';
+import { bodyPoseBinding } from '../shared/stage/personalize-body-bindings';
+import { applyBodyPoseTweak, bodyBindingForProfile } from '../electron/stage/personalize-body-tweak';
+import { PersonalizeBodyAuthoring } from '../electron/stage/personalize-body-authoring';
+import { PersonalizeBodyStore } from '../electron/stage/personalize-body-store';
+import { selectBodyPosePresentation } from '../shared/stage/personalize-body-presentation';
 import { Bone,BufferGeometry,MeshBasicMaterial,Quaternion,Skeleton,SkinnedMesh,Vector3 } from 'three';
 import { PersonalizeStaticPose } from '../src/stage/personalize-static-pose';
 

@@ -38,7 +38,7 @@ if errorlevel 1 goto failed
 echo.
 echo soft hearts next is running. You can close this window.
 echo To also get the two desktop shortcuts ("soft hearts next - latest development version" and the stable one)
-echo run start-soft-hearts.cmd desktop in a terminal; that builds a packaged copy and takes ten minutes or more.
+echo run .\start-soft-hearts.cmd desktop in a terminal opened in this folder (the .\ works in both cmd and PowerShell); that builds a packaged copy and takes ten minutes or more.
 timeout /t 20
 exit /b 0
 :withdesktop

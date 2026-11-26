@@ -3,15 +3,15 @@ import test from 'node:test';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { Quaternion, Vector3, type Bone } from 'three';
-import { buildModelProfile } from '../shared/model-profile';
+import { buildModelProfile } from '../shared/stage/model-profile';
 import {
   LINEAR_INTERPOLATION, buildRetargetRig, compactRig, evaluatePose, ikTarget, planRetarget, qarc, qconj, qmul, qrotate, retargetTracks, retargetVmd,
   rigFromCompact, tracksOnRig, vlength, vnormalize, vsub, writeVmd, type CompactRig, type RetargetRig, type Tracks, type VmdLike,
-} from '../shared/motion-retarget';
-import { sha256Hex } from '../shared/sha256-sync';
-import { stripDefaultVmdTracks } from '../src/stage/vmd-tracks';
-import geneSource from '../shared/retarget-gene-source.json';
-import bundled from '../shared/bundled-assets.json';
+} from '../shared/actions/motion-retarget';
+import { sha256Hex } from '../shared/foundation/sha256-sync';
+import { stripDefaultVmdTracks } from '../src/foundation/vmd-tracks';
+import geneSource from '../shared/foundation/retarget-gene-source.json';
+import bundled from '../shared/actions/bundled-assets.json';
 import { readVmdLite } from './helpers/vmd-lite';
 import { catalogMotions, loadBundledMotion, motionBytes, readGene } from './helpers/bundled-motions';
 import { profileInput, toThreeMesh, toyModel, type ModelData, type ToyMorph, type ToyOptions } from './helpers/model-fixtures';

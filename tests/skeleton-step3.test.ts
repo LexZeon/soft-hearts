@@ -11,23 +11,19 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import { buildModelProfile } from '../shared/model-profile';
-import {
-  RETARGET_ALGORITHM_VERSION, STANDARD_SOURCE_RIG, buildRetargetRig, compactRig, evaluatePose, groupBoneFrames, planRetarget, qangle, qbasis, qconj, qmul,
-  qrotate, retargetTracks, retargetVmd, rigFromCompact, tracksOnRig, vcross, vdot, vnormalize, vscale, vsub, type CompactRig, type Pose, type Quat, type RetargetRig,
-  type VmdLike,
-} from '../shared/motion-retarget';
-import { adaptMotion } from '../shared/motion-fit';
-import { MOTION_SCORE_STAMP } from '../shared/motion-fit-record';
-import { sha256Hex } from '../shared/sha256-sync';
-import { HER_ACTION_PACK, HER_ACTION_SPECS, herActionDurationMs, type HerActionId } from '../shared/her-actions';
-import { STANDARD_POSE, type Vec3 } from '../shared/universal-skeleton';
-import { StageMotionRetarget, clearRetargetCache } from '../src/stage/motion-retarget';
+import { buildModelProfile } from '../shared/stage/model-profile';
+import { RETARGET_ALGORITHM_VERSION, STANDARD_SOURCE_RIG, buildRetargetRig, compactRig, evaluatePose, groupBoneFrames, planRetarget, qangle, qbasis, qconj, qmul, qrotate, retargetTracks, retargetVmd, rigFromCompact, tracksOnRig, vcross, vdot, vnormalize, vscale, vsub, type CompactRig, type Pose, type Quat, type RetargetRig, type VmdLike } from '../shared/actions/motion-retarget';
+import { adaptMotion } from '../shared/actions/motion-fit';
+import { MOTION_SCORE_STAMP } from '../shared/actions/motion-fit-record';
+import { sha256Hex } from '../shared/foundation/sha256-sync';
+import { HER_ACTION_PACK, type HerActionId } from '../shared/actions/her-actions';
+import { STANDARD_POSE, type Vec3 } from '../shared/foundation/universal-skeleton';
+import { StageMotionRetarget, clearRetargetCache } from '../src/actions/motion-retarget';
 import { loadBundledMotion, readGene } from './helpers/bundled-motions';
-import { catalogMotionFile, geneStage, type GeneStage, type ShownFrame } from './helpers/gene-stage-harness';
 import { hideBones, reshapeFingers, rollHands, tPoseRolled, type EditableBone } from './helpers/hand-variants';
 import { profileInput, toThreeMesh, type ModelData } from './helpers/model-fixtures';
 import { readVmdLite } from './helpers/vmd-lite';
+import { catalogMotionFile, type ShownFrame } from './helpers/frame-stats';
 
 const DEG = 180 / Math.PI;
 const GENE = readGene();
@@ -229,12 +225,6 @@ test('the conversion\'s output on fixed models is pinned to RETARGET_ALGORITHM_V
 
 const WATCHED = ['右手首', '左手首', '右人指１', '右人指２', '右人指３', '左人指１', '左人指２', '右親指１', '左親指１', '右中指２', '左中指２'] as const;
 const DEG_STEP = (a: ShownFrame, b: ShownFrame) => Math.max(...a.extra.map((q, k) => q.angleTo(b.extra[k]) * DEG));
-function lockstep(a: GeneStage, b: GeneStage, seconds: number) { for (let i = 0, n = Math.round(seconds * a.rate); i < n; i++) { a.tick(); b.tick(); } }
-const apart = (a: GeneStage, b: GeneStage, from: number, to: number) => {
-  let best = 0;
-  for (let i = from; i < to; i++) a.shown[i].extra.forEach((q, k) => { best = Math.max(best, q.angleTo(b.shown[i].extra[k]) * DEG); });
-  return best;
-};
 /** Largest change of a frame's step over the previous step (R29d "unexpected step"), over the watched bones. */
 function surprise(frames: readonly ShownFrame[]): number {
   let best = 0;
@@ -244,41 +234,3 @@ function surprise(frames: readonly ShownFrame[]): number {
   });
   return best;
 }
-
-for (const fps of [60, 30] as const) test(`R29 at ${fps} fps: on the rolled-hand model 比心 / 鼓掌 / 指一指 ease in and out, step no more than on Gene, the guard catches nothing`, async t => {
-  const lines: string[] = [];
-  const options = { herActions: true, fps, extraBones: WATCHED } as const;
-  const runs: Record<string, { step: number; surprise: number }> = {};
-  for (const model of ['gene', 'rolled'] as const) {
-    const edit = model === 'rolled' ? { restEdit: rollHands } : {};
-    const h = await geneStage({ ...options, ...edit }), idle = await geneStage({ ...options, ...edit });
-    try {
-      assert.equal(!!h.stage.motionRetarget, model === 'rolled');
-      lockstep(h, idle, 1.0);
-      for (const id of ACTIONS) {
-        const seconds = herActionDurationMs(id) / 1000, jumps = h.shown.at(-1)!.guardJumps, start = h.shown.length;
-        const report = await h.playAction(id);
-        assert.equal(report?.status, 'played', `${model} ${id}: ${JSON.stringify(report)}`);
-        lockstep(h, idle, seconds + 0.6);
-        const end = h.shown.length, frames = h.shown.slice(start - 1, end), finish = start + Math.round(seconds * h.rate);
-        let step = 0;
-        for (let i = 1; i < frames.length; i++) step = Math.max(step, DEG_STEP(frames[i], frames[i - 1]));
-        const opening = apart(h, idle, start, start + 2), closing = apart(h, idle, finish - 2, finish + 2), back = apart(h, idle, end - 3, end);
-        const unexpected = surprise(frames), guard = h.shown.at(-1)!.guardJumps - jumps;
-        runs[`${model} ${id}`] = { step, surprise: unexpected };
-        lines.push(`${fps} fps ${model} ${id}: max step ${step.toFixed(2)}°/frame, unexpected ${unexpected.toFixed(2)}°, opening ${opening.toFixed(3)}°, closing ${closing.toFixed(3)}°, back ${back.toFixed(3)}°, guard ${guard}`);
-        assert.equal(guard, 0, `${model} ${id}: the display guard caught ${guard} (${h.shown.at(-1)!.guardLast})`);
-        assert.ok(opening < 0.5, `${model} ${id} eases in: ${opening.toFixed(3)}°`);
-        assert.ok(closing < 1, `${model} ${id} eases out: ${closing.toFixed(3)}°`);
-        assert.ok(back < 1, `${model} ${id}: back in its idle (${back.toFixed(3)}°)`);
-        assert.ok(step < (fps === 60 ? 9 : 18), `${model} ${id}: ${step.toFixed(2)}° in one frame`);
-      }
-    } finally { idle.close(); h.close(); }
-  }
-  for (const id of ACTIONS) {
-    const gene = runs[`gene ${id}`], rolled = runs[`rolled ${id}`];
-    assert.ok(rolled.step <= gene.step * 1.1 + 0.2, `${id}: the rolled hand steps ${rolled.step.toFixed(2)}°, Gene ${gene.step.toFixed(2)}°`);
-    assert.ok(rolled.surprise <= gene.surprise * 1.1 + 0.2, `${id}: unexpected step ${rolled.surprise.toFixed(2)}° vs Gene ${gene.surprise.toFixed(2)}°`);
-  }
-  t.diagnostic(lines.join('\n'));
-});

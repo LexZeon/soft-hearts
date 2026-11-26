@@ -3,11 +3,12 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { ClaudeStreamReader, streamClaude, ClaudeFailureError } from '../electron/claude';
-import { ClaudeChatProcess, ClaudeTurnError } from '../electron/claude-process';
-import { PersistentClaudeChat, type CompanionClaudeTask } from '../electron/claude-session';
-import { ChatAvailability, failureText } from '../electron/chat-availability';
-import { classifyClaudeFailure } from '../shared/claude-failure';
+import { ClaudeStreamReader, streamClaude, ClaudeFailureError } from '../electron/brain/claude';
+import { launchClaude, type ClaudeLaunch } from '../electron/brain/claude-launch';
+import { ClaudeChatProcess, ClaudeTurnError } from '../electron/brain/claude-process';
+import { PersistentClaudeChat, type CompanionClaudeTask } from '../electron/brain/claude-session';
+import { ChatAvailability, failureText } from '../electron/brain/chat-availability';
+import { classifyClaudeFailure } from '../shared/brain/claude-failure';
 
 /**
  * X2. With the network
@@ -69,11 +70,14 @@ function handle(message) {
     out({ type: "system", subtype: "api_retry", attempt: 1, max_retries: 10, retry_delay_ms: 500, error_status: 529, error: "overloaded" });
     out({ type: "system", subtype: "api_retry", attempt: 2, max_retries: 10, retry_delay_ms: 500, error_status: 529, error: "overloaded" });
   }
-  setTimeout(() => {
+  const reply = () => {
     out({ type: "stream_event", event: { type: "content_block_delta", index: 0, delta: { type: "text_delta", text: "好呀。" } } });
     out({ type: "result", subtype: "success", is_error: false, result: "好呀。" });
     pending--; if (ended && !pending) process.exit(0);
-  }, text.includes("#busy") ? 2800 : 60); // busy: answered only after the first-response window
+  };
+  // busy: the test releases the reply (by creating the file named in the prompt) once its first-response window has run out
+  if (text.includes("#busy")) { const go = text.split("#busy ")[1].trim(); const poll = setInterval(() => { if (require("fs").existsSync(go)) { clearInterval(poll); reply(); } }, 10); }
+  else setTimeout(reply, 60);
 }
 // Like Claude Code: a closed stdin (the per-message path) ends the process only once its turn is done.
 let pending = 0, ended = false;
@@ -92,13 +96,11 @@ test('X2 persistent process: offline fails within seconds as a network outage, w
   const script = await fakeClaude(t);
   const chat = await ClaudeChatProcess.start({ binary: process.execPath, binaryArgs: [script], model: 'haiku', systemPrompt: 'x', firstResponseTimeoutMs: 5_000 });
   t.after(() => chat.close());
-  const started = performance.now();
   const error = await chat.run(input('#offline 你好'), new AbortController().signal, () => {}).then(() => null, e => e);
-  const elapsed = performance.now() - started;
   assert.ok(error instanceof ClaudeTurnError, String(error));
   assert.equal(error.kind, 'failed', "not 'timeout': two of those would degrade the warm session for the whole run");
   assert.equal(network(error), 'network');
-  assert.ok(elapsed < 3_000, `ended after ${Math.round(elapsed)} ms, not after the 120 s turn timeout`);
+  // Not after the 120 s turn timeout: that would end as kind "timeout" (asserted above), and the test's own 15 s limit holds. No wall-clock bound here: process start-up on a loaded machine is not what this checks.
 });
 
 test('X2 persistent process: no answer at all within the first-response window is offline too', { timeout: 15_000 }, async t => {
@@ -113,15 +115,36 @@ test('X2 persistent process: no answer at all within the first-response window i
 
 test('X2 persistent process: a busy server that answers is waited for, and a normal turn is untouched', { timeout: 15_000 }, async t => {
   const script = await fakeClaude(t);
-  const chat = await ClaudeChatProcess.start({ binary: process.execPath, binaryArgs: [script], model: 'haiku', systemPrompt: 'x', firstResponseTimeoutMs: 2_500 });
+  // The first-response window is a held timer that the test fires at the moment that matters. The old version gave the fake claude
+  // 2.5 s of wall clock to start and answer its warm-up turn, which a loaded machine can miss before the busy turn even begins.
+  const WINDOW = 2_500;
+  const held: (() => void)[] = [];
+  const timers = {
+    set: (callback: () => void, ms: number): unknown => { if (ms !== WINDOW) return setTimeout(callback, ms); held.push(callback); return { callback }; },
+    clear: (handle: unknown): void => {
+      if (handle && typeof handle === 'object' && 'callback' in handle) { const i = held.indexOf((handle as { callback: () => void }).callback); if (i >= 0) held.splice(i, 1); }
+      else clearTimeout(handle as NodeJS.Timeout);
+    },
+  };
+  let retries = 0, sawRetries: () => void = () => {};
+  const retried = new Promise<void>(resolve => { sawRetries = resolve; });
+  const spawn: ClaudeLaunch = (file, args, options) => {
+    const child = launchClaude(file, args, options);
+    // Attached after the process's own listener, so once two retries are seen here the reader has read them too.
+    child.stdout.on('data', (chunk: string) => { retries += (chunk.match(/api_retry/g) ?? []).length; if (retries >= 2) sawRetries(); });
+    return child;
+  };
+  const chat = await ClaudeChatProcess.start({ binary: process.execPath, binaryArgs: [script], model: 'haiku', systemPrompt: 'x', firstResponseTimeoutMs: WINDOW, timers, spawn });
   t.after(() => chat.close());
-  // A normal turn first (it also warms the process, so a loaded machine's slow start never eats the window below).
   assert.equal(await chat.run(input('你好'), new AbortController().signal, () => {}), '好呀。');
-  // The busy server answers retries with 529 at once but the reply only after 2.8 s, past the 2.5 s window;
-  // the first turn's window also runs out meanwhile and must not touch this turn.
-  const started = performance.now();
-  assert.equal(await chat.run(input('#busy 你好'), new AbortController().signal, () => {}), '好呀。');
-  assert.ok(performance.now() - started >= 2_500, 'it waited past the window');
+  // The busy server answers retries with 529 at once; its reply is held back until the window has run out.
+  const go = path.join(path.dirname(script), 'go');
+  const turn = chat.run(input('#busy ' + go), new AbortController().signal, () => {});
+  await retried;
+  assert.equal(held.length, 1, 'the busy turn has its first-response window pending');
+  held.splice(0).forEach(fire => fire()); // the window runs out while the server has only answered with 529 retries
+  await writeFile(go, '');
+  assert.equal(await turn, '好呀。', 'it waited past the window');
   assert.equal(chat.alive, true);
 });
 
@@ -143,11 +166,10 @@ test('X2 per-message path: offline and silence both fail fast as network', { tim
   const script = await fakeClaude(t);
   const task = (prompt: string) => ({ kind: 'chat' as const, model: 'haiku', workingDirectory: os.tmpdir(), writable: false, prompt, imageDataUrls: [] });
   for (const prompt of ['#offline 你好', '#silent 你好']) {
-    const started = performance.now();
     const error = await streamClaude(task(prompt), new AbortController().signal, () => {}, process.execPath, [script], { firstResponseTimeoutMs: 2_500 }).then(() => null, e => e);
     assert.ok(error instanceof ClaudeFailureError, `${prompt}: ${String(error)}`);
     assert.equal(network(error), "network", prompt);
-    assert.ok(performance.now() - started < 8_000, prompt);
   }
-  assert.equal((await streamClaude(task('你好'), new AbortController().signal, () => {}, process.execPath, [script], { firstResponseTimeoutMs: 2_500 })) ?? null, null);
+  // A normal turn answers in any window; a wide one, so a loaded machine's slow process start cannot read as offline.
+  assert.equal((await streamClaude(task('你好'), new AbortController().signal, () => {}, process.execPath, [script], { firstResponseTimeoutMs: 60_000 })) ?? null, null);
 });

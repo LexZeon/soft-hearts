@@ -13,7 +13,7 @@
  * Its size follows 律动强度 (MusicSettings.strength) like the nod and the dance: the look above is at the default strength,
  * and strength 0 means no musical movement at all, so no look either (Codex T-112 round-019: it kept a fixed 0.035/0.045 rad).
  */
-import { DEFAULT_MUSIC_SETTINGS } from '../../shared/music-settings';
+import { DEFAULT_MUSIC_SETTINGS } from '../../shared/senses';
 
 export const MUSIC_LISTEN = Object.freeze({ riseS: 0.45, holdS: 0.9, fallS: 0.8, headX: -0.035, headZ: 0.045 });
 const smoothstep = (value: number) => { const t = Math.min(1, Math.max(0, value)); return t * t * (3 - 2 * t); };

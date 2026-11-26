@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PersistentClaudeChat, type CompanionClaudeTask } from '../electron/claude-session';
-import { ClaudeFailureError } from '../electron/claude';
-import { ClaudeTurnError, type ClaudeChatProcess } from '../electron/claude-process';
-import { ChatAvailability } from '../electron/chat-availability';
+import { PersistentClaudeChat, type CompanionClaudeTask } from '../electron/brain/claude-session';
+import { ClaudeFailureError } from '../electron/brain/claude';
+import { ClaudeTurnError, type ClaudeChatProcess } from '../electron/brain/claude-process';
+import { ChatAvailability } from '../electron/brain/chat-availability';
 
 const LIMIT = "You've hit your session limit · resets 1:20pm (America/Los_Angeles)";
 const task = (): CompanionClaudeTask => ({
@@ -75,7 +75,7 @@ test('a broken reporter never changes what the chat turn does', async () => {
 });
 
 test('the raw failure text is carried on the error the chat path throws', async () => {
-  const { ClaudeStreamReader, streamClaude } = await import('../electron/claude');
+  const { ClaudeStreamReader, streamClaude } = await import('../electron/brain/claude');
   const { mkdtemp, writeFile, rm } = await import('node:fs/promises');
   const os = await import('node:os'), path = await import('node:path');
   const reader = new ClaudeStreamReader(() => {});

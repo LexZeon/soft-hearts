@@ -15,18 +15,18 @@ import test from 'node:test';
 import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { createAtomicFileWriter } from '../electron/atomic-file';
-import { ListenKindSource } from '../electron/listen-kind-source';
-import { ListenTogetherCore, type ListenFile } from '../electron/listen-together/core';
-import { ListenTogether } from '../electron/listen-together/host';
-import { ListenStore } from '../electron/listen-together/store';
-import { ListenKindHost, type ListenKind } from '../shared/listen-kind';
-import { listenAskContext, matchListenAsk } from '../shared/listen-ask';
-import type { ListenNote, ListenSegment } from '../shared/listen-together';
-import type { StageMusicState } from '../shared/her-state';
+import { createAtomicFileWriter } from '../electron/foundation/atomic-file';
+import { ListenKindSource } from '../electron/senses/listen-kind-source';
+import { ListenTogetherCore, type ListenFile } from '../electron/senses/listen-together/core';
+import { ListenTogether } from '../electron/senses/listen-together/host';
+import { ListenStore } from '../electron/senses/listen-together/store';
+import { ListenKindHost, type ListenKind } from '../shared/senses/listen-kind';
+import { listenAskContext, matchListenAsk } from '../shared/senses/listen-ask';
+import type { ListenNote, ListenSegment } from '../shared/senses/listen-together';
+import type { StageMusicState } from '../shared/mood/her-state';
 import { MusicLikeness } from '../src/stage/music-likeness';
 import { musicPresence, MUSIC_AUDIBLE_RMS } from '../src/stage/music-presence';
-import { analyserSamples, RATE, seconds, speechLike } from './helpers/listen-audio';
+import { analyserSamples, drumSong, mix, RATE, seconds, speechLike } from './helpers/listen-audio';
 
 const MIN = 60_000;
 const T0 = 1_700_000_000_000;
@@ -128,9 +128,9 @@ async function detect(pcm: Float32Array, speechTags: boolean, onTick: (second: n
   return { changes };
 }
 function periodicSpeech() {
-  const syllables = speechLike(0.65, { seed: 17, rate: 1.5 });
-  const signal = seconds(42);
-  for (let n = 0; n < signal.length; n++) signal[n] = syllables[n % syllables.length]! * 0.6 + 0.04 * Math.sin(2 * Math.PI * 114 * n / RATE);
+  // I-072: the fast layer used to hear a 0.65 s loop of syllables over a hum as a steady beat; it now hears those syllables as speech
+  // (they rise and fall syllable by syllable). Words over a loud beat are what it still takes for a song while the recognizer hears only speech.
+  const signal = mix(drumSong(42, { bpm: 92, seed: 17 }), speechLike(42, { seed: 17, rate: 1.5 }), -2);
   return signal;
 }
 

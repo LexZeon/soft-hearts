@@ -3,11 +3,11 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import { CLAUDE_MODEL_ALIASES } from '../shared/defaults';
+import { CLAUDE_MODEL_ALIASES } from '../shared/foundation/defaults';
 import { SMOKE_CLAUDE_MODEL_ALIASES, SMOKE_POSE } from '../scripts/lib/smoke-expectations.mjs';
-import { POSE_BUNDLE } from '../electron/pose/bundle-files';
-import { POSE_COMPONENT_VERSION, POSE_MANIFEST, POSE_PLATFORMS, downloadBytes } from '../electron/pose/manifest';
-import { NOTICE_ACTIONS } from '../src/notice-policy';
+import { POSE_BUNDLE } from '../electron/senses/pose/bundle-files';
+import { POSE_COMPONENT_VERSION, POSE_MANIFEST, POSE_PLATFORMS, downloadBytes } from '../electron/foundation/pose-manifest';
+import { NOTICE_ACTIONS } from '../src/settings/notice-policy';
 
 test('the smoke expects the same Claude model aliases the app offers', () => {
   assert.deepEqual([...SMOKE_CLAUDE_MODEL_ALIASES], [...CLAUDE_MODEL_ALIASES]);

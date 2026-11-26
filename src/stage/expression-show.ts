@@ -18,7 +18,7 @@
  * interrupts it, and back in when it is free again.
  */
 import { clampedTangent } from './keyframe-interpolation';
-import { EXPRESSION_RECIPE_NAMES, type ExpressionRecipe, type ExpressionSupport } from '../../shared/expression-preview';
+import { EXPRESSION_RECIPE_NAMES, type ExpressionRecipe, type ExpressionSupport } from '../../shared/stage/expression-preview';
 
 /** The clip ids procedural life sees (distinct from the old host-issued Gene clip ids). */
 export const SHOW_CLIP: Readonly<Record<ExpressionRecipe, string>> = Object.freeze({ surprise: 'show:surprise', shy: 'show:shy' });

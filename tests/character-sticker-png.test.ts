@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createHash } from 'node:crypto';
 import { deflateSync } from 'node:zlib';
-import { validateCharacterStickerPng } from '../electron/character-sticker-png';
+import { validateCharacterStickerPng } from '../electron/cards/character-sticker-png';
 
 const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
 // Fixture CRC uses the bitwise specification, independently of the decoder table.

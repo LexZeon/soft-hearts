@@ -467,7 +467,7 @@ try {
 
   await controls.locator("#character-select").selectOption(a.id);
   const bundled = JSON.parse(
-    await readFile("shared/bundled-assets.json", "utf8"),
+    await readFile("shared/actions/bundled-assets.json", "utf8"),
   );
   const genePath = await instance.evaluate(({ app }, relative) =>
     process.getBuiltinModule('path').join(app.getAppPath(), 'assets', 'bundled', relative.root, relative.model),

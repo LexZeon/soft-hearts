@@ -11,16 +11,16 @@ import path from 'node:path';
 import {
   HER_LIFE_ACTIVITIES, HER_LIFE_TABLE, herLifeChatLine, herLifeDiaryLine, herLifeDuration, herLifeIdleAfterMs, herLifeSwitchOffer, herLifeWeights,
   noteHerLifeReturn, pickHerLifeActivity, stepHerLife, type HerLifeRecord, type HerLifeStepInput,
-} from '../shared/her-life';
-import { HerLifeHost, type HerLifeTickInput } from '../electron/her-life/host';
-import { DEFAULT_MOOD_PARAMETERS, type MoodParameters } from '../shared/mood';
-import { buildInnerLoopPrompt, parseInnerLoopDecision, sanitizeInnerLoopDiagnostic } from '../shared/inner-loop';
-import { buildCompanionPersona } from '../electron/conversation-context';
-import { buildDiaryPrompt } from '../electron/diary/diary-prompt';
-import { formatHerLifeLine } from '../src/ui/MoodPanel';
-import { InnerLoop } from '../electron/inner-loop/inner-loop';
-import { ProactiveSpeechGate } from '../electron/proactive-speech-gate';
-import { herLifeMotionAllowed, resolveHerLifeMotionResource } from '../electron/her-life/motion-resource';
+} from '../shared/stage/her-life';
+import { HerLifeHost, type HerLifeTickInput } from '../electron/stage/her-life/host';
+import { DEFAULT_MOOD_PARAMETERS, type MoodParameters } from '../shared/foundation/mood';
+import { buildInnerLoopPrompt, parseInnerLoopDecision, sanitizeInnerLoopDiagnostic } from '../shared/initiative/inner-loop';
+import { buildCompanionPersona } from '../electron/brain/conversation-context';
+import { buildDiaryPrompt } from '../electron/memory/diary/diary-prompt';
+import { formatHerLifeLine } from '../src/mood/MoodPanel';
+import { InnerLoop } from '../electron/initiative/inner-loop/inner-loop';
+import { ProactiveSpeechGate } from '../electron/initiative/proactive-speech-gate';
+import { herLifeMotionAllowed, resolveHerLifeMotionResource } from '../electron/stage/her-life/motion-resource';
 
 const MINUTE = 60_000;
 const card = (motionMinutes = 5, weights: Partial<MoodParameters['weights']> = {}): MoodParameters => ({

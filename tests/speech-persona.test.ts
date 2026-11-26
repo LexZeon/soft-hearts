@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { characterSpeechPersona, SPEECH_PERSONA_LIMIT } from '../electron/speech-persona';
+import { characterSpeechPersona, SPEECH_PERSONA_LIMIT } from '../electron/voice/speech-persona';
 
 const card = (fields: Partial<{ personality: string; description: string; systemPrompt: string }> = {}) => ({
   personality: '', description: '', systemPrompt: '', ...fields,

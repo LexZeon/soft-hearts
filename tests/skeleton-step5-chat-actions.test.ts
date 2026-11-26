@@ -8,15 +8,15 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { buildModelProfile } from '../shared/model-profile';
-import { HER_ACTION_SPECS, herActionSupport, type HerActionId, type HerActionPlayResult } from '../shared/her-actions';
-import { CHAT_ACTION_OF, CHAT_ACTION_WORDS, chatActionAllowed, offeredChatActions, type ChatActionWord } from '../shared/chat-actions';
-import { MOTION_SCORE_STAMP, type MotionFitRecord } from '../shared/motion-fit-record';
-import { CHAT_GESTURE_SENTENCE_BEFORE, MoodReplyProtocol, chatGestureSentence } from '../electron/mood-chat';
-import { ChatActionHost, CHAT_ACTION_AFTER_SPEECH_MS, CHAT_ACTION_SPEECH_POLL_MS, CHAT_ACTION_SPEECH_WAIT_MS } from '../electron/chat-actions-host';
-import { CompanionService, type CompanionTurn } from '../electron/companion';
-import type { ModelCapabilityView } from '../shared/model-capability-check';
-import type { ProviderConfig } from '../shared/contracts';
+import { buildModelProfile } from '../shared/stage/model-profile';
+import { HER_ACTION_SPECS, herActionSupport, type HerActionId, type HerActionPlayResult } from '../shared/actions/her-actions';
+import { CHAT_ACTION_OF, CHAT_ACTION_WORDS, chatActionAllowed, offeredChatActions, type ChatActionWord } from '../shared/brain/chat-actions';
+import { MOTION_SCORE_STAMP, type MotionFitRecord } from '../shared/actions/motion-fit-record';
+import { CHAT_GESTURE_SENTENCE_BEFORE, MoodReplyProtocol, chatGestureSentence } from '../electron/mood/mood-chat';
+import { ChatActionHost, CHAT_ACTION_AFTER_SPEECH_MS, CHAT_ACTION_SPEECH_POLL_MS, CHAT_ACTION_SPEECH_WAIT_MS } from '../electron/brain/chat-actions-host';
+import { CompanionService, type CompanionTurn } from '../electron/brain/companion';
+import type { ModelCapabilityView } from '../shared/stage/model-capability-check';
+import type { ProviderConfig } from '../shared/foundation/settings';
 import { readGene } from './helpers/bundled-motions';
 import { profileInput, type ModelData } from './helpers/model-fixtures';
 import { hideBones } from './helpers/hand-variants';
@@ -142,13 +142,15 @@ test('her pick: an offered word is kept (her talking gesture says none, the mood
 // ---------------------------------------------------------------- the host: offered list and the one cue
 
 function hostFixture(options: { speaking?: () => boolean; play?: (action: HerActionId) => Promise<HerActionPlayResult>; view?: () => ModelCapabilityView | null } = {}) {
-  const state = { path: 'C:/models/gene.pmx' as string | null, played: [] as HerActionId[], logs: [] as string[], timers: new Map<number, () => void>(), serial: 0 };
+  const state = { path: 'C:/models/gene.pmx' as string | null, played: [] as HerActionId[], logs: [] as string[], timers: new Map<number, () => void>(), serial: 0, clock: 0 };
   const view = options.view ?? (() => ({ modelKey: 'k'.repeat(64), modelUrl: '', profile: GENE_PROFILE, record: null }));
   const host = new ChatActionHost({
     modelPath: () => state.path,
     read: async () => { const value = view(); return value ? { view: value, fits: null } : null; },
     play: options.play ?? (async action => { state.played.push(action); return { status: 'played', missing: [], detail: '' }; }),
     speaking: options.speaking ?? (() => false), developerMode: () => true, log: line => state.logs.push(line),
+    // Half a minute between reads: these tests are about one pick each, not the face-shape spacing (tests/face-twitch-round2.test.ts).
+    now: () => (state.clock += 30_000),
     timers: { set: (callback, ms) => { assert.equal(ms, CHAT_ACTION_SPEECH_POLL_MS); const id = ++state.serial; state.timers.set(id, callback); return id; }, clear: id => { state.timers.delete(id as number); } },
   });
   const fire = () => { const [id, callback] = [...state.timers][0] ?? []; assert.ok(callback, 'a timer is waiting'); state.timers.delete(id!); callback!(); };

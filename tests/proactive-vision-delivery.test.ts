@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { prepareVisionDelivery } from '../src/ui/proactive-vision-delivery';
+import { prepareVisionDelivery } from '../src/senses/proactive-vision-delivery';
 
 function deferred<T>() {
   let resolve!: (value: T) => void, reject!: (error: Error) => void;

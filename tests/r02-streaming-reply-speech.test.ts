@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { CompletedReplySpeech } from '../electron/completed-reply-speech';
-import { CompletedPrefixProof } from '../electron/completed-prefix-proof';
-import { ReplySpeechStyles, freezeTurnSpeechStyle } from '../electron/speech-emotion';
-import { DEFAULT_TTS_CONFIG, type ApprovedReplySpeechSegment } from '../shared/tts';
-import { CompletedReplySpeechQueue } from '../src/ui/completed-reply-speech-queue';
+import { CompletedReplySpeech } from '../electron/voice/completed-reply-speech';
+import { CompletedPrefixProof } from '../electron/voice/completed-prefix-proof';
+import { ReplySpeechStyles, freezeTurnSpeechStyle } from '../electron/mood/speech-emotion';
+import { DEFAULT_TTS_CONFIG, type ApprovedReplySpeechSegment } from '../shared/voice/tts';
+import { CompletedReplySpeechQueue } from '../src/voice/completed-reply-speech-queue';
 
 /*
  * R02 goal 2: a Claude reply's first complete sentence becomes speakable while

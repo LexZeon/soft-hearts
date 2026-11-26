@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test, { type TestContext } from "node:test";
-import { isPetControlPoint } from "../src/ui/MoodCompanion";
-import { PetInteraction, type PetInteractionEvent, type PetInteractionState } from "../src/ui/PetInteraction";
+import { isPetControlPoint } from "../src/mood/MoodCompanion";
+import { PetInteraction, type PetInteractionEvent, type PetInteractionState } from "../src/mood/PetInteraction";
 
 function layout(selector: string, left: number, top: number, width: number, height: number) {
   return {

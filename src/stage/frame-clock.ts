@@ -24,7 +24,7 @@ export type FrameDecision =
 
 /** Animation stays bounded; physics sees the real gap so its stall reset can run. */
 export const MAX_ANIMATION_DELTA = 0.1;
-/** R29f: the default moved from 30 to 60 (settings migrate once, electron/validation.ts migrateStoredSettings). */
+/** R29f: the default moved from 30 to 60 (settings migrate once, electron/settings/validation.ts migrateStoredSettings). */
 const DEFAULT_FPS = 60;
 /**
  * R29f: how early (ms) a display callback may come and still take the frame that is due. Vsync times wobble by
@@ -77,7 +77,7 @@ export interface FrameHeartbeatState {
 }
 
 /**
- * Small observable record of the frame loop, so a "frozen pet" can be told
+ * Small observable record of the frame loop, so a "frozen companion" can be told
  * apart on a real machine: no callbacks at all (serial and lastRenderAt stop),
  * skipped as hidden/zero-size, or rendering while some layer stays static.
  */

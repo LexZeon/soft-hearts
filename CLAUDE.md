@@ -4,23 +4,23 @@
 
 ## 这是什么
 
-soft hearts 是一个 Windows 桌面上的 MMD 桌宠：一个三维角色（MMD 模型，PMX/PMD 格式）常驻在屏幕上，用户可以和她文字聊天、切换动作、调镜头和窗口。聊天走用户自己电脑上登录好的 Claude Code，不另外接模型服务。
+soft hearts 是一个 Windows 桌面上的 3D 桌宠：一个三维角色（PMX/PMD 或 VRM 模型）常驻在屏幕上，用户可以和她文字聊天、切换动作、调镜头和窗口。聊天走用户自己电脑上登录好的 Claude Code，不另外接模型服务。
 
 - 目前只在 Windows 上使用和验证。
 - 陪伴聊天本身不带任何工具，只是说话。
-- 任务执行（读写用户选定文件夹里的文件、运行命令）是单独的功能，默认关闭，用户在应用的「Claude 任务」里打开并选文件夹后才可用。实现在 `electron/claude-tasks/`。
-- 聊天的实现在 `electron/claude.ts`。
+- 任务执行（读写用户选定文件夹里的文件、运行命令）是单独的功能，默认关闭，用户在应用的「Claude 任务」里打开并选文件夹后才可用。实现在 `electron/safety/claude-tasks/`。
+- 聊天的实现在 `electron/brain/claude.ts`。
 
 ## 目录地图
 
 | 路径 | 作用 |
 | --- | --- |
-| `electron/` | 主进程（宿主）：窗口、设置、密钥、聊天调用、任务执行、内部通道。`electron/main.ts` 很大，而且是 CRLF 换行。改它时只做接线，新逻辑优先放进新模块。 |
-| `electron/preload.ts` | 渲染进程能用的接口白名单，只列出明确允许的函数。 |
-| `electron/claude.ts` | 陪伴聊天调用 Claude Code。 |
-| `electron/claude-tasks/` | 任务执行（可选，默认关闭）。 |
-| `electron/agent-channel/` | 内部通道：让用户自己的 Claude Code 通过 MCP 帮忙换角色、调设置。 |
-| `src/` | 界面，不用框架，直接操作页面元素。`src/ui/` 放各个面板；`src/stage/` 放 Three.js MMD 舞台（模型、动作、镜头）。 |
+| `electron/` | 主进程（宿主）：窗口、设置、密钥、聊天调用、任务执行、内部通道。`electron/main.ts` 只留入口和索引，是 CRLF 换行。改它时只做接线，新功能放进它所属部分的文件夹（每个部分都有自己的 README.md），经 `electron/wiring/` 接入。 |
+| `electron/safety/preload.ts` | 渲染进程能用的接口白名单，只列出明确允许的函数。 |
+| `electron/brain/claude.ts` | 陪伴聊天调用 Claude Code。 |
+| `electron/safety/claude-tasks/` | 任务执行（可选，默认关闭）。 |
+| `electron/safety/agent-channel/` | 内部通道：让用户自己的 Claude Code 通过 MCP 帮忙换角色、调设置。 |
+| `src/` | 界面，不用框架，直接操作页面元素，按部分分文件夹（`src/cards/`、`src/voice/`、`src/settings/` 等）。`src/unbound/` 是 Three.js 舞台引擎（PMX/PMD 与 VRM 模型、动作、镜头），`src/stage/` 放舞台外围（镜头输入、表情与动作合成辅助等）。 |
 | `shared/` | 宿主和界面都用到的逻辑。`shared/behaviors/<行为名>/` 是一个行为的文件夹，其中 `knobs.ts` 放可调数值，每个旋钮上方有注释说明。 |
 | `tests/` | 测试，`*.test.ts` 和 `*.test.mjs`。 |
 | `scripts/` | 启动、构建、打包、冒烟测试和桌面更新脚本。`scripts/dev/` 是开发辅助，其中 `test-all.mjs` 跑全套测试，`heavy.mjs` 用来包住耗资源的命令。 |
@@ -70,14 +70,14 @@ node scripts/dev/heavy.mjs --label 名字 -- 命令 参数
 - 角色卡导入不会授予文件或执行权限。导出时不带路径、密钥、实时状态和私人聊天历史。
 - 同一条回复只归档、只奖励一次。取消、迟到、或者已经换了上下文的结果，不能复活或覆盖新的状态。
 - 动作（pose）、手势（gesture）、表情（expression）是三条独立的通道，互不清除。
-- 不修改 PMX/VMD 原文件的字节。模型和动作按原样加载。
+- 不修改 PMX/VRM/VMD 原文件的字节。模型和动作按原样加载。
 - 随包素材必须保留原作者署名和 CC BY 4.0 授权信息；代码以外的素材不适用项目的 MIT 授权。
 
 ## 怎样改代码
 
 - 测试是为行为服务的。新测试要能抓住真实的失败。避免那种"读取 `main.ts` 的源码文字再 eval"的脆弱测试；新代码优先抽成可以直接导入的模块，再测模块。
 - 改完先跑 `pnpm typecheck`，再跑和改动相关的测试。改动较大时跑 `pnpm test`，并考虑 `pnpm smoke`。
-- 新增的界面文字要同时给英文。界面文字用 `src/ui/ui-language.ts` 里的 `uiText` 或 `t` 包起来；英文条目放在 `shared/ui-copy.*.en.ts` 里（例如 `shared/ui-copy.tasks.en.ts`），由 `shared/ui-copy.en.ts` 汇总。部分测试（比如 `tests/chat-availability-copy.test.ts`）会检查这些英文条目是否存在。
+- 新增的界面文字要同时给英文。界面文字用 `src/foundation/ui-language.ts` 里的 `uiText` 或 `t` 包起来；英文条目放在 `shared/foundation/ui-copy.*.en.ts` 里（例如 `shared/foundation/ui-copy.tasks.en.ts`），由 `shared/foundation/ui-copy.en.ts` 汇总。部分测试（比如 `tests/chat-availability-copy.test.ts`）会检查这些英文条目是否存在。
 - 可调的数值放在对应行为的 `knobs.ts` 里，不要散落在代码各处。
 - 完成后向用户说明：改了什么，跑了哪些测试，哪些只是没在真机上验证过。
 

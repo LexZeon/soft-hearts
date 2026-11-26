@@ -1,13 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildInnerLoopPrompt, innerLoopLine, innerLoopNightWindow, innerLoopQuiet, parseInnerLoopDecision,
-  sanitizeInnerLoopDiagnostic, visibleLength, type InnerLoopDiagnostic, type InnerLoopPromptInput, type InnerLoopQuiet } from '../shared/inner-loop';
-import { DEFAULT_FATIGUE_PARAMETERS, type FatigueParameters } from '../shared/fatigue';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
-import { innerLoopPrompt, type InnerLoopContextSources } from '../electron/inner-loop/context';
-import { InnerLoopDiagnostics } from '../electron/inner-loop/diagnostics';
-import { decideWithClaude, INNER_LOOP_MODEL } from '../electron/inner-loop/model';
-import { INNER_LOOP_SYSTEM_PROMPT } from '../shared/inner-loop';
+  sanitizeInnerLoopDiagnostic, visibleLength, type InnerLoopDiagnostic, type InnerLoopPromptInput, type InnerLoopQuiet } from '../shared/initiative/inner-loop';
+import { DEFAULT_FATIGUE_PARAMETERS, type FatigueParameters } from '../shared/mood/fatigue';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
+import { innerLoopPrompt, type InnerLoopContextSources } from '../electron/initiative/inner-loop/context';
+import { InnerLoopDiagnostics } from '../electron/initiative/inner-loop/diagnostics';
+import { decideWithClaude, INNER_LOOP_MODEL } from '../electron/initiative/inner-loop/model';
+import { INNER_LOOP_SYSTEM_PROMPT } from '../shared/initiative/inner-loop';
 
 const awake: InnerLoopQuiet = { asleep: false, drowsy: false, night: false, quiet: false };
 const at = (hour: number, minute = 0) => hour * 60 + minute;
@@ -20,7 +20,7 @@ test('a decision is strict JSON with only action and text; anything else means d
   for (const raw of [
     '{"action":"speak","text":"还在忙吗？","mood":"happy"}', // extra key
     '{"action":"dance"}', '{"text":"嗨"}', '{"action":"none","text":3}', '["none"]', 'none', '我决定看你一眼',
-    '{"action":"speak","text":"这一句话真的已经远远超过了二十个可见字符的上限了吧"}', // too long
+    '{"action":"speak","text":"这一句话真的已经远远超过了三十个可见字符的上限了吧，再多说几个字就更长了"}', // too long (松绑: the limit is 30)
     '{"action":"speak","text":"第一行\\n第二行"}', // newline
     '{"action":"speak","text":"   "}', '{"action":"speak"}',
     '{"action":"speak","text":"<motion>挥手</motion>"}', '{"action":"speak","text":"【动作】挥手"}', '{"action":"speak","text":"用户：你好"}',
@@ -31,13 +31,13 @@ test('a decision is strict JSON with only action and text; anything else means d
   assert.equal(parseInnerLoopDecision('x'.repeat(2001), true), null);
 });
 
-test('the 20-character limit counts what the user sees', () => {
+test('the 30-character limit (松绑, was 20) counts what the user sees', () => {
   assert.equal(visibleLength('👍🏽'), 1);
   assert.equal(visibleLength('早点休息'), 4);
-  assert.equal(innerLoopLine('😊'.repeat(20)), '😊'.repeat(20));
-  assert.equal(innerLoopLine('😊'.repeat(21)), null);
-  assert.equal(innerLoopLine('一二三四五六七八九十一二三四五六七八九十'), '一二三四五六七八九十一二三四五六七八九十');
-  assert.equal(innerLoopLine('一二三四五六七八九十一二三四五六七八九十一'), null);
+  assert.equal(innerLoopLine('😊'.repeat(30)), '😊'.repeat(30));
+  assert.equal(innerLoopLine('😊'.repeat(31)), null);
+  assert.equal(innerLoopLine('一二三四五六七八九十一二三四五六七八九十一二三四五六七八九十'), '一二三四五六七八九十一二三四五六七八九十一二三四五六七八九十');
+  assert.equal(innerLoopLine('一二三四五六七八九十一二三四五六七八九十一二三四五六七八九十一'), null);
 });
 
 function input(overrides: Partial<InnerLoopPromptInput> = {}): InnerLoopPromptInput {
@@ -65,25 +65,15 @@ test('two cards with different personality and tendency weights produce differen
 test('the decision prompt carries principles 1 and 6: true to the character, care without guilt or isolation', () => {
   const prompt = buildInnerLoopPrompt(input());
   assert.match(prompt, /忠于你自己的角色性格，而不是一味顺从/);
-  assert.match(prompt, /作息、吃饭和休息/);
-  assert.match(prompt, /提醒用户休息/);
-  assert.match(prompt, /和朋友出去玩时，真心替用户高兴/);
-  // 关于愧疚 (the user's correction 2026-11-03): a little pout is care; never a lever, piling on or old accounts; she makes up first.
-  assert.match(prompt, /可以撒娇、小小闹个别扭/);
-  assert.match(prompt, /但不施压：不拿愧疚控制或惩罚用户，不让用户不敢离开/);
-  assert.match(prompt, /不越闹越大，不翻旧账/);
-  assert.match(prompt, /用户本来就难过、受了委屈时，不让用户内疚/);
-  assert.match(prompt, /闹完由你先给台阶、先和好/);
-  assert.match(prompt, /不劝用户少和别人来往/);
-  assert.match(prompt, /不暗示用户离不开你/);
+  assert.match(prompt, /你希望用户过得好/);
+  assert.doesNotMatch(prompt, /作息、吃饭和休息|提醒用户休息|不说教|多社交|自己主动开口，尤其要做到/u, 'rules removal 2026-11-25');
+  // I-206: no guilt / pressure / leaving reminders, no glad-for-friends line; one safety net for extreme distress only.
+  assert.match(prompt, /用户非常难过、接近想轻生的程度时，你先陪着，不加码/);
+  assert.doesNotMatch(prompt, /内疚|愧疚|施压|不敢离开|离不开你|替用户高兴|撒娇|翻旧账/);
   // Principle 6 (user's full paragraph, main 95ac8e3): being here now, not directing his life.
   assert.match(prompt, /在乎体现在此刻的陪伴里，而不是指点用户的人生/);
-  assert.match(prompt, /不说教、不讲道理，不主动劝用户去找别人、多社交或想开点/);
-  assert.match(prompt, /不分析"也许你也有问题"/);
-  assert.match(prompt, /不把自己当成需要被替代的东西/);
   assert.match(prompt, /用户受了委屈，你先站在用户这边、陪着用户/);
   assert.match(prompt, /是回应用户，不是教育用户/);
-  assert.match(prompt, /自己主动开口，尤其要做到.*不说教、不劝用户去社交或找别人、不讲道理/);
   assert.match(prompt, /只有从已有资料里看出伤害自己这类真正危险的信号时，才温柔地提到现实中的帮助/);
   assert.doesNotMatch(prompt, /严重的困扰|专业帮助|联系身边/, 'the older, broader wording is gone');
   assert.match(INNER_LOOP_SYSTEM_PROMPT, /只输出/);
@@ -188,12 +178,12 @@ test('the decision runs on haiku with the inner-loop system prompt, never the sa
 // #13 (I-020): the renderer's two fixed lines are gone. What a speech cue becomes with the inner loop off (the screen, a sound
 // line or silence, never a fixed line) is the host's: tests/opening-choice.test.ts "inner loop off".
 test('#13: the pet window has no fixed lines of its own any more', async () => {
-  const companion = await import('../src/ui/MoodCompanion');
+  const companion = await import('../src/mood/MoodCompanion');
   assert.equal('fixedMoodSpeechLine' in companion, false);
 });
 
 test('the panel line for the opening choice: what she picked and why, labels only; nothing outside developer mode', async () => {
-  const { formatOpeningRecent, formatOpeningWhy } = await import('../src/ui/inner-loop-panel');
+  const { formatOpeningRecent, formatOpeningWhy } = await import('../src/initiative/inner-loop-panel');
   const why = { at: Date.UTC(2026, 10, 4, 3, 0), from: 'pause' as const, label: '聊刚听完的', why: ['心情：愉快', '性格：爱玩'], weights: '聊刚听完的 2.4 · 这次不说 0.4' };
   assert.equal(formatOpeningRecent({ enabled: true, developerMode: false, recent: [], opening: [why] }), '');
   assert.match(formatOpeningRecent({ enabled: true, developerMode: true, recent: [], opening: [] }), /还没有说话时机/);
@@ -203,7 +193,7 @@ test('the panel line for the opening choice: what she picked and why, labels onl
 });
 
 test('the panel shows the last decisions as categories and numbers only, newest first', async () => {
-  const { formatInnerLoopRecent } = await import('../src/ui/inner-loop-panel');
+  const { formatInnerLoopRecent } = await import('../src/initiative/inner-loop-panel');
   assert.match(formatInnerLoopRecent({ enabled: true, developerMode: false, recent: [entry()] }), /开发者模式关闭时不记录/);
   assert.match(formatInnerLoopRecent({ enabled: true, developerMode: true, recent: [] }), /还没有记录/);
   const text = formatInnerLoopRecent({ enabled: true, developerMode: true, recent: [

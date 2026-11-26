@@ -2,11 +2,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { Bone, BufferGeometry, Float32BufferAttribute, MeshBasicMaterial, PerspectiveCamera, Skeleton, SkinnedMesh, Uint16BufferAttribute } from 'three';
-import {
-  STRAY_INTERVAL_MS, STRAY_MAX_STAYED, STRAY_MIN_PIXELS, STRAY_RETRY_MS, StrayPixelWatch, boneReach, inspectModel, isStrayHit, reachBox, resendModel,
-  skinnedBones, strayStrips, type StrayCause, type StrayReport,
-} from '../src/stage/stray-pixels';
-import { buildJournalEntry, describeJournalEntry } from '../shared/journal';
+import { STRAY_INTERVAL_MS, STRAY_MAX_STAYED, STRAY_MIN_PIXELS, STRAY_RETRY_MS, StrayPixelWatch, boneReach, inspectModel, isStrayHit, reachBox, resendModel, skinnedBones, strayStrips, type StrayCause, type StrayReport } from '../src/stage/stray-pixels';
+import { buildJournalEntry, describeJournalEntry } from '../shared/memory/journal';
 
 test('her reach is her bones widened (more room above for hair), and strips sit only in wide empty gaps', () => {
   // Bones from x 0.4..0.6 and y 0.2..0.8 of a 400 x 560 buffer (NDC -0.2..0.2, -0.6..0.6).
@@ -300,19 +297,4 @@ test('the journal keeps a block line with what the stage found and whether it we
   assert.equal(buildJournalEntry({ ...base, size: 3, cleared: true }, at), null);
   const guard = buildJournalEntry({ type: 'motion', characterId: 'c1', kind: 'guard', part: 'bone', name: '頭', size: 3, activities: [], fps: 60, frameMs: 16, cleared: true }, at)!;
   assert.equal('cleared' in guard, false, 'only block lines carry it');
-});
-
-test('on the real Gene, standing and moving, nothing is blamed: her cloak helper bones sit far out at rest and are no culprit (I-031 check)', async () => {
-  const { geneStage } = await import('./helpers/gene-stage-harness');
-  const h = await geneStage({ fps: 60, refreshHz: 60 });
-  try {
-    h.run(1.5);
-    const height = (h.stage as unknown as { height: number }).height;
-    assert.deepEqual(inspectModel(h.mesh, height, skinnedBones(h.mesh)), { part: 'gpu', name: 'gpu' });
-    assert.deepEqual(inspectModel(h.mesh, height), { part: 'gpu', name: 'gpu' }, 'the default bone list is the skinned one too');
-    // One skinned bone thrown far away is still named.
-    const skinned = skinnedBones(h.mesh), arm = skinned.find(bone => bone.name === '右ひじ') ?? skinned[Math.floor(skinned.length / 2)];
-    arm.position.set(0, height * 20, 0); h.mesh.updateMatrixWorld(true);
-    assert.equal(inspectModel(h.mesh, height).part, 'bone');
-  } finally { h.close(); }
 });

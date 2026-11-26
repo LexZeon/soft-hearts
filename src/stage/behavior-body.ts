@@ -69,7 +69,7 @@ interface PlayingBody {
   readonly clip: AnimationClip;
   readonly action: AnimationAction;
   readonly duration: number;
-  /** The caller's canonical source duration (shared/vmd-duration.ts), reported as is; never re-derived from clip seconds. */
+  /** The caller's canonical source duration (shared/actions/vmd-duration.ts), reported as is; never re-derived from clip seconds. */
   readonly durationMs: number;
   readonly strength: number;
   readonly bases: readonly { action: AnimationAction; clip: AnimationClip; properties: string }[];

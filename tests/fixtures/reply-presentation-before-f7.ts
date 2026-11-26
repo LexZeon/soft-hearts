@@ -1,11 +1,11 @@
-// FROZEN REFERENCE, do not edit: src/ui/reply-presentation.ts exactly as it was before F7 停停说说 (commit bccbb60). Only
+// FROZEN REFERENCE, do not edit: src/brain/reply-presentation.ts exactly as it was before F7 停停说说 (commit bccbb60). Only
 // tests/f7-pause-talk.test.ts uses it, to prove that with no pause plan (the switch off) the paced reveal paints the same text at
 // the same moments as before, call for call.
-import { IncrementalReplySegments, IncrementalReplyOverflow } from '../../shared/incremental-reply-segments';
+import { IncrementalReplySegments, IncrementalReplyOverflow } from '../../shared/voice/incremental-reply-segments';
 import {
   AFTERTHOUGHT_EXTRA_MS, ELLIPSIS_PAUSE_MS, REPLY_RHYTHM_BUDGET_MS, REPLY_RHYTHM_FALLBACK_ENABLED, SHY_ELLIPSIS_PAUSE_MS,
   bubbleHoldMs, ellipsisStop, graphemeBoundaryAtOrBefore, isAfterthought, validReplyRhythmPacing, visibleLength,
-} from '../../shared/reply-rhythm';
+} from '../../shared/brain/reply-rhythm';
 
 const MAX_CLOSED_IDS = 24;
 type Readout = { id: string; raw: string; visible: number; since: number; done: boolean; fallback: boolean;
@@ -14,7 +14,7 @@ type Readout = { id: string; raw: string; visible: number; since: number; done: 
   /** B06 feed pause: when it began, and whether a sentence was being held (its hold continues on resume). */
   pausedAt?: number; holding?: boolean;
   /**
-   * F7 说话节奏 (shared/reply-rhythm.ts): this reply's frozen multiplier and shyness; how much of the 4 s budget its waits have
+   * F7 说话节奏 (shared/brain/reply-rhythm.ts): this reply's frozen multiplier and shyness; how much of the 4 s budget its waits have
    * spent; the wait now running (so a feed pause charges only the part that passed); what the current hold is for; where the
    * current piece of a bubble began after a "……" stop; whether the one afterthought pause was used.
    */
@@ -27,7 +27,7 @@ export interface ReadoutClock { now(): number; set(callback: () => void, delay: 
 /** Transient display state for host-accepted chat IDs; never a request or body store. */
 export class ReplyPresentationState {
   /**
-   * `onWaiting` (X1, src/ui/reply-thinking.ts): told synchronously whenever the
+   * `onWaiting` (X1, src/brain/reply-thinking.ts): told synchronously whenever the
    * reply that is waiting for its first word changes (its id, or null once body
    * text arrives, it closes, clears or is suppressed). Presentation only: its
    * result is ignored and a throw cannot disturb this state.
@@ -35,7 +35,7 @@ export class ReplyPresentationState {
   constructor(private readonly clock: ReadoutClock = { now: () => performance.now(), set: (fn, delay) => setTimeout(fn, delay), clear: timer => clearTimeout(timer) },
     private readonly onWaiting?: (id: string | null) => void,
     /**
-     * F7 兜底，待定 (shared/reply-rhythm.ts): the mood multiplier, visible-character hold, 4 s budget, "……" stop and afterthought
+     * F7 兜底，待定 (shared/brain/reply-rhythm.ts): the mood multiplier, visible-character hold, 4 s budget, "……" stop and afterthought
      * pause. Off by default (REPLY_RHYTHM_FALLBACK_ENABLED): the bubbles keep exactly R27's pacing. Tests turn it on to exercise it.
      */
     options: { rhythmFallback?: boolean } = {}) { this.fallback = options.rhythmFallback ?? REPLY_RHYTHM_FALLBACK_ENABLED; }

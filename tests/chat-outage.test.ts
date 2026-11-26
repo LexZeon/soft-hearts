@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { createChatOutage } from '../electron/chat-outage';
-import { ChatAvailability } from '../electron/chat-availability';
-import { PersistentClaudeChat, type CompanionClaudeTask } from '../electron/claude-session';
-import { ClaudeFailureError } from '../electron/claude';
-import { outageDisplayText, genericOutageLine, OUTAGE_LINE_KINDS, type ChatAvailabilityView } from '../shared/chat-availability';
+import { createChatOutage } from '../electron/brain/chat-outage';
+import { ChatAvailability } from '../electron/brain/chat-availability';
+import { PersistentClaudeChat, type CompanionClaudeTask } from '../electron/brain/claude-session';
+import { ClaudeFailureError } from '../electron/brain/claude';
+import { outageDisplayText, genericOutageLine, OUTAGE_LINE_KINDS, type ChatAvailabilityView } from '../shared/brain/chat-availability';
 
 const LIMIT = "You've hit your session limit · resets 1:20pm (America/Los_Angeles)";
 const OFFLINE = "Can't reach the API server";

@@ -9,8 +9,8 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { MoodReplyProtocol } from '../electron/mood-chat';
-import { CompanionService } from '../electron/companion';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
+import { CompanionService } from '../electron/brain/companion';
 
 function chunkings(text: string): string[][] {
   const pieces = (sizes: (i: number) => number) => { const out: string[] = []; for (let i = 0, n = 0; i < text.length; n++) { const size = Math.max(1, sizes(n)); out.push(text.slice(i, i + size)); i += size; } return out; };

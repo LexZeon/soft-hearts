@@ -1,11 +1,11 @@
 /**
- * I-022 的真实现（接口见 interface.ts，旋钮见 knobs.ts）：纯函数，零额度，不碰聊天提示词。困倦模型（shared/fatigue.ts）每一步问这里
+ * I-022 的真实现（接口见 interface.ts，旋钮见 knobs.ts）：纯函数，零额度，不碰聊天提示词。困倦模型（shared/mood/fatigue.ts）每一步问这里
  * "这一刻在不在深夜、用哪组门槛、消退多快"；参数都在 FatigueParameters 里，默认值由 sleepRhythmParameters() 从旋钮算出来。
  *
  * 白天不变的保证（tests/sleep-rhythm.test.ts 逐步比）：不在深夜时 rules() 交回的就是参数里白天的那组门槛、消退倍数正好是 1，
  * 困倦模型的算式和原来一字不差（乘 1 是精确的），所以同样的输入，白天每一步的 A、F、相位和原来一模一样。
  */
-import type { FatigueParameters } from '../../fatigue';
+import type { FatigueParameters } from '../../mood/fatigue';
 import { SLEEP_RHYTHM_KNOBS, type SleepRhythmKnobs } from './knobs';
 import type { NightWindow, SleepRhythmParameters, SleepRules } from './interface';
 
@@ -62,7 +62,7 @@ export function wakeRateAt(localMinute: number, p: WakeRateParameters): number {
 
 /**
  * Night window around the fatigue model's own `nightPeakMinute`, not a fixed clock range (moved here unchanged from
- * shared/inner-loop.ts innerLoopNightWindow, which now calls it: the inner loop's "深夜" and her night sleep are one window).
+ * shared/initiative/inner-loop.ts innerLoopNightWindow, which now calls it: the inner loop's "深夜" and her night sleep are one window).
  * (I-043: the body clock no longer adds to her sleepiness, clockSleepWeight is 0; clockWeight keeps sizing this window so the
  * night stays where it was.) Formerly the body clock added `clockWeight × timeNeed(t)` to the sleep need, with
  * timeNeed(t) = (1 + cos(2π(t − nightPeakMinute)/1440)) / 2. r = clockWeight / lightEnter is how much of

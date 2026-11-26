@@ -22,9 +22,9 @@
  */
 
 /** 设置里「她主动找你说话」的三档；缺省、认不出的值都当作 'normal'。 */
-export type ProactiveTalk = 'less' | 'normal' | 'more';
-export const PROACTIVE_TALK_VALUES: readonly ProactiveTalk[] = Object.freeze(['less', 'normal', 'more'] as const);
-export function proactiveTalk(value: unknown): ProactiveTalk { return value === 'less' || value === 'more' ? value : 'normal'; }
+import type { ProactiveTalk } from '../../foundation/settings';
+export type { ProactiveTalk };
+export { PROACTIVE_TALK_VALUES, proactiveTalk } from '../../foundation/settings'; // the settings vocabulary (wiring rewrite step 1)
 
 export interface InnerRhythmKnobs {
   readonly spread: number;

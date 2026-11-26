@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ReplyReader } from '../src/ui/ReplyReader';
-import { PetUI, renderPet } from '../src/ui/PetUI';
-import { isPetControlPoint } from '../src/ui/MoodCompanion';
-import { ReplySpeechState } from '../src/ui/reply-speech';
-import { ReplyPresentationState } from '../src/ui/reply-presentation';
-import { registerUiMessages, setUiLanguage } from '../shared/ui-language';
-import { ENGLISH_TASKS_UI_COPY } from '../shared/ui-copy.tasks.en';
+import { ReplyReader } from '../src/brain/ReplyReader';
+import { PetUI, renderPet } from '../src/stage/PetUI';
+import { isPetControlPoint } from '../src/mood/MoodCompanion';
+import { ReplySpeechState } from '../src/voice/reply-speech';
+import { ReplyPresentationState } from '../src/brain/reply-presentation';
+import { registerUiMessages, setUiLanguage } from '../shared/foundation/ui-language';
+import { ENGLISH_TASKS_UI_COPY } from '../shared/foundation/ui-copy.tasks.en';
 
 function readerFixture() {
   let changed = 0;

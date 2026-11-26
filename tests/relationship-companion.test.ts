@@ -3,14 +3,14 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CompanionService } from '../electron/companion';
-import { MoodHost } from '../electron/mood';
-import { MoodReplyProtocol } from '../electron/mood-chat';
-import { NEUTRAL_TENDENCIES, NICKNAME_ASK_INSTRUCTION } from '../shared/relationship';
-import { CLAUDE_FOLLOW_UP_HEADER, composeSessionPrompt, withoutOpeningContext } from '../electron/claude-session-prompt';
-import { buildCompanionPersona } from '../electron/conversation-context';
-import { localDateKey } from '../electron/diary/diary-dates';
-import type { MoodInput } from '../shared/mood-runtime';
+import { CompanionService } from '../electron/brain/companion';
+import { MoodHost } from '../electron/mood/mood';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
+import { NEUTRAL_TENDENCIES, NICKNAME_ASK_INSTRUCTION } from '../shared/memory/relationship';
+import { CLAUDE_FOLLOW_UP_HEADER, composeSessionPrompt, withoutOpeningContext } from '../electron/brain/claude-session-prompt';
+import { buildCompanionPersona } from '../electron/brain/conversation-context';
+import { localDateKey } from '../electron/memory/diary/diary-dates';
+import type { MoodInput } from '../shared/mood/mood-runtime';
 
 const provider = { kind: 'claude' as const, baseUrl: 'https://relationship.invalid/v1', model: 'fixture' };
 
@@ -41,7 +41,7 @@ test('the first chat already says how long they have known each other, in the op
     const turn = await chat(service, 't1', '你好');
     assert.match(turn.relationshipOpening!, /你们认识第 1 天/);
     assert.match(turn.relationshipOpening!, /从一开始就和用户很熟/);
-    assert.doesNotMatch(turn.relationshipOpening!, /现在的关系/);
+    assert.doesNotMatch(turn.relationshipOpening!, /熟悉度第/);
     assert.equal(turn.relationshipTag, 'off|');
     assert.equal(turn.relationshipMemes, true);
     // The lines sit right after the persona in the composed text.
@@ -85,13 +85,13 @@ test('switching the card on or off changes the next opening lines at once, and a
     assert.equal(off.relationshipTag, 'off|');
     on = true;
     const warm = await chat(service, 'a3', '三');
-    assert.match(warm.relationshipOpening!, /现在的关系：初识/);
+    assert.match(warm.relationshipOpening!, /熟悉度第 1 级「还不太熟」/);
     assert.equal(warm.relationshipTag, 'new|');
-    assert.equal(warm.relationshipMemes, false, 'memes wait until 熟悉 for a card that warms up slowly');
+    assert.equal(warm.relationshipMemes, false, 'memes wait until 熟悉 for a card that gets familiar slowly');
     on = false;
     const back = await chat(service, 'a4', '四');
     assert.equal(back.relationshipTag, 'off|');
-    assert.doesNotMatch(back.relationshipOpening!, /现在的关系/);
+    assert.doesNotMatch(back.relationshipOpening!, /熟悉度第/);
     assert.equal(back.relationshipMemes, true);
   });
 });

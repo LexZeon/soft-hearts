@@ -1,5 +1,5 @@
 /**
- * #5 照着做的一侧：主机的计时器（electron/reply-lifetime.ts）和桌宠窗口（src/ui/PetUI.ts）怎么用主机定下的毫秒数。
+ * #5 照着做的一侧：主机的计时器（electron/brain/reply-lifetime.ts）和桌宠窗口（src/stage/PetUI.ts）怎么用主机定下的毫秒数。
  * 这里不做决定：只把数夹进旋钮的 range，读主机的答复。
  */
 import { REPLY_LINGER_KNOBS, type ReplyLingerKnobs } from './knobs';
@@ -12,6 +12,14 @@ export function safeLingerMs(value: unknown, knobs: ReplyLingerKnobs = REPLY_LIN
   const [low, high] = knobs.range;
   if (typeof value !== 'number' || !Number.isFinite(value)) return high;
   return Math.round(Math.min(high, Math.max(low, value)));
+}
+
+/**
+ * 全屏 Unbound 的页面读主机随 'done' 带来的毫秒数（UnboundBubble.lingerMs）：页面自己不算。不是正数就按最长的留（宁可多留让你读完）。
+ * 不夹进 range：整段回复的可读下限可以比 range 的上限还长（ReplyLingerBubble.readAll）。
+ */
+export function readBubbleLingerMs(value: unknown, knobs: ReplyLingerKnobs = REPLY_LINGER_KNOBS): number {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.min(value, 3_600_000) : knobs.range[1];
 }
 
 /** 桌宠窗口读主机对 'complete' 的答复（PetReplyLingerAnswer）；不像样就返回 null（照旧按最长的算）。 */

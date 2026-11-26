@@ -12,7 +12,7 @@ import { MMDParser } from "three/examples/jsm/libs/mmdparser.module.js";
 if (process.argv.slice(2).some(argument => argument !== "--update-source"))
   throw new Error("Unsupported option. This script downloads motions and license documents only.");
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const catalogPath = path.join(root, "shared", "motion-catalog.json");
+const catalogPath = path.join(root, "shared/actions/motion-catalog.json");
 const cacheRoot = path.join(root, ".local", "motion-library");
 const licenseUrl = "https://creativecommons.org/licenses/by/4.0/";
 const licenseTextUrl = `${licenseUrl}legalcode.txt`;

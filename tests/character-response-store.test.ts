@@ -4,12 +4,12 @@ import { randomUUID } from 'node:crypto';
 import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CharacterCardStore } from '../electron/character-cards';
-import { CharacterResponseService, CharacterResponseStore } from '../electron/character-response';
-import { atomicWriteFile, type AtomicFileWriter } from '../electron/atomic-file';
-import { defaultCharacterResponseProfile, defaultCharacterResponseRule } from '../shared/character-response';
-import { exportCharacterWithResponse } from '../shared/character-response-portable';
-import { defaultCharacterMoodTemplate, type CharacterDraft } from '../shared/character-cards';
+import { CharacterCardStore } from '../electron/cards/character-cards';
+import { CharacterResponseService, CharacterResponseStore } from '../electron/cards/character-response';
+import { atomicWriteFile, type AtomicFileWriter } from '../electron/foundation/atomic-file';
+import { defaultCharacterResponseProfile, defaultCharacterResponseRule } from '../shared/cards/character-response';
+import { exportCharacterWithResponse } from '../shared/cards/character-response-portable';
+import { defaultCharacterMoodTemplate, type CharacterDraft } from '../shared/cards/character-cards';
 
 const FILE = 'character-response-settings.json';
 const draft = (name: string): CharacterDraft => ({

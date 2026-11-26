@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { stripDefaultVmdTracks, type VmdBoneFrame, type VmdMorphFrame } from "../src/stage/vmd-tracks";
+import { stripDefaultVmdTracks, type VmdBoneFrame, type VmdMorphFrame } from "../src/foundation/vmd-tracks";
 
 const bone = (boneName: string, frameNum: number, position = [0, 0, 0], rotation = [0, 0, 0, 1]): VmdBoneFrame & { interpolation: number[] } =>
   ({ boneName, frameNum, position, rotation, interpolation: [20, 107] });

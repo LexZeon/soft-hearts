@@ -1,17 +1,18 @@
-// I-022 关应用也记 (shared/app-session.ts, electron/app-session/host.ts, the app lines of shared/journal.ts): when the app stopped,
+// I-022 关应用也记 (shared/foundation/app-session.ts, electron/memory/app-session/host.ts, the app lines of shared/memory/journal.ts): when the app stopped,
 // how it quit, how long it was closed; the stop is written synchronously and never holds up quitting; the next start reads it once
 // and her fatigue and the journal's 应用启动 line use that one number. Only times, a run id, a character id and a closed cause.
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
+import { quitStepsSource, wiringFunction, wiringSource } from './helpers/wiring-source';
 import os from 'node:os';
 import path from 'node:path';
 import test, { type TestContext } from 'node:test';
-import { APP_SESSION_FILE, APP_STOP_FILE, AppSessionHost, nodeAppSessionFs, type AppSessionFs } from '../electron/app-session/host';
-import { closedSpan, lastStopFrom, readAppSessionRecord, readAppStopRecord, type LastStop } from '../shared/app-session';
-import { AppJournal } from '../electron/journal/app-journal';
-import { buildJournalEntry, describeJournalEntry, readJournalLine, type JournalEntry } from '../shared/journal';
-import { FatigueHost } from '../electron/fatigue-host';
+import { APP_SESSION_FILE, APP_STOP_FILE, AppSessionHost, nodeAppSessionFs, type AppSessionFs } from '../electron/memory/app-session/host';
+import { closedSpan, lastStopFrom, readAppSessionRecord, readAppStopRecord, type LastStop } from '../shared/foundation/app-session';
+import { AppJournal } from '../electron/memory/journal/app-journal';
+import { buildJournalEntry, describeJournalEntry, readJournalLine, type JournalEntry } from '../shared/memory/journal';
+import { FatigueHost } from '../electron/mood/fatigue-host';
 
 const MINUTE = 60_000, HOUR = 60 * MINUTE;
 const T0 = Date.UTC(2026, 10, 3, 15, 10, 0); // a fixed moment; the panel's clock text uses the machine's time zone, so it is not asserted
@@ -178,12 +179,14 @@ test('one number: the closed time her fatigue rests is the closed time the journ
 });
 
 test('main.ts wiring: the stop is written first thing in before-quit and on session-end; the closed time reaches her before she wakes', () => {
-  const main = readFileSync(new URL('../electron/main.ts', import.meta.url), 'utf8');
-  const beforeQuit = main.slice(main.indexOf('app.on("before-quit", event => {'));
-  assert.match(beforeQuit.split('\n')[1] ?? '', /appJournal\.appQuitting\(.*appSession\.stop\(\)\)/, 'the first line of before-quit writes the stop');
+  const main = wiringSource(); // electron/main.ts and electron/wiring/*.ts (the tray menu is in shell-wiring.ts since the wiring rewrite step 3)
+  // Step 5b: before-quit is electron/main.ts's ordered list (wireQuit); its first step is 记忆's noteQuitting, whose one line writes the stop.
+  assert.equal(quitStepsSource().steps[0], 'noteQuitting', 'the first step of before-quit writes the stop');
+  assert.match(wiringFunction('noteQuitting').split('\n')[1] ?? '', /appJournal\.appQuitting\(.*appSession\.stop\(\)\)/, 'the first line of before-quit writes the stop');
   assert.match(main, /win\.on\('session-end', \(\) => \{ appJournal\.appQuitting\(.*appSession\.stop\('session-end'\)\)/);
   // Startup: the companion loads, the closed time is handed over, then the first character's context (her fatigue wakes there).
-  const loaded = main.indexOf('      await companion.load();'), begin = main.indexOf('companion.mood.noteLastStop(appSession.begin())');
+  // (wiring rewrite step 4h: these lines are 大脑's ready-chain step startCompanion, electron/wiring/brain-wiring.ts)
+  const loaded = main.search(/\n\s*await companion\.load\(\);/), begin = main.indexOf('companion.mood.noteLastStop(appSession.begin())');
   const wake = main.indexOf('await companion.context(', loaded);
   assert.ok(loaded > 0 && begin > loaded && wake > begin, 'begin() after the companion loads and before the first character wakes');
   assert.match(main, /appJournal\.appStarted\(.*appSession\.lastStop\(\)\)/);

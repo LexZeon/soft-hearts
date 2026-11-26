@@ -4,10 +4,10 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { DRAFT_FILL_LINES, DraftFillLines } from '../electron/draft-fill';
-import { CompanionService } from '../electron/companion';
-import { draftFilterInput } from '../electron/journal/extras';
-import { buildJournalEntry } from '../shared/journal';
+import { DRAFT_FILL_LINES, DraftFillLines } from '../electron/brain/draft-fill';
+import { CompanionService } from '../electron/brain/companion';
+import { draftFilterInput } from '../electron/memory/journal/extras';
+import { buildJournalEntry } from '../shared/memory/journal';
 
 test('the pool never repeats a line back to back, keyed to her mood, and no line opens with an ellipsis', () => {
   const lines = new DraftFillLines(() => 0); // the worst case for repeats: the first option every time

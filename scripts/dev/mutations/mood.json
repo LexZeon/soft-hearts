@@ -1,0 +1,1106 @@
+[
+ {
+  "id": "P1-emoji-last",
+  "part": "mood",
+  "file": "electron/main.ts",
+  "find": "wireMoodPublish([publishEmojiContext, publishGateScope, publishVisionActivity, publishMemorials, publishR20, publishCue, judgeMood]);",
+  "replace": "wireMoodPublish([publishGateScope, publishVisionActivity, publishMemorials, publishR20, publishCue, judgeMood, publishEmojiContext]);",
+  "what": "心情发布：单 emoji 上下文挪到最后",
+  "tests": [
+   "tests/mood-gates.test.ts",
+   "tests/unbound-read-aloud.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "P2-judge-first",
+  "part": "mood",
+  "file": "electron/main.ts",
+  "find": "wireMoodPublish([publishEmojiContext, publishGateScope, publishVisionActivity, publishMemorials, publishR20, publishCue, judgeMood]);",
+  "replace": "wireMoodPublish([judgeMood, publishEmojiContext, publishGateScope, publishVisionActivity, publishMemorials, publishR20, publishCue]);",
+  "what": "心情发布：心情调整员先看（在认领之前）",
+  "tests": [
+   "tests/mood-gates.test.ts",
+   "tests/unbound-read-aloud.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "P3-scope-after-claim",
+  "part": "mood",
+  "file": "electron/main.ts",
+  "find": "wireMoodPublish([publishEmojiContext, publishGateScope, publishVisionActivity, publishMemorials, publishR20, publishCue, judgeMood]);",
+  "replace": "wireMoodPublish([publishEmojiContext, publishVisionActivity, publishMemorials, publishR20, publishCue, publishGateScope, judgeMood]);",
+  "what": "心情发布：关口范围在认领之后才设",
+  "tests": [
+   "tests/mood-gates.test.ts",
+   "tests/unbound-read-aloud.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "P4-r20-before-memorial",
+  "part": "mood",
+  "file": "electron/main.ts",
+  "find": "wireMoodPublish([publishEmojiContext, publishGateScope, publishVisionActivity, publishMemorials, publishR20, publishCue, judgeMood]);",
+  "replace": "wireMoodPublish([publishEmojiContext, publishGateScope, publishVisionActivity, publishR20, publishMemorials, publishCue, judgeMood]);",
+  "what": "心情发布：R20 和文字纪念调换",
+  "tests": [
+   "tests/mood-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "P5-broadcast-before-audio",
+  "part": "mood",
+  "file": "electron/wiring/initiative-publish-wiring.ts",
+  "find": "broadcast('desk:mood',withBodyPose(visibleView)); ambientComments?.observe(visibleView);",
+  "replace": "ambientComments?.observe(visibleView); broadcast('desk:mood',withBodyPose(visibleView));",
+  "what": "心情发布：声音评论先于发给窗口",
+  "tests": [
+   "tests/mood-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "D1-broadcast-twice",
+  "part": "mood",
+  "file": "electron/wiring/initiative-publish-wiring.ts",
+  "find": "broadcast('desk:mood',withBodyPose(visibleView));",
+  "replace": "broadcast('desk:mood',withBodyPose(visibleView)); broadcast('desk:mood',withBodyPose(visibleView));",
+  "what": "一次发布发两遍 desk:mood",
+  "tests": [
+   "tests/mood-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "D2-claim-twice",
+  "part": "mood",
+  "file": "electron/wiring/initiative-publish-wiring.ts",
+  "find": "const claimant=claimMoodCue(view);",
+  "replace": "claimMoodCue(view); const claimant=claimMoodCue(view);",
+  "what": "一个时机被认领两次",
+  "tests": [
+   "tests/initiative-gates.test.ts",
+   "tests/mood-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "D3-audio-twice",
+  "part": "mood",
+  "file": "electron/wiring/initiative-publish-wiring.ts",
+  "find": "ambientComments?.observe(visibleView);\n",
+  "replace": "ambientComments?.observe(visibleView); ambientComments?.observe(visibleView);\n",
+  "what": "声音评论看到同一个时机两次",
+  "tests": [
+   "tests/mood-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "D4-judge-twice",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "  moodJudge.watch(view); // I-027",
+  "replace": "  moodJudge.watch(view); moodJudge.watch(view); // I-027",
+  "what": "心情调整员看同一次发布两次",
+  "tests": [
+   "tests/mood-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "D5-step-twice",
+  "part": "mood",
+  "file": "electron/main.ts",
+  "find": "wireMoodPublish([publishEmojiContext, publishGateScope, publishVisionActivity, publishMemorials, publishR20, publishCue, judgeMood]);",
+  "replace": "wireMoodPublish([publishEmojiContext, publishGateScope, publishVisionActivity, publishMemorials, publishR20, publishCue, publishCue, judgeMood]);",
+  "what": "D5-step-twice",
+  "tests": [
+   "tests/initiative-gates.test.ts",
+   "tests/mood-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "D6-loop-twice",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "  for (const step of moodPublishSteps) step(view);",
+  "replace": "  for (const step of moodPublishSteps) step(view);\n  for (const step of moodPublishSteps) step(view);",
+  "what": "D6-loop-twice",
+  "tests": [
+   "tests/initiative-gates.test.ts",
+   "tests/mood-gates.test.ts",
+   "tests/unbound-read-aloud.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "T1-sink-missing",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "early(): void { setTouchSink(event => touchBrain.touch(event)); },",
+  "replace": "early(): void { },",
+  "what": "触碰的去处没有设",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "T3-sink-wrong",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "setTouchSink(event => touchBrain.touch(event));",
+  "replace": "setTouchSink(() => {});",
+  "what": "触碰交给了别的（不经触碰大脑）",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "T4-early-not-called",
+  "part": "mood",
+  "file": "electron/main.ts",
+  "find": "moodPart.early(); // I-136",
+  "replace": "// I-136",
+  "what": "T4-early-not-called",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "B1-raw-view",
+  "part": "mood",
+  "file": "electron/wiring/initiative-publish-wiring.ts",
+  "find": "broadcast('desk:mood',withBodyPose(visibleView));",
+  "replace": "broadcast('desk:mood',withBodyPose(view));",
+  "what": "发给窗口的是没认领的原始心情（红晕、眼泪的时机绕过认领）",
+  "tests": [
+   "tests/initiative-gates.test.ts",
+   "tests/mood-gates.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "B2-touch-port",
+  "part": "mood",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "  companion.mood.setTouchPort(touchBrain.moodPort);",
+  "replace": "",
+  "what": "捏脸的表情不经心情宿主（不设 touchPort）",
+  "tests": [
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "B3-interaction-any-window",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "if (sender !== pet?.webContents.id || !pet.isVisible()",
+  "replace": "if (!pet || !pet.isVisible()",
+  "what": "直接互动（摸、捏、喂）任何窗口都能交",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "B4-interaction-hidden",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "|| !pet.isVisible() || pet.isMinimized() || (petWindowDrag?.active && !ending)",
+  "replace": "|| (petWindowDrag?.active && !ending)",
+  "what": "她藏起来时也收直接互动",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "B5-blush-key",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "if (!key || key !== expectedKey) throw",
+  "replace": "if (!key) throw",
+  "what": "红晕校准不核对模型",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "B6-blush-broadcast",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "broadcast('desk:blush-calibration', view);",
+  "replace": "",
+  "what": "红晕校准改了不告诉窗口",
+  "tests": [
+   "tests/mood-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "B7-blush-stage",
+  "part": "mood",
+  "file": "electron/main.ts",
+  "find": "blushStage: stage => companion?.noteBlushStage(stage),",
+  "replace": "blushStage: stage => { appJournal.record({ type: 'blush-stage', stage } as never); },",
+  "what": "红晕阶段绕过心情宿主直接记",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "B8-params-devmode",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "if (!companion.mood.isDeveloperMode()) throw new Error('请先开启开发者模式。');",
+  "replace": "",
+  "what": "心情参数不看开发者模式就改",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "B9-params-identity",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "companion.mood.assertParameterIdentity(expected);",
+  "replace": "",
+  "what": "心情参数不核对是哪个角色",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "S1-talk-source-missing",
+  "part": "mood",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "  companion.mood.setProactiveTalkSource(() => store?.current.proactiveTalk);",
+  "replace": "",
+  "what": "心情宿主拿不到「少一点」（I-039）",
+  "tests": [
+   "tests/mood-gates.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "S2-talk-source-constant",
+  "part": "mood",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "setProactiveTalkSource(() => store?.current.proactiveTalk)",
+  "replace": "setProactiveTalkSource(() => undefined)",
+  "what": "「少一点」永远是默认",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "S3-stretch-host",
+  "part": "mood",
+  "file": "electron/mood/mood.ts",
+  "find": "this.speechStretch = bodyOptions.speechIntervalStretch ?? speechIntervalAfterUnanswered;",
+  "replace": "this.speechStretch = bodyOptions.speechIntervalStretch ?? ((interval: number) => interval);",
+  "what": "心情宿主不传\"没人回就拉长\"（electron/mood/mood.ts）",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "F1-ready-kept",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "  fatigueActivityReady = false;\n",
+  "replace": "",
+  "what": "退出时疲倦活动仍算\"就绪\"",
+  "tests": [
+   "tests/quit-order.test.ts",
+   "tests/sleep-entry-ready.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "F2-bridge-kept",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "  fatigueActivity.dispose();\n",
+  "replace": "",
+  "what": "退出时疲倦桥没停",
+  "tests": [
+   "tests/quit-order.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "F3-exiting-ignored",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "initialized:fatigueActivityReady && !exiting,",
+  "replace": "initialized:fatigueActivityReady,",
+  "what": "同步疲倦活动不看正在退出",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "F4-feeling-scope",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "if(scope !== speechScope() || cardId",
+  "replace": "if(cardId",
+  "what": "疲倦的感受不看说话范围",
+  "tests": [
+   "tests/mood-gates.test.ts",
+   "tests/r34-main-integration.test.ts"
+  ]
+ },
+ {
+  "id": "H1-reactions-visible",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "description}`; }, petVisible: () => { const { pet } = needs; /* read when called */ return !!pet && !pet.isDestroyed() && pet.isVisible() && !pet.isMinimized(); },",
+  "replace": "description}`; }, petVisible: () => true,",
+  "what": "反应不看她在不在屏幕上",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "H2-reaction-stage",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "if (!pet || pet.isDestroyed() || !pet.isVisible() || pet.isMinimized()) return false; pet.webContents.send('desk:reaction'",
+  "replace": "if (!pet || pet.isDestroyed()) return false; pet.webContents.send('desk:reaction'",
+  "what": "反应的动作在她藏起来时也发给桌宠",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "H3-judge-visible",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "    petVisible: () => needs.herOnScreen() /* 2026-11-21: she is seen in the companion window or out in Unbound; the judge only nudges numbers */, available",
+  "replace": "    petVisible: () => true, available",
+  "what": "心情调整员不看她在不在屏幕上",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "H4-reactions-chatbusy",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "chatBusy: () => [...needs.pending.values()].some(task => task.kind === 'chat'), // the warm haiku",
+  "replace": "chatBusy: () => false, // the warm haiku",
+  "what": "回复进行中也重建反应的热 haiku",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "H5-judge-busy",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "busy: () => [...needs.pending.values()].some(task => task.kind === 'chat'), developerMode",
+  "replace": "busy: () => false, developerMode",
+  "what": "心情调整员在聊天进行中也跑",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "H6-judge-skip",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "skipMessages: () => reactions.on() });",
+  "replace": "skipMessages: () => false });",
+  "what": "反应开着时心情调整员也读用户的话",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "Q1-clock-kept",
+  "part": "mood",
+  "file": "electron/main.ts",
+  "find": "  if (moodTimer) { clearInterval(moodTimer); moodTimer = null; }\n",
+  "replace": "",
+  "what": "退出时不停心情时钟",
+  "tests": [
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "Q2-judge-kept",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "  void moodJudge.dispose();\n",
+  "replace": "",
+  "what": "退出时不停心情调整员",
+  "tests": [
+   "tests/quit-order.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "Q3-reactions-kept",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "  void reactions.dispose();\n",
+  "replace": "",
+  "what": "退出时不停反应",
+  "tests": [
+   "tests/quit-order.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "G1-rps",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "    && !rps.host.active; // G1",
+  "replace": "    ; // G1",
+  "what": "自动表现不看猜拳",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "G2-gate-busy",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "ambientSpeakingOwners.size === 0 && !proactiveSpeechGate.busy\n    && ![...pending.values()]",
+  "replace": "ambientSpeakingOwners.size === 0\n    && ![...pending.values()]",
+  "what": "自动表现不看主动说话关口",
+  "tests": [
+   "tests/initiative-gates.test.ts",
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "G3-chat",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "    && ![...pending.values()].some(task => task.kind === 'chat')\n    && !rps.host.active",
+  "replace": "    && !rps.host.active",
+  "what": "自动表现不看聊天进行中",
+  "tests": [
+   "tests/initiative-gates.test.ts",
+   "tests/mood-gates.test.ts",
+   "tests/unbound-read-aloud.test.ts"
+  ]
+ },
+ {
+  "id": "G4-typing",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "    && !petWindowDrag?.active && Date.now() >= userInputUntil\n",
+  "replace": "    && !petWindowDrag?.active\n",
+  "what": "自动表现不看用户在打字",
+  "tests": [
+   "tests/mood-gates.test.ts",
+   "tests/unbound-read-aloud.test.ts"
+  ]
+ },
+ {
+  "id": "G5-onscreen",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "  return herOnScreen()\n    && !petWindowDrag?.active",
+  "replace": "  return true\n    && !petWindowDrag?.active",
+  "what": "自动表现不看她在不在屏幕上",
+  "tests": [
+   "tests/mood-gates.test.ts",
+   "tests/unbound-read-aloud.test.ts"
+  ]
+ },
+ {
+  "id": "M1-sync-invalidate",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "    moodModel = s.model?.path ?? null;\n    companion.mood.invalidate();\n",
+  "replace": "    moodModel = s.model?.path ?? null;\n",
+  "what": "换模型时心情不重来",
+  "tests": [
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "M2-sync-body",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "  companion?.mood.setBodyVisible(!!pet && !pet.isDestroyed() && s.pet.visible);\n",
+  "replace": "",
+  "what": "心情宿主不知道她的身体显没显示",
+  "tests": [
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "M3-fatigue-selection",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "  fatigueActivity.setSelection(s);\n",
+  "replace": "",
+  "what": "疲倦不跟着选的动作走（sync）",
+  "tests": [
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "M4-judge-observer",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "companion.mood.setJudgeObserver(note => moodJudge.noteMood(note));",
+  "replace": "",
+  "what": "心情调整员看不到被接受的心情事件",
+  "tests": [
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "M5-reactions-attach",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "  reactions.attach();",
+  "replace": "",
+  "what": "心情宿主拿不到反应的端口",
+  "tests": [
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "M6-expressions-activity",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "if (!view.expressions) noteVisionUserActivity();",
+  "replace": "",
+  "what": "关掉自动表现不算一次用户活动",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "M7-interaction-activity",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "const view = companion.mood.interaction(value);\n        noteVisionUserActivity();\n",
+  "replace": "const view = companion.mood.interaction(value);\n",
+  "what": "直接互动不算一次用户活动",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "M8-music-tier-window",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "if (!companionFact('music-tier', sender === pet?.webContents.id)) return false; ",
+  "replace": "",
+  "what": "音乐档位任何窗口都能报",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "M9-touch-dispositions",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "dispositions: view => reactions.dispositionsFor(view),",
+  "replace": "dispositions: () => reactions.dispositionsFor(null as never),",
+  "what": "触碰的反应倾向不按这个角色",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "M10-touch-place",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "place: () => unbound && unbound.state !== 'normal' ? 'unbound' : 'pet',",
+  "replace": "place: () => 'pet',",
+  "what": "触碰不分 Unbound 和桌宠",
+  "tests": [
+   "tests/mood-gates.test.ts"
+  ]
+ },
+ {
+  "id": "D5-stage-state-any-window",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "sender === pet?.webContents.id && stageState.accept(value)",
+  "replace": "stageState.accept(value)",
+  "what": "控制窗口也能报舞台状态（她听到的、音乐的来源）",
+  "tests": [
+   "tests/step5-handlers.test.ts",
+   "tests/app-identity.test.ts",
+   "tests/app-session.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/brain-gates.test.ts",
+   "tests/bundle-inputs.test.mjs",
+   "tests/camera-two-switches.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/clipboard-permission.test.ts",
+   "tests/companion-breath.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/companion-framing.test.ts",
+   "tests/desktop-entry-chain.test.ts",
+   "tests/i084-look-at-me.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/layer-check.test.mjs",
+   "tests/listen-late-window.test.ts",
+   "tests/look-stale-frame.test.ts",
+   "tests/media-input.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/model-physics-wiring.test.ts",
+   "tests/mood-gates.test.ts",
+   "tests/motion-track-coverage.test.ts",
+   "tests/motion-weights-ipc.test.ts",
+   "tests/music-settings-wiring.test.ts",
+   "tests/part-table.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/pet-always-on-top-host.test.ts",
+   "tests/pose-privacy.test.ts",
+   "tests/public-snapshot.test.mjs",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r20-proactive-offer-ui.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/reply-speech-native-receipt.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/senses-privacy-gates.test.ts",
+   "tests/size-check.test.mjs",
+   "tests/sleep-entry-ready.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/structure-inventory.test.mjs",
+   "tests/surprise-preview-wiring.test.ts",
+   "tests/test-affected.test.mjs",
+   "tests/test-command-wiring.test.ts",
+   "tests/test-parts.test.mjs",
+   "tests/text-invitation-archive.test.ts",
+   "tests/text-memorial-question-binding.test.ts",
+   "tests/ui-language-entry.test.ts",
+   "tests/unbound-read-aloud.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/user-profile-host-wiring.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts",
+   "tests/wiring-skeleton.test.ts"
+  ]
+ },
+ {
+  "id": "D5-color-block-any-window",
+  "part": "mood",
+  "file": "electron/wiring/mood-wiring.ts",
+  "find": "log.note(sender, pet?.webContents.id, value)",
+  "replace": "log.note(sender, sender, value)",
+  "what": "色块日志收下任何窗口的报告",
+  "tests": [
+   "tests/step5-handlers.test.ts",
+   "tests/app-identity.test.ts",
+   "tests/app-session.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/brain-gates.test.ts",
+   "tests/bundle-inputs.test.mjs",
+   "tests/camera-two-switches.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/clipboard-permission.test.ts",
+   "tests/companion-breath.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/companion-framing.test.ts",
+   "tests/desktop-entry-chain.test.ts",
+   "tests/i084-look-at-me.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/layer-check.test.mjs",
+   "tests/listen-late-window.test.ts",
+   "tests/look-stale-frame.test.ts",
+   "tests/media-input.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/model-physics-wiring.test.ts",
+   "tests/mood-gates.test.ts",
+   "tests/motion-track-coverage.test.ts",
+   "tests/motion-weights-ipc.test.ts",
+   "tests/music-settings-wiring.test.ts",
+   "tests/part-table.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/pet-always-on-top-host.test.ts",
+   "tests/pose-privacy.test.ts",
+   "tests/public-snapshot.test.mjs",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r20-proactive-offer-ui.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/reply-speech-native-receipt.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/senses-privacy-gates.test.ts",
+   "tests/size-check.test.mjs",
+   "tests/sleep-entry-ready.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/structure-inventory.test.mjs",
+   "tests/surprise-preview-wiring.test.ts",
+   "tests/test-affected.test.mjs",
+   "tests/test-command-wiring.test.ts",
+   "tests/test-parts.test.mjs",
+   "tests/text-invitation-archive.test.ts",
+   "tests/text-memorial-question-binding.test.ts",
+   "tests/ui-language-entry.test.ts",
+   "tests/unbound-read-aloud.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/user-profile-host-wiring.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts",
+   "tests/wiring-skeleton.test.ts"
+  ]
+ },
+ {
+  "id": "PULL7-pet-touch-any-window",
+  "part": "mood",
+  "file": "electron/mood/touch/pet-touch.ts",
+  "find": "  if (!pet || sender !== pet.webContents.id || !pet.isVisible() || pet.isMinimized()) return false;",
+  "replace": "  if (!pet || !pet.isVisible() || pet.isMinimized()) return false;",
+  "what": "拉她的报告不是桌宠窗口发来的也接受",
+  "tests": [
+   "tests/pull-session.test.ts"
+  ]
+ },
+ {
+  "id": "PULL8-pet-touch-any-field",
+  "part": "mood",
+  "file": "electron/mood/touch/pet-touch.ts",
+  "find": "  const picked: Record<string, unknown> = { kind: 'pull', where: 'pet', at };\n  for (const key of FIELDS) if (Object.hasOwn(raw, key)) picked[key] = raw[key];",
+  "replace": "  const picked: Record<string, unknown> = { kind: 'pull', where: 'pet', at, ...raw };",
+  "what": "报给脑子的拉，页面可以自己填种类、地点和时间（不只是拉的那几样固定字段）",
+  "tests": [
+   "tests/pull-session.test.ts"
+  ]
+ },
+ {
+  "id": "PULL9-pet-touch-no-end",
+  "part": "mood",
+  "file": "electron/mood/touch/pet-touch.ts",
+  "find": "  return event && event.ended ? event : null;",
+  "replace": "  return event;",
+  "what": "没有结束方式（还拉着 / 松手 / 挣开 / 取消）的拉也报给脑子",
+  "tests": [
+   "tests/pull-session.test.ts"
+  ]
+ },
+ {
+  "id": "PAT1-deep-needs-comfortable",
+  "part": "mood",
+  "file": "src/mood/mood-feedback.ts",
+  "find": "      if (pleasant && comfortable) deepWeight += weight;",
+  "replace": "      if (pleasant) deepWeight += weight;",
+  "what": "摸头深闭眼只在她舒服时才有（不舒服时一直约 0.38）",
+  "tests": [
+   "tests/mood-feedback.test.ts"
+  ]
+ },
+ {
+  "id": "PAT2-deep-after-hold",
+  "part": "mood",
+  "file": "src/mood/mood-feedback.ts",
+  "find": "    this.patTime = active || holding ? this.patTime + dt : 0;",
+  "replace": "    this.patTime = active ? this.patTime + dt : 0;",
+  "what": "摸头中途离开不超过 PAT_HOLD 不算断，深闭眼不掉回去",
+  "tests": [
+   "tests/mood-feedback.test.ts"
+  ]
+ },
+ {
+  "id": "PAT3-deep-immediate",
+  "part": "mood",
+  "file": "src/mood/mood-feedback.ts",
+  "find": "    const deepPat = smoothstep((this.patTime - PAT_DEEP_AFTER) / PAT_DEEP_RAMP);",
+  "replace": "    const deepPat = smoothstep((this.patTime + 5 - PAT_DEEP_AFTER) / PAT_DEEP_RAMP);",
+  "what": "刚摸上时不能马上就闭到九成",
+  "tests": [
+   "tests/mood-feedback.test.ts"
+  ]
+ },
+ {
+  "id": "PAT4-lid-cap-kept-for-gene",
+  "part": "mood",
+  "file": "src/stage/channel-compositors.ts",
+  "find": "const patLed = input.lidShapesOverlap === false &&",
+  "replace": "const patLed = input.lidShapesOverlap !== true &&",
+  "what": "已审 Gene（笑眼和闭眼重叠）的封顶照旧",
+  "tests": [
+   "tests/channel-compositors.test.ts"
+  ]
+ },
+ {
+  "id": "PAT5-no-gap-on-pat",
+  "part": "mood",
+  "file": "src/stage/channel-compositors.ts",
+  "find": "patLed ? 0 : Math.max(smileEyes, jitome)",
+  "replace": "Math.max(smileEyes, jitome)",
+  "what": "摸头闭眼写进眨眼变形的值不被不重叠的笑眼封顶（不留缝）",
+  "tests": [
+   "tests/channel-compositors.test.ts"
+  ]
+ },
+ {
+  "id": "VRM-K1-key-any-file",
+  "part": "mood",
+  "file": "electron/mood/blush-calibration.ts",
+  "find": "    && isModelFileExtension(path.extname(value));",
+  "replace": "    && path.extname(value) !== '';",
+  "what": "模型身份（keyForModel）：不再只收模型文件，.glb、.vmd、.json 也给算内容键（I-152 放开 .vrm 时守住）",
+  "tests": [
+   "tests/vrm-native-safety.test.ts",
+   "tests/blush-calibration.test.ts"
+  ]
+ },
+ {
+  "id": "VRM-K2-key-not-absolute",
+  "part": "mood",
+  "file": "electron/mood/blush-calibration.ts",
+  "find": "typeof value === 'string' && path.isAbsolute(value) && value.length <= 32768",
+  "replace": "typeof value === 'string' && value.length <= 32768",
+  "what": "模型身份（keyForModel）：收相对路径和网址（mmd-asset://、https://）",
+  "tests": [
+   "tests/vrm-native-safety.test.ts",
+   "tests/blush-calibration.test.ts"
+  ]
+ },
+ {
+  "part": "mood",
+  "id": "vrm-tears-last-output",
+  "file": "src/mood/procedural-tears.ts",
+  "find": "  const at = fragment.lastIndexOf(MTOON_OUTPUT);",
+  "replace": "  const at = fragment.indexOf(MTOON_OUTPUT);",
+  "what": "VRM（MToon）的泪痕插到第一处输出（调试视图里），正常画面上没有泪痕",
+  "tests": [
+   "tests/unbound-vrm-face.test.ts"
+  ]
+ },
+ {
+  "id": "cheek-projection-read-only",
+  "part": "mood",
+  "file": "src/mood/cheek-pinch-region.ts",
+  "find": "  // Never camera.updateProjectionMatrix(): the caller keeps the projection current, and full-screen Unbound",
+  "replace": "  camera.updateProjectionMatrix(); // the caller keeps the projection current, and full-screen Unbound",
+  "what": "算脸颊捏的区域只读相机，不重算它的投影（全屏 Unbound 里她不会变宽变矮）",
+  "tests": [
+   "tests/cheek-pinch-region.test.ts"
+  ]
+ },
+ {
+  "id": "OPEN-fixed-turn-reminder",
+  "part": "mood",
+  "file": "electron/mood/mood-chat.ts",
+  "find": "this.openingMode === 'fixed' && FIXED_TURN_REMINDER && this.reminderAt === 'end' ? OPENING_CLOSING_SLOT : ''",
+  "replace": "false ? OPENING_CLOSING_SLOT : ''",
+  "what": "每轮协议不再提醒开头标记：提醒句不在末尾，开头也没有（她漏写时整句要等写完才显示，首字慢 1～2 秒）",
+  "tests": [
+   "tests/reply-opening.test.ts",
+   "tests/opening-reminder-end.test.ts"
+  ]
+ },
+ {
+  "id": "OPEN-reminder-last-line",
+  "part": "mood",
+  "file": "electron/brain/conversation-context.ts",
+  "find": "</conversation-data>${closed.closing ? '\\n' + closed.closing : ''}`;",
+  "replace": "</conversation-data>`;",
+  "what": "开头标记提醒句不再放在整段提示的最后一行（挪到末尾后只剩一处写它，丢了就没有提醒）",
+  "tests": [
+   "tests/opening-reminder-end.test.ts"
+  ]
+ },
+ {
+  "id": "I179-turn-any-text",
+  "part": "mood",
+  "file": "shared/mood/journal-state.ts",
+  "find": "export const turnOf = (value: unknown): { turn?: string } => { const turn = id(value); return turn ? { turn } : {}; };",
+  "replace": "export const turnOf = (value: unknown): { turn?: string } => { const turn = typeof value === 'string' && value ? value : null; return turn ? { turn } : {}; };",
+  "what": "心情记录的回合编号：任何文字都能当编号写进去（聊天原话会漏进记录）",
+  "tests": [
+   "tests/i179-mood-journal.test.ts"
+  ]
+ },
+ {
+  "id": "I179-aux-keeps-extra-fields",
+  "part": "mood",
+  "file": "shared/mood/journal-state.ts",
+  "find": "  const B = pair(v.B), M = pair(v.M), aux: MoodAux = { ...bodyOf(v), ...(B ? { B } : {}), ...(M ? { M } : {}) };",
+  "replace": "  const B = pair(v.B), M = pair(v.M), aux: MoodAux = { ...(v as MoodAux), ...bodyOf(v), ...(B ? { B } : {}), ...(M ? { M } : {}) };",
+  "what": "心情记录的数值附加项：带进来的多余字段（可能是文字）原样写进记录",
+  "tests": [
+   "tests/i179-mood-journal.test.ts"
+  ]
+ },
+ {
+  "id": "I179-snapshot-keeps-extra-fields",
+  "part": "mood",
+  "file": "shared/mood/journal-state.ts",
+  "find": "  return { type: 'mood-snapshot', characterId, when: v.when, ...now, ...(v.activity != null ? { activity: v.activity as HerLifeActivity } : {}) };",
+  "replace": "  return { ...v, type: 'mood-snapshot', characterId, when: v.when, ...now, ...(v.activity != null ? { activity: v.activity as HerLifeActivity } : {}) } as MoodSnapshotInput;",
+  "what": "心情快照：带进来的多余字段（可能是文字）原样写进记录",
+  "tests": [
+   "tests/i179-mood-journal.test.ts"
+  ]
+ },
+ {
+  "id": "I179-timeline-writes-in-profile",
+  "part": "mood",
+  "file": "scripts/experience/mood-timeline.mjs",
+  "find": "  if (inside(path.resolve(profile), target) || inside(path.resolve(profile), real)) throw Error('Refusing to write inside a profile folder.');",
+  "replace": "  if (false) throw Error('Refusing to write inside a profile folder.');",
+  "what": "心情时间线脚本：允许把输出写进配置文件夹里（含聊天原话，也会弄脏记录）",
+  "tests": [
+   "tests/i179-mood-timeline-script.test.mjs"
+  ]
+ },
+ {
+  "id": "I196-held-button-never-strokes",
+  "part": "mood",
+  "file": "src/mood/PetInteraction.ts",
+  "find": "const eligible = this.allowed() && event.buttons === 0 && ",
+  "replace": "const eligible = this.allowed() && ",
+  "what": "摸头：鼠标键按着（抓、拉、按住）时划过她的头发也算摸头（按住是抓，没按下是摸头）",
+  "tests": [
+   "tests/i196-held-button-no-stroke.test.ts"
+  ]
+ },
+ {
+  "id": "i205-reaction-judge-gets-chat",
+  "part": "mood",
+  "file": "electron/mood/reactions/host.ts",
+  "find": "recentChat: this.safe(() => this.options.recentChat?.() ?? '', '') }, this.table, this.knobs);",
+  "replace": "recentChat: '' }, this.table, this.knobs);",
+  "what": "反应判定员（haiku）的提示词不再带最近几句聊天，只看心情数值和这一句（不能只看心情数值）",
+  "tests": [
+   "tests/i205-judge-chat.test.ts"
+  ]
+ },
+ {
+  "id": "i205-reaction-old-reward-not-paid-again",
+  "part": "mood",
+  "file": "shared/behaviors/reactions/choose.ts",
+  "find": "但回忆旧事、引用以前的话不重发旧奖励",
+  "replace": "并且以前聊过的夸奖这句也再算一次",
+  "what": "反应判定员读到聊天里的旧夸奖或引用时，提示词不再说\"回忆旧事不重发旧奖励\"，旧事会被再奖励一次",
+  "tests": [
+   "tests/i205-judge-chat.test.ts"
+  ]
+ },
+ {
+  "id": "i205-mood-judge-gets-chat",
+  "part": "mood",
+  "file": "electron/mood/mood-judge/host.ts",
+  "find": "moodJudgePrompt(now, batch.items, this.knobs, this.safe(() => this.options.recentChat?.() ?? '', ''))",
+  "replace": "moodJudgePrompt(now, batch.items, this.knobs)",
+  "what": "心情调整员（haiku）的提示词不再带最近几句聊天，只看这一阵发生的事和数值",
+  "tests": [
+   "tests/i205-judge-chat.test.ts"
+  ]
+ },
+ {
+  "id": "I209-mood-line-reads-active",
+  "part": "mood",
+  "file": "electron/mood/mood.ts",
+  "find": "const view = options.characterId ? this.liveOf(options.characterId) : this.get(), s = view?.snapshot",
+  "replace": "const view = this.get(), s = view?.snapshot",
+  "what": "台上 B 那一轮的心情一行读的是当前角色（A）的心情（I-209 第 2 步：每人活着的心情）",
+  "tests": [
+   "tests/i209-turn-owner.test.ts"
+  ]
+ },
+ {
+  "id": "rules-removed-need-pout",
+  "part": "mood",
+  "file": "shared/mood/her-needs.ts",
+  "find": "用户来了，你很高兴。`",
+  "replace": "用户来了，你很高兴。按你的性格可以小小地撒个娇、别扭一下。`",
+  "what": "小情绪的聊天句里\"小小地撒个娇、别扭一下\"又被写回来",
+  "tests": [
+   "tests/rules-removed.test.ts"
+  ]
+ },
+ {
+  "id": "rules-removed-welcome-line",
+  "part": "mood",
+  "file": "shared/mood/her-needs.ts",
+  "find": "'用户隔了一阵子才又出现';",
+  "replace": "'用户隔了一阵子才又出现。你先和好，不翻旧账';",
+  "what": "重逢那句又带上\"你先和好、不翻旧账\"",
+  "tests": [
+   "tests/rules-removed.test.ts"
+  ]
+ },
+ {
+  "id": "rules-removed-fatigue-not-every-time",
+  "part": "mood",
+  "file": "electron/mood/mood-situation.ts",
+  "find": "完整回应用户，不假装没收到输入。",
+  "replace": "完整回应用户，不每次主动说困，不假装没收到输入。",
+  "what": "疲倦那句里\"不每次主动说困\"又被写回来",
+  "tests": [
+   "tests/rules-removed.test.ts"
+  ]
+ },
+ {
+  "id": "rules-removed-numeric-directive",
+  "part": "mood",
+  "file": "electron/mood/mood.ts",
+  "find": "；不声称这些数值",
+  "replace": "；关切或失落时不因先前舒适而强行欢快，不声称这些数值",
+  "what": "数值版心情句里\"不强行欢快\"又被写回来",
+  "tests": [
+   "tests/rules-removed.test.ts"
+  ]
+ },
+ {
+  "id": "rules-removed-attack-directive",
+  "part": "mood",
+  "file": "electron/mood/mood-situation.ts",
+  "find": "    input.fatigue.trim() ? `${input.fatigue.trim()}` : '',",
+  "replace": "    '别把用户的负面心情当成对你的攻击。',\n    input.fatigue.trim() ? `${input.fatigue.trim()}` : '',",
+  "what": "心情情境里\"别把用户的负面心情当成对你的攻击\"又被写回来",
+  "tests": [
+   "tests/rules-removed.test.ts"
+  ]
+ },
+ {
+  "id": "rules-removed-actions-not-every-turn",
+  "part": "mood",
+  "file": "electron/mood/mood-chat.ts",
+  "find": "${offered.map(word => word + CHAT_ACTION_MEANINGS[word]).join('，')}。`",
+  "replace": "${offered.map(word => word + CHAT_ACTION_MEANINGS[word]).join('，')}；这几个小动作想做时才用，不必每轮都有。`",
+  "what": "小动作词表后\"不必每轮都有\"又被写回来",
+  "tests": [
+   "tests/rules-removed.test.ts"
+  ]
+ }
+]

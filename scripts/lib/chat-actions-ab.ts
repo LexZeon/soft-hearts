@@ -13,8 +13,8 @@ import { runEval } from './prompt-eval-runner';
 import type { TurnRecord } from './prompt-eval-analysis';
 import type { EvalScenario } from './prompt-eval-scenarios';
 import { FIDELITY_CARDS, FIDELITY_SCENARIOS, toEvalScenarios } from './fidelity-scenarios';
-import { CHAT_ACTION_WORDS, type ChatActionWord } from '../../shared/chat-actions';
-import { findClaude } from '../../electron/claude';
+import { CHAT_ACTION_WORDS, type ChatActionWord } from '../../shared/brain/chat-actions';
+import { findClaude } from '../../electron/brain/claude';
 
 const option = (name: string, fallback = '') => { const i = process.argv.indexOf(`--${name}`); return i >= 0 ? process.argv[i + 1] ?? fallback : fallback; };
 const dry = process.argv.includes('--dry');

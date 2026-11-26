@@ -1,9 +1,9 @@
-// 体验记录 (E2): the control window's switch and "刚才发生了什么" (src/ui/JournalPanel.ts). Text only, never markup.
+// 体验记录 (E2): the control window's switch and "刚才发生了什么" (src/memory/JournalPanel.ts). Text only, never markup.
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildJournalEntry, type JournalEntry, type JournalInput, type JournalView } from '../shared/journal';
-import { setUiLanguage } from '../shared/ui-language';
-import { JournalPanel, journalFilterChoices, journalPanelLines, journalStatusText } from '../src/ui/JournalPanel';
+import { buildJournalEntry, type JournalEntry, type JournalInput, type JournalView } from '../shared/memory/journal';
+import { setUiLanguage } from '../shared/foundation/ui-language';
+import { JournalPanel, journalFilterChoices, journalPanelLines, journalStatusText } from '../src/memory/JournalPanel';
 
 class Element {
   children: Element[] = []; className = ''; textContent: string | null = ''; type = ''; value = '';

@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { AnimationClip, AnimationMixer, Bone, BufferGeometry, MeshBasicMaterial, Quaternion, QuaternionKeyframeTrack, Skeleton, SkinnedMesh, Vector3 } from 'three';
-import { BEHAVIOR_RECIPES } from '../shared/behavior-recipes';
-import { BODY_START_AGE_MS, type BodyMotionCue, type BodyMotionResource } from '../shared/body-motion';
-import { canonicalVmdClipDuration, vmdDurationMs, vmdDurationSeconds } from '../shared/vmd-duration';
+import { BEHAVIOR_RECIPES } from '../shared/actions/behavior-recipes';
+import { BODY_START_AGE_MS, type BodyMotionCue, type BodyMotionResource } from '../shared/actions/body-motion';
+import { canonicalVmdClipDuration, vmdDurationMs, vmdDurationSeconds } from '../shared/actions/vmd-duration';
 import { BodyMotionController, type BodyStageGates } from '../src/stage/body-motion-controller';
 import { BehaviorBodyPlayer } from '../src/stage/behavior-body';
 

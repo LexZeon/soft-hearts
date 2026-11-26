@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { VisualSelfRuntime, type VisualSelfLease } from '../electron/visual-self-runtime';
-import type { VisualSelfSnapshot, VisualSelfSource } from '../electron/visual-self-context';
+import { VisualSelfRuntime, type VisualSelfLease } from '../electron/senses/visual-self-runtime';
+import type { VisualSelfSnapshot, VisualSelfSource } from '../electron/senses/visual-self-context';
 
 // In-memory 1px PNG fixtures. No capture, decoder, provider or filesystem is used.
 const PNG_A = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a/QAAAABJRU5ErkJggg==';

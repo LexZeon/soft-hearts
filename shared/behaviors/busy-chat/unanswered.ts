@@ -1,6 +1,6 @@
 /**
  * Replaces the old hard stop "after speechWithoutReply unanswered lines she never speaks again" (改成大幅降低接着说的欲望).
- * Pure; the factor is in knobs.ts. Imported by shared/mood.ts (the gate) and the inner loop's prompt.
+ * Pure; the factor is in knobs.ts. Imported by shared/foundation/mood.ts (the gate) and the inner loop's prompt.
  */
 import { BUSY_CHAT_KNOBS, type BusyChatKnobs } from './knobs';
 

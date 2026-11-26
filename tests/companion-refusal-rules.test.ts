@@ -2,15 +2,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import type { ChatMessage } from '../shared/contracts';
-import { COMPANION_RULES } from '../shared/companion-rules';
-import { PERCEPTION_RULE } from '../shared/perception-rule';
-import { COMPANION_REFUSAL_ENABLED, COMPANION_REFUSAL_RULES, COMPANION_REFUSAL_RULES_LONG, COMPANION_REFUSAL_RULES_SHORT } from '../shared/companion-refusal-rules';
-import { CLAUDE_CHAT_SYSTEM_PROMPT, CLAUDE_SYSTEM_PROMPT, claudeChatSystemPrompt } from '../electron/claude';
-import { CLAUDE_FOLLOW_UP_HEADER, CLAUDE_SESSION_SYSTEM_PROMPT, claudeSessionSystemPrompt, composeSessionPrompt } from '../electron/claude-session-prompt';
-import { chatSettingsSystemText } from '../electron/chat-settings';
-import { buildCompanionPersona, conversationReplyInstruction } from '../electron/conversation-context';
-import { MoodReplyProtocol } from '../electron/mood-chat';
+import type { ChatMessage } from '../shared/foundation/chat';
+import { COMPANION_RULES } from '../shared/brain/companion-rules';
+import { PERCEPTION_RULE } from '../shared/brain/perception-rule';
+import { COMPANION_REFUSAL_ENABLED, COMPANION_REFUSAL_RULES, COMPANION_REFUSAL_RULES_LONG, COMPANION_REFUSAL_RULES_SHORT } from '../shared/brain/companion-refusal-rules';
+import { CLAUDE_CHAT_SYSTEM_PROMPT, CLAUDE_SYSTEM_PROMPT, claudeChatSystemPrompt } from '../electron/brain/claude';
+import { CLAUDE_FOLLOW_UP_HEADER, CLAUDE_SESSION_SYSTEM_PROMPT, claudeSessionSystemPrompt, composeSessionPrompt } from '../electron/brain/claude-session-prompt';
+import { chatSettingsSystemText } from '../electron/brain/chat-settings';
+import { buildCompanionPersona, conversationReplyInstruction } from '../electron/brain/conversation-context';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
+import { APP_REPLY_OPENING, OPENING_SYSTEM_SENTENCE } from '../electron/brain/reply-opening';
+// I-080: with the opening marker on (the app's fixed marker), its one sentence follows the base sentences of both fixed prompts.
+const OPEN = APP_REPLY_OPENING === 'fixed' ? OPENING_SYSTEM_SENTENCE : '';
 
 // 「婉拒也要像她」(handbook/ideas.md I-003 point 1, docs/claude/2026-11-02-refusals.md): the section of the
 // chat's FIXED system prompt that follows the companion rules. Two wordings exist: the first (long, 457 chars)
@@ -101,9 +104,9 @@ test('decided to keep the first token fast: neither fixed chat system prompt car
   // Exactly the prompts of F1: the persistent process is base + rules + settings, the fallback is the plain prompt + rules.
   assert.equal(CLAUDE_SESSION_SYSTEM_PROMPT, claudeSessionSystemPrompt({ companionRules: true, refusalRules: false }));
   assert.equal(CLAUDE_SESSION_SYSTEM_PROMPT, claudeSessionSystemPrompt());
-  // Pretrial issue 8: the perception fact (shared/perception-rule.ts) sits after the rules on both paths.
+  // Pretrial issue 8: the perception fact (shared/brain/perception-rule.ts) sits after the rules on both paths.
   assert.ok(CLAUDE_SESSION_SYSTEM_PROMPT.endsWith(COMPANION_RULES + '\n' + PERCEPTION_RULE + '\n' + chatSettingsSystemText()));
-  assert.equal(CLAUDE_CHAT_SYSTEM_PROMPT, CLAUDE_SYSTEM_PROMPT + '\n' + COMPANION_RULES + '\n' + PERCEPTION_RULE);
+  assert.equal(CLAUDE_CHAT_SYSTEM_PROMPT, CLAUDE_SYSTEM_PROMPT + OPEN + '\n' + COMPANION_RULES + '\n' + PERCEPTION_RULE);
   assert.equal(CLAUDE_CHAT_SYSTEM_PROMPT, claudeChatSystemPrompt({ refusalRules: false }));
 });
 

@@ -3,12 +3,12 @@
 // frame loop (60 Hz, the same damp as MmdStage's lip sync) for the three pacings and the trial.
 import assert from 'node:assert/strict';
 import test, { type TestContext } from 'node:test';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { DEFAULT_TTS_CONFIG, type ApprovedReplySpeechSegment } from '../shared/tts';
-import { VoiceOutput } from '../src/ui/VoiceOutput';
-import { SpeechOutput } from '../src/ui/speech';
-import { CompletedReplySpeechQueue } from '../src/ui/completed-reply-speech-queue';
-import { ReplyPresentationState, type ReadoutClock } from '../src/ui/reply-presentation';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { DEFAULT_TTS_CONFIG, type ApprovedReplySpeechSegment } from '../shared/voice/tts';
+import { VoiceOutput } from '../src/voice/VoiceOutput';
+import { SpeechOutput } from '../src/voice/speech';
+import { CompletedReplySpeechQueue } from '../src/voice/completed-reply-speech-queue';
+import { ReplyPresentationState, type ReadoutClock } from '../src/brain/reply-presentation';
 import { damp } from '../src/stage/procedural';
 import { flush } from './helpers/r02-audio-world';
 import { pausableEngine } from './helpers/feed-pause-audio';

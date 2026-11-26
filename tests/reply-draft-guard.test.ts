@@ -1,4 +1,4 @@
-// F4: the model's internal drafts must not reach the bubble (electron/reply-draft-guard.ts, via MoodReplyProtocol).
+// F4: the model's internal drafts must not reach the bubble (electron/brain/reply-draft-guard.ts, via MoodReplyProtocol).
 // Every "leak" below is a real shape recorded from Claude Code in the fidelity runs (docs/claude/2026-11-02-leaked-drafts.md),
 // with synthetic text. Every "normal" reply must come out byte for byte, however it is chunked.
 import test from 'node:test';
@@ -6,10 +6,10 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { MoodReplyProtocol } from '../electron/mood-chat';
-import { CompanionService } from '../electron/companion';
-import { ChatAvailability } from '../electron/chat-availability';
-import { ReplyDraftGuard, isEnglishNote, isProtocolTalk, speakersFromPersona } from '../electron/reply-draft-guard';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
+import { CompanionService } from '../electron/brain/companion';
+import { ChatAvailability } from '../electron/brain/chat-availability';
+import { ReplyDraftGuard, isEnglishNote, isProtocolTalk, speakersFromPersona } from '../electron/brain/reply-draft-guard';
 
 /** Whole text, one character at a time, three at a time, and seeded random sizes: the result must not depend on the chunking. */
 function chunkings(text: string, minChunk = 1): string[][] {

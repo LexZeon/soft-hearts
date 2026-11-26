@@ -212,7 +212,7 @@ try {
     await window.desktop.activateCharacterCard(card.id); await window.desktop.recoverPet();
     await window.desktop.setMoodDeveloperMode(true); await window.desktop.setMoodExpressions(true);
   }, geneParameters);
-  // One-click recovery frames the whole model asynchronously in the pet renderer (src/main.ts onPetRecovered:
+  // One-click recovery frames the whole model asynchronously in the companion renderer (src/main.ts onPetRecovered:
   // applySettings, frame('full'), savePetView). Wait for that camera before measuring the head; otherwise a fast run
   // measures the default camera, where the crown is above the window.
   await poll(controls, async () => Math.abs((await window.desktop.getSettings()).camera.distance - 30) > 1e-5, undefined, 30_000);
@@ -278,7 +278,7 @@ try {
   assert.equal(stationaryAfter.lastInteractionAt, stationaryBefore.lastInteractionAt, 'Stationary contact does not keep responding/rewarding.');
   await capture('gene-rua-static'); await idle();
   const row = await savedState(), fresh = row.state.freshness.rua;
-  // The saved `doses` has already started recovering (shared/mood.ts advanceMood): after quietMs past the last
+  // The saved `doses` has already started recovering (shared/foundation/mood.ts advanceMood): after quietMs past the last
   // rua event it falls by depthCap per ruaMs. The save lands when the pat eases out (~1.4-1.5 s after the
   // last event since B05), so ~0.006 of the credited dose is gone and O read back sat 0.05-0.07 above a
   // formula fed that recovered value (2026-11-02 triage). Undo exactly that recovery to get the credited dose.
@@ -372,7 +372,7 @@ try {
   check('clear-all settled target is relaxed idle rather than the unanimated T pose');
 
   phase = '11-pet-compact-controls-details';
-  // Stable UI-owner selector. The pet deliberately never expands its full panel.
+  // Stable UI-owner selector. The companion deliberately never expands its full panel.
   await pet.locator('#mood-open-controls').click();
   await poll(controls, () => !document.querySelector('.mood-companion')?.hidden && !document.querySelector('.mood-companion-body')?.hidden);
   const geometry = await Promise.all([pet, controls].map(page => page.evaluate(() => {

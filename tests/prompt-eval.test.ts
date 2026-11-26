@@ -4,8 +4,8 @@ import { randomUUID } from 'node:crypto';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CompanionService } from '../electron/companion';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
+import { CompanionService } from '../electron/brain/companion';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
 import { analyzeTurn, replay, summarize, type TurnRecord } from '../scripts/lib/prompt-eval-analysis';
 import { genePersona, runEval } from '../scripts/lib/prompt-eval-runner';
 import { ACTION_CLAIM, OPENERS, SCENARIOS, selectScenarios, type EvalScenario } from '../scripts/lib/prompt-eval-scenarios';
@@ -102,7 +102,7 @@ test('dry run drives the app pipeline end to end: persistent session, nonce per 
   assert.ok(settings.every(record => record.settingOffered && analyzeTurn(record).settingCardOk));
 });
 
-test('conservative fallback: without a usable tail the reply still completes, mood moves only by the chat event', async () => {
+test('conservative fallback: without a usable tail the reply still completes, mood moves only by the chat event and the tiny label fallback', async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'soft-hearts-r28-'));
   try {
     const service = new CompanionService(directory, () => {});
@@ -119,9 +119,10 @@ test('conservative fallback: without a usable tail the reply still completes, mo
       await turn.finish('complete');
       assert.equal(visible, '早上好！');
       const after = service.mood.get().snapshot.values;
-      // Natural decay over a few milliseconds is far below the ±3 an applied appraisal would add.
+      // Natural decay over a few milliseconds is far below the ±3 an applied appraisal would add. 心情第二批: a reply without a usable
+      // tail gets the tiny fallback by her label instead (calm: O +1, once a minute; docs/claude/2026-11-11-mood-batch2.md).
       for (const channel of ['D', 'O', 'E', 'N', 'C'] as const)
-        assert.ok(Math.abs(after[channel] - afterChatEvent[channel]) < 0.05, `${id}: no appraisal applied (${channel})`);
+        assert.ok(Math.abs(after[channel] - afterChatEvent[channel]) < (channel === 'O' ? 1.05 : 0.05), `${id}: no appraisal applied (${channel})`);
       assert.deepEqual({ ...turn.speechMood(), primary: undefined }, { context: 'neutral', gesture: 'none', primary: undefined });
       assert.equal(turn.profileReplyAccepted?.(), false);
     }

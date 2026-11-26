@@ -5,8 +5,8 @@ import { createReadStream, type BigIntStats } from 'node:fs';
 import { lstat, mkdtemp, mkdir, readFile, readdir, realpath, rename, rm, rmdir, stat, utimes, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { BlushCalibrationStore, createTrustedPackedModel, MAX_BLUSH_CALIBRATIONS } from '../electron/blush-calibration';
-import { DEFAULT_BLUSH_CALIBRATION, validateBlushCalibration, type BlushCalibration } from '../shared/blush';
+import { BlushCalibrationStore, createTrustedPackedModel, MAX_BLUSH_CALIBRATIONS } from '../electron/mood/blush-calibration';
+import { DEFAULT_BLUSH_CALIBRATION, validateBlushCalibration, type BlushCalibration } from '../shared/mood/blush';
 
 const key = (index: number) => index.toString(16).padStart(64, '0');
 const calibration = (patch: Partial<BlushCalibration> = {}): BlushCalibration => ({ ...DEFAULT_BLUSH_CALIBRATION, ...patch });

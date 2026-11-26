@@ -5,13 +5,13 @@
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildTestEntries, TEST_WAIT_MS } from '../electron/test-commands/entries';
-import { testHelpLines } from '../electron/test-commands/match';
-import { CUE_BLOCKERS } from '../electron/test-commands/cue-gate';
-import { setUiLanguage } from '../shared/ui-language';
-import { USER_STATE_FADE_MS } from '../shared/user-state';
+import { buildTestEntries, TEST_WAIT_MS } from '../electron/safety/test-commands/entries';
+import { testHelpLines } from '../electron/safety/test-commands/match';
+import { CUE_BLOCKERS } from '../electron/safety/test-commands/cue-gate';
+import { setUiLanguage } from '../shared/foundation/ui-language';
+import { USER_STATE_FADE_MS } from '../shared/senses/user-state';
 import { fakeTestDeps } from './helpers/test-command-fixtures';
-import { HER_ACTIONS, HER_ACTION_DETAILS, HER_ACTION_FINGER_PARTS, HER_ACTION_PART_NAMES, HER_ACTION_SPECS, type HerActionPlayResult } from '../shared/her-actions';
+import { HER_ACTIONS, HER_ACTION_DETAILS, HER_ACTION_FINGER_PARTS, HER_ACTION_PART_NAMES, HER_ACTION_SPECS, type HerActionPlayResult } from '../shared/actions/her-actions';
 
 const HAN = /[㐀-鿿]/u;
 function setup(over?: Parameters<typeof fakeTestDeps>[0]) {
@@ -43,10 +43,12 @@ test('each entry calls its own feature\'s existing interface with the right argu
     ['L4.lonely', ['needs.start:lonely']], ['L4.dream', ['needs.start:dream']], ['L4.lowEnergy', ['needs.start:lowEnergy']], ['L4.chatty', ['needs.start:chatty']],
     ['M1.rejudge', ['music.rejudge']], ['E1.surprise', ['expression.play:surprise']], ['E1.shy', ['expression.play:shy']],
     ['G1.invite', ['rps.invite']], ['G1.start', ['rps.start']], ['L3.diary', ['diary.writeNow']],
+    ['P001.add', ['upcoming.add']], ['P001.due', ['upcoming.due']],
+    ['I059.birthday', ['specialDay.pretend:birthday']], ['I059.anniversary', ['specialDay.pretend:anniversary']],
     ['P1.yawn', ['pose.simulate:yawn']], ['P1.stretch', ['pose.simulate:stretch']], ['P1.wave', ['pose.simulate:wave']],
     ['P1.sat', ['pose.simulate:sat']], ['P1.arrive', ['pose.simulate:arrive']],
     ['I006.busy', ['userActivity.pretend:busy']], ['I006.pause', ['userActivity.pretend:pause']],
-    ['I006.video', ['watchAlong.pretend:video']], ['I006.game', ['watchAlong.pretend:game']], ['I006.clear', ['watchAlong.pretend:null', 'userActivity.pretend:null']],
+    ['I006.video', ['watchAlong.pretend:video']], ['I006.game', ['watchAlong.pretend:game']], ['I066.away', ['userActivity.pretend:away']], ['I066.back', ['userActivity.pretend:back']], ['I066.meeting', ['userActivity.pretend:meeting']], ['I006.clear', ['watchAlong.pretend:null', 'userActivity.pretend:null']],
     ['ACT.hello', ['action.play:hello-wave']], ['ACT.goodbye', ['action.play:goodbye-wave']], ['ACT.nod', ['action.play:nod']], ['ACT.shake', ['action.play:shake']],
     ['ACT.tilt', ['action.play:tilt']], ['ACT.lean', ['action.play:lean']], ['ACT.coverFace', ['action.play:cover-face']], ['ACT.hideLaugh', ['action.play:hide-laugh']],
     ['ACT.openArms', ['action.play:open-arms']], ['ACT.hug', ['action.play:air-hug']], ['ACT.clap', ['action.play:clap']], ['ACT.cheer', ['action.play:cheer']],
@@ -79,12 +81,12 @@ test('L2: she starts the state she was asked to, or picks by her own rules; the 
   assert.match(await paused.run('L2.daydream'), /暂停自动表现/u);
 });
 
-test('F3: the stage is set (until restart); a card that does not warm up slowly is told so; a refusal is reported', async () => {
+test('F3: the stage is set (until restart); a card that does not get familiar slowly is told so; a refusal is reported', async () => {
   const slow = setup();
   assert.match(await slow.run('F3.familiar'), /^（测试：已把熟悉度临时设成“熟悉”，重启后复原。）$/u);
   const plain = setup();
   plain.state.slowWarmUp = false;
-  assert.match(await plain.run('F3.close'), /亲近.*没开“慢慢熟起来”/u);
+  assert.match(await plain.run('F3.close'), /很熟.*没开“慢慢熟悉”/u);
   assert.match(await setup().run('F3.reset'), /取消临时阶段/u);
   const refused = setup();
   refused.state.stageThrows = true;
@@ -221,7 +223,7 @@ test('L1: a switched-off inner loop, paused expressions or a missing character a
   }
 });
 
-/** Every answer the pet window (or the host) can give for an action, with every fixed part name and detail the stage sends. */
+/** Every answer the companion window (or the host) can give for an action, with every fixed part name and detail the stage sends. */
 const ACTION_RESULTS: HerActionPlayResult[] = [
   { status: 'played', missing: [], detail: '' },
   { status: 'missing', missing: Object.values(HER_ACTION_PART_NAMES).concat('手指') as string[], detail: '' },
@@ -294,7 +296,7 @@ test('English: every note and the help list read in English, with no Chinese lef
       const one = setup(); one.state.diary = status; texts.push(await one.run('L3.diary'));
     }
     for (const result of ACTION_RESULTS) { const one = setup(); one.state.action = result; texts.push(await one.run('ACT.heart'), await one.run('ACT.nod')); }
-    const translated = (await import('../shared/ui-language')).t;
+    const translated = (await import('../shared/foundation/ui-language')).t;
     texts.push(...testHelpLines(setup().built.entries, translated));
     for (const text of texts) assert.equal(HAN.test(text), false, text);
     assert.ok(texts.some(text => text.startsWith('(Test: ')));

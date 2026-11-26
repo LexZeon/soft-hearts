@@ -1,7 +1,7 @@
 /**
- * #11 on the real MoodHost (electron/mood.ts) with an isolated temporary profile: the one-second tick's rule cue and the inner
+ * #11 on the real MoodHost (electron/mood/mood.ts) with an isolated temporary profile: the one-second tick's rule cue and the inner
  * loop's own decision both go through the idle gesture; the stage gets the shape, the face player the picked face; a cue the
- * inner loop takes (electron/inner-loop/claim.ts) is never remembered or explained; the developer "why" is memory only.
+ * inner loop takes (electron/initiative/inner-loop/claim.ts) is never remembered or explained; the developer "why" is memory only.
  * IDLE_GESTURE_REPORT=1 prints the 20 rule cues.
  */
 import assert from 'node:assert/strict';
@@ -9,10 +9,10 @@ import test from 'node:test';
 import os from 'node:os';
 import path from 'node:path';
 import { mkdtemp, rm } from 'node:fs/promises';
-import { MoodHost } from '../electron/mood';
-import { withoutClaimedCue } from '../electron/inner-loop/claim';
-import { DEFAULT_MOOD_PARAMETERS, type MoodCue } from '../shared/mood';
-import type { MoodView } from '../shared/mood-runtime';
+import { MoodHost } from '../electron/mood/mood';
+import { withoutClaimedCue } from '../electron/initiative/inner-loop/claim';
+import { DEFAULT_MOOD_PARAMETERS, type MoodCue } from '../shared/foundation/mood';
+import type { MoodView } from '../shared/mood/mood-runtime';
 import { IdleGestureDirector } from '../shared/behaviors/idle-gesture/choose';
 import { seeded } from './helpers/seeded';
 

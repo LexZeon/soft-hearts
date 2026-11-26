@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { RpsHost, type RpsCharacterState, type RpsHostOptions } from '../electron/rps/host';
-import { RpsStore } from '../electron/rps/store';
-import { RPS_TIMING, rpsVerify, rpsRevealAfterMs, type RpsView, type RpsCommitment } from '../shared/rps';
-import { RPS_VOICE_LATE_MS, RPS_VOICE_SYSTEM_PROMPT } from '../shared/rps-voice';
-import { DEFAULT_MOOD_PARAMETERS, applyMoodEvent, createMoodState, getMoodSnapshot } from '../shared/mood';
-import { rpsMoodEvent } from '../electron/rps/host';
+import { RpsHost, type RpsCharacterState, type RpsHostOptions } from '../electron/initiative/rps/host';
+import { RpsStore } from '../electron/initiative/rps/store';
+import { RPS_TIMING, rpsVerify, rpsRevealAfterMs, type RpsView, type RpsCommitment } from '../shared/initiative/rps';
+import { RPS_VOICE_LATE_MS, RPS_VOICE_SYSTEM_PROMPT } from '../shared/initiative/rps-voice';
+import { DEFAULT_MOOD_PARAMETERS, applyMoodEvent, createMoodState, getMoodSnapshot } from '../shared/foundation/mood';
+import { rpsMoodEvent } from '../electron/initiative/rps/host';
 import { seeded } from './helpers/seeded';
 
 const T = RPS_TIMING;
@@ -309,7 +309,7 @@ test('her words: asked as soon as both hands are in, shown at the reveal as `say
   await quickOne.close();
 });
 
-// Codex T-112 round 028 (fixed 17f9807): with the pet busy the window skipped the line (no bubble, no voice), yet the host had
+// Codex T-112 round 028 (fixed 17f9807): with the companion busy the window skipped the line (no bubble, no voice), yet the host had
 // already counted it as said (linesSaid and today's said, which presses her later lines down). Said only once it was shown.
 async function revealLine(h: H) {
   h.host.chatTurn('a', '来玩猜拳'); h.host.chatDone('a', true); h.clock.advance(800);
@@ -408,15 +408,14 @@ test('without the model: lines she herself said before at that kind of moment (n
 });
 
 test('the pretend cheat lives in her words: the fake hand shows only while she says it, then she owns up; when she will not say it, it is a plain loss', async () => {
-  // random 0: round 1 she lets the user win with scissors-vs-rock habit guess (she plays scissors), round 2 a fair rock that
-  // loses to paper and rolls the tease (teaseChance > 0).
+  // random 0: she throws rock every round (uniform pick). Round 1 the user matches it (a draw); round 2 the user's paper beats it and rolls the tease.
   const prompts: string[] = [];
   let tell: (raw: string) => void = () => {};
   const h = await harness({ random: () => 0, voiceRandom: () => 0, quick: prompt => { prompts.push(prompt);
     return /其实出的是/u.test(prompt) ? new Promise<string>(resolve => { tell = resolve; }) : Promise.resolve('{"text":"哼"}'); } });
   h.host.chatTurn('a', '来玩猜拳'); h.host.chatDone('a', true); h.clock.advance(800);
   // Round 1.
-  h.host.throwHand({ gameId: last(h)!.id, round: 1, hand: 'paper', source: 'click' }); await flush();
+  h.host.throwHand({ gameId: last(h)!.id, round: 1, hand: 'rock', source: 'click' }); await flush();
   for (let i = 0; i < 80 && last(h)!.round === 1; i++) { await flush(); const v = last(h)!; if (v.say) h.host.respond({ id: v.say.id, action: 'said' }); h.clock.advance(250); }
   // Round 2: the tease. Her words come a moment after the reveal.
   h.host.throwHand({ gameId: last(h)!.id, round: 2, hand: 'paper', source: 'click' }); await flush();

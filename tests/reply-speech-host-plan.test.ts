@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CompletedReplySpeech } from '../electron/completed-reply-speech';
+import { CompletedReplySpeech } from '../electron/voice/completed-reply-speech';
 
 test('three completed replies keep ordered exact source pieces, one cloud claim each and no replay', () => {
  const plans = new CompletedReplySpeech();

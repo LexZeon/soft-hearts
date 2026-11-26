@@ -9,7 +9,7 @@
  *  - hearing: the audio path says music is audible (what AudioReadingClient's active flag always meant);
  *  - a new song (hearing again after a gap of MUSIC_NEW_SONG_GAP_S) is judged at once, again after
  *    MUSIC_CATCH_ON_S (so a daydreaming her is carried along after a moment), then every MUSIC_REJUDGE_S;
- *  - changes in the middle of a song are limited by hysteresis (shared/music-desire.ts) and a minimum
+ *  - changes in the middle of a song are limited by hysteresis (shared/senses/music-desire.ts) and a minimum
  *    stay; falling asleep and a chat request are the exceptions and act at once;
  *  - a small random variation per judgement (injectable) keeps two songs in the same mood from always
  *    coming out the same.
@@ -18,10 +18,7 @@
  * music, with no timing and no judgement, which is what R15 did. Stage code treats that case as the
  * original path.
  */
-import {
-  danceRequestSettleMs, danceRequestStrength, danceTierName, danceTierWithHysteresis, isAsleep, moodLabelDanceDesire,
-  type DanceDesire, type DanceDesireFn, type DanceDesireInput, type DanceTier,
-} from '../../shared/music-desire';
+import { danceRequestSettleMs, danceRequestStrength, danceTierName, danceTierWithHysteresis, isAsleep, moodLabelDanceDesire, type DanceDesire, type DanceDesireFn, type DanceDesireInput, type DanceTier } from '../../shared/senses/music-desire';
 
 export const MUSIC_NEW_SONG_GAP_S = 3;
 export const MUSIC_CATCH_ON_S = 5;
@@ -134,7 +131,7 @@ export class MusicChoice {
   get tier(): DanceTier { return !this.hearing ? 'none' : this.always ? 'dance' : this.decided; }
 
   /**
-   * Developer test command (electron/test-commands/ "重新判一次想不想跳"): judge again at the next frame and let the answer
+   * Developer test command (electron/safety/test-commands/ "重新判一次想不想跳"): judge again at the next frame and let the answer
    * take effect without the 8-second minimum stay. Nothing to judge without music or in the "always dance" mode.
    */
   rejudgeNow(): boolean {

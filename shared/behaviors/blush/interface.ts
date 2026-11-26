@@ -1,27 +1,27 @@
 /**
  * #26 "脸红"的接口（I-020：一个功能一个文件夹，接口写清楚，换实现只换一块）。
  *
- * 原来：shared/mood.ts 的 DEFAULT_MOOD_PARAMETERS.blush（或角色卡上的那一组）：每次脸红都是同一个形状，强度 35、
+ * 原来：shared/foundation/mood.ts 的 DEFAULT_MOOD_PARAMETERS.blush（或角色卡上的那一组）：每次脸红都是同一个形状，强度 35、
  * 红起来 450 毫秒、停 1.2 秒、退 1.8 秒，红过以后 1 分钟内不再红；什么时候会红（maybeBlush 的两个门槛）也每张卡一样。
  * 现在：每次要红的那一刻，由这里按心情、性格和此刻挑这一次红成什么样，深浅和三段时长在卡上的值附近浮动；红过以后隔多久
- * 才会再红也浮动，但永远不比卡上的短；谨慎（容易害羞）的卡被摸头时更容易红。心情模型（shared/mood.ts，没改）照旧决定红不红、
+ * 才会再红也浮动，但永远不比卡上的短；谨慎（容易害羞）的卡被摸头时更容易红。心情模型（shared/foundation/mood.ts，没改）照旧决定红不红、
  * 照旧按交给它的参数算形状：主机只是换了交给它的 parameters.blush（和摸头那一下的 fastThreshold）。
  *
  * 谁调用它、怎么调用：
- *  1. 主机（electron/mood.ts 的 MoodHost）是唯一的调用方（BlushHost，真实现 choose.ts 的 BlushDirector）：
+ *  1. 主机（electron/mood/mood.ts 的 MoodHost）是唯一的调用方（BlushHost，真实现 choose.ts 的 BlushDirector）：
  *     - 每次把参数交给心情模型（advanceMood、getMoodSnapshot……）之前，用 profile() 拿 parameters.blush：正在红的那一次
  *       用它自己的形状（快照里的 blush.profile 和红多久对得上，舞台照着它画），没在红时是卡上的形状加上一次红过以后的冷却；
  *     - 当前角色一个可能让她脸红的事件（摸头、捏脸、带"暖心"语境的聊天和尾注）交给心情模型之前，prepare() 拿这一下的参数
  *       （要是红了就红成这样；摸头时的门槛），交完以后 settle() 告诉它真的红了没有。没红的那次什么都不记。
  *     存档、导出给面板和角色卡的 parameters 永远是卡上的，抽出来的只在内存。
- *  2. 舞台（src/stage/mood-feedback.ts 的 blushResponse、MmdStage 的程序红晕或模型自己的脸红 morph）只读快照里的 blush
+ *  2. 舞台（src/mood/mood-feedback.ts 的 blushResponse、MmdStage 的程序红晕或模型自己的脸红 morph）只读快照里的 blush
  *     （带着这一次的形状）：有脸颊（程序红晕找到了锚点，或者模型有核验过的脸红 morph）就画，没有就跳过。这里不碰舞台。
- *  3. 开发者面板（src/ui/MoodPanel.ts）只读 MoodView.blushWhy：最近几次红成什么样、为什么（只在开发者模式发出，只在内存）。
+ *  3. 开发者面板（src/mood/MoodPanel.ts）只读 MoodView.blushWhy：最近几次红成什么样、为什么（只在开发者模式发出，只在内存）。
  *  4. #21（shared/behaviors/touch-feed-effect/）：这次摸得淡，亲近涨得慢，就不容易红。两边不互相调用。
  *
  * 假实现在 fake.ts（卡上的值原样用 = 原来的做法），守约测试在 tests/blush.test.ts：换一种实现，先过那组测试。
  */
-import type { MoodBlushCue, MoodBlushParameters, MoodLabel, MoodTendency } from '../../mood';
+import type { MoodBlushCue, MoodBlushParameters, MoodLabel, MoodTendency } from '../../foundation/mood';
 import type { BlushMoment, BlushTrigger } from './knobs';
 
 /** 什么让她红的，具体是哪一种接触（给"为什么"用）。 */

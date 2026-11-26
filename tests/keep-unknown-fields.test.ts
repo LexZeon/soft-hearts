@@ -6,17 +6,17 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { DEFAULT_TTS_CONFIG } from '../shared/tts';
-import type { AppSettings } from '../shared/contracts';
-import { AssetRegistry } from '../electron/assets';
-import { publicSettings, SettingsStore, SETTINGS_KNOWN_FIELDS, type SecretStorage } from '../electron/settings';
-import { validateSettings } from '../electron/validation';
-import { CharacterCardStore, parseCharacterCardText } from '../electron/character-cards';
-import type { CharacterCard, CharacterDraft } from '../shared/character-cards';
-import { RelationshipStore } from '../electron/relationship/store';
-import { withRound, withTouch } from '../shared/relationship';
-import { KEPT_UNKNOWN_FIELDS_LIMIT, KeptFields, looksLikeSecretName, splitUnknownFields, type KnownFields } from '../electron/unknown-fields';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { DEFAULT_TTS_CONFIG } from '../shared/voice/tts';
+import type { AppSettings } from '../shared/foundation/settings';
+import { AssetRegistry } from '../electron/foundation/assets';
+import { publicSettings, SettingsStore, SETTINGS_KNOWN_FIELDS, type SecretStorage } from '../electron/settings/settings';
+import { validateSettings } from '../electron/settings/validation';
+import { CharacterCardStore, parseCharacterCardText } from '../electron/cards/character-cards';
+import type { CharacterCard, CharacterDraft } from '../shared/foundation/character-card';
+import { RelationshipStore } from '../electron/memory/relationship/store';
+import { withRound, withTouch } from '../shared/memory/relationship';
+import { KEPT_UNKNOWN_FIELDS_LIMIT, KeptFields, looksLikeSecretName, splitUnknownFields, type KnownFields } from '../electron/foundation/unknown-fields';
 
 const PREFIX = 'soft-hearts-keep-unknown-';
 async function folder(t: TestContext): Promise<string> {
@@ -120,7 +120,7 @@ test('settings.json: a newer version\'s fields survive this version saving for a
     raw.voiceInput.futureMode = { a: 1, b: [true] };
     raw.camera.futureLens = 3.25;
   });
-  // The pet window's own toggle (electron/main.ts persists the whole settings with one field changed).
+  // The companion window's own toggle (electron/main.ts persists the whole settings with one field changed).
   await store.persist({ ...store.current, pet: { ...store.current.pet, alwaysOnTop: false } });
   let after = await readJson(file);
   assert.equal(after.pet.alwaysOnTop, false, 'the change itself is saved');
@@ -206,7 +206,7 @@ test('settings.json: every field this version writes is in its known table (so n
   await store.persist(validateSettings(full, previous));
   const written = await readJson(path.join(directory, 'settings.json'));
   assert.ok(written.voiceInputApiKeyEncrypted && written.ttsApiKeyEncrypted && written.motionLayers && written.pet.size && written.tts.styleBindings.length);
-  assert.deepEqual(unknownPaths(written, SETTINGS_KNOWN_FIELDS), [], 'add the field to SETTINGS_KNOWN_FIELDS (electron/settings.ts)');
+  assert.deepEqual(unknownPaths(written, SETTINGS_KNOWN_FIELDS), [], 'add the field to SETTINGS_KNOWN_FIELDS (electron/settings/settings.ts)');
 });
 
 // ---- characters.json ----

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CompletedPrefixProof, type CompletedPrefixSnapshot } from '../electron/completed-prefix-proof';
+import { CompletedPrefixProof, type CompletedPrefixSnapshot } from '../electron/voice/completed-prefix-proof';
 
 function deferred<T>() { let resolve!: (value: T) => void; const promise = new Promise<T>(done => { resolve = done; }); return { promise, resolve }; }
 function fixture() {

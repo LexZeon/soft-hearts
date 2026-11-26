@@ -1,17 +1,18 @@
+import { createConversionTools } from '../electron/cards/character-convert/tools';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import type { AppSettings } from '../shared/contracts';
-import type { CharacterCardState } from '../shared/character-cards';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import type { AppSettings } from '../shared/foundation/settings';
+import type { CharacterCardState } from '../shared/foundation/character-card';
 import {
   AGENT_NEVER_EXPOSED, AGENT_SETTINGS, AGENT_TOOLS, agentOptionsCard, validateAgentSettingValue,
-} from '../shared/agent-channel';
-import { AgentToolRegistry, stripSecretFields, type AgentAuditEntry, type AgentConfirmRequest, type AgentToolDefinition } from '../electron/agent-channel/registry';
-import { argsObject, cardId, inspectLocalFile, localFilePath, type FileSystemPort } from '../electron/agent-channel/validate';
-import { createAppTools, settingViews, type AgentAppBridge } from '../electron/agent-channel/app-tools';
-import { sanitizeAuditEntry } from '../electron/agent-channel/audit';
-import { createHostBridge, recordAgentOperations, AGENT_HOST_OPERATIONS, type IpcHandler } from '../electron/agent-channel/bridge';
+} from '../shared/safety/agent-channel';
+import { AgentToolRegistry, stripSecretFields, type AgentAuditEntry, type AgentConfirmRequest, type AgentToolDefinition } from '../electron/safety/agent-channel/registry';
+import { argsObject, cardId, inspectLocalFile, localFilePath, type FileSystemPort } from '../electron/safety/agent-channel/validate';
+import { createAppTools, settingViews, type AgentAppBridge } from '../electron/safety/agent-channel/app-tools';
+import { sanitizeAuditEntry } from '../electron/safety/agent-channel/audit';
+import { createHostBridge, recordAgentOperations, AGENT_HOST_OPERATIONS, type IpcHandler } from '../electron/safety/agent-channel/bridge';
 
 const tick = () => new Promise(resolve => setImmediate(resolve));
 const CARD_A = '0f8fad5b-d9cb-469f-a165-70867728950e', CARD_B = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
@@ -141,7 +142,8 @@ test('audit records tool, tier, outcome and duration only: never arguments, resu
 });
 
 test('the catalog exposes exactly the host tools, no never-tier tool, and plain-data settings metadata', () => {
-  const tools = createAppTools(fakeBridge().bridge);
+  // I-071 v2 第三步: the conversion's tools ride on the same registry (electron/cards/character-convert/tools.ts).
+  const tools = [...createAppTools(fakeBridge().bridge), ...createConversionTools(() => null)];
   // I-014: the host itself defines undo_last_action and set_interconnect (agent-channel/host.ts).
   const hostOwned = ['set_interconnect', 'undo_last_action'];
   assert.deepEqual([...tools.map(item => item.name), ...hostOwned].sort(), AGENT_TOOLS.map(item => item.name).sort());
@@ -151,7 +153,8 @@ test('the catalog exposes exactly the host tools, no never-tier tool, and plain-
     assert.equal(item.inputSchema.additionalProperties, false);
     assert.match(item.title, /[\u4e00-\u9fff]/);
     // I-014: the one deleting tool moves memories into the recycle bin, and exists only with \u4e09\u65b9\u4e92\u901a on.
-    if (item.name === 'delete_memories') { assert.equal(item.interconnectOnly, true); continue; }
+    // I-173: deleting a card is the second one, into the same recycle bin, by the same rules.
+    if (item.name === 'delete_memories' || item.name === 'delete_character') { assert.equal(item.interconnectOnly, true); continue; }
     assert.doesNotMatch(item.name, /delete|remove|key|secret|token|shell|exec|command|file_(read|write)|permission/);
   }
   assert.ok(AGENT_NEVER_EXPOSED.length >= 5);
@@ -191,7 +194,7 @@ function fakeBridge(initial: Partial<AppSettings> = {}) {
     importCharacterCard: async content => { calls.push(['import', content]); cards.cards.push({ id: CARD_B.replace('7c', '8c'), name: '新卡' } as any); return structuredClone(cards); },
     loadModel: async file => { calls.push(['load', file]); settings.model = { path: file, url: 'local://x', name: 'm.pmx' } as any; return { name: 'm.pmx' }; },
     rendererAction: action => { calls.push(['renderer', action]); return true; },
-    diagnostics: () => ({ replyLatency: [{ status: 'complete', firstContentMs: 900, firstVisibleMs: 1000, firstSentenceVisibleMs: 1100, streamEndMs: 2000, allVisibleMs: 2100, chars: 40, deltas: 9, provider: 'claude', text: '不该出现' } as any], petWindow: { enabled: true, entries: 3 } }),
+    diagnostics: () => ({ replyLatency: [{ status: 'complete', firstContentMs: 900, firstVisibleMs: 1000, firstSentenceVisibleMs: 1100, streamEndMs: 2000, allVisibleMs: 2100, chars: 40, deltas: 9, provider: 'claude', text: '不该出现' } as any], petWindow: { enabled: true, entries: 3 }, chatModel: 'claude-fable-5-2' }),
     memory: () => ({ rss: 200 * 1048576, heapUsed: 50 * 1048576 }),
     uptimeSeconds: () => 12,
   };
@@ -214,6 +217,7 @@ test('app tools: read tools return curated data only, never persona text, keys o
   assert.equal(status.result.voice.provider, 'system');
   const diagnostics = (await runTool(tools, 'get_diagnostics', {})).result as any;
   assert.equal(diagnostics.result.replyLatency.medianFirstVisibleMs, 1000);
+  assert.deepEqual(diagnostics.result.chat, { reportedModel: 'claude-fable-5-2' }); // 2026-11-26: the model her chat process reported
   assert.deepEqual(diagnostics.result.memoryMb, { rss: 200, heapUsed: 50 });
   const listed = (await runTool(tools, 'list_settings', {})).result as any;
   // 三方互通 off (this bridge has no `interconnected`): the interconnect-only settings are not listed.
@@ -328,7 +332,7 @@ test('bridge: records only whitelisted handlers, restores ipcMain, and calls the
 
 test('the MCP shim, the host and the wire agree on names that keep this edition apart from the Codex edition', async () => {
   const shim = await import('../scripts/soft-hearts-mcp.mjs');
-  const credentials = await import('../electron/agent-channel/credentials');
+  const credentials = await import('../electron/safety/agent-channel/credentials');
   const profile = await import('../electron/profile');
   assert.equal(shim.PROFILE_FOLDER, profile.PROFILE_FOLDER);
   assert.equal(shim.PIPE_PREFIX, credentials.AGENT_PIPE_PREFIX);
@@ -352,7 +356,7 @@ test('the MCP shim, the host and the wire agree on names that keep this edition 
 });
 
 test('the pipe is bound to its profile: a token file copied from another profile is ignored by the app and refused by the shim', async () => {
-  const credentials = await import('../electron/agent-channel/credentials');
+  const credentials = await import('../electron/safety/agent-channel/credentials');
   const shim = await import('../scripts/soft-hearts-mcp.mjs');
   const { mkdir, mkdtemp, writeFile, rm } = await import('node:fs/promises');
   const { readFileSync } = await import('node:fs');
@@ -378,7 +382,7 @@ test('the pipe is bound to its profile: a token file copied from another profile
 });
 
 test('registration text: options before the name, one quoted launch line, and valid desktop JSON with Windows paths', async () => {
-  const { agentServerName, setupSnippets } = await import('../electron/agent-channel/setup-text');
+  const { agentServerName, setupSnippets } = await import('../electron/safety/agent-channel/setup-text');
   const launch = { command: 'C:\\Users\\me\\soft hearts next\\soft hearts next.exe',
     args: ['C:\\Users\\me\\soft hearts next\\resources\\agent-channel\\soft-hearts-mcp.mjs', '--profile', 'C:\\Users\\me\\AppData\\Roaming\\soft-hearts-claude'],
     env: { ELECTRON_RUN_AS_NODE: '1' } };

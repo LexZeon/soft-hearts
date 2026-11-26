@@ -1,11 +1,11 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import type { PetReplyUpdate } from '../shared/contracts';
-import { PetUI } from '../src/ui/PetUI';
-import { ReplySpeechState } from '../src/ui/reply-speech';
-import { ReplyPresentationState, type ReadoutClock } from '../src/ui/reply-presentation';
-import { validateReplyUpdate } from '../electron/reply-input';
-import type { ReplyBubblePolicy } from '../shared/reply-bubbles';
+import type { PetReplyUpdate } from '../shared/foundation/pet-reply';
+import { PetUI } from '../src/stage/PetUI';
+import { ReplySpeechState } from '../src/voice/reply-speech';
+import { ReplyPresentationState, type ReadoutClock } from '../src/brain/reply-presentation';
+import { validateReplyUpdate } from '../electron/brain/reply-input';
+import type { ReplyBubblePolicy } from '../shared/voice/reply-bubbles';
 
 function fakeClock() {
   let now = 0, next = 0; const timers = new Map<number, { at: number; fn: () => void }>();

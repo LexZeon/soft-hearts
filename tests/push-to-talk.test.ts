@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PUSH_TO_TALK_TAP_MS, PushToTalk, fieldOf } from '../src/ui/push-to-talk';
+import { PUSH_TO_TALK_TAP_MS, PushToTalk, fieldOf } from '../src/voice/push-to-talk';
 
 function world(on = true) {
   let now = 1000; const calls: string[] = [], typed: string[] = [];

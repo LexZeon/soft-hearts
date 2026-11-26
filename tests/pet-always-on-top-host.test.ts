@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
-import { MutationQueue } from '../electron/mutation-queue';
+import { MutationQueue } from '../electron/foundation/mutation-queue';
 import {readFileSync} from 'node:fs';
 import test from 'node:test';
 import {runInNewContext} from 'node:vm';
 import ts from 'typescript';
-import {DEFAULT_SETTINGS} from '../shared/defaults';
-import {publicSettings, KEY_SENTINEL} from '../electron/settings';
+import {DEFAULT_SETTINGS} from '../shared/foundation/defaults';
+import {publicSettings, KEY_SENTINEL} from '../electron/settings/settings';
+import { ipcGuardSource, registeredInRegisterIpc, saveSettingsStepsSource, wiringFunction, wiringNodes, wiringRegistration } from './helpers/wiring-source';
 
 // Use the existing host-wiring fixture pattern: execute actual registrations,
 // sender gate and mutation queue with memory-only persistence, never Electron.
@@ -15,18 +16,18 @@ const find=(name:string)=>{
   const items=ast.statements.filter(n=>ts.isFunctionDeclaration(n)&&n.name?.text===name);
   assert.equal(items.length,1,name);return items[0]!.getText(ast);
 };
+// Wiring rewrite step 4: the command revisions, noteCompanionTopmostWrite and saveSettings are the settings part's
+// (electron/wiring/settings-wiring.ts; its register registers saveSettings); they are read across main.ts and electron/wiring/*.ts, still
+// exactly one of each. saveSettings' steps are the list electron/main.ts gives (saveSettingsStepsSource: the actual steps, in order).
 const variables=['mutations','mutate','companionCommandRevision','companionCommandObservedTop'].map(name=>{
-  const items=ast.statements.filter(n=>ts.isVariableStatement(n)&&n.declarationList.declarations.some(d=>ts.isIdentifier(d.name)&&d.name.text===name));
-  assert.equal(items.length,1,name);return items[0]!.getText(ast);
+  const items=wiringNodes((n):n is ts.VariableStatement=>ts.isVariableStatement(n)&&n.declarationList.declarations.some(d=>ts.isIdentifier(d.name)&&d.name.text===name));
+  assert.equal(items.length,1,name);return items[0]!.node.getText(items[0]!.ast);
 });
-const registration=ast.statements.find(n=>ts.isFunctionDeclaration(n)&&n.name?.text==='registerIPC');
-assert.ok(registration&&ts.isFunctionDeclaration(registration)&&registration.body);
-const statements=['setPetAlwaysOnTop','saveSettings'].map(name=>{
-  const items=registration.body!.statements.filter(n=>ts.isExpressionStatement(n)&&ts.isCallExpression(n.expression)
-    &&['host','scopedHost'].includes(n.expression.expression.getText(ast))&&ts.isStringLiteral(n.expression.arguments[0])&&n.expression.arguments[0].text===name);
-  assert.equal(items.length,1,name);return items[0]!.getText(ast);
-});
-const code=ts.transpileModule([...variables,find('host'),find('scopedHost'),find('noteCompanionTopmostWrite'),...statements].join('\n'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None}}).outputText;
+// Wiring rewrite step 4g: setPetAlwaysOnTop is 舞台's ('electron/wiring/stage-wiring.ts'), registered by its register inside registerIPC (the recorder).
+assert.ok(registeredInRegisterIpc('setPetAlwaysOnTop'),'setPetAlwaysOnTop is registered in registerIPC');
+const statements=['setPetAlwaysOnTop','saveSettings'].map(name=>wiringRegistration(name));
+// Wiring rewrite step 3: the IPC guard is electron/wiring/ipc-wiring.ts (ipcGuardSource: its actual host / scopedHost).
+const code=ts.transpileModule([...variables,ipcGuardSource(),wiringFunction('noteCompanionTopmostWrite'),saveSettingsStepsSource(),...statements].join('\n'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None}}).outputText;
 function fixture(){
   const controls={webContents:{id:1}},pet={webContents:{id:2},isDestroyed:()=>false};
   let live=[controls,pet],gate:Promise<void>|null=null,fail=false;
@@ -40,10 +41,11 @@ function fixture(){
   const sandbox={MutationQueue,controls,pet,store,publicSettings,windows:()=>live,
     ipcMain:{handle:(name:string,callback:(...args:any[])=>unknown)=>handlers.set(name,callback)},
     sync:(sender:number)=>synced.push(sender),validateSettings:(v:typeof current)=>structuredClone(v),
-    characterCards:{getActive:()=>({id:'fixture'})},compileCharacterPersona:()=>current.persona,
+    characterCards:{getActive:()=>({id:'fixture'})},compileCharacterPersona:()=>current.persona,followSavedVoice:()=>{},
+    noteClickThrough:()=>{},appJournal:{setting(){}},journalCharacterId:()=>null,
     motionAssetBaseline:()=>null,resolveVoiceInputKey:(v:unknown)=>v,
     memoryProviderScope:()=> 'fixture',fitSettingsScale:(v:unknown)=>v,
-    companion:{context:async()=>{}},publishVisionState:()=>{},activateUserProfile:async()=>{},
+    companion:{context:async()=>{},contextChange:()=>'same'},publishVisionState:()=>{},activateUserProfile:async()=>{},
   };
   runInNewContext(code,sandbox);
   const invoke=(method:string,id:number,value:unknown,main=true)=>{

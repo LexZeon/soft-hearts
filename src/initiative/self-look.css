@@ -1,0 +1,6 @@
+/* I-085 step 4a: the little eye that lights for a moment when she looks at you herself (src/initiative/SelfLookMark.ts). Never clickable, no text. */
+.self-look-eye { position: absolute; z-index: 22; top: 14px; right: 14px; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px;
+  border-radius: 50%; color: #ffe7c8; background: #15222ccc; box-shadow: 0 2px 8px #0004; pointer-events: none; opacity: 0; transform: scale(.9); transition: opacity .35s, transform .35s; }
+.self-look-eye.is-lit { opacity: .9; transform: none; }
+.self-look-eye[hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) { .self-look-eye { transition: none; } }

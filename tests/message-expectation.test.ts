@@ -1,22 +1,24 @@
-import { scanBreathRequest } from '../shared/breath-request';
+import { scanBreathRequest } from '../shared/actions/breath-request';
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
 import ts from 'typescript';
 import {transformSync} from 'esbuild';
-import type {ChatMessage} from '../shared/contracts';
-import {validateChatRequest} from '../electron/validation';
-import {scanFramingRequest} from '../shared/framing-request';
-import {scanStopReadoutRequest} from '../shared/stop-readout-request';
-import {buildCompanionPersona,buildCodexChatPrompt} from '../electron/conversation-context';
-import {outgoingChatMessages,appendReplyHistory} from '../src/ui/reply-history';
-import {lookHint,turnAttachments} from '../src/look-send';
-import {pauseCutForSend} from '../src/ui/pause-talk-send';
+import type {ChatMessage} from '../shared/foundation/chat';
+import {validateChatRequest} from '../electron/settings/validation';
+import {scanFramingRequest} from '../shared/stage/framing-request';
+import {scanStopReadoutRequest} from '../shared/voice/stop-readout-request';
+import {buildCompanionPersona,buildCodexChatPrompt} from '../electron/brain/conversation-context';
+import {outgoingChatMessages,appendReplyHistory} from '../src/brain/reply-history';
+import {lookHint,turnAttachments} from '../src/senses/look-send';
+import {pauseCutForSend} from '../src/brain/pause-talk-send';
+import { rendererSource as readRendererSource } from './helpers/renderer-source'; // overhaul step 5: src/main.ts and src/wiring/*.ts
+import { testSendGuard } from './helpers/send-guard'; // 2026-11-22: sendChat's guard
 
 function deferred<T>() { let resolve!:(value:T)=>void;const promise=new Promise<T>(r=>{resolve=r;});return {promise,resolve}; }
 const tick=async()=>{await Promise.resolve();await Promise.resolve();};
 function getterFixture(){
-  const source=readFileSync(new URL('../src/ui/UserProfilePanel.ts',import.meta.url),'utf8');
+  const source=readFileSync(new URL('../src/memory/UserProfilePanel.ts',import.meta.url),'utf8');
   const ast=ts.createSourceFile('UserProfilePanel.ts',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
   const klass=ast.statements.find(n=>ts.isClassDeclaration(n)&&n.name?.text==='UserProfilePanel');assert.ok(klass&&ts.isClassDeclaration(klass));
   const method=(name:string)=>{const found=klass.members.filter(n=>ts.isMethodDeclaration(n)&&n.name.getText(ast)===name);assert.equal(found.length,1);return found[0].getText(ast);};
@@ -24,12 +26,12 @@ function getterFixture(){
   const Ctor=new Function(`${js};return Fixture`)(),instance=new Ctor();instance.disposed=false;instance.gate={view:null};return instance;
 }
 function senderFixture(profile:any,initialHistory:ChatMessage[]=[],currentText='你好'){
-  const source=readFileSync(new URL('../src/main.ts',import.meta.url),'utf8'),ast=ts.createSourceFile('main.ts',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
+  const source=readRendererSource(),ast=ts.createSourceFile('main.ts',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
   const method=ast.statements.find(n=>ts.isFunctionDeclaration(n)&&n.name?.text==='sendChat');assert.ok(method);
   const js=transformSync(method.getText(ast),{loader:'ts',target:'es2022'}).code;
-  const wrapper=`const claudeTasksOffered=()=>false;const asksTestCommand=()=>false,immersiveDeveloperMode=false,testNotes=null;let activeChat=null,pendingReadoutControl=null,attachments=[],history=initialHistory,reply='',activeUser=null,assistantNode=null;const input={value:currentText};const isPet=false,settings={provider:{kind:'claude'},voice:{}},characterState=null;const replyPresentation={interrupt(){throw new Error('F7: off, the reveal is never touched')}};const crypto={randomUUID:()=> 'test-id'};const $=()=>input;const speech={stop(){}};const syncBodyInputGate=()=>{},setChatBusy=()=>{},renderAttachments=()=>{};let reads=0;const userProfilePanel={messageExpectation(){reads++;return profile.messageExpectation();}};const window={desktop:{noteUserInput:async()=>{},sharedAttachments:()=>shared.promise,chat:async value=>{requests.push(value)}}};const save=()=>saved.promise;const onStream=event=>errors.push(event);${js};return {send:()=>sendChat(true),cancel:()=>{activeChat=null},reads:()=>reads};`;
+  const wrapper=`const claudeTasksOffered=()=>false;const asksTestCommand=()=>false,immersiveDeveloperMode=false,testNotes=null;let activeChat=null,sendGuard=testSendGuard(),attachments=[],history=initialHistory,reply='',activeUser=null,assistantNode=null;const input={value:currentText};const isPet=false,settings={provider:{kind:'claude'},voice:{}},characterState=null;const replyPresentation={interrupt(){return null}};const crypto={randomUUID:()=> 'test-id'};const $=()=>input;const speech={stop(){}};const syncBodyInputGate=()=>{},setChatBusy=()=>{},renderAttachments=()=>{};let reads=0;const userProfilePanel={messageExpectation(){reads++;return profile.messageExpectation();}};const window={desktop:{noteUserInput:async()=>{},sharedAttachments:()=>shared.promise,chat:async value=>{requests.push(value)}}};const saveBeforeSend=()=>saved.promise;const onStream=event=>errors.push(event);${js};return {send:()=>sendChat(true),cancel:()=>{activeChat=null},reads:()=>reads};`;
   const saved=deferred<boolean>(),shared=deferred<never[]>(),requests:any[]=[],errors:any[]=[];
-  const api=new Function('profile','saved','shared','requests','initialHistory','currentText','errors','outgoingChatMessages','scanStopReadoutRequest','scanFramingRequest','scanBreathRequest','lookHint','turnAttachments','pauseCutForSend',wrapper)(profile,saved,shared,requests,initialHistory,currentText,errors,outgoingChatMessages,scanStopReadoutRequest,scanFramingRequest,scanBreathRequest,lookHint,turnAttachments,pauseCutForSend);return {...api,saved,shared,requests,errors};
+  const api=new Function('profile','saved','shared','requests','initialHistory','currentText','errors','outgoingChatMessages','scanStopReadoutRequest','scanFramingRequest','scanBreathRequest','lookHint','turnAttachments','pauseCutForSend','testSendGuard',wrapper)(profile,saved,shared,requests,initialHistory,currentText,errors,outgoingChatMessages,scanStopReadoutRequest,scanFramingRequest,scanBreathRequest,lookHint,turnAttachments,pauseCutForSend,testSendGuard);return {...api,saved,shared,requests,errors};
 }
 test('getter exposes only a fresh identity copy of an enabled live view',()=>{
   const panel=getterFixture();assert.equal(panel.messageExpectation(),null);

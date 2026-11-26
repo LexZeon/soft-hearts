@@ -1,5 +1,5 @@
-import { registerUiMessages, setUiLanguage } from '../shared/ui-language';
-import { ENGLISH_SETTINGS_UI_COPY } from '../shared/ui-copy.settings.en';
+import { registerUiMessages, setUiLanguage } from '../shared/foundation/ui-language';
+import { ENGLISH_SETTINGS_UI_COPY } from '../shared/foundation/ui-copy.settings.en';
 import assert from "node:assert/strict";
 import test, { type TestContext } from "node:test";
 import {
@@ -8,7 +8,7 @@ import {
   ScreenSharingOptions,
   type ScreenSharingOptionsPatch,
   type ScreenSharingOptionsState,
-} from "../src/ui/ScreenSharingOptions";
+} from "../src/senses/ScreenSharingOptions";
 
 class ElementMock {
   className = ""; textContent = ""; id = ""; type = ""; value = "";

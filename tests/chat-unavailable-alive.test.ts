@@ -3,15 +3,15 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { MoodHost } from '../electron/mood';
-import { CompanionService } from '../electron/companion';
-import { ChatAvailability } from '../electron/chat-availability';
-import { ClaudeFailureError } from '../electron/claude';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
+import { MoodHost } from '../electron/mood/mood';
+import { CompanionService } from '../electron/brain/companion';
+import { ChatAvailability } from '../electron/brain/chat-availability';
+import { ClaudeFailureError } from '../electron/brain/claude';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
 import { FixedBoredomTiming } from '../shared/behaviors/boredom-timing/fake';
 import { FixedTouchFeedEffect } from '../shared/behaviors/touch-feed-effect/fake';
 import { FixedBlush } from '../shared/behaviors/blush/fake';
-import type { ProviderConfig } from '../shared/contracts';
+import type { ProviderConfig } from '../shared/foundation/settings';
 
 const DOWN = [
   "You've hit your session limit · resets 1:20pm (America/Los_Angeles)",
@@ -20,7 +20,7 @@ const DOWN = [
   'Not logged in · Please run /login',
 ];
 
-/** Everything the pet does by herself and by touch, run on a fixed clock; returns what the simulation ended up as. */
+/** Everything the companion does by herself and by touch, run on a fixed clock; returns what the simulation ended up as. */
 async function liveThroughTouchAndTime(unavailable: ChatAvailability | null) {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'soft-alive-'));
   const clock = { now: 1_000_000 };
@@ -91,7 +91,7 @@ test('a failed chat turn is archived as the user\'s words only: her in-character
     assert.deepEqual(failed.messages.filter(message => message.role === 'assistant').map(message => [message.content, message.status]), [['', 'error']], 'only the empty, errored placeholder the app always writes');
     assert.ok(!JSON.stringify(failed).includes('歇一会儿'));
 
-    // She still lives: time passes, she is fed, and the pet keeps feeling it.
+    // She still lives: time passes, she is fed, and the companion keeps feeling it.
     const before = service.mood.get().snapshot.values.D;
     service.mood.event({ type: 'food', id: 'snack-during-outage' });
     service.mood.tick(true);

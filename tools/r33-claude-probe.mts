@@ -1,7 +1,7 @@
 // R33 probe (maintainer only, run by hand; it uses YOUR Claude Code login and quota, 2 turns per run).
 // What does a persistent `claude -p --input-format stream-json` process do with a user message
 // written while a turn is still generating, and with Claude Code's interrupt control request?
-// Same flags, environment and empty working folder as electron/claude-process.ts: it imports the
+// Same flags, environment and empty working folder as electron/brain/claude-process.ts: it imports the
 // app's own builders. Nothing in the app imports this file.
 //
 //   node node_modules/tsx/dist/cli.mjs tools/r33-claude-probe.mts <scenario> [--replay] [--out <dir>]
@@ -12,8 +12,8 @@ import { spawn } from 'node:child_process';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { claudeArguments, claudeEnvironment, claudeInput, findClaude } from '../electron/claude';
-import { CLAUDE_SESSION_SYSTEM_PROMPT } from '../electron/claude-session-prompt';
+import { claudeArguments, claudeEnvironment, claudeInput, findClaude } from '../electron/brain/claude';
+import { CLAUDE_SESSION_SYSTEM_PROMPT } from '../electron/brain/claude-session-prompt';
 
 const scenario = process.argv[2] ?? '';
 const replay = process.argv.includes('--replay');

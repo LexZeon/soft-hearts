@@ -1,7 +1,7 @@
 /** M1: the director that turns "she hears music" into her choice: when it judges, what changes, what acts at once, how the request counts. */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { DANCE_REQUEST_WINDOW_MS, moodLabelDanceDesire, type DanceDesireFn, type DanceDesireInput } from '../shared/music-desire';
+import { DANCE_REQUEST_WINDOW_MS, moodLabelDanceDesire, type DanceDesireFn, type DanceDesireInput } from '../shared/senses/music-desire';
 import {
   MUSIC_CATCH_ON_S, MUSIC_MIN_STAY_S, MUSIC_NEW_SONG_GAP_S, MUSIC_REJUDGE_S, MUSIC_VARIATION, MusicChoice, type MusicChoiceContext,
 } from '../src/stage/music-choice';

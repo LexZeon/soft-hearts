@@ -5,7 +5,7 @@ import ts from 'typescript';
 import {transformSync} from 'esbuild';
 
 test('actual pet handlers switch profile, audio, details and reader without changing media intent',()=>{
-  const source=readFileSync(new URL('../src/ui/PetUI.ts',import.meta.url),'utf8'),ast=ts.createSourceFile('PetUI.ts',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
+  const source=readFileSync(new URL('../src/stage/PetUI.ts',import.meta.url),'utf8'),ast=ts.createSourceFile('PetUI.ts',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
   const klass=ast.statements.find(n=>ts.isClassDeclaration(n)&&n.name?.text==='PetUI');assert.ok(klass&&ts.isClassDeclaration(klass));
   const ctor=klass.members.find(ts.isConstructorDeclaration);assert.ok(ctor?.body);
   const statement=(needle:string)=>{const hits=ctor.body!.statements.filter(n=>n.getText(ast).includes(needle));assert.equal(hits.length,1);return hits[0].getText(ast);};

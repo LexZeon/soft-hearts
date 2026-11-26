@@ -3,17 +3,17 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CharacterCardStore } from '../electron/character-cards';
-import { CHARACTER_CARD_FORMAT, CHARACTER_CARD_VERSION, validateCharacterDraft, type CharacterDraft } from '../shared/character-cards';
-import { RelationshipHost } from '../electron/relationship/host';
-import { AGENT_SETTINGS, agentSetting, validateAgentSettingValue } from '../shared/agent-channel';
-import { createAppTools, settingViews, type AgentAppBridge } from '../electron/agent-channel/app-tools';
-import { ChatSettingProposals, chatSettingsSystemText, currentSettingsText, mentionsSettings, parseChatSettingProposal } from '../electron/chat-settings';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import type { AppSettings } from '../shared/contracts';
-import type { CharacterCardState } from '../shared/character-cards';
-import { AgentToolRegistry } from '../electron/agent-channel/registry';
-import { NEUTRAL_TENDENCIES } from '../shared/relationship';
+import { CharacterCardStore } from '../electron/cards/character-cards';
+import { CHARACTER_CARD_FORMAT, CHARACTER_CARD_VERSION, validateCharacterDraft, type CharacterDraft } from '../shared/cards/character-cards';
+import { RelationshipHost } from '../electron/memory/relationship/host';
+import { AGENT_SETTINGS, agentSetting, validateAgentSettingValue } from '../shared/safety/agent-channel';
+import { createAppTools, settingViews, type AgentAppBridge } from '../electron/safety/agent-channel/app-tools';
+import { ChatSettingProposals, chatSettingsSystemText, currentSettingsText, mentionsSettings, parseChatSettingProposal } from '../electron/brain/chat-settings';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import type { AppSettings } from '../shared/foundation/settings';
+import type { CharacterCardState } from '../shared/foundation/character-card';
+import { AgentToolRegistry } from '../electron/safety/agent-channel/registry';
+import { NEUTRAL_TENDENCIES } from '../shared/memory/relationship';
 
 const draft = (name: string, fields: Partial<CharacterDraft> = {}): CharacterDraft => ({
   name, description: '', personality: '', scenario: '', greeting: '', examples: '', systemPrompt: '', ...fields,
@@ -24,7 +24,7 @@ async function withStore(run: (store: CharacterCardStore, directory: string) => 
   finally { await rm(directory, { recursive: true, force: true }); }
 }
 
-test('the card field: off by default, older cards without it read as off, only a boolean is accepted', () => {
+test('the card field: a missing field is kept missing (it reads as on), only a boolean is accepted', () => {
   const plain = validateCharacterDraft(draft('旧卡'));
   assert.equal(plain.slowWarmUp, undefined);
   assert.equal(Object.hasOwn(plain, 'slowWarmUp'), false, 'an older card stays exactly what it was');
@@ -34,7 +34,7 @@ test('the card field: off by default, older cards without it read as off, only a
   assert.throws(() => validateCharacterDraft({ ...draft('x'), slowRelationship: true } as never), /只允许/);
 });
 
-test('a card that never turned it on is stored and exported byte for byte as before; turning it on and off leaves no trace', async () => {
+test('a card that never named it stays without the field and exports as on; an explicit off is stored, exported and kept', async () => {
   await withStore(async (store, directory) => {
     const state = await store.save(draft('阿棠'));
     const id = state.cards.find(card => card.name === '阿棠')!.id;
@@ -43,10 +43,11 @@ test('a card that never turned it on is stored and exported byte for byte as bef
     const exported = JSON.parse(store.export(id));
     assert.equal(exported.format, CHARACTER_CARD_FORMAT);
     assert.equal(exported.version, CHARACTER_CARD_VERSION);
-    assert.equal(Object.hasOwn(exported.card, 'slowWarmUp'), false);
-    // Saving an explicit "off" from the editor stores nothing either.
+    assert.equal(exported.card.slowWarmUp, true, 'no field means on, and the file says so');
+    // Saving an explicit "off" from the editor is stored as false (a missing field would mean on).
     await store.save(draft('阿棠', { slowWarmUp: false }), id);
-    assert.equal(Object.hasOwn(await stored(), 'slowWarmUp'), false);
+    assert.equal((await stored()).slowWarmUp, false);
+    assert.equal(JSON.parse(store.export(id)).card.slowWarmUp, false, 'the off travels with the card');
     // On: stored, exported, and read back by an import.
     await store.save(draft('阿棠', { slowWarmUp: true }), id);
     assert.equal((await stored()).slowWarmUp, true);
@@ -56,16 +57,18 @@ test('a card that never turned it on is stored and exported byte for byte as bef
     const imported = await store.import(onFile);
     const copy = imported.cards.find(card => card.id !== id && card.name === '阿棠')!;
     assert.equal(copy.slowWarmUp, true);
-    // An older file without the field imports as off.
+    // An older file without the field imports as on (no field).
     const older = JSON.stringify({ format: CHARACTER_CARD_FORMAT, version: CHARACTER_CARD_VERSION, card: { ...JSON.parse(onFile).card, slowWarmUp: undefined, name: '旧文件' } });
     const olderState = await store.import(older);
     assert.equal(olderState.cards.find(card => card.name === '旧文件')?.slowWarmUp, undefined);
     // A save from an editor that does not know the field keeps what was there.
     await store.save({ ...draft('阿棠') }, id);
     assert.equal((await stored()).slowWarmUp, true);
-    // Off again: the field is gone, not "false".
+    // Off again: stored as false, and a later save that does not name it keeps the off.
     await store.save(draft('阿棠', { slowWarmUp: false }), id);
-    assert.equal(Object.hasOwn(await stored(), 'slowWarmUp'), false);
+    assert.equal((await stored()).slowWarmUp, false);
+    await store.save({ ...draft('阿棠') }, id);
+    assert.equal((await stored()).slowWarmUp, false, 'the saved choice wins over a draft that does not name it');
   });
 });
 
@@ -83,7 +86,7 @@ test('setSlowWarmUp changes only that card\'s switch', async () => {
     const same = await store.setSlowWarmUp(a.id, true);
     assert.equal(same.revision, state.revision, 'no change, no new revision');
     const off = await store.setSlowWarmUp(a.id, false);
-    assert.equal(off.cards.find(card => card.id === a.id)?.slowWarmUp, undefined);
+    assert.equal(off.cards.find(card => card.id === a.id)?.slowWarmUp, false, 'off is saved as an explicit false');
     await assert.rejects(async () => store.setSlowWarmUp(a.id, 'yes' as never));
     await assert.rejects(() => store.setSlowWarmUp('missing', true), /不存在/);
   });
@@ -119,22 +122,23 @@ const cards = (slowWarmUp?: boolean): Pick<CharacterCardState, 'cards' | 'active
 
 test('the setting is in the catalog as a reversible boolean on the current character, and is told to Claude as a fixed catalog line', () => {
   const spec = agentSetting('slow_warm_up')!;
-  assert.equal(spec.label, '当前角色慢慢升温');
+  assert.equal(spec.label, '当前角色慢慢熟悉');
   assert.equal(spec.kind, 'boolean');
   assert.equal(spec.tier, 'reversible');
   assert.equal(validateAgentSettingValue(spec, true), true);
   assert.throws(() => validateAgentSettingValue(spec, 'on'));
   assert.ok(AGENT_SETTINGS.some(item => item.id === 'slow_warm_up'));
-  assert.match(chatSettingsSystemText(), /slow_warm_up：当前角色慢慢升温/);
+  assert.match(chatSettingsSystemText(), /slow_warm_up：当前角色慢慢熟悉/);
   // The value is read from the active card, not from the app settings.
   assert.equal(settingViews(settings(), cards(true)).find(view => view.id === 'slow_warm_up')?.value, true);
-  assert.equal(settingViews(settings(), cards()).find(view => view.id === 'slow_warm_up')?.value, false);
+  assert.equal(settingViews(settings(), cards()).find(view => view.id === 'slow_warm_up')?.value, true, 'a card that never named it is on');
+  assert.equal(settingViews(settings(), cards(false)).find(view => view.id === 'slow_warm_up')?.value, false);
   assert.equal(settingViews(settings()).find(view => view.id === 'slow_warm_up')?.value, null);
   assert.match(currentSettingsText(settings(), AGENT_SETTINGS, cards(false)), /slow_warm_up=false/);
-  for (const text of ['想让她慢慢跟我熟起来', '她能不能别那么客气', '开启慢慢升温', '希望一开始就很熟', '你太慢热了']) assert.equal(mentionsSettings(text), true, text);
+  for (const text of ['想让她慢慢跟我熟起来', '她能不能别那么客气', '开启慢慢熟悉', '希望一开始就很熟', '你太慢热了']) assert.equal(mentionsSettings(text), true, text);
 });
 
-test('a proposal to warm up slowly only becomes a card; nothing changes until the user taps, and only the current card changes', async () => {
+test('a proposal to get familiar slowly only becomes a card; nothing changes until the user taps, and only the current card changes', async () => {
   const applied: Array<[string, unknown]> = [];
   const sent: Array<{ state: string; label: string }> = [];
   const proposals = new ChatSettingProposals({
@@ -145,7 +149,7 @@ test('a proposal to warm up slowly only becomes a card; nothing changes until th
   const turn = proposals.beginTurn('我想让她慢慢跟我熟起来');
   assert.ok(turn.instruction, 'the proposal protocol is offered for this message');
   assert.match(turn.instruction!('<s>', '</s>'), /slow_warm_up=false/);
-  const raw = JSON.stringify({ id: 'slow_warm_up', value: true, reason: '想慢慢熟起来' });
+  const raw = JSON.stringify({ id: 'slow_warm_up', value: true, reason: '想慢慢熟悉' });
   const parsed = parseChatSettingProposal(raw, id => settingViews(settings(), cards(false)).find(view => view.id === id)?.value ?? null);
   assert.ok(parsed && parsed.value === true);
   assert.equal(parseChatSettingProposal(JSON.stringify({ id: 'slow_warm_up', value: false }), id => settingViews(settings(), cards(false)).find(view => view.id === id)?.value ?? null), null,
@@ -153,9 +157,9 @@ test('a proposal to warm up slowly only becomes a card; nothing changes until th
   const card = proposals.offer(turn.ticket, 1, 'reply-1', raw);
   assert.ok(card);
   assert.equal(card!.settingId, 'slow_warm_up');
-  assert.equal(card!.label, '当前角色慢慢升温');
+  assert.equal(card!.label, '当前角色慢慢熟悉');
   assert.equal(applied.length, 0, 'showing the card changes nothing');
-  assert.deepEqual(card!.choices.map(choice => choice.label), ['慢慢升温']);
+  assert.deepEqual(card!.choices.map(choice => choice.label), ['慢慢熟悉']);
   const tap = card!.choices.find(choice => choice.proposed)!;
   await proposals.choose(1, { proposalId: card!.proposalId, choiceId: tap.choiceId });
   assert.deepEqual(applied, [['slow_warm_up', true]]);
@@ -187,7 +191,7 @@ test('the agent channel\'s set_setting reaches only the bridge\'s setSlowWarmUp,
 });
 
 test('the bridge turns the setting into the host\'s own "setCharacterSlowWarmUp" operation for the active card, under the call guard', async () => {
-  const { createHostBridge, AGENT_HOST_OPERATIONS } = await import('../electron/agent-channel/bridge');
+  const { createHostBridge, AGENT_HOST_OPERATIONS } = await import('../electron/safety/agent-channel/bridge');
   assert.ok((AGENT_HOST_OPERATIONS as readonly string[]).includes('setCharacterSlowWarmUp'));
   const seen: unknown[][] = [];
   const operations = new Map<string, (event: any, ...args: any[]) => unknown>([

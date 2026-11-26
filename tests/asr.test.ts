@@ -4,15 +4,15 @@ import { createServer } from "node:http";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
-import { transcribeWav, validateWav } from "../electron/asr";
-import { validateSettings, validateVoiceInput } from "../electron/validation";
+import { transcribeWav, validateWav } from "../electron/senses/asr";
+import { validateSettings, validateVoiceInput } from "../electron/settings/validation";
 import {
   KEY_SENTINEL,
   SettingsStore,
   resolveVoiceInputKey,
-} from "../electron/settings";
-import { DEFAULT_SETTINGS } from "../shared/defaults";
-import { AssetRegistry } from "../electron/assets";
+} from "../electron/settings/settings";
+import { DEFAULT_SETTINGS } from "../shared/foundation/defaults";
+import { AssetRegistry } from "../electron/foundation/assets";
 
 function wav(seconds = 1): ArrayBuffer {
   const value = new ArrayBuffer(44 + seconds * 32000);

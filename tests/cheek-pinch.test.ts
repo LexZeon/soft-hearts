@@ -3,7 +3,7 @@ import test from 'node:test';
 import {
   CHEEK_PINCH_INPUT, CheekPinchTracker, hitCheek,
   type CheekRegion, type CheekPinchEvent, type CheekPinchFeedback, type CheekPinchState,
-} from '../src/ui/CheekPinch';
+} from '../src/mood/CheekPinch';
 
 const left: CheekRegion = { side: 'left', x: 80, y: 100, axisXX: 10, axisXY: 0, axisYX: 0, axisYY: 8, referenceWidth: 100 };
 const right: CheekRegion = { ...left, side: 'right', x: 120 };

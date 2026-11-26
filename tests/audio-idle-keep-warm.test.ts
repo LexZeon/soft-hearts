@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { AUDIO_OUTPUT_IDLE_MS } from '../src/ui/audio-output';
+import { AUDIO_OUTPUT_IDLE_MS } from '../src/voice/audio-output';
 
 /*
- * 2026-11-06, the user: "刚刚的语音很慢". The stable app's speech timings showed the output device being resumed after its idle
+ * The stable app's speech timings showed the output device being resumed after its idle
  * suspend in the middle of a conversation, taking 4.3 s and 7.0 s before the first word (replies 3–4 minutes apart). The idle
  * suspend must not fall inside an ordinary conversation's pauses again.
  */

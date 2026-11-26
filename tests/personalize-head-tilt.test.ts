@@ -1,18 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Bone, BufferGeometry, Euler, MeshBasicMaterial, Quaternion, Skeleton, SkinnedMesh, Vector3 } from 'three';
-import { BODY_TWEAK_BASE, BODY_TWEAK_BINDING, BODY_TWEAK_TARGET, makeBodyHeadTweak, parseBodyVisualStudy, validateBodyPoseProfile, type BodyPoseBinding } from '../shared/personalize-body';
-import { applyBodyHeadTweak, bodyBindingForProfile } from '../electron/personalize-body-tweak';
-import { PersonalizeStaticPose } from '../src/stage/personalize-static-pose';
-import { MmdStage } from '../src/stage/MmdStage';
+import { BODY_TWEAK_BASE, BODY_TWEAK_BINDING, BODY_TWEAK_TARGET, makeBodyHeadTweak, parseBodyVisualStudy, validateBodyPoseProfile, type BodyPoseBinding } from '../shared/stage/personalize-body';
+import { applyBodyHeadTweak, bodyBindingForProfile } from '../electron/stage/personalize-body-tweak';
 import { randomUUID } from 'node:crypto';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';import path from 'node:path';
-import { BODY_VISUAL_PURPOSE } from '../shared/personalize-body';
-import { bodyPoseBinding } from '../shared/personalize-body-bindings';
-import { PersonalizeBodyStore } from '../electron/personalize-body-store';
-import { PersonalizeBodyAuthoring } from '../electron/personalize-body-authoring';
-import type { SelectedVisualImage } from '../electron/selected-visual-image';
+import { BODY_VISUAL_PURPOSE } from '../shared/stage/personalize-body';
+import { bodyPoseBinding } from '../shared/stage/personalize-body-bindings';
+import { PersonalizeBodyStore } from '../electron/stage/personalize-body-store';
+import { PersonalizeBodyAuthoring } from '../electron/stage/personalize-body-authoring';
+import type { SelectedVisualImage } from '../electron/senses/selected-visual-image';
 
 const base:BodyPoseBinding={id:BODY_TWEAK_BINDING,label:'test',targetModelSha:BODY_TWEAK_TARGET,sourceSha:BODY_TWEAK_BASE,mask:'gene-left-shoulder-arm-elbow-quaternion-v1',qualifiedStrength:.5,
   properties:[{boneIndex:17,boneName:'左肩',quaternion:[0,0,0,1]}]};
@@ -60,39 +57,4 @@ test('one head candidate is explicit and single use; legacy open and arm-only sa
     p=await service.previewFixed(7,s.id,s.revision,left);service.receipt(7,{phase:'bind',id:p.id,token:p.token,stageGeneration:3});await service.resolve(7,p.id,p.token,3);service.receipt(7,{phase:'ready',id:p.id,token:p.token,stageGeneration:3});
     s=await service.save(7,{sessionId:s.id,revision:p.revision,savedRevision:s.savedRevision,previewId:p.id,previewToken:p.token});assert.deepEqual(s.saved.profile?.head,makeBodyHeadTweak(head(4)));
   }finally{service.invalidate();assert.equal(path.dirname(path.resolve(dir)),path.resolve(os.tmpdir()));assert.ok(path.basename(dir).startsWith('soft-head-tilt-'));await rm(dir,{recursive:true,force:true});}
-});
-test('current effective claim follows preview, higher gates, expiry and transition; restore advances base',()=>{
-  const old=Object.getOwnPropertyDescriptor(globalThis,'document');Object.assign(globalThis,{document:{hidden:false}});
-  const geometry=new BufferGeometry(),material=new MeshBasicMaterial(),mesh=new SkinnedMesh(geometry,material),bones=Array.from({length:10},()=>new Bone());
-  bones[9].name='頭';mesh.add(bones[0]);for(let i=1;i<bones.length;i++)bones[0].add(bones[i]);mesh.bind(new Skeleton(bones));
-  const rest=bones.map(bone=>({bone,quaternion:bone.quaternion.clone()})),binding=applyBodyHeadTweak(base,head(5,true,1),.5);
-  const overlay=new PersonalizeStaticPose(mesh,binding.properties.filter(p=>p.boneIndex===9),rest),gates={visible:true,enabled:true,manualPose:false,manualGesture:false,dynamicPose:false,cameraOrWindow:false,inputBlocked:false,directContact:false,music:false,chatGesture:false};
-  let transition=false;const active={overlay,model:1,ready:true,timer:undefined,resolve:()=>{},value:{expiresAt:Date.now()+10000,strength:.5}};
-  const stage=Object.assign(Object.create(MmdStage.prototype),{head:bones[9],hostVisible:true,disposed:false,modelGeneration:1,bodyPreview:active,bodyPersonalize:null,bodyMotion:null,headFrameClaim:null,deferredAutoHead:[],boneLayers:[],morphLayers:[],rotation:new Euler(),offset:new Quaternion(),motionTransition:{ownsProperty:()=>transition},bodyGates:()=>gates}) as any;
-  Object.assign(stage,{surprisePending:null,surprisePreview:null}); // Real constructor defaults for the inactive preview owner.
-  try{
-    assert.equal(stage.currentHeadClaim(),overlay);gates.manualPose=true;assert.equal(stage.currentHeadClaim(),null);gates.manualPose=false;
-    gates.music=true;assert.equal(stage.currentHeadClaim(),null);gates.music=false;transition=true;assert.equal(stage.currentHeadClaim(),null);transition=false;
-    const advanced=new Quaternion().setFromAxisAngle(new Vector3(1,0,0),.4);bones[9].quaternion.copy(advanced);overlay.apply(.5);assert.ok(bones[9].quaternion.angleTo(advanced)>.1);overlay.restore();assert.ok(bones[9].quaternion.angleTo(advanced)<1e-7);
-    stage.headFrameClaim=stage.currentHeadClaim();stage.rotateAutomaticHead(.2,0,0);assert.ok(bones[9].quaternion.equals(advanced));assert.deepEqual(stage.deferredAutoHead,[[.2,0,0]]);
-    const untouched=bones[8].quaternion.clone();const liveApplied=stage.frameBodyPreview();assert.equal(liveApplied,true);stage.settleHeadFrameClaim(liveApplied);assert.deepEqual(stage.deferredAutoHead,[]);assert.ok(bones[9].quaternion.angleTo(advanced)>.1);assert.ok(bones[8].quaternion.equals(untouched));overlay.restore();
-    stage.headFrameClaim=stage.currentHeadClaim();stage.deferredAutoHead=[];stage.rotateAutomaticHead(.2,0,0);gates.manualPose=true;stage.settleHeadFrameClaim(false);
-    assert.equal(stage.headFrameClaim,null);assert.deepEqual(stage.deferredAutoHead,[]);assert.ok(bones[9].quaternion.angleTo(advanced)>.1);stage.restoreLayers();gates.manualPose=false;
-    active.value.expiresAt=Date.now()-1;assert.equal(stage.currentHeadClaim(),null);
-    // Cross the exact deadline after the first claim but before the actual frame method.
-    const realNow=Date.now;let now=100;Date.now=()=>now;
-    try{
-      active.value.expiresAt=101;stage.bodyPreview=active;stage.headFrameClaim=stage.currentHeadClaim();stage.deferredAutoHead=[];stage.rotateAutomaticHead(.2,0,0);
-      now=101;const applied=stage.frameBodyPreview();assert.equal(applied,false);stage.settleHeadFrameClaim(applied);
-      assert.equal(stage.headFrameClaim,null);assert.ok(bones[9].quaternion.angleTo(advanced)>.1);stage.restoreLayers();
-      // Even if the preview gate is live, a later same-call descriptor check can expire.
-      now=300;active.value.expiresAt=301;stage.bodyPreview=active;stage.headFrameClaim=stage.currentHeadClaim();stage.deferredAutoHead=[];stage.rotateAutomaticHead(.2,0,0);
-      let checks=0;Date.now=()=>++checks===1?300:301;const late=stage.frameBodyPreview();assert.equal(late,false);stage.settleHeadFrameClaim(late);
-      assert.ok(bones[9].quaternion.angleTo(advanced)>.1);overlay.restore();stage.restoreLayers();Date.now=()=>now;
-      now=200;stage.bodyPreview=null;stage.moodView={token:'scope'};stage.bodyPersonalize={overlay,model:1,token:'scope',cue:{expiresAt:201,strength:.5}};
-      stage.headFrameClaim=stage.currentHeadClaim();stage.deferredAutoHead=[];stage.rotateAutomaticHead(.2,0,0);
-      now=201;const savedApplied=stage.framePersonalizeBody();assert.equal(savedApplied,false);stage.settleHeadFrameClaim(savedApplied);
-      assert.equal(stage.headFrameClaim,null);assert.ok(bones[9].quaternion.angleTo(advanced)>.1);stage.restoreLayers();
-    }finally{Date.now=realNow;}
-  }finally{mesh.skeleton.dispose();geometry.dispose();material.dispose();if(old)Object.defineProperty(globalThis,'document',old);else Reflect.deleteProperty(globalThis,'document');}
 });

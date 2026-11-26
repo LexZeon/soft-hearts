@@ -2,11 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdir,mkdtemp,rm,readdir,writeFile} from 'node:fs/promises';
 import path from 'node:path';
-import {TextMemorials,textMemorialReplyContext,type TextMemorialContext} from '../electron/text-memorials';
-import {TextMemorialStore} from '../electron/text-memorial-store';
-import {ProactiveSpeechGate} from '../electron/proactive-speech-gate';
-import type {TextMemorialOffer} from '../shared/text-memorials';
-import type {AtomicFileDependencies} from '../electron/atomic-file';
+import {TextMemorials,textMemorialReplyContext,type TextMemorialContext} from '../electron/memory/text-memorials';
+import {TextMemorialStore} from '../electron/memory/text-memorial-store';
+import {ProactiveSpeechGate} from '../electron/initiative/proactive-speech-gate';
+import type {TextMemorialOffer} from '../shared/memory/text-memorials';
+import type {AtomicFileDependencies} from '../electron/foundation/atomic-file';
 
 const original='今天我完成了第一幅自己的画。';
 const purpose='留作我们一起见证的纪念';

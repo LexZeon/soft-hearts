@@ -2,8 +2,8 @@
 import assert from 'node:assert/strict';
 import { busyChatFrequency, busyChatScale, recentChatTimes } from '../shared/behaviors/busy-chat/choose';
 import { speechIntervalAfterUnanswered, unansweredSentence } from '../shared/behaviors/busy-chat/unanswered';
-import { applyMoodEvent, createMoodState, DEFAULT_MOOD_PARAMETERS, getMoodAttentionCandidate, type MoodParameters, type MoodState } from '../shared/mood';
-import { innerLoopPrompt } from '../electron/inner-loop/context';
+import { applyMoodEvent, createMoodState, DEFAULT_MOOD_PARAMETERS, getMoodAttentionCandidate, type MoodParameters, type MoodState } from '../shared/foundation/mood';
+import { innerLoopPrompt } from '../electron/initiative/inner-loop/context';
 import { runInnerLoopDay, type DayCard, type DayDecide } from '../scripts/lib/inner-loop-day';
 import { GENE_DAY_CARD } from '../scripts/inner-loop-day-cards';
 import { FixedBoredomTiming } from '../shared/behaviors/boredom-timing/fake';
@@ -89,7 +89,7 @@ function state(over: Partial<MoodState> = {}): MoodState { return { ...createMoo
 test('mood gate: after one unanswered line the next one is NOT refused for good, it waits 3 x the interval (and the hour quota still counts)', () => {
   const p = card({ speechPerHour: 3 });
   const spoke = (unanswered: number, sinceMin: number, times: number[] = []) => getMoodAttentionCandidate(
-    state({ unansweredSpeech: unanswered, lastSpeechAt: NOW - sinceMin * MINUTE, speechTimes: times }), NOW, p, true) === 'speech';
+    state({ unansweredSpeech: unanswered, lastSpeechAt: NOW - sinceMin * MINUTE, speechTimes: times }), NOW, p, true, speechIntervalAfterUnanswered) === 'speech';
   assert.equal(spoke(0, 31), true);
   assert.equal(spoke(1, 31), false, 'a plain 30 minutes is no longer enough after an unanswered line');
   assert.equal(spoke(1, 89), false);

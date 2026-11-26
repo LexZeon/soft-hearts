@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { VisualBehaviorStore } from '../electron/visual-behavior-store';
-import { atomicWriteFile } from '../electron/atomic-file';
-import { CharacterCardStore } from '../electron/character-cards';
+import { VisualBehaviorStore } from '../electron/senses/visual-behavior-store';
+import { atomicWriteFile } from '../electron/foundation/atomic-file';
+import { CharacterCardStore } from '../electron/cards/character-cards';
 import { emptyVisualBehavior, validateVisualBehavior, VISUAL_GENE_SHA,
-  type VisualBehaviorProfile } from '../shared/personalize-visual';
+  type VisualBehaviorProfile } from '../shared/stage/personalize-visual';
 
 // Synthetic recipe identity only: no model, image or renderer is loaded.
 const profile = (label = '轻微眉眼', enabled = true): VisualBehaviorProfile => ({

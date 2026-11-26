@@ -19,7 +19,7 @@
  * morph amount, so it carries to any model; hands are not touched (a future IK
  * item). Every track starts and ends at 0, finishing by 1.76 s.
  */
-import { SHY_CLIP_ID, SURPRISE_CLIP_ID } from '../../shared/surprise-preview';
+import { SHY_CLIP_ID, SURPRISE_CLIP_ID } from '../../shared/initiative';
 
 export const PREVIEW_PERFORMANCE_MS = 1800;
 export interface PreviewPerformance {

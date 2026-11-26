@@ -6,25 +6,27 @@
  *     得分 = 基础分 + 倾向加减（dispositions.ts）+ 此刻状态加减（心情、困、近期做过同类）+ 整体偏移 + 一点随机。
  *     做不到的（表现自己的硬门槛：模型没那个部位、睡着、脸红正在红、她在别的互动里）不进候选。留前几个。
  *  2. 身体互动（摸头、捏脸、喂点心）：最高分到了 actAt 就马上做（不等 haiku）。
- *  3. 说的话：和 Opus 的回复并行问 haiku 一次（electron/reactions/judge.ts）：它判断是哪一类、在那一类的候选里挑 0–2 个、
+ *  3. 说的话：和 Opus 的回复并行问 haiku 一次（electron/mood/reactions/judge.ts）：它判断是哪一类、在那一类的候选里挑 0–2 个、
  *     轻中重，再给心情变化。只能在候选里挑；做之前再过一遍门槛。haiku 失败、超时、没额度：等她回复的尾注，
  *     语境是暖心的（positive / support）就按"暖心的话"做最高分那个。
  *  4. 心情：haiku 给的和 Opus 尾注给的按比例合（MoodBlend：起点 haiku 0.7 / Opus 0.3），只有一边给就用那一边。
- *  5. 体验记录（shared/journal.ts 'reaction'）：类别、候选和分数、谁挑的、做了还是被挡和原因。没有原文。
+ *  5. 体验记录（shared/memory/journal.ts 'reaction'）：类别、候选和分数、谁挑的、做了还是被挡和原因。没有原文。
  *
- * 谁调用：electron/reactions/host.ts 的 ReactionHost 是唯一的主机（打分、执行、记录）；electron/mood.ts MoodHost 通过
+ * 谁调用：electron/mood/reactions/host.ts 的 ReactionHost 是唯一的主机（打分、执行、记录）；electron/mood/mood.ts MoodHost 通过
  * MoodReactionPort 告诉它身体互动和尾注，并把脸红交给它决定（开关开着时，心情模型自己的脸红门槛不再起作用）。
  * 开关"新的反应方式"关着时：一次 haiku 也不问，MoodHost 不接这个口子，行为和原来完全一样。
  *
  * 假 haiku 在 fake.ts；守约测试 tests/i037-reactions.test.ts。
  */
-import type { MoodChannel, MoodLabel, MoodValues } from '../../mood';
-import type { SenseId } from '../../sense-router';
+import type { MoodChannel, MoodLabel, MoodValues } from '../../foundation/mood';
+import type { SenseId } from '../../senses';
+import type { DangerLevel } from '../../safety';
 import type { Dispositions } from './dispositions';
 import type { ReactionEventId } from './events';
 import type { ReactionLevel, ReactionRow } from './knobs';
+import type { TouchPart } from '../../mood/touch';
 
-/** haiku 的那一次调用（electron/inner-loop/model.ts quickLineWithClaude 的 text）。 */
+/** haiku 的那一次调用（electron/initiative/inner-loop/model.ts quickLineWithClaude 的 text）。 */
 export type ReactionAsk = (prompt: string, systemPrompt: string, signal: AbortSignal) => Promise<string>;
 
 /** 打分那一刻的她：都是数和标签，没有任何原文。 */
@@ -37,6 +39,21 @@ export interface ReactionNow {
   readonly at: number;
   /** 这个角色最近做过的反应（算近期惩罚）。 */
   readonly recent: readonly ReactionDoneMark[];
+  /**
+   * I-136（Unbound v1 第 2 步）：身体互动直接读心情的数（不只标签）。说的话那一路不给这些，分数和原来一样。
+   * values / baseline / evidence：五个激素数和角色卡基线（按 moodLevel 读，50 = 基线）；boredom、longing：心情数值 B、M（0–100）；
+   * A：困意压力 0–1（shared/mood/fatigue.ts）。缺了哪个，那一项就不加不减。
+   */
+  readonly values?: MoodValues | null;
+  readonly baseline?: MoodValues | null;
+  readonly evidence?: number;
+  readonly boredom?: number;
+  readonly longing?: number;
+  readonly A?: number | null;
+  /** 点 / 拉在她身上的哪里（shared/mood/touch.ts）；没有部位的事件不给。 */
+  readonly part?: TouchPart | null;
+  /** 拉得多重 0–1（拉才有）。 */
+  readonly strength?: number;
 }
 export interface ReactionDoneMark { readonly id: string; readonly at: number }
 
@@ -51,6 +68,8 @@ export const REACTION_BLOCK_WORDS: Readonly<Record<ReactionBlock, string>> = Obj
 export interface ReactionScoreParts {
   readonly base: number; readonly lean: number; readonly mood: number; readonly sleepy: number;
   readonly recent: number; readonly offset: number; readonly jitter: number;
+  /** I-136：心情的数（激素、B、M、A）加减、部位加减、拉的力度加减（没有就是 0）。 */
+  readonly hormones?: number; readonly part?: number; readonly strength?: number;
 }
 /** 一个打过分的反应。`blocked` 不为空 = 过不了门槛，不进候选。 */
 export interface ReactionCandidate {
@@ -74,8 +93,10 @@ export interface ReactionAnswer {
   readonly picks: readonly ReactionPick[];
   readonly delta: Partial<Record<MoodChannel, number>>;
   readonly confidence: number;
-  /** I-040: the senses this message needs (shared/sense-router.ts), only when the prompt asked; null: not asked or unreadable. */
+  /** I-040: the senses this message needs (shared/senses/sense-router.ts), only when the prompt asked; null: not asked or unreadable. */
   readonly senses?: readonly SenseId[] | null;
+  /** I-117: the closed danger reading (shared/safety/judge-field.ts), only when the prompt asked; null: asked but unreadable. */
+  readonly danger?: DangerLevel | null;
 }
 
 /** 这件事的反应是谁定的。 */
@@ -88,7 +109,7 @@ export type ReactionHaikuOutcome = typeof REACTION_HAIKU_OUTCOMES[number];
 /** 表现做完的回答。 */
 export type ReactionPerformed = { readonly done: true } | { readonly done: false; readonly why: ReactionBlock };
 
-/** 一个表现（electron/reactions/performers.ts；测试可以注入假的）。 */
+/** 一个表现（electron/mood/reactions/performers.ts；测试可以注入假的）。 */
 export interface ReactionPerformer {
   /** 占不占舞台：两个占舞台的反应一前一后做（第二个在第一个做完后）。 */
   readonly stage: boolean;
@@ -120,7 +141,7 @@ export interface MoodReactionNote {
 }
 
 /**
- * MoodHost 通过它和反应主机说话（electron/mood.ts setReactionPort）。开关关着时主机不接（null），一切照旧。
+ * MoodHost 通过它和反应主机说话（electron/mood/mood.ts setReactionPort）。开关关着时主机不接（null），一切照旧。
  */
 export interface MoodReactionPort {
   /** 这个角色的脸红由反应清单决定（心情模型自己的脸红门槛这时不起作用）。 */

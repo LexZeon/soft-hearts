@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { mkdtemp, readFile, rm, writeFile, mkdir } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { AssetRegistry } from "../electron/assets";
-import { DEFAULT_SETTINGS } from "../shared/defaults";
+import { AssetRegistry } from "../electron/foundation/assets";
+import { DEFAULT_SETTINGS } from "../shared/foundation/defaults";
 import {
   validateAgentModel,
   validateChatRequest,
@@ -12,20 +12,20 @@ import {
   validateServiceBaseUrl,
   validateSettings,
   validateVoiceInput,
-} from "../electron/validation";
+} from "../electron/settings/validation";
 import {
   KEY_SENTINEL,
   publicSettings,
   resolveVoiceInputKey,
   SettingsStore,
-} from "../electron/settings";
-import { memoryProviderScope } from "../electron/companion";
-import type { AppSettings } from "../shared/contracts";
+} from "../electron/settings/settings";
+import { memoryProviderScope } from "../electron/brain/companion";
+import type { AppSettings } from "../shared/foundation/settings";
 import {
   codexArguments,
   codexEnvironment,
   chatCatalog,
-} from "../electron/codex";
+} from "../electron/safety/codex";
 
 test("local asset paths stay inside the explicitly selected directory", async () => {
   const tmp = await mkdtemp(path.join(os.tmpdir(), "mmd-assets-"));
@@ -157,7 +157,7 @@ test("retired OpenAI-compatible and Ollama connections load as the default Claud
   assert.deepEqual(validateProvider({ ...claude, apiKey: "stray" }), claude);
   assert.deepEqual(validateProvider({ ...claude, kind: "codex" }), claude);
   const settings = validateSettings({ ...structuredClone(DEFAULT_SETTINGS), provider: { kind: "ollama", baseUrl: "http://127.0.0.1:11434/v1", model: "llama3" } });
-  assert.deepEqual(settings.provider, fresh);
+  assert.deepEqual(settings.provider, { ...fresh, memoryModel: "" }, "I-222: the memory pin comes from the previous settings (the default's), never from the value");
 });
 
 test("a task model left over from Codex or the OpenAI-compatible/Ollama era loads as Claude Code's default", async () => {
@@ -208,7 +208,7 @@ test("a retired chat key stays byte-for-byte on disk, is never decrypted, and is
     const store = new SettingsStore(tmp, secret, new AssetRegistry());
     await store.load();
     assert.deepEqual(calls, [], "the old chat key is not decrypted");
-    assert.deepEqual(store.current.provider, validateProvider(null));
+    assert.deepEqual(store.current.provider, { ...validateProvider(null), memoryModel: "" }, "I-222: pinned where its memory was filed (the default connection)");
     assert.equal("apiKey" in publicSettings(store.current).provider, false);
     // A renderer that still sends a chat key cannot store it.
     const sent = publicSettings(store.current) as AppSettings & { provider: { apiKey?: string } };

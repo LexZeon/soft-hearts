@@ -1,6 +1,6 @@
 {
   "name": "soft-hearts-next",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "A small, modular MMD desktop companion",
   "license": "MIT",
@@ -39,6 +39,7 @@
     "dist:linux": "node scripts/package.mjs --linux tar.gz --x64"
   },
   "dependencies": {
+    "@pixiv/three-vrm-materials-mtoon": "3.5.5",
     "three": "0.170.0"
   },
   "devDependencies": {
@@ -71,8 +72,10 @@
     "extraResources": [
       { "from": "scripts/soft-hearts-mcp.mjs", "to": "agent-channel/soft-hearts-mcp.mjs" },
       { "from": "scripts/soft-hearts-task-mcp.mjs", "to": "agent-channel/soft-hearts-task-mcp.mjs" },
+      { "from": "scripts/soft-hearts-assistant-mcp.mjs", "to": "agent-channel/soft-hearts-assistant-mcp.mjs" },
       { "from": "scripts/agent-channel-wire.mjs", "to": "agent-channel/agent-channel-wire.mjs" },
-      { "from": "shared/agent-channel-catalog.json", "to": "agent-channel/agent-channel-catalog.json" }
+      { "from": "shared/safety/agent-channel-catalog.json", "to": "agent-channel/agent-channel-catalog.json" },
+      { "from": "docs", "to": "assistant-docs/docs", "filter": ["character-card-guide.md", "character-cards.md", "data-map.md", "knobs.md", "touching-her.md", "voice-design-guide.md", "release-notes/v0.1.0.md", "release-notes/v0.2.0.md"] }
     ],
     "win": {
       "target": "portable"

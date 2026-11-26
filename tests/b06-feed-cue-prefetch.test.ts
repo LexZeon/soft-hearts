@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import test, { type TestContext } from 'node:test';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { DEFAULT_TTS_CONFIG, type ApprovedReplySpeechSegment, type TtsConfig, type TtsStreamEvent } from '../shared/tts';
-import type { FeedCueKind } from '../shared/feed-cue';
-import { StreamingVoicePlayer } from '../src/ui/EmotionalVoice';
-import { VoiceOutput, type VoiceOutputEvent, type VoiceOutputPlaybackState } from '../src/ui/VoiceOutput';
-import { SharedAudioOutput } from '../src/ui/audio-output';
-import { CompletedReplySpeechQueue } from '../src/ui/completed-reply-speech-queue';
-import { FeedCuePlayer } from '../src/ui/feed-cue-player';
-import { FeedCuePrefetch, feedCueVoiceKey } from '../src/ui/feed-cue-prefetch';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { DEFAULT_TTS_CONFIG, type ApprovedReplySpeechSegment, type TtsConfig, type TtsStreamEvent } from '../shared/voice/tts';
+import type { FeedCueKind } from '../shared/initiative/feed-cue';
+import { StreamingVoicePlayer } from '../src/voice/EmotionalVoice';
+import { VoiceOutput, type VoiceOutputEvent, type VoiceOutputPlaybackState } from '../src/voice/VoiceOutput';
+import { SharedAudioOutput } from '../src/voice/audio-output';
+import { CompletedReplySpeechQueue } from '../src/voice/completed-reply-speech-queue';
+import { FeedCuePlayer } from '../src/initiative/feed-cue-player';
+import { FeedCuePrefetch, feedCueVoiceKey } from '../src/initiative/feed-cue-prefetch';
 import { flush, pcm } from './helpers/r02-audio-world';
 import { pauseAudioWorld } from './helpers/feed-pause-audio';
 
@@ -73,7 +73,7 @@ test('B06 prefetch: after the first reply, a new voice (voice, model, rate) is w
   assert.equal(feedCueVoiceKey(bailian), feedCueVoiceKey({ ...bailian, apiKey: 'other', instruction: 'x' }), 'the key and reply style are not part of the cue voice');
 });
 
-/** A pet window's reply voice and cue player, wired as src/main.ts does. */
+/** A companion window's reply voice and cue player, wired as src/main.ts does. */
 function petWindow(t: TestContext, options: { cueFails?: boolean } = {}) {
   const w = pauseAudioWorld(t);
   // The cue player's own clock (failure back-off); the audio world keeps the reply's.

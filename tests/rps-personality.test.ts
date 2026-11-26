@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULT_MOOD_PARAMETERS, type MoodParameters } from '../shared/mood';
+import { DEFAULT_MOOD_PARAMETERS, type MoodParameters } from '../shared/foundation/mood';
 import {
   RPS_INVITE_RULES, chooseRpsReaction, resolveRpsStyle, rpsAnswer, rpsChatContext, rpsInviteVerdict, rpsPlainLoss, rpsPlayfulness, scanRpsRequest, type RpsInviteInput,
-} from '../shared/rps-personality';
-import { rpsDiaryLine, rpsExpectedHand, rpsHabits, type RpsGameRecord } from '../shared/rps-memory';
+} from '../shared/initiative/rps-personality';
+import { rpsDiaryLine, rpsExpectedHand, rpsHabits, type RpsGameRecord } from '../shared/initiative/rps-memory';
 import { seeded } from './helpers/seeded';
 
 const card = (weights: Partial<MoodParameters['weights']>, playful = 50): MoodParameters => ({ ...DEFAULT_MOOD_PARAMETERS,
@@ -14,7 +14,7 @@ test('chat requests: request forms count, stories, refusals and other topics do 
   for (const yes of ['来玩猜拳吧', '猜拳！', '玩猜拳', '我们来猜拳', '要不要玩石头剪刀布？', '陪我玩猜拳嘛', '再来一局猜拳', '来一把石头剪刀布', '和我猜拳好不好',
     'let\'s play rock paper scissors', 'rock paper scissors?',
     // 2026-11-04: the user's own words were missed (a trailing 来), and other everyday forms.
-    '来玩一把猜拳来', '来一把猜拳啦', '玩会儿猜拳吧', '陪我玩两把猜拳', '猜拳来', '来来猜拳', '再来一局猜拳呗', '玩猜拳一下嘛'])
+    '来玩一局猜拳来', '来一把猜拳啦', '玩会儿猜拳吧', '陪我玩两把猜拳', '猜拳来', '来来猜拳', '再来一局猜拳呗', '玩猜拳一下嘛'])
     assert.equal(scanRpsRequest(yes), true, yes);
   for (const no of ['我今天和朋友玩猜拳输了', '不想玩猜拳', '别猜拳了', '猜拳是什么游戏', '你会猜拳吗我很好奇这个怎么来的', '今天好累', '', '猜拳'.repeat(40),
     '昨天玩猜拳来着', '猜拳好难啊', '不来猜拳了', '猜拳来来来来来'])
@@ -65,14 +65,14 @@ test('inviting: only a playful mood on a playful-enough card, never quiet or abs
   assert.ok(rpsPlayfulness({ primary: 'calm' }, card({ playful: 1.4 })) > rpsPlayfulness({ primary: 'calm' }, card({ playful: 1 })));
 });
 
-test('reactions: proud when she wins, sore or pretending to cheat when she loses, only a pleased face when she let the user win', () => {
-  const style = resolveRpsStyle({ soft: 1, tease: 3 }, card({ playful: 2 }, 100));
-  const r = (outcome: 'her' | 'user' | 'draw', intent: 'fair' | 'soft' | 'read', roll: number, teaseUsed = false, final: 'her' | 'user' | null = null) =>
+test('reactions: proud when she wins, sore or pretending to cheat when she loses, never rigged for the user', () => {
+  const style = resolveRpsStyle({ tease: 3 }, card({ playful: 2 }, 100));
+  const r = (outcome: 'her' | 'user' | 'draw', intent: 'fair' | 'read', roll: number, teaseUsed = false, final: 'her' | 'user' | null = null) =>
     chooseRpsReaction({ outcome, intent, userHand: 'rock', final, teaseUsed, style, random: () => roll });
   assert.equal(r('her', 'fair', 0.5).kind, 'win-round'); assert.equal(r('her', 'fair', 0.5, false, 'her').kind, 'win-game');
   assert.equal(r('her', 'read', 0.5).kind, 'habit');
   assert.equal(r('draw', 'fair', 0.5).face, 'surprised');
-  assert.deepEqual(r('user', 'soft', 0).kind, 'soft-lose');
+  assert.equal(r('user', 'fair', 0.99).kind, 'lose-round', 'a lost round is a plain loss, never a "let the user win" face');
   const tease = r('user', 'fair', 0);
   assert.equal(tease.kind, 'tease'); assert.equal(tease.tease, 'paper', 'the pretend hand beats the user\'s');
   assert.deepEqual(rpsPlainLoss('user'), { kind: 'lose-game', face: 'pout', tease: null }, 'a pretend cheat she will not say is a plain loss');

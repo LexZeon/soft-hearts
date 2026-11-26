@@ -3,14 +3,14 @@ import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { randomUUID, createHash } from 'node:crypto';
 import path from 'node:path';
-import { PersonalizeVisualControls } from '../src/ui/PersonalizeVisualControls';
-import { PersonalizeVisualAuthoring } from '../electron/personalize-visual-authoring';
-import { VisualBehaviorStore } from '../electron/visual-behavior-store';
-import { atomicWriteFile } from '../electron/atomic-file';
-import type { SelectedVisualImage } from '../electron/selected-visual-image';
-import { BEHAVIOR_RECIPES } from '../shared/behavior-recipes';
-import type { BehaviorFaceMotionId, BehaviorMotionResource } from '../shared/behavior-motion';
-import { VISUAL_MASK, VISUAL_GENE_SHA, type VisualPreview } from '../shared/personalize-visual';
+import { PersonalizeVisualControls } from '../src/stage/PersonalizeVisualControls';
+import { PersonalizeVisualAuthoring } from '../electron/stage/personalize-visual-authoring';
+import { VisualBehaviorStore } from '../electron/senses/visual-behavior-store';
+import { atomicWriteFile } from '../electron/foundation/atomic-file';
+import type { SelectedVisualImage } from '../electron/senses/selected-visual-image';
+import { BEHAVIOR_RECIPES } from '../shared/actions/behavior-recipes';
+import type { BehaviorFaceMotionId, BehaviorMotionResource } from '../shared/actions/behavior-motion';
+import { VISUAL_MASK, VISUAL_GENE_SHA, type VisualPreview } from '../shared/stage/personalize-visual';
 
 class Element {
   children: Element[] = []; textContent = ''; value = ''; disabled = false; hidden = false;
@@ -175,14 +175,14 @@ test('editing while research is pending aborts its lease and ignores even a late
   assert.equal(f.reservations[0].signal.aborted, true); gate.release(); await f.settle();
   assert.equal(f.reservations[0].released, true); assert.equal(f.store.get(f.a).revision, 0);
   assert.ok(!f.text().includes('合成图中眼角看不清')); assert.equal(f.field('choice').value, '');
-  assert.equal(all(f.root).find(n => n.tagName === 'img')!.src, 'data:,');
+  assert.equal(all(f.root).find(n => n.tagName === 'img')!.src, '');
 }));
 
 test('late image choice after switching cards is released and cannot populate the new card', async () => fixture(async f => {
   f.toggle(true); await f.settle(); const gate = f.gate('choose'); f.click('choose'); await microtasks();
   f.select(f.b); await microtasks(); gate.release(); await f.settle();
   assert.equal(f.released.length, 1); assert.ok(f.text().includes(`合成B · ${f.b}`));
-  assert.equal(all(f.root).find(n => n.tagName === 'img')!.src, 'data:,');
+  assert.equal(all(f.root).find(n => n.tagName === 'img')!.src, '');
   assert.equal(f.store.get(f.a).revision, 0); assert.equal(f.store.get(f.b).revision, 0); assert.equal(f.streams.length, 0);
 }));
 
@@ -200,5 +200,5 @@ test('closing during preview rejects late readiness; reopening and removing mate
   assert.equal(f.store.get(f.a).revision, 0); assert.equal(f.released.length, 1); assert.equal(f.button('save').disabled, true);
   f.toggle(true); await f.settle(); f.click('choose'); await f.settle(); selection(f); await preview(f);
   f.click('remove'); await f.settle(); assert.equal(f.released.length, 2); assert.equal(f.button('save').disabled, true);
-  assert.equal(all(f.root).find(n => n.tagName === 'img')!.src, 'data:,'); assert.deepEqual(await readdir(f.directory), []);
+  assert.equal(all(f.root).find(n => n.tagName === 'img')!.src, ''); assert.deepEqual(await readdir(f.directory), []);
 }));

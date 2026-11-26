@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { Bone, Group, PerspectiveCamera, Vector3 } from 'three';
-import { CHEEK_HIT_RANGE, projectCheekRegions } from '../src/stage/cheek-pinch-region';
-import { hitCheek, type CheekRegion } from '../src/ui/CheekPinch';
+import { CHEEK_HIT_RANGE, projectCheekRegions } from '../src/mood/cheek-pinch-region';
+import { hitCheek, type CheekRegion } from '../src/mood/CheekPinch';
 import type { BlushAnchors } from '../src/stage/procedural-blush';
 
 const anchors: BlushAnchors = {
@@ -217,4 +217,14 @@ test('the tunable range is frozen and expressed in eye distances', () => {
   assert.ok(Object.isFrozen(CHEEK_HIT_RANGE));
   for (const value of Object.values(CHEEK_HIT_RANGE)) assert.ok(Number.isFinite(value));
   assert.ok(CHEEK_HIT_RANGE.halfWidth > CHEEK_HIT_RANGE.halfHeight && CHEEK_HIT_RANGE.halfWidth <= 1);
+});
+
+test('the projection is read, never rebuilt: an off-axis projection set straight into the matrix survives (docs/claude/2026-11-21-unbound-wide.md)', () => {
+  const h = setup();
+  // Full-screen Unbound writes its frustum into projectionMatrix; fov / aspect say nothing about it.
+  h.camera.projectionMatrix.makePerspective(-0.03, 0.05, 0.02, -0.025, 0.1, 100);
+  h.camera.projectionMatrixInverse.copy(h.camera.projectionMatrix).invert();
+  const before = h.camera.projectionMatrix.toArray();
+  h.project();
+  assert.deepEqual(h.camera.projectionMatrix.toArray(), before);
 });

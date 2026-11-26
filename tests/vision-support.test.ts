@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { ProviderConfig } from '../shared/contracts';
-import { codexCatalogSupportsVision, VisionProviderSupport } from '../electron/vision-support';
+import type { ProviderConfig } from '../shared/foundation/settings';
+import { codexCatalogSupportsVision, VisionProviderSupport } from '../electron/senses/vision-support';
 
 const catalog = (models: unknown[]) => JSON.stringify({ models });
 const model = (slug: string, modalities: string[] = ['text', 'image']) => ({ slug, input_modalities: modalities });
@@ -31,7 +31,7 @@ test('malformed, missing and ambiguous selected-model capability metadata never 
 
 test('an unrecognized Claude model name stays unverified until an ordinary host image request succeeds', async () => {
   const support = new VisionProviderSupport(), signal = new AbortController().signal;
-  const provider: ProviderConfig = { kind: 'claude', baseUrl: 'http://127.0.0.1:1/v1', model: 'looks-like-vision' };
+  const provider: ProviderConfig = { kind: 'claude', baseUrl: 'http://127.0.0.1:1/v1', model: 'my-claude-vision' }; // I-222: a Claude-looking name it cannot read (a non-Claude name now runs on Opus)
   assert.equal(await support.supports(provider, signal), false);
   support.noteImageSuccess(provider);
   assert.equal(await support.supports(provider, signal), true);
@@ -39,16 +39,16 @@ test('an unrecognized Claude model name stays unverified until an ordinary host 
 
 test('successful image evidence is isolated by stored connection and exact model', async () => {
   const support = new VisionProviderSupport(), signal = new AbortController().signal;
-  const provider: ProviderConfig = { kind: 'claude', baseUrl: 'http://127.0.0.1:1/v1', model: 'audited' };
+  const provider: ProviderConfig = { kind: 'claude', baseUrl: 'http://127.0.0.1:1/v1', model: 'audited-claude' };
   support.noteImageSuccess(provider);
-  for (const next of [{ ...provider, baseUrl: 'http://127.0.0.1:2/v1' }, { ...provider, model: 'other' }])
+  for (const next of [{ ...provider, baseUrl: 'http://127.0.0.1:2/v1' }, { ...provider, model: 'other-claude' }])
     assert.equal(await support.supports(next, signal), false);
   assert.equal(await new VisionProviderSupport().supports(provider, signal), false);
 });
 
 test('aborted capability checks cannot reuse even verified evidence or launch a Codex subprocess', async () => {
   const support = new VisionProviderSupport();
-  const provider: ProviderConfig = { kind: 'claude', baseUrl: 'http://127.0.0.1:1/v1', model: 'audited' };
+  const provider: ProviderConfig = { kind: 'claude', baseUrl: 'http://127.0.0.1:1/v1', model: 'audited-claude' };
   support.noteImageSuccess(provider); const controller = new AbortController(); controller.abort();
   await assert.rejects(support.supports(provider, controller.signal), { name: 'AbortError' });
   await assert.rejects(support.supports({ ...provider, model: 'haiku' }, controller.signal), { name: 'AbortError' });
@@ -59,6 +59,9 @@ test('Claude image support follows the model name: Claude Code aliases and Claud
   const claude = (model: string): ProviderConfig => ({ kind: 'claude', baseUrl: 'http://127.0.0.1:11434/v1', model });
   for (const model of ['', 'haiku', 'sonnet', 'opus', 'opus[1m]', 'claude-sonnet-5-5', 'us.anthropic.claude-haiku-5-5'])
     assert.equal(await support.supports(claude(model), signal), true, model);
-  for (const model of ['gpt-5', 'llava', 'my-model', 'claude', 'haiku-ish'])
+  // I-222: a name that is not a Claude model never reaches --model; her chat runs on Opus, which takes pictures. So does the follow choice.
+  for (const model of ['gpt-5', 'llava', 'my-model', 'haiku-ish', 'follow-default'])
+    assert.equal(await support.supports(claude(model), signal), true, model);
+  for (const model of ['claude', 'my-claude', 'not-a-claude-id'])
     assert.equal(await support.supports(claude(model), signal), false, model);
 });

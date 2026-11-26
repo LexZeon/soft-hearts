@@ -1,6 +1,6 @@
 import { Bone, Matrix3, PerspectiveCamera, Vector3 } from 'three';
 import type { BlushAnchors, BlushPoint } from '../../src/stage/procedural-blush';
-import type { CheekRegion, CheekSide } from '../../src/ui/CheekPinch';
+import type { CheekRegion, CheekSide } from '../../src/mood/CheekPinch';
 
 const finiteVector = (value: Vector3): boolean => [value.x, value.y, value.z].every(Number.isFinite);
 const validTuple = (value: BlushPoint): boolean => Array.isArray(value) && value.length === 3 && value.every(Number.isFinite);

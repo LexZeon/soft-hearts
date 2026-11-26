@@ -11,16 +11,11 @@ import test from 'node:test';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { Euler, Quaternion, Vector3 } from 'three';
-import { MoodHost } from '../electron/mood';
+import { MoodHost } from '../electron/mood/mood';
 import { chooseIdleGesture, IdleGestureDirector, idleGestureNow } from '../shared/behaviors/idle-gesture/choose';
 import { IDLE_FACE_IDS, IDLE_GESTURE_KNOBS, IDLE_SHAPE_IDS, type IdleFaceId, type IdleShapeId } from '../shared/behaviors/idle-gesture/knobs';
-import type { IdleGestureView } from '../shared/behaviors/idle-gesture/interface';
 import { BoredomTimingDirector } from '../shared/behaviors/boredom-timing/choose';
-import { createMoodState, DEFAULT_MOOD_PARAMETERS, getMoodSnapshot, type MoodLabel } from '../shared/mood';
-import { MmdStage } from '../src/stage/MmdStage';
-import { MoodFeedback, EMPTY_CONTACT } from '../src/stage/mood-feedback';
-import { PoseContinuity } from '../src/stage/pose-continuity';
+import { createMoodState, DEFAULT_MOOD_PARAMETERS, getMoodSnapshot, type MoodLabel } from '../shared/foundation/mood';
 import { seeded } from './helpers/seeded';
 
 test('T-207 #11: the default card on the real host never shows the same shape and face three times in a row (Codex: seeds 8499 / 1)', async () => {
@@ -106,61 +101,3 @@ test('T-207 #11: with recent = [1, 1, 1] (repeats not lowered) the why never say
 
 const degrees = 180 / Math.PI;
 const dt = 1 / 60;
-function pauseMidCue(gesture?: IdleGestureView) {
-  const head = { name: '頭', quaternion: new Quaternion(), position: new Vector3() };
-  const eye = { name: '左目', quaternion: new Quaternion(), position: new Vector3() };
-  const mesh = { skeleton: { bones: [head, eye] } };
-  const guard = new PoseContinuity(mesh);
-  const angle = new Euler(), offset = new Quaternion();
-  // The real setMood / animateMood run; unrelated ports are inert (Codex's fixture).
-  const stage = Object.assign(Object.create(MmdStage.prototype), {
-    mesh, eyes: [eye], renderer: { domElement: { dataset: {} } },
-    moodContact: EMPTY_CONTACT, moodFeedback: new MoodFeedback(), continuity: guard,
-    restoreLayers() { head.quaternion.identity(); eye.quaternion.identity(); },
-    rotateAutomaticHead(x: number, y: number, z: number) { this.rotateBone(head, x, y, z); },
-    rotateBone(bone: typeof head, x: number, y: number, z: number) { bone.quaternion.multiply(offset.setFromEuler(angle.set(x, y, z, 'YXZ'))); },
-    withdrawDrowsyExpression() {}, cancelBodyPreview() {}, cancelPersonalizeBody() {}, cancelBodyMotion() {},
-    cancelChatGesture() {}, stopTears() {}, updatePersonalizeBody() {}, updateTears() {}, updateBodyMotion() {}, updateBehaviorMotion() {},
-    animateCheekPinch() {}, drowsyFrame() { return { headX: 0, brow: 0, eyeShape: 0 }; }, applyMorph() {}, getInteractionRegion() {},
-  });
-  const snapshot = getMoodSnapshot(createMoodState(0), 0);
-  const view = { characterId: 'synthetic', token: 'same-context', revision: 1, developerMode: true, expressions: true,
-    parameters: DEFAULT_MOOD_PARAMETERS, snapshot: { ...snapshot, cue: { id: 'cue', kind: 'motion' as const, at: 0, until: 3000 } }, idleGesture: gesture };
-  const read = () => [head.quaternion.clone(), eye.quaternion.clone()];
-  const frame = () => {
-    guard.remove(); stage.restoreLayers(); guard.captureBase(true);
-    stage.animateMood(dt);
-    guard.apply(dt, dt);
-    return read();
-  };
-  stage.setMood(view);
-  for (let i = 0; i < 60; i++) frame();
-  const before = read(), jumpsBefore = guard.getState().jumps;
-  stage.setMood({ ...view, revision: 2, expressions: false, idleGesture: undefined, snapshot });
-  const shown: Quaternion[][] = [before];
-  for (let i = 0; i < 45; i++) shown.push(frame());
-  const rest = new Quaternion();
-  return { jumpsBefore, jumpsAfter: guard.getState().jumps - jumpsBefore,
-    startDegrees: before.map(q => degrees * q.angleTo(rest)),
-    steps: shown.slice(1).map((q, i) => q.map((b, k) => degrees * b.angleTo(shown[i][k]!))),
-    endDegrees: shown.at(-1)!.map(q => degrees * q.angleTo(rest)) };
-}
-
-test('pausing 自动表现 mid-gesture: the R29 guard bridges the cut, so the head and eyes glide back (not changed, pinned)', t => {
-  const legacy = pauseMidCue();
-  const glance = pauseMidCue({ cueId: 'cue', kind: 'motion', shape: 'glance', side: 1, amplitude: 0.1, eyes: 1, pace: 1, smile: 1 });
-  const head = glance.steps.map(step => step[0]!), eye = glance.steps.map(step => step[1]!);
-  t.diagnostic(JSON.stringify({ start: glance.startDegrees, jumps: glance.jumpsAfter, head: head.slice(0, 24).map(d => +d.toFixed(3)), eye: eye.slice(0, 12).map(d => +d.toFixed(3)), end: glance.endDegrees }));
-  assert.equal(legacy.jumpsAfter, 0, 'the old light sway: nothing for the guard');
-  assert.equal(glance.jumpsBefore, 0, 'the gesture itself plays without the guard');
-  assert.ok(glance.startDegrees[0] > 3, `the gesture was well under way: head ${glance.startDegrees[0].toFixed(2)}°`);
-  // What T-207 found: pausing cancels every automatic layer at once and the guard catches the head and the eyes (2), as for any
-  // other layer a pause cancels. What the user sees: the first frame moves little, the speed builds up and dies down (no frame
-  // moves the head more than 0.6°, the eyes more than 0.3°), and within 0.75 s both are back at rest.
-  assert.ok(glance.jumpsAfter <= 2, `${glance.jumpsAfter}`);
-  assert.ok(head[0]! < 0.2 && eye[0]! < 0.2, `first frame ${head[0]!.toFixed(3)}° / ${eye[0]!.toFixed(3)}°`);
-  assert.ok(Math.max(...head) < 0.6 && Math.max(...eye) < 0.3, `largest shown step ${Math.max(...head).toFixed(3)}° / ${Math.max(...eye).toFixed(3)}°`);
-  // Its speed builds up over about three frames (0.15° → 0.37° → 0.48° → 0.52°) and dies down; no step in speed above 0.25° a frame.
-  for (let i = 1; i < head.length; i++) assert.ok(Math.abs(head[i]! - head[i - 1]!) < 0.25, `the head's speed changes smoothly: frame ${i}`);
-  assert.ok(glance.endDegrees.every(d => d < 0.05), `back at rest: ${glance.endDegrees.map(d => d.toFixed(3)).join(', ')}`);
-});

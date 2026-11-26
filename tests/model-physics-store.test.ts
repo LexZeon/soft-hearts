@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import { mkdtemp, readFile, readdir, rename, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { atomicWriteFile, createAtomicFileWriter, type AtomicFileWriter } from "../electron/atomic-file";
-import { ModelPhysicsSettingsStore } from "../electron/model-physics-settings";
-import { DEFAULT_MODEL_PHYSICS, type ModelPhysicsSettings } from "../shared/model-physics";
+import { atomicWriteFile, createAtomicFileWriter, type AtomicFileWriter } from "../electron/foundation/atomic-file";
+import { ModelPhysicsSettingsStore } from "../electron/stage/model-physics-settings";
+import { DEFAULT_MODEL_PHYSICS, type ModelPhysicsSettings } from "../shared/stage/model-physics";
 
 const tuned: ModelPhysicsSettings = {
   hair: { enabled: true, strength: 0.79 },

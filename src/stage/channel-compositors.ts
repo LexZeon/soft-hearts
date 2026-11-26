@@ -41,6 +41,13 @@ export interface EyelidRequests {
   /** R36 lid shapes on their own morphs; the shown values yield to the blink pulse. */
   smileEyes?: number;
   jitome?: number;
+  /**
+   * Whether the lid shapes above sit on the same vertices as the blink morph, so they already show part of the closure
+   * (the reviewed Gene: true; default true). On a model where they do not overlap (false), a pat's enjoyed closure
+   * (contact leads the request) is written to the blink morph in full instead of being capped to 1 - smileEyes, which
+   * left a gap between the lids.
+   */
+  lidShapesOverlap?: boolean;
 }
 export interface EyelidFrame {
   /** Value for the blink morph. */
@@ -96,7 +103,8 @@ export class EyelidCompositor {
     // Lid shapes give way as the blink closes, so the blink morph alone carries a full closure.
     const open = 1 - natural;
     const smileEyes = clamp01(input.smileEyes ?? 0) * open, jitome = clamp01(input.jitome ?? 0) * open;
-    const shared = Math.max(clamp01(input.sharedClosure ?? 0), smileEyes, jitome);
+    const patLed = input.lidShapesOverlap === false && clamp01(input.contact) >= Math.max(clamp01(input.cheek), clamp01(input.fatigue), 0.5);
+    const shared = Math.max(clamp01(input.sharedClosure ?? 0), patLed ? 0 : Math.max(smileEyes, jitome));
     return { blink: Math.min(closure, 1 - shared), closure, held, smileEyes, jitome };
   }
 }

@@ -1,14 +1,14 @@
 /**
  * I-038 part A (3): the personal pose (个性化姿势: an arm's soft bend, the other arm, a head or torso tweak) on any model.
  *
- * A pose binding is written on Gene: bone index + Gene name + a local rotation (shared/personalize-body-bindings.ts,
- * electron/personalize-body-tweak.ts). On the reviewed Gene it is applied exactly as before. On another model each rotation goes
+ * A pose binding is written on Gene: bone index + Gene name + a local rotation (shared/stage/personalize-body-bindings.ts,
+ * electron/stage/personalize-body-tweak.ts). On the reviewed Gene it is applied exactly as before. On another model each rotation goes
  * through the same retargeting a library motion gets (universal-target.ts `convertRotations`: renamed bones, A/T-pose arm
  * alignment, a missing shoulder folded into the arm) and lands on that model's own bone. What cannot land is skipped and named:
  * a bone the model lacks, and the torso's "current lean" (written for Gene's upper body under its groove; not carried yet).
  */
 import type { Bone, Quaternion, SkinnedMesh } from 'three';
-import type { BodyPoseProperty } from '../../shared/personalize-body';
+import type { BodyPoseProperty } from '../../shared/stage/personalize-body';
 import { PersonalizeStaticPose } from './personalize-static-pose';
 import { universalTarget } from './universal-target';
 

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { layoutReply, type ReplyAnchor, type ReplyBounds, type ReplyLayout } from "../electron/reply-layout";
+import { layoutReply, type ReplyAnchor, type ReplyBounds, type ReplyLayout } from "../electron/brain/reply-layout";
 
 const area = { x: 0, y: 0, width: 1920, height: 1040 };
 const owner = { x: 100, y: 200, width: 400, height: 560 };

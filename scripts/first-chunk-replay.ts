@@ -2,7 +2,7 @@
 //   node node_modules/tsx/dist/cli.mjs scripts/first-chunk-replay.ts [--seeds 5] [--verbose]
 // Fake stream, fake bubble paint, fake voices, virtual clock: no window, no Claude, no Bailian, nothing paid. Light (seconds).
 import { CASES, LATENCY, PROFILES, percentile, replay, type ReplayResult, type Voice } from '../tests/fixtures/first-chunk-replay';
-import { FIRST_CHUNK_MIN_UNITS, type FirstSpeechChunk } from '../shared/first-speech-chunk';
+import { FIRST_CHUNK_MIN_UNITS, type FirstSpeechChunk } from '../shared/voice/first-speech-chunk';
 
 const args = process.argv.slice(2);
 const seeds = Number(args[args.indexOf('--seeds') + 1]) > 0 && args.includes('--seeds') ? Number(args[args.indexOf('--seeds') + 1]) : 5;

@@ -1,15 +1,15 @@
 // C3 预试用问题 1（2026-11-03）：原地更新角色卡（同一个角色编号、人设变了）不能结束当前这段对话。
 // 用真实的 CompanionService 和聊天记忆（临时目录）：更新前说的话，更新后这段对话里还在，下一轮起用新人设；
-// 换成另一个角色才照旧分开。聊天窗口用主进程给的"她现在这段对话"重新填上（src/ui/chat-continuity.ts）。
+// 换成另一个角色才照旧分开。聊天窗口用主进程给的"她现在这段对话"重新填上（src/brain/chat-continuity.ts）。
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CompanionService, type CompanionTurn } from '../electron/companion';
-import type { ProviderConfig } from '../shared/contracts';
-import { restoredChatHistory } from '../src/ui/chat-continuity';
-import { outgoingChatMessages } from '../src/ui/reply-history';
+import { CompanionService, type CompanionTurn } from '../electron/brain/companion';
+import type { ProviderConfig } from '../shared/foundation/settings';
+import { restoredChatHistory } from '../src/brain/chat-continuity';
+import { outgoingChatMessages } from '../src/brain/reply-history';
 
 const provider: ProviderConfig = { kind: 'claude', baseUrl: 'http://127.0.0.1:11434/v1', model: '' };
 

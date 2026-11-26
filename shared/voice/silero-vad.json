@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "name": "Silero VAD",
+  "use": "I-099: voice activity in a call only (start, end, talking over her); runs on this computer, offline",
+  "version": "v6.2",
+  "repository": "https://github.com/snakers4/silero-vad",
+  "url": "https://raw.githubusercontent.com/snakers4/silero-vad/v6.2/src/silero_vad/data/silero_vad.onnx",
+  "retrieved": "2026-11-12",
+  "license": {
+    "id": "MIT",
+    "url": "https://github.com/snakers4/silero-vad/blob/v6.2/LICENSE",
+    "attribution": "Copyright (c) 2020-present Silero Team"
+  },
+  "model": { "relativePath": "silero-vad/silero_vad.onnx", "bytes": 2327524, "sha256": "1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3" },
+  "licenseFile": { "relativePath": "silero-vad/LICENSE", "bytes": 1075, "sha256": "2e63e9a38b6e8fc0c7bc37ce174caca1862870856c6daf5697cfb785e925520b" }
+}

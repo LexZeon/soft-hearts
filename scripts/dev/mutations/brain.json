@@ -1,0 +1,4476 @@
+[
+ {
+  "id": "T1-chat-writable",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "workingDirectory: path.join(store.directory, \"chat\"),\n              writable: false,",
+  "replace": "workingDirectory: path.join(store.directory, \"chat\"),\n              writable: true,",
+  "what": "聊天一轮交给常驻进程的任务改成可写（陪伴聊天必须不带工具）",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "T2-chat-kind",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "kind: \"chat\",\n              model: settings.provider.model,",
+  "replace": "kind: \"agent\",\n              model: settings.provider.model,",
+  "what": "聊天一轮交给常驻进程的任务改成 agent 任务（带工具的那种）",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "A1-operation-twice",
+  "part": "brain",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "      await operation(controller.signal, emit);\n      emit(\"done\", \"\");",
+  "replace": "      await operation(controller.signal, emit);\n      await operation(controller.signal, emit);\n      emit(\"done\", \"\");",
+  "what": "一次回复的任务跑两遍（她的这一轮被开始、存档两次）",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "A2-concurrent-chats",
+  "part": "brain",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "if (pending.has(id) || [...pending.values()].some((t) => t.kind === kind))",
+  "replace": "if (pending.has(id))",
+  "what": "一条回复还在跑时，第二条聊天也能开始",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "A3-same-id",
+  "part": "brain",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "if (pending.has(id) || [...pending.values()].some((t) => t.kind === kind))",
+  "replace": "if ([...pending.values()].some((t) => t.kind === kind))",
+  "what": "和正在跑的任务同一个编号也能开始（旧任务的记录被顶掉）",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "A4-stopped-as-complete",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "await turn?.finish(signal.aborted ? 'stopped' : 'error');",
+  "replace": "await turn?.finish('complete');",
+  "what": "停掉或出错的回复按完成存档（停了的回复也给心情奖励）",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "A5-complete-after-abort",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "signal.throwIfAborted();\n          await turn.finish('complete');",
+  "replace": "await turn.finish('complete');",
+  "what": "回复流完时已经停了，照样按完成存档",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "C1-finish-twice",
+  "part": "brain",
+  "file": "electron/brain/companion.ts",
+  "find": "if (finishing) return finishing;",
+  "replace": "",
+  "what": "大脑核心：同一轮 finish 两次就存档、奖励两次（CompanionTurn.finish 不再只认第一次）",
+  "tests": [
+   "tests/companion.test.ts",
+   "tests/c3-update-keeps-conversation.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-readout-latency.test.ts",
+   "tests/draft-fill.test.ts"
+  ]
+ },
+ {
+  "id": "S1-history-scope",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "if (acceptedSpeechScope === ownerScopeNow() && JSON.stringify(settings.provider) === JSON.stringify(store.current.provider))\n            voiceHost.history",
+  "replace": "if (JSON.stringify(settings.provider) === JSON.stringify(store.current.provider))\n            voiceHost.history",
+  "what": "换了对话后，旧回复照样写进语音的上下文",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "S2-r20-scope",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "if (!turnFrames.asked().length && settings.provider.kind === 'claude' && acceptedSpeechScope === ownerScopeNow()",
+  "replace": "if (!turnFrames.asked().length && settings.provider.kind === 'claude'",
+  "what": "换了对话后，旧回复照样交给 R20 的待办提议",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "S3-emoji-context",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "if (acceptedEmojiContext === singleEmojiContext())",
+  "replace": "if (true)",
+  "what": "单 emoji 的上下文变了，旧回复照样弹 emoji",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "S4-speech-scope",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "if (mood && acceptedSpeechScope === ownerScopeNow()) {",
+  "replace": "if (mood) {",
+  "what": "换了对话后，旧回复照样定朗读的语气、照样朗读",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "S5-command-stale",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "isCurrent: () => pending.get(request.id)?.controller.signal === signal\n",
+  "replace": "isCurrent: () => true\n",
+  "what": "桌宠操作的确认不看这一轮的任务是否还是它（被顶掉的旧操作照样执行）",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "S6-profile-lease-other",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "if (pending.get(request.id)?.controller !== profileOwner.controller) return false;",
+  "replace": "",
+  "what": "资料上下文的中止会停掉同编号的另一个任务",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "S7-offers-after-abort",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "replyLatency.complete(request.id);\n          signal.throwIfAborted();",
+  "replace": "replyLatency.complete(request.id);",
+  "what": "存档时停掉的回复，照样发她的文件夹、带我去、聊天设置的提议和 R20",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "S8-refusal-current",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "current: () => !signal.aborted && acceptedSpeechScope === ownerScopeNow()",
+  "replace": "current: () => true",
+  "what": "I-134 的拒答兜底在停掉或换了对话后照样再问一次",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "S9-context-keeps-process",
+  "part": "brain",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "companion.onContextChange(() => { claudeChat.close('context'); ",
+  "replace": "companion.onContextChange(() => { ",
+  "what": "换了上下文（角色、连接、新对话）后，旧的常驻聊天进程不关（新消息接着旧上下文）",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "S10-new-conversation-keeps-reply",
+  "part": "brain",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "task.controller.abort();\n        await companion.newConversation();",
+  "replace": "await companion.newConversation();",
+  "what": "「新对话」不停掉正在回的那条",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "S11-cancel-no-abort",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "task?.controller.abort();\n      if (task?.kind === 'chat'",
+  "replace": "if (task?.kind === 'chat'",
+  "what": "点停止不停掉回复",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "S12-cancel-other-window",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "if (task && task.kind !== \"chat\" && task.owner !== sender)\n        throw new Error(\"此任务属于另一个窗口。\");",
+  "replace": "",
+  "what": "一个窗口能停掉另一个窗口的 Claude 任务",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "S13-image-other-provider",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "if (request.attachments.length && JSON.stringify(settings.provider) === JSON.stringify(store.current.provider)) {",
+  "replace": "if (request.attachments.length) {",
+  "what": "换了连接后，旧回复的看图成功记到新连接上",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "L1-listen-off-transcript",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "if (audioSession) turn.persona += ambientContextText(ambientStore.context(audioSession.scope, { sessionId: audioSession.sessionId }));",
+  "replace": "turn.persona += ambientContextText(ambientStore.context(turn.scope as never, {}));",
+  "what": "隐私：听的开关关着（没有收听会话）时，聊天这一轮照样带上听到的文字",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "L2-listen-other-session",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "if (audioSession) turn.persona += ambientContextText(ambientStore.context(audioSession.scope, { sessionId: audioSession.sessionId }));",
+  "replace": "if (audioSession) turn.persona += ambientContextText(ambientStore.context(audioSession.scope, {}));",
+  "what": "隐私：聊天这一轮带上别的收听会话（以前那次）听到的文字",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "P1-pending-keeps-finished",
+  "part": "brain",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "} finally {\n      pending.delete(id);",
+  "replace": "} finally {",
+  "what": "任务结束后还留在 pending 里（之后的聊天一直被挡）",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "P2-reserve-release-other",
+  "part": "brain",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "if(pending.get(id)?.controller===controller)pending.delete(id);",
+  "replace": "pending.delete(id);",
+  "what": "研究租约迟到的释放删掉了后来的租约",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "P3-reserve-shared",
+  "part": "brain",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "if (exiting || pending.size || asrTask",
+  "replace": "if (exiting || asrTask",
+  "what": "两个研究（或研究和聊天）共用一个租约",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "P4-reserve-while-speaking",
+  "part": "brain",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "|| replySpeechBusy() || ambientSpeakingOwners.size)",
+  "replace": "|| ambientSpeakingOwners.size)",
+  "what": "她正在朗读回复时也能开始研究",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "O1-stop-as-outage",
+  "part": "brain",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "aborted: controller.signal.aborted, availability: chatAvailability",
+  "replace": "aborted: false, availability: chatAvailability",
+  "what": "用户点停止，窗口却显示她“出问题了”的台词",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "O2-outage-line-while-chatting",
+  "part": "brain",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "chatBusy: () => [...pending.values()].some(task => task.kind === 'chat'), publish: view => broadcast('desk:chat-availability'",
+  "replace": "chatBusy: () => false, publish: view => broadcast('desk:chat-availability'",
+  "what": "她正在回复时也去预先生成“出问题时”的台词（多占用 Claude）",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "R1-router-unavailable",
+  "part": "brain",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "createModuleRouter({ available: () => chatAvailability.isAvailable(),",
+  "replace": "createModuleRouter({ available: () => true,",
+  "what": "Claude 不可用时调度台照样问 haiku",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "R2-pausetalk-unavailable",
+  "part": "brain",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "pauseTalk === true, available: () => chatAvailability.isAvailable(),",
+  "replace": "pauseTalk === true, available: () => true,",
+  "what": "Claude 不可用时停停说说照样问 haiku",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "J1-speak-only-signal",
+  "part": "brain",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "(await quickLineWithClaude(prompt, system, signal)).text",
+  "replace": "(await quickLineWithClaude(prompt, system)).text",
+  "what": "她只管说话的心情判断不跟着回复停（停掉的回复照样花一次 haiku）",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "I1-relaxed-without-speak-only",
+  "part": "brain",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "relaxed: relaxedPromptsActive(switches, SPEAK_ONLY_ON)",
+  "replace": "relaxed: switches.relaxed",
+  "what": "I-139 在“她只管说话”关着时也会打开（关掉开关时的金标准不再成立）",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "G1-greeting-off",
+  "part": "brain",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "new GreetingArchive({ enabled: LONG_CHAT.enabled,",
+  "replace": "new GreetingArchive({ enabled: true,",
+  "what": "I-134 关着时她的开场白也写进存档",
+  "tests": [
+   "tests/brain-gates.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-skeleton.test.ts",
+   "tests/wiring-parts.test.ts",
+   "tests/i139-switch-off-golden.test.ts",
+   "tests/camera-two-switches.test.ts",
+   "tests/chat-refusal-fallback.test.ts",
+   "tests/claude-session-shown.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/her-state-line.test.ts",
+   "tests/i137-sense-cards.test.ts",
+   "tests/i139-defences.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/listen-late-window.test.ts",
+   "tests/long-chat-session.test.ts",
+   "tests/long-chat-voice-greeting.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/mood-router-reentry.test.ts",
+   "tests/perception-off-no-screen.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/test-command-background-calls.test.ts",
+   "tests/test-command-wiring.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/claude-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "B5-chat-action-any-word",
+  "part": "brain",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "if (!isChatActionWord(word)) throw new Error('不是她会做的小动作。'); ",
+  "replace": "",
+  "what": "内部通道的 play_her_action 能播任何词（只该是她会做的小动作）",
+  "tests": [
+   "tests/step5-handlers.test.ts",
+   "tests/app-identity.test.ts",
+   "tests/app-session.test.ts",
+   "tests/audio-dance-input.test.ts",
+   "tests/audio-reading-app-wiring.test.ts",
+   "tests/brain-gates.test.ts",
+   "tests/bundle-inputs.test.mjs",
+   "tests/camera-two-switches.test.ts",
+   "tests/character-context-lifecycle.test.ts",
+   "tests/claude-per-message-frames.test.ts",
+   "tests/clipboard-permission.test.ts",
+   "tests/companion-breath.test.ts",
+   "tests/companion-command-adapter.test.ts",
+   "tests/companion-framing.test.ts",
+   "tests/desktop-entry-chain.test.ts",
+   "tests/i084-look-at-me.test.ts",
+   "tests/initiative-gates.test.ts",
+   "tests/layer-check.test.mjs",
+   "tests/listen-late-window.test.ts",
+   "tests/look-stale-frame.test.ts",
+   "tests/media-input.test.ts",
+   "tests/memory-privacy-gates.test.ts",
+   "tests/model-physics-wiring.test.ts",
+   "tests/mood-gates.test.ts",
+   "tests/motion-track-coverage.test.ts",
+   "tests/motion-weights-ipc.test.ts",
+   "tests/music-settings-wiring.test.ts",
+   "tests/part-table.test.ts",
+   "tests/personalize-authoring-host.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/personalize-expression.test.ts",
+   "tests/personalize-language-host.test.ts",
+   "tests/personalize-visual-host.test.ts",
+   "tests/pet-always-on-top-host.test.ts",
+   "tests/pose-privacy.test.ts",
+   "tests/public-snapshot.test.mjs",
+   "tests/r20-proactive-offer-main.test.ts",
+   "tests/r20-proactive-offer-ui.test.ts",
+   "tests/r27-prefix-host-caller.test.ts",
+   "tests/r34-main-integration.test.ts",
+   "tests/r34-playback-host.test.ts",
+   "tests/r41-visibility-host-path.test.ts",
+   "tests/recall-late-window.test.ts",
+   "tests/reply-speech-native-receipt.test.ts",
+   "tests/screen-rough-only.test.ts",
+   "tests/senses-privacy-gates.test.ts",
+   "tests/size-check.test.mjs",
+   "tests/sleep-entry-ready.test.ts",
+   "tests/speech-playback-admission.test.ts",
+   "tests/stage-gates.test.ts",
+   "tests/structure-inventory.test.mjs",
+   "tests/surprise-preview-wiring.test.ts",
+   "tests/test-affected.test.mjs",
+   "tests/test-command-wiring.test.ts",
+   "tests/test-parts.test.mjs",
+   "tests/text-invitation-archive.test.ts",
+   "tests/text-memorial-question-binding.test.ts",
+   "tests/ui-language-entry.test.ts",
+   "tests/unbound-read-aloud.test.ts",
+   "tests/user-profile-chat-wiring.test.ts",
+   "tests/user-profile-context.test.ts",
+   "tests/user-profile-host-wiring.test.ts",
+   "tests/visual-self-main-wiring.test.ts",
+   "tests/voice-wiring-gaps.test.ts",
+   "tests/wiring-golden.test.mjs",
+   "tests/wiring-parts.test.ts",
+   "tests/wiring-skeleton.test.ts"
+  ]
+ },
+ {
+  "id": "W4-closed-window-task-runs-on",
+  "part": "brain",
+  "file": "electron/wiring/brain-cleanup-wiring.ts",
+  "find": "      task.controller.abort();\n",
+  "replace": "",
+  "what": "窗口关闭时它在跑的任务不中止（只从表里删掉）",
+  "tests": [
+   "tests/window-events-order.test.ts",
+   "tests/personalize-authoring-lifetime.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "Q8-chat-wait-gone",
+  "part": "brain",
+  "file": "electron/wiring/brain-cleanup-wiring.ts",
+  "find": "  while ([...pending.values()].some(task => task.kind === 'chat') && Date.now() < deadline)\n    await new Promise(resolve => setTimeout(resolve, 25));\n",
+  "replace": "",
+  "what": "退出时不等在跑的对话（它们未写完的文字丢掉）",
+  "tests": [
+   "tests/quit-order.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "T253-A1-overlap-ignored",
+  "file": "electron/brain/reply-avoid.ts",
+  "find": "    if (overlapsRect(global, avoid)) return;\n",
+  "replace": "",
+  "what": "气泡避让：候选位置不再检查是否压在控制窗口上（避了也照样压）",
+  "tests": [
+   "tests/reply-avoid.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "T253-A2-no-hysteresis",
+  "file": "electron/brain/reply-avoid.ts",
+  "find": "sameAvoid ? AVOID_HYSTERESIS : 0",
+  "replace": "0",
+  "what": "气泡避让：去掉回差，控制窗口边上一点点就来回跳",
+  "tests": [
+   "tests/reply-avoid.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "T253-A3-kept-dropped",
+  "file": "electron/brain/reply-avoid.ts",
+  "find": "  if (sameAvoid) { const kept",
+  "replace": "  if (false) { const kept",
+  "what": "气泡避让：控制窗口没动也重新挑位置（已选的位置还空着也换）",
+  "tests": [
+   "tests/reply-avoid.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "T253-A4-no-room-hides",
+  "file": "electron/brain/reply-avoid.ts",
+  "find": "  if (!best) return today;",
+  "replace": "  if (!best) return { layout: null, memory: null, avoided: false };",
+  "what": "气泡避让：没地方可避时把她的回复藏起来（应退回今天的位置照常显示）",
+  "tests": [
+   "tests/reply-avoid.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "T253-A5-temporary-side-remembered",
+  "file": "electron/brain/reply-avoid.ts",
+  "find": "  return { layout: best.layout, baseSide: base.side, memory:",
+  "replace": "  return { layout: best.layout, baseSide: best.layout.side, memory:",
+  "what": "气泡避让：把临时换到的那一边记成以后的方向（控制窗口走了也回不来）",
+  "tests": [
+   "tests/reply-avoid.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "T253-A6-window-side",
+  "file": "electron/brain/reply-window.ts",
+  "find": "    this.side = this.keeper.side ?? layout.side;",
+  "replace": "    this.side = layout.side;",
+  "what": "回复气泡窗口记住了避让时的临时方向",
+  "tests": [
+   "tests/reply-avoid.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "T253-A7-window-ignores-avoid",
+  "file": "electron/brain/reply-window.ts",
+  "find": "this.side, this.waiting, avoid).layout;",
+  "replace": "this.side, this.waiting, null).layout;",
+  "what": "回复气泡窗口不读控制窗口的位置（照旧压住发送、停止）",
+  "tests": [
+   "tests/reply-avoid.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "T253-A8-no-band-tier",
+  "file": "electron/brain/reply-avoid.ts",
+  "find": "    if (choice.avoided || !choice.layout || !overlapsRect(choice.layout.bounds, tier)) return choice;",
+  "replace": "    return choice;",
+  "what": "气泡避让：整个控制窗口躲不开时，不再退一步至少让开输入、发送、停止那一条",
+  "tests": [
+   "tests/reply-avoid.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "SB1-own-bad-word-shown",
+  "file": "shared/behaviors/speech-beats/choose.ts",
+  "find": "    return own ? { kind: 'drop', rest: '' } : { kind: 'text' };",
+  "replace": "    return { kind: 'text' };",
+  "what": "边说边演：她自己的 ⟦词⟧ 里不是词表里的词时，不再整个丢掉，会显示出来",
+  "tests": [
+   "tests/speech-beats.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "SB2-unclosed-own-shown",
+  "file": "shared/behaviors/speech-beats/choose.ts",
+  "find": "  if (!own) return { kind: 'text' };",
+  "replace": "  if (true) return { kind: 'text' };",
+  "what": "边说边演：没闭合的 ⟦ 不再丢掉，连着后面的英文显示出来",
+  "tests": [
+   "tests/speech-beats.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "SB3-split-not-held",
+  "file": "shared/behaviors/speech-beats/choose.ts",
+  "find": "  if (!final && Array.from(held).length <= maxChars && ((double ? WORDISH_DOUBLE : WORDISH).test(body) || goPending(body, double))) return { kind: 'pending' };",
+  "replace": "  if (false) return { kind: 'pending' };",
+  "what": "边说边演：标记被拆在两段里时不再先留着等它写完，半个标记会漏出来",
+  "tests": [
+   "tests/speech-beats.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "SB4-no-beat-limit",
+  "file": "shared/behaviors/speech-beats/choose.ts",
+  "find": "    if (this.beats.length >= this.knobs.maxBeats || here.length >= this.knobs.maxAtOnce) { this.dropped += 1; return; }",
+  "replace": "    if (here.length >= this.knobs.maxAtOnce) { this.dropped += 1; return; }",
+  "what": "边说边演：一条回复最多演几拍的上限没了",
+  "tests": [
+   "tests/speech-beats.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "SB5-performance-ignores-words",
+  "file": "shared/behaviors/speech-beats/choose.ts",
+  "find": "beats.length > 0 && !/[\\p{L}\\p{N}\\p{Extended_Pictographic}]/u.test(this.text)",
+  "replace": "beats.length > 0",
+  "what": "边说边演：有字的回复也被当成只演不说（气泡不出字）",
+  "tests": [
+   "tests/speech-beats.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "SB6-any-bracket-is-marker",
+  "file": "shared/behaviors/speech-beats/choose.ts",
+  "find": "    if (marker) return { kind: 'marker', word: marker.word, ...(marker.how ? { how: marker.how } : {}), ...(marker.goTo ? { goTo: marker.goTo } : {}) };",
+  "replace": "    return { kind: 'marker', word: 'shy' };",
+  "what": "边说边演：【重要】这类普通括号也被当成标记去掉了",
+  "tests": [
+   "tests/speech-beats.test.ts"
+  ]
+ },
+ {
+  "id": "I161A-before-write",
+  "part": "brain",
+  "file": "electron/brain/claude-session.ts",
+  "find": "if (session && glancesMustGo(session.glances, this.held, this.call)) session = this.closeSession('image');",
+  "replace": "if (false) session = this.closeSession('image');",
+  "what": "I-161 A 写之前不再核小画面：\"别看\"、关掉之后，下一句照样写进还留着旧小画面的进程",
+  "tests": [
+   "tests/i161-call-glance-held.test.ts"
+  ]
+ },
+ {
+  "id": "I161A-hangup",
+  "part": "brain",
+  "file": "electron/brain/claude-session.ts",
+  "find": "else this.forgetFrames(); // I-161 A: hang-up",
+  "replace": "else void 0; // I-161 A: hang-up",
+  "what": "I-161 A 挂电话不扔小画面（进程留着，直到下一句）",
+  "tests": [
+   "tests/i161-call-glance-held.test.ts"
+  ]
+ },
+ {
+  "id": "I161A-forget-idle",
+  "part": "brain",
+  "file": "electron/brain/claude-session.ts",
+  "find": "    if (!this.running) this.retire(session, 'image', session.process.model);",
+  "replace": "",
+  "what": "I-161 A \"别看\"或关掉时她闲着也不立刻换进程（小画面留在进程内存里）",
+  "tests": [
+   "tests/i161-call-glance-held.test.ts"
+  ]
+ },
+ {
+  "id": "I161A-turn-end",
+  "part": "brain",
+  "file": "electron/brain/claude-session.ts",
+  "find": "        const pictures = (images.length > 0 && !kept) || glancesMustGo(session.glances, this.held, this.call);\n        if (pictures || session.turns >= maxTurns",
+  "replace": "        const pictures = images.length > 0 && !kept;\n        if (pictures || session.turns >= maxTurns",
+  "what": "I-161 A 回复中途说\"别看\"：这句回完不换进程",
+  "tests": [
+   "tests/i161-call-glance-held.test.ts"
+  ]
+ },
+ {
+  "id": "I161A-glance-only",
+  "part": "brain",
+  "file": "electron/brain/call-glances.ts",
+  "find": "  if (!turn.knobs.stays || !turn.glanceOnly || turn.frames <= 0) return false;",
+  "replace": "  if (!turn.knobs.stays || turn.frames <= 0) return false;",
+  "what": "I-161 A 用户叫她看的清楚画面也留到挂电话",
+  "tests": [
+   "tests/i161-call-glance-held.test.ts"
+  ]
+ },
+ {
+  "id": "I161A-in-call",
+  "part": "brain",
+  "file": "electron/brain/call-glances.ts",
+  "find": "  if (!turn.inCall && turn.knobs.outside !== true) return false;",
+  "replace": "",
+  "what": "I-161 A 不在通话里（打字、语音输入）小画面也留在进程里",
+  "tests": [
+   "tests/i161-call-glance-held.test.ts"
+  ]
+ },
+ {
+  "id": "I161A-call-epoch",
+  "part": "brain",
+  "file": "electron/brain/call-glances.ts",
+  "find": "  return !inCall || held.call !== call;",
+  "replace": "  return !inCall;",
+  "what": "I-161 A 小画面不认是哪一通电话（新电话可能接着用上一通的进程）",
+  "tests": [
+   "tests/i161-call-glance-held.test.ts"
+  ]
+ },
+ {
+  "id": "I161A-stale-latch",
+  "part": "brain",
+  "file": "electron/brain/call-glances.ts",
+  "find": "      if (!ok) { this.forgotten = true; return true; }",
+  "replace": "      if (!ok) return true;",
+  "what": "I-161 A \"别看\"后又说\"你看看我\"，旧小画面又算能看了",
+  "tests": [
+   "tests/i161-call-glance-held.test.ts"
+  ]
+ },
+ {
+  "id": "SB7-filter-not-first",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "beatTurn.input(turn.push, signal), // 边说边演",
+  "replace": "turn.push, // 边说边演",
+  "what": "边说边演：她的标记不再在最前面去掉，协议、气泡、朗读、存档会见到 ⟦词⟧",
+  "tests": [
+   "tests/speech-beats-reply-path.test.ts"
+  ]
+ },
+ {
+  "id": "SB8-sentence-when-off",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "if (beatTurn.on) turn.persona += '\\n\\n' + beatTurn.sentence();",
+  "replace": "turn.persona += '\\n\\n' + beatTurn.sentence();",
+  "what": "边说边演：开关关着时提示词也变了（不再一字不变）",
+  "tests": [
+   "tests/speech-beats-reply-path.test.ts"
+  ]
+ },
+ {
+  "id": "SB9-performance-read-aloud",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "&& store.current.voice.enabled && !beatOutcome.performanceOnly)",
+  "replace": "&& store.current.voice.enabled)",
+  "what": "边说边演：只演不说的那条也交给朗读",
+  "tests": [
+   "tests/speech-beats-reply-path.test.ts"
+  ]
+ },
+ {
+  "id": "SB10-stopped-still-final",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "if (signal.aborted) beatTurn.cancel(); // stopped while archiving",
+  "replace": "// stopped while archiving",
+  "what": "边说边演：存档时被停掉的回复还发灰色小字和剩下的拍子",
+  "tests": [
+   "tests/speech-beats-reply-path.test.ts"
+  ]
+ },
+ {
+  "id": "SB11-stopped-kept",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "if (beatOutcome.beats.length && !signal.aborted)",
+  "replace": "if (beatOutcome.beats.length)",
+  "what": "边说边演：被停掉的回复也记进拍子文件",
+  "tests": [
+   "tests/speech-beats-reply-path.test.ts"
+  ]
+ },
+ {
+  "id": "SB12-off-history-markers",
+  "part": "brain",
+  "file": "shared/behaviors/speech-beats/history.ts",
+  "find": "  if (input.on) return withSpeechBeatMarkers(input.text, input.beats);",
+  "replace": "  return withSpeechBeatMarkers(input.text, input.beats);",
+  "what": "边说边演：开关关着时她的历史里也带标记",
+  "tests": [
+   "tests/speech-beats-timing.test.ts",
+   "tests/speech-beats-reply-path.test.ts"
+  ]
+ },
+ {
+  "id": "SB13-off-performance-in-history",
+  "part": "brain",
+  "file": "shared/behaviors/speech-beats/history.ts",
+  "find": "  return input.performanceOnly ? null : input.text;",
+  "replace": "  return input.text;",
+  "what": "边说边演：开关关着时只演不说的那条也进她的历史（空的一条）",
+  "tests": [
+   "tests/speech-beats-timing.test.ts",
+   "tests/speech-beats-reply-path.test.ts"
+  ]
+ },
+ {
+  "id": "SB14-shown-history-marker",
+  "part": "brain",
+  "file": "shared/behaviors/speech-beats/history.ts",
+  "find": "  return summary.performanceOnly ? { text: '', performed: describeBeats(summary.beats) } : { text: summary.text, performed: null };",
+  "replace": "  return { text: content, performed: null };",
+  "what": "边说边演：显示历史时不去标记，⟦词⟧ 会显示在聊天页和阅读框里",
+  "tests": [
+   "tests/speech-beats-timing.test.ts"
+  ]
+ },
+ {
+  "id": "SB15-session-compare-markers",
+  "part": "brain",
+  "file": "electron/brain/claude-session-prompt.ts",
+  "find": "  const plain = beatShaped.test(value) ? filterSpeechBeats(value).text : value;",
+  "replace": "  const plain = value;",
+  "what": "边说边演：常驻进程比对她的话时带着标记，开关开着时每轮都对不上、重开进程",
+  "tests": [
+   "tests/speech-beats-reply-path.test.ts"
+  ]
+ },
+ {
+  "id": "SB16-long-window-off-markers",
+  "part": "brain",
+  "file": "electron/brain/speech-beats/archive.ts",
+  "find": "      if (!entry || (!on && !entry.cut)) return null;\n      const beats = on ? entry.beats : [];\n      if (!entry.cut || !text.trim()) return on ? withSpeechBeatMarkers(text, beats) : null;",
+  "replace": "      if (!entry) return null;\n      const beats = entry.beats;\n      if (!entry.cut || !text.trim()) return withSpeechBeatMarkers(text, beats);",
+  "what": "边说边演：开关关着时她的长对话窗口也把标记插回去",
+  "tests": [
+   "tests/speech-beats-reply-path.test.ts"
+  ]
+ },
+ {
+  "id": "SB17-beats-when-off",
+  "part": "brain",
+  "file": "electron/brain/speech-beats/turn.ts",
+  "find": "    if (this.on && !this.closed) this.emit({ beats });",
+  "replace": "    if (!this.closed) this.emit({ beats });",
+  "what": "边说边演：开关关着时拍子也发给舞台演",
+  "tests": [
+   "tests/speech-beats-reply-path.test.ts"
+  ]
+ },
+ {
+  "id": "SB19-new-reply-keeps-old",
+  "part": "brain",
+  "file": "shared/behaviors/speech-beats/schedule.ts",
+  "find": "  begin(replyId: string, pacing: SpeechBeatPacing, now: number): void {\n    this.cancel();",
+  "replace": "  begin(replyId: string, pacing: SpeechBeatPacing, now: number): void {",
+  "what": "边说边演：新回复开始时，上一条没演的拍子不算作废",
+  "tests": [
+   "tests/speech-beats-timing.test.ts",
+   "tests/speech-beats-view.test.ts"
+  ]
+ },
+ {
+  "id": "SB20-late-beat-played",
+  "part": "brain",
+  "file": "shared/behaviors/speech-beats/schedule.ts",
+  "find": "  private current(replyId: string): Reply | null { return this.reply && this.reply.id === replyId ? this.reply : null; }",
+  "replace": "  private current(_replyId: string): Reply | null { return this.reply; }",
+  "what": "边说边演：别的（旧的）回复晚到的拍子也演",
+  "tests": [
+   "tests/speech-beats-timing.test.ts",
+   "tests/speech-beats-view.test.ts"
+  ]
+ },
+ {
+  "id": "SB-P1-follow-chat-not-installed",
+  "part": "brain",
+  "file": "electron/brain/speech-beats/follow-chat.ts",
+  "find": "  memory.onTurnsRemoved((scopeKey, turnIds) => { void archive.removeTurns(scopeKey, turnIds).catch(() => undefined); });",
+  "replace": "  void memory; void archive;",
+  "what": "边说边演：删聊天记录时不告诉拍子文件，被删回复的拍子留在文件里",
+  "tests": [
+   "tests/speech-beats-privacy.test.ts"
+  ]
+ },
+ {
+  "id": "SB-P2-remove-turns-noop",
+  "part": "brain",
+  "file": "electron/brain/speech-beats/archive.ts",
+  "find": "    return this.commit(this.entries.filter(entry => !gone.has(entry.key)));",
+  "replace": "    return Promise.resolve();",
+  "what": "边说边演：按轮次删拍子什么都不删",
+  "tests": [
+   "tests/speech-beats-privacy.test.ts"
+  ]
+ },
+ {
+  "id": "SB-P3-remove-scope-noop",
+  "part": "brain",
+  "file": "electron/brain/speech-beats/archive.ts",
+  "find": "    return this.commit(this.entries.filter(entry => !entry.key.startsWith(prefix)));",
+  "replace": "    return Promise.resolve();",
+  "what": "边说边演：删整个角色和连接的拍子什么都不删（删角色、C2 的清除）",
+  "tests": [
+   "tests/speech-beats-privacy.test.ts"
+  ]
+ },
+ {
+  "id": "SB-P4-restore-noop",
+  "part": "brain",
+  "file": "electron/brain/speech-beats/archive.ts",
+  "find": "    return this.commit([...this.entries.filter(entry => !keys.has(entry.key)), ...back].sort((a, b) => a.at - b.at));",
+  "replace": "    return Promise.resolve();",
+  "what": "边说边演：从回收站找回时拍子不放回",
+  "tests": [
+   "tests/speech-beats-privacy.test.ts"
+  ]
+ },
+ {
+  "id": "SB-P5-restore-accepts-anything",
+  "part": "brain",
+  "file": "electron/brain/speech-beats/archive.ts",
+  "find": "if (!Array.isArray(items) || items.length > SPEECH_BEATS_MAX_ENTRIES * 4) return Promise.reject(",
+  "replace": "if (false) return Promise.reject(",
+  "what": "边说边演：找回时不检查回收站里的数据是不是自己的",
+  "tests": [
+   "tests/speech-beats-privacy.test.ts"
+  ]
+ },
+ {
+  "id": "SB-G1-grey-ignored",
+  "part": "brain",
+  "file": "electron/memory/memory.ts",
+  "find": "else { const line = grey?.(user.turnId); if (line) turns.push(",
+  "replace": "else { const line = null as string | null; if (line) turns.push(",
+  "what": "边说边演：重新读出历史时，只演不说的回复的灰色小字不给窗口",
+  "tests": [
+   "tests/speech-beats-grey-reload.test.ts"
+  ]
+ },
+ {
+  "id": "SB-G2-grey-in-her-history",
+  "part": "brain",
+  "file": "electron/memory/memory.ts",
+  "find": "return this.recentTurns(scope, conversationId, visitorMark).flatMap(turn => [turn.user, turn.reply]).slice(-bound);",
+  "replace": "return this.recentTurns(scope, conversationId, visitorMark, () => '她笑了').flatMap(turn => [turn.user, turn.reply]).slice(-bound);",
+  "what": "边说边演：灰色小字混进她的历史（下一句会带给 Claude，变成她\"说\"的话）",
+  "tests": [
+   "tests/speech-beats-grey-reload.test.ts"
+  ]
+ },
+ {
+  "id": "SB-G3-shown-not-handed-over",
+  "part": "brain",
+  "file": "electron/brain/companion.ts",
+  "find": "...(shown.some(row => row.performed || row.cut) ? { shown } : {}) };",
+  "replace": "...{} };",
+  "what": "边说边演：主机不把带灰色小字的显示列表交给窗口",
+  "tests": [
+   "tests/speech-beats-grey-reload.test.ts"
+  ]
+ },
+ {
+  "id": "SB-G4-user-row-grey",
+  "part": "brain",
+  "file": "src/brain/chat-continuity.ts",
+  "find": "...(row.role === 'assistant' && row.performed === true ? { performed: true as const } : {})",
+  "replace": "...(row.performed === true ? { performed: true as const } : {})",
+  "what": "边说边演：用户的话也能被画成灰色小字",
+  "tests": [
+   "tests/speech-beats-grey-reload.test.ts"
+  ]
+ },
+ {
+  "id": "SB-G5-rows-not-drawn",
+  "part": "brain",
+  "file": "src/wiring/chat-wiring.ts",
+  "find": "    else if (rows) drawChatRows(rows);",
+  "replace": "    else if (false as boolean) drawChatRows(rows!);",
+  "what": "边说边演：聊天页重新读出历史时不画灰色小字",
+  "tests": [
+   "tests/speech-beats-grey-reload.test.ts"
+  ]
+ },
+ {
+  "id": "SB-G6-rows-not-shared",
+  "part": "brain",
+  "file": "src/wiring/chat-wiring.ts",
+  "find": "shown: refilledRowsFor(history), activeChat,",
+  "replace": "shown: undefined, activeChat,",
+  "what": "边说边演：另一个窗口来要聊天状态时不带灰色小字",
+  "tests": [
+   "tests/speech-beats-grey-reload.test.ts"
+  ]
+ },
+ {
+  "id": "SB-G7-history-gets-rows",
+  "part": "brain",
+  "file": "src/wiring/chat-wiring.ts",
+  "find": "history = messages; rememberRefilledRows(history, rows);",
+  "replace": "history = messages; rememberRefilledRows(history, rows); if (rows) history = rows.map(row => ({ role: row.role, content: row.content }));",
+  "what": "边说边演：窗口自己的历史被换成带灰色小字的显示列表（会随下一句话发给 Claude）",
+  "tests": [
+   "tests/speech-beats-grey-reload.test.ts"
+  ]
+ },
+ {
+  "id": "SB-C1-call-never-performs",
+  "part": "brain",
+  "file": "electron/voice/voice-call/beats.ts",
+  "find": "    this.turn = call && ports ? ports.begin(on, send) : null;",
+  "replace": "    this.turn = null;",
+  "what": "边说边演：通话里不演（回到只去标记）",
+  "tests": [
+   "tests/i091-call-step4.test.ts"
+  ]
+ },
+ {
+  "id": "SB-C2-call-ignores-switch",
+  "part": "brain",
+  "file": "electron/voice/voice-call/beats.ts",
+  "find": "    try { on = call && !!ports && ports.enabled() === true; } catch { on = false; }",
+  "replace": "    try { on = call && !!ports; } catch { on = false; }",
+  "what": "边说边演：通话里不看「边说边演」开关，关着也演、也加提示词那一句",
+  "tests": [
+   "tests/i091-call-step4.test.ts"
+  ]
+ },
+ {
+  "id": "SB-C3-call-sentence-allows-silent",
+  "part": "brain",
+  "file": "electron/voice/voice-call/beats.ts",
+  "find": "  sentence(): string { return this.turn?.sentence(true) ?? ''; }",
+  "replace": "  sentence(): string { return this.turn?.sentence(false) ?? ''; }",
+  "what": "边说边演：通话里的那一句还说\"可以整条只写标记\"（通话里没有只演不说）",
+  "tests": [
+   "tests/i091-call-step4.test.ts"
+  ]
+ },
+ {
+  "id": "SB-C4-call-beats-not-before-words",
+  "part": "brain",
+  "file": "electron/voice/voice-chat-host.ts",
+  "find": "text => { beats?.shown(text); this.ports.senses?.firstChar(leg.groupId); addOn?.firstChar(leg.replyId, streaming); if (streaming)",
+  "replace": "text => { this.ports.senses?.firstChar(leg.groupId); addOn?.firstChar(leg.replyId, streaming); if (streaming)",
+  "what": "边说边演：通话里的拍子不在它前面的字显示之前发出",
+  "tests": [
+   "tests/i091-call-step4.test.ts"
+  ]
+ },
+ {
+  "id": "SB-C5-call-no-final",
+  "part": "brain",
+  "file": "electron/voice/voice-chat-host.ts",
+  "find": "      if (completion.status === 'complete') beats.complete(active.text, active.turn.scope, active.answered.length ? null : leg.groupId); else beats.cancel();",
+  "replace": "      beats.cancel();",
+  "what": "边说边演：通话的回复完成时不发 final、不记拍子文件",
+  "tests": [
+   "tests/i091-call-step4.test.ts"
+  ]
+ },
+ {
+  "id": "SB-C6-call-persona-no-line",
+  "part": "brain",
+  "file": "electron/voice/voice-chat-host.ts",
+  "find": " + speechNote + beats.sentence();",
+  "replace": " + speechNote;",
+  "what": "边说边演：通话的人设里不加那一句，她不知道可以写标记",
+  "tests": [
+   "tests/i091-call-step4.test.ts"
+  ]
+ },
+ {
+  "id": "SB-C7-voice-turn-performed",
+  "part": "brain",
+  "file": "electron/voice/voice-chat-host.ts",
+  "find": "      beats = new CallBeats(this.ports.speechBeats, streaming, speechBeats =>",
+  "replace": "      beats = new CallBeats(this.ports.speechBeats, true, speechBeats =>",
+  "what": "边说边演：通话外的语音回复也被演（说好只在通话里）",
+  "tests": [
+   "tests/i091-call-step4.test.ts"
+  ]
+ },
+ {
+  "id": "SB-C8-beats-event-wrong-reply",
+  "part": "brain",
+  "file": "src/brain/speech-beats-view.ts",
+  "find": "  if (event?.type !== 'beats' || typeof event.replyId !== 'string' || !event.replyId || !event.speechBeats || typeof event.speechBeats !== 'object') return null;",
+  "replace": "  if (event?.type !== 'beats' || typeof event.replyId !== 'string') return null;",
+  "what": "边说边演：通话的 beats 事件没有回复编号、没有内容也被收下",
+  "tests": [
+   "tests/speech-beats-call.test.ts"
+  ]
+ },
+ {
+  "id": "SB-C9-call-beats-not-received",
+  "part": "brain",
+  "file": "src/wiring/voice-chat-wiring.ts",
+  "find": "if (stream && voiceReplyIds.has(event.replyId)) onStream(stream); return; }",
+  "replace": "return; }",
+  "what": "边说边演：窗口收到通话的 beats 事件后不交给演出",
+  "tests": [
+   "tests/speech-beats-call.test.ts"
+  ]
+ },
+ {
+  "id": "SB-C10-reading-cancelled-keeps-beats",
+  "part": "brain",
+  "file": "src/wiring/voice-wiring.ts",
+  "find": "  speechBeats().cancel(id); // 边说边演: her reading of this reply was cancelled",
+  "replace": "  // 边说边演: her reading of this reply was cancelled",
+  "what": "边说边演：她被打断、朗读取消后，没演的拍子还留着、之后补演",
+  "tests": [
+   "tests/speech-beats-call.test.ts"
+  ]
+ },
+ {
+  "id": "SB-C11-unbound-call-beats",
+  "part": "brain",
+  "file": "electron/unbound/voice-bubble.ts",
+  "find": "  if (event.type === 'beats') { const speechBeats = (event as { speechBeats?: unknown }).speechBeats;",
+  "replace": "  if (false as boolean) { const speechBeats = (event as { speechBeats?: unknown }).speechBeats;",
+  "what": "边说边演：Unbound 里通话的拍子到不了她（全部的词都演的那条路）",
+  "tests": [
+   "tests/speech-beats-call.test.ts"
+  ]
+ },
+ {
+  "id": "SB-C12-call-switch-wiring",
+  "part": "brain",
+  "file": "electron/wiring/senses-voice-input-wiring.ts",
+  "find": "enabled: () => gateEnabled('speechBeats'),",
+  "replace": "enabled: () => true,",
+  "what": "边说边演：通话的开关写死成开（稳定版也演、也加提示词）",
+  "tests": [
+   "tests/speech-beats-call.test.ts"
+  ]
+ },
+ {
+  "id": "SB-O1-performance-only-raw-stream",
+  "part": "brain",
+  "file": "electron/brain/speech-beats/turn.ts",
+  "find": "const performanceOnly = (beats.length > 0 || this.droppedClose > 0) && !SPOKEN.test(text);",
+  "replace": "const performanceOnly = (beats.length > 0 || this.droppedClose > 0) && this.filter.summary().performanceOnly && !SPOKEN.test(text);",
+  "what": "边说边演：只演不说按原始流判断，回复开头标记和尾注里的字母让只有标记的回复不被当成只演不说",
+  "tests": [
+   "tests/speech-beats-opening-marker.test.ts"
+  ]
+ },
+ {
+  "id": "SB-M1-measure-cap-off-by-one",
+  "part": "brain",
+  "file": "scripts/lib/speech-beats-measure-tee.mjs",
+  "find": "if (requestsSoFar() >= cap) {",
+  "replace": "if (requestsSoFar() > cap) {",
+  "what": "边说边演的真实量法：请求数硬上限多放一条（第 21 条请求会发出去，多花用户的 Claude 用量）",
+  "tests": [
+   "tests/speech-beats-measure.test.ts"
+  ]
+ },
+ {
+  "id": "SB-M2-measure-leak-blind",
+  "part": "brain",
+  "file": "scripts/lib/speech-beats-measure.ts",
+  "find": "const leaked = LEAK_SHAPES.test(shown) || again.summary().beats.length > 0 || again.summary().dropped > 0;",
+  "replace": "const leaked = false;",
+  "what": "边说边演的量法：显示的字里漏出括号写法的标记时不记漏出（量出来的漏出数永远是 0，会让人误以为可以默认开）",
+  "tests": [
+   "tests/speech-beats-measure.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "SB-C1-rule-comes-back",
+  "file": "shared/behaviors/speech-beats/choose.ts",
+  "find": "      : '有时候不说话、只用表情回应更自然，也可以整条只写标记、不写字。')",
+  "replace": "      : '有时候不说话、只用表情回应更自然，也可以整条只写标记、不写字；用户问你事情时要用话回答。')",
+  "what": "边说边演提示词：删掉的\"问你事情时要用话回答\"又回来了",
+  "tests": [
+   "tests/speech-beats.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "SB-C2-no-span",
+  "file": "shared/behaviors/speech-beats/choose.ts",
+  "find": "    + '一个表情可以从这一句一直带到后面几句，到你换下一个或说完为止；'",
+  "replace": "    + ''",
+  "what": "边说边演提示词：不再告诉她一个表情可以跨好几句",
+  "tests": [
+   "tests/speech-beats.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "SP1-span-hold-performance-only",
+  "file": "shared/behaviors/speech-beats/span.ts",
+  "find": " && !this.span.performanceOnly && !this.span.finished; }",
+  "replace": " && !this.span.finished; }",
+  "what": "边说边演：只演不说的回复里的拍子也被当成\"挂着\"（本该每拍按自己的时长落下去）",
+  "tests": [
+   "tests/speech-beats-span.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "SP2-span-no-grace",
+  "file": "shared/behaviors/speech-beats/span.ts",
+  "find": "    return shown + (span.pacing === 'voice' ? this.knobs.voiceGraceMs : 0) + grace;",
+  "replace": "    return shown;",
+  "what": "边说边演：朗读关着时，字一显示完挂着的表情就立刻收（没有那一小段缓冲）",
+  "tests": [
+   "tests/speech-beats-span.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "SP3-span-ends-before-shown",
+  "file": "shared/behaviors/speech-beats/span.ts",
+  "find": "    if (!shownAll) return null;",
+  "replace": "",
+  "what": "边说边演：流完了但气泡还没把字显示完，就算说完了（表情提前收）",
+  "tests": [
+   "tests/speech-beats-span.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "SP4-view-cancel-no-release",
+  "file": "src/brain/speech-beats-view.ts",
+  "find": "    if (replyId === undefined || replyId === this.span.replyId) { this.release('cancelled'); this.lines.clear(); }\n",
+  "replace": "",
+  "what": "边说边演：停止、出错、被打断时，挂着的表情不放手（要等保险上限才落）",
+  "tests": [
+   "tests/speech-beats-span.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "SP5-view-end-no-release",
+  "file": "src/brain/speech-beats-view.ts",
+  "find": "    if (this.span.ended(this.ports.now())) this.release('ended'); // her speaking of this reply is over: what stayed up falls\n",
+  "replace": "",
+  "what": "边说边演：她说完了，挂着的表情也不落下去（要等保险上限）",
+  "tests": [
+   "tests/speech-beats-span.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "SP6-view-begin-no-release",
+  "file": "src/brain/speech-beats-view.ts",
+  "find": "    this.release('new'); // the earlier reply's held beats fall now (and what waited for a pause is dropped, I-175)\n",
+  "replace": "",
+  "what": "边说边演：新的一条回复开始时，上一条挂着的表情不放手",
+  "tests": [
+   "tests/speech-beats-span.test.ts"
+  ]
+ },
+ {
+  "id": "BF-B1-held-is-on-screen",
+  "part": "brain",
+  "file": "electron/brain/reply-window.ts",
+  "find": "&&!this.owner.isDestroyed()&&this.owner.isVisible()&&!this.owner.isMinimized()&&this.owner.getOpacity()>0\n      &&this.actuallyVisible()&&!!this.window&&this.window.webContents.getURL()===REPLY_URL?this.text:null;}",
+  "replace": "?this.text:null;}",
+  "what": "I-165 看不见（淡出、藏起）的气泡也算在显示这条回复",
+  "tests": [
+   "tests/bubble-follow-host.test.ts"
+  ]
+ },
+ {
+  "id": "WR1-english-card-window",
+  "part": "brain",
+  "file": "electron/brain/long-chat/history.ts",
+  "find": "(!englishChat(options.language) && ENGLISH_RUN.test(message.content))",
+  "replace": "ENGLISH_RUN.test(message.content)",
+  "what": "英文角色的回复又被当成漏出的草稿从聊天窗口里拿掉（窗口在她上一句之前就结束，每轮都换冷进程）",
+  "tests": [
+   "tests/warm-reuse-diverged.test.ts"
+  ]
+ },
+ {
+  "id": "WR2-window-language-dropped",
+  "part": "brain",
+  "file": "electron/brain/long-chat/window.ts",
+  "find": "!isLeakedDraft(message, { language: input.language })",
+  "replace": "!isLeakedDraft(message)",
+  "what": "窗口不再把角色语言交给漏草稿判断（她说的英文回复不进下一轮的历史）",
+  "tests": [
+   "tests/warm-reuse-diverged.test.ts"
+  ]
+ },
+ {
+  "id": "WR3-typed-turn-no-language",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "labels: i139Chat.labels(), language: i139Chat.cardLanguage(), current:",
+  "replace": "labels: i139Chat.labels(), current:",
+  "what": "打字聊天的这一轮不把角色语言交给她存档的窗口",
+  "tests": [
+   "tests/warm-reuse-diverged.test.ts"
+  ]
+ },
+ {
+  "id": "WR4-unbound-hidden-close",
+  "part": "brain",
+  "file": "electron/brain/claude-session-idle.ts",
+  "find": "try { seen = input.seenElsewhere() === true; } catch { seen = false; }",
+  "replace": "seen = false;",
+  "what": "她在全屏 Unbound 里（陪伴窗口藏着、人在屏幕上）时聊天进程按\"藏起来\"3 分钟就关",
+  "tests": [
+   "tests/warm-reuse-diverged.test.ts"
+  ]
+ },
+ {
+  "id": "WR5-hidden-then-out",
+  "part": "brain",
+  "file": "electron/brain/claude-session.ts",
+  "find": "if (set.reason === 'hidden' && rule.reason === 'idle') { this.scheduleIdle(); return; }",
+  "replace": "",
+  "what": "窗口先藏、她随后才出去全屏：到点时不再重看她在不在屏幕上，照样按\"藏起来\"关进程",
+  "tests": [
+   "tests/warm-reuse-diverged.test.ts"
+  ]
+ },
+ {
+  "id": "WR6-wiring-seen-elsewhere",
+  "part": "brain",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "seenElsewhere: () => herHereNow()",
+  "replace": "seenElsewhere: () => false",
+  "what": "接线不再问她是否在别处被看见（全屏 Unbound 里聊天进程又按\"藏起来\"关）",
+  "tests": [
+   "tests/warm-reuse-diverged.test.ts"
+  ]
+ },
+ {
+  "id": "TL1-stray-mark-before-tag-line",
+  "part": "brain",
+  "file": "electron/brain/reply-draft-guard.ts",
+  "find": "if (mark !== 'none') {",
+  "replace": "if (false) {",
+  "what": "句号加思考标签行：不再把前面的句号和标签行一起去掉，标签会显示、被记录",
+  "tests": [
+   "tests/reply-tag-leak.test.ts"
+  ]
+ },
+ {
+  "id": "TL2-stray-mark-hold",
+  "part": "brain",
+  "file": "electron/brain/reply-tag-lead.ts",
+  "find": "(rest0 === '' || rest0 === '\\r') && !final",
+  "replace": "false",
+  "what": "单独的句号先放出去：逐字到达时句号先露出，后面的标签行也露出",
+  "tests": [
+   "tests/reply-tag-leak.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "BP1-settle-removed",
+  "file": "electron/brain/reply-keeper.ts",
+  "find": "<= REPLY_SETTLE_DIP) return held.choice;",
+  "replace": "<= -1) return held.choice;",
+  "what": "回复气泡：她轻轻晃一下头，气泡也跟着挪（没有\"小幅漂移不动\"的死区）",
+  "tests": [
+   "tests/reply-placement-stable.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "BP2-side-unlocked",
+  "file": "electron/brain/reply-keeper.ts",
+  "find": "this.memory, this.lockedSide !== undefined);",
+  "replace": "this.memory, false);",
+  "what": "回复气泡：一条回复里左右不锁死，她走到边上气泡就翻到另一边（左右甩）",
+  "tests": [
+   "tests/reply-placement-stable.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "BP3-no-slide-back",
+  "file": "electron/brain/reply-layout.ts",
+  "find": "x: locked ? clamp(x, usable.x, right(usable) - width) : x",
+  "replace": "x",
+  "what": "回复气泡：锁定一边后不再收回屏幕里，贴边时被屏幕截掉",
+  "tests": [
+   "tests/reply-placement-stable.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "BP4-not-following",
+  "file": "electron/brain/reply-scroll.ts",
+  "find": "else if (step.following && step.hadBody) box.scrollTop = box.scrollHeight;",
+  "replace": "",
+  "what": "回复气泡页：气泡变窄后不再停在最新一句，后面几句被框截掉",
+  "tests": [
+   "tests/reply-placement-stable.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "BP5-no-release",
+  "file": "electron/brain/reply-keeper.ts",
+  "find": "release(): void { this.lockedSide = undefined;",
+  "replace": "release(): void {",
+  "what": "回复气泡：一条回复结束后边没放开，下一条回复沿用上一条的边",
+  "tests": [
+   "tests/reply-placement-stable.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "BP6-side-from-dots",
+  "file": "electron/brain/reply-keeper.ts",
+  "find": "layoutReply(owner, anchor, area, rememberedSide, false)?.side",
+  "replace": "layoutReply(owner, anchor, area, rememberedSide, compact)?.side",
+  "what": "回复气泡：边按小小的\"……\"选，字出来时被挤在窄的一边",
+  "tests": [
+   "tests/reply-placement-stable.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "BP7-window-never-releases",
+  "file": "electron/brain/reply-window.ts",
+  "find": "  clear(): void { this.keeper.release(); ",
+  "replace": "  clear(): void { ",
+  "what": "回复气泡窗口：回复收起时不放开边",
+  "tests": [
+   "tests/reply-avoid.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "BP9-waiting-keeps-side",
+  "file": "electron/brain/reply-window.ts",
+  "find": "if (!this.waiting) this.keeper.release(); }",
+  "replace": "}",
+  "what": "回复气泡窗口：新一条回复开头（等待的三个点）不放开上一条的边",
+  "tests": [
+   "tests/reply-avoid.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "BP8-lock-penalty-zero",
+  "file": "electron/brain/reply-avoid.ts",
+  "find": "export const LOCK_PENALTY = 400;",
+  "replace": "export const LOCK_PENALTY = 0;",
+  "what": "气泡避让：锁了边的回复被控制窗口挤开时，照样随手翻到另一边",
+  "tests": [
+   "tests/reply-placement-stable.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "BP10-preload-not-following",
+  "file": "electron/brain/reply-preload.ts",
+  "find": "const following = wasFollowing(body, hadBody);",
+  "replace": "const following = false;",
+  "what": "回复气泡页：位置更新前不看是不是停在最新一句，变窄后最后几句被截掉",
+  "tests": [
+   "tests/reply-presentation-window.test.ts"
+  ]
+ },
+ {
+  "id": "I166-marker-filter",
+  "part": "brain",
+  "file": "electron/brain/look-continuation.ts",
+  "find": "if (type === 'delta') absorb(filter.push(text)); else emit(type, text);",
+  "replace": "if (type === 'delta') out(text); else emit(type, text);",
+  "what": "I-166 她的凑近看记号漏进气泡、朗读和存档（也不再凑近看）",
+  "tests": [
+   "tests/i166-see-and-say.test.ts"
+  ]
+ },
+ {
+  "id": "I166-marker-filter-after",
+  "part": "brain",
+  "file": "electron/brain/look-continuation.ts",
+  "find": "const clean = gated(after.push(text).text);",
+  "replace": "const clean = gated(text);",
+  "what": "I-166 接着说的那段里的记号漏出来",
+  "tests": [
+   "tests/i166-see-and-say.test.ts"
+  ]
+ },
+ {
+  "id": "I166-sense-off",
+  "part": "brain",
+  "file": "electron/brain/look-continuation.ts",
+  "find": "const canLook = allowed() && knobs.closerLook;",
+  "replace": "const canLook = knobs.closerLook;",
+  "what": "I-166 凑近看：那个感知没开也去看、接着说",
+  "tests": [
+   "tests/i166-see-and-say.test.ts"
+  ]
+ },
+ {
+  "id": "I166-cancel-held",
+  "part": "brain",
+  "file": "electron/brain/look-continuation.ts",
+  "find": "if (!off && !allowed()) {",
+  "replace": "if (false) {",
+  "what": "I-166 凑近看：等画面时说了\"别看\"或关掉了，照样接着说",
+  "tests": [
+   "tests/i166-see-and-say.test.ts"
+  ]
+ },
+ {
+  "id": "I166-supersede-looking",
+  "part": "brain",
+  "file": "electron/brain/look-continuation.ts",
+  "find": "if (phase === 'looking') { cut = true; lookAbort?.abort(); return true; }",
+  "replace": "",
+  "what": "I-166 凑近看：等画面时用户又说了一句，旧的那次照样接着说（复活）",
+  "tests": [
+   "tests/i166-see-and-say.test.ts"
+  ]
+ },
+ {
+  "id": "I166-continue-held-frames",
+  "part": "brain",
+  "file": "electron/brain/claude-session.ts",
+  "find": "!continuable(session, task.replyId)\n      || glancesMustGo(session.glances, this.held, this.call)) return null;",
+  "replace": "!continuable(session, task.replyId)) return null;",
+  "what": "I-166 接着说写进一个留着已不能看的小图的进程",
+  "tests": [
+   "tests/i166-see-and-say.test.ts"
+  ]
+ },
+ {
+  "id": "I166-continue-newest",
+  "part": "brain",
+  "file": "electron/brain/claude-session.ts",
+  "find": "session.process.busy || !continuable(session, task.replyId)\n",
+  "replace": "session.process.busy\n",
+  "what": "I-166 接着说接到了别的一轮上",
+  "tests": [
+   "tests/i166-see-and-say.test.ts"
+  ]
+ },
+ {
+  "id": "I166-outside-knob",
+  "part": "brain",
+  "file": "electron/brain/call-glances.ts",
+  "find": "  if (!turn.inCall && turn.knobs.outside !== true) return false;",
+  "replace": "",
+  "what": "I-166 旋钮关着时通话外的小图也留在进程里",
+  "tests": [
+   "tests/i166-see-and-say.test.ts"
+  ]
+ },
+ {
+  "id": "I166-outside-stale",
+  "part": "brain",
+  "file": "electron/brain/call-glances.ts",
+  "find": "  if (held.stale()) return true;\n  if (held.call === OUTSIDE_CALL) return false;",
+  "replace": "  if (held.call === OUTSIDE_CALL) return false;\n  if (held.stale()) return true;",
+  "what": "I-166 通话外留着的小图在\"别看\"、关开关后不扔",
+  "tests": [
+   "tests/i166-see-and-say.test.ts"
+  ]
+ },
+ {
+  "id": "I166-typed-continuation",
+  "part": "brain",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "await (seeAndSay ? seeAndSay.stream(claudeChat) : claudeChat.stream.bind(claudeChat))(",
+  "replace": "await claudeChat.stream(",
+  "what": "I-166 打字聊天里她的凑近看不再接进同一条回复",
+  "tests": [
+   "tests/i166-see-and-say.test.ts"
+  ]
+ },
+ {
+  "id": "I166-typed-still",
+  "part": "brain",
+  "file": "electron/wiring/see-and-say-wiring.ts",
+  "find": "still: () => frames.glanceStill(),",
+  "replace": "still: () => () => true,",
+  "what": "I-166 打字聊天的小图留在进程里后，\"别看\"不再让它们扔掉",
+  "tests": [
+   "tests/i166-see-and-say.test.ts"
+  ]
+ },
+ {
+  "id": "I168-continuation-keep",
+  "part": "brain",
+  "file": "electron/brain/look-continuation.ts",
+  "find": "look?.still && knobs.keepClearFrames === true ?",
+  "replace": "look?.still && false ?",
+  "what": "I-168：她凑近看的清楚画面用完又换进程（下一句慢一次）",
+  "tests": [
+   "tests/i168-she-decides-to-look.test.ts"
+  ]
+ },
+ {
+  "id": "I168-continue-retire",
+  "part": "brain",
+  "file": "electron/brain/claude-session.ts",
+  "find": "if ((images.length && !kept) || glancesMustGo(session.glances, this.held, this.call)) this.retire(session, 'image', session.process.model);\n      return { superseded, output };",
+  "replace": "if (glancesMustGo(session.glances, this.held, this.call)) this.retire(session, 'image', session.process.model);\n      return { superseded, output };",
+  "what": "I-168 隐私：接话的清楚画面没被留下（没有检查）时也不换进程",
+  "tests": [
+   "tests/i168-she-decides-to-look.test.ts",
+   "tests/i166-see-and-say.test.ts"
+  ]
+ },
+ {
+  "id": "I168-look-open-dots",
+  "part": "brain",
+  "file": "electron/brain/look-continuation.ts",
+  "find": "    if (gate) out(marker);\n",
+  "replace": "",
+  "what": "凑近看：回复以看的记号开头、没写开头标记时，\"……\"和接话又要等整段回完才出来（20:41/20:42 那两句的 11～13 秒）",
+  "tests": [
+   "tests/look-opening.test.ts"
+  ]
+ },
+ {
+  "id": "I168-look-open-guard",
+  "part": "brain",
+  "file": "electron/brain/look-continuation.ts",
+  "find": "const gated = (text: string, final = false) => (gate ? gate.push(text) + (final ? gate.finish(true) : '') : text);",
+  "replace": "const gated = (text: string, final = false) => (final ? text : text);",
+  "what": "凑近看防漏：软件替她开了头之后，接话里开头标记前面的草稿也显示出来",
+  "tests": [
+   "tests/look-opening.test.ts"
+  ]
+ },
+ {
+  "id": "I171-reply-minimize-clears",
+  "part": "brain",
+  "file": "electron/brain/reply-window.ts",
+  "find": "owner.on('minimize', this.minimized);",
+  "replace": "owner.on('minimize', this.hidden);",
+  "what": "最小化（Win+D）时回复气泡的字被清掉，窗口回来时她刚说的话没了",
+  "tests": [
+   "tests/reply-presentation-window.test.ts"
+  ]
+ },
+ {
+  "id": "I171-reply-restore-clears",
+  "part": "brain",
+  "file": "electron/brain/reply-window.ts",
+  "find": "if (this.hasContent()) this.returned(); else this.clear();",
+  "replace": "this.clear();",
+  "what": "窗口从最小化回来时气泡的字被清掉，不再重新显示她刚说的话",
+  "tests": [
+   "tests/reply-presentation-window.test.ts"
+  ]
+ },
+ {
+  "id": "I171-chat-seen-minimize",
+  "part": "brain",
+  "file": "shared/foundation/step-away.ts",
+  "find": " || minimizedAway(win); } catch { return false; }",
+  "replace": "; } catch { return false; }",
+  "what": "最小化时聊天进程按\"藏起来\"3 分钟关，不按\"看得见\"10 分钟",
+  "tests": [
+   "tests/i171-step-away.test.ts"
+  ]
+ },
+ {
+  "id": "I171-close-aborts-wiring",
+  "part": "brain",
+  "file": "electron/wiring/brain-cleanup-wiring.ts",
+  "find": "task.owner === windowId && abortsWithClosedWindow(task, { owner }, herOnScreen())",
+  "replace": "task.owner === windowId",
+  "what": "关掉控制窗口时她在屏幕上也照样把这个窗口发起的聊天回复中止",
+  "tests": [
+   "tests/window-events-order.test.ts"
+  ]
+ },
+ {
+  "id": "I171-chat-watch-bypass",
+  "part": "brain",
+  "file": "electron/brain/chat-seen.ts",
+  "find": "win.on(name, () => note(chatSeen(win)));",
+  "replace": "win.on(name, () => note(win.isVisible() && !win.isMinimized()));",
+  "what": "窗口事件时告诉聊天进程\"看不看得见\"的写法绕过最小化的规则",
+  "tests": [
+   "tests/i171-step-away.test.ts"
+  ]
+ },
+ {
+  "id": "I174-clear-after-reply-rule",
+  "part": "brain",
+  "file": "src/brain/clear-after-reply.ts",
+  "find": "  const waitFor = clearKeepsReply(value) ? ports.active() : null;",
+  "replace": "  const waitFor = null;",
+  "what": "开着摄像头最小化或关控制窗口时，新对话又马上开始，她正在说的回复被停掉",
+  "tests": [
+   "tests/i174-clear-after-reply.test.ts"
+  ]
+ },
+ {
+  "id": "I166-bare-marker-continue",
+  "part": "brain",
+  "file": "electron/brain/look-continuation.ts",
+  "find": "if (!chat.continueReply || (!canLook && !wordless(forwarded + held))) {",
+  "replace": "if (!chat.continueReply || !canLook) {",
+  "what": "她的回复只有凑近看的记号、那个感知又关着时，气泡是空的（不让她接着用话说）",
+  "tests": [
+   "tests/i166-bare-marker.test.ts"
+  ]
+ },
+ {
+  "id": "I166-bare-marker-dots",
+  "part": "brain",
+  "file": "electron/brain/look-continuation.ts",
+  "find": "const ensureWords = () => { if (wordless(forwarded)) out(knobs.dots || '……'); };",
+  "replace": "const ensureWords = () => {};",
+  "what": "只有记号、接不上热进程时，回复仍然是空的（没有兜底的\"……\"）",
+  "tests": [
+   "tests/i166-bare-marker.test.ts"
+  ]
+ },
+ {
+  "id": "PM8-known-suffix-is-marker",
+  "part": "brain",
+  "file": "shared/behaviors/speech-beats/choose.ts",
+  "find": "  if (parts.length === 2 && isSpeechBeatHow(parts[1])) return { word, how: parts[1] };",
+  "replace": "",
+  "what": "I-175：带“做多久”后缀的标记（【smile-warm line】这类保险括号）没被认出来，后缀连着词显示在气泡里",
+  "tests": [
+   "tests/i175-how-long.test.ts",
+   "tests/speech-beats-reply-path.test.ts"
+  ]
+ },
+ {
+  "id": "PM9-unknown-suffix-plays-default",
+  "part": "brain",
+  "file": "shared/behaviors/speech-beats/choose.ts",
+  "find": "  return own ? { word } : null;",
+  "replace": "  return null;",
+  "what": "I-175：她自己的 ⟦词 不认识的后缀⟧ 不再按默认演这个词，整个丢掉",
+  "tests": [
+   "tests/i175-how-long.test.ts"
+  ]
+ },
+ {
+  "id": "PM11-suffix-space-waits",
+  "part": "brain",
+  "file": "shared/behaviors/speech-beats/choose.ts",
+  "find": "const WORDISH = /^[a-z -]*$/iu;",
+  "replace": "const WORDISH = /^[a-z-]*$/iu;",
+  "what": "I-175：⟦pout once⟧ 里的空格让过滤器提前认定标记写坏，后缀“once⟧”漏进气泡",
+  "tests": [
+   "tests/i175-how-long.test.ts",
+   "tests/speech-beats-reply-path.test.ts"
+  ]
+ },
+ {
+  "id": "cut-note-off",
+  "part": "brain",
+  "file": "electron/brain/pause-talk/host.ts",
+  "find": "if (!this.on()) return cut ? PAUSE_TALK_CUT_NOTE : null;",
+  "replace": "if (!this.on()) return null;",
+  "what": "停停说说关着时，没放完就被你的新消息打断的回复，她下一轮不会被告知后面你没看到（等于当作都说了）",
+  "tests": [
+   "tests/f7-pause-talk.test.ts"
+  ]
+ },
+ {
+  "id": "i178-other-character-chat",
+  "part": "brain",
+  "file": "shared/foundation/proactive-context.ts",
+  "find": "if (!source || !activeCharacterId || source.characterId !== activeCharacterId || !Number.isFinite(now)) return '';",
+  "replace": "if (!source || !Number.isFinite(now)) return '';",
+  "what": "主动开口的提示词里带上了别的角色的聊天（读到的记录不是正在说话的这位角色的，也照样放进去）",
+  "tests": [
+   "tests/i178-proactive-context.test.ts"
+  ]
+ },
+ {
+  "id": "i178-host-reader-speaker",
+  "part": "brain",
+  "file": "electron/brain/proactive-chat.ts",
+  "find": "deps.rows(scope) }, deps.activeCharacterId(), (deps.now ?? Date.now)(), language, deps.audience);",
+  "replace": "deps.rows(scope) }, scope.characterId, (deps.now ?? Date.now)(), language, deps.audience);",
+  "what": "主动开口读最近聊天时，不再单独核对\"现在说话的是哪位角色\"（切换角色卡的间隙里会读到上一位的聊天）",
+  "tests": [
+   "tests/i178-proactive-context.test.ts"
+  ]
+ },
+ {
+  "id": "i178-recent-chat-message-cap",
+  "part": "brain",
+  "file": "shared/foundation/proactive-context.ts",
+  "find": "  maxMessages: 6,",
+  "replace": "  maxMessages: 600,",
+  "what": "主动开口提示词里的最近聊天不再限制条数（本来最多 6 条）",
+  "tests": [
+   "tests/i178-proactive-context.test.ts"
+  ]
+ },
+ {
+  "id": "i178-recent-chat-char-cap",
+  "part": "brain",
+  "file": "shared/foundation/proactive-context.ts",
+  "find": "  let budget = K.maxChars;",
+  "replace": "  let budget = 1_000_000;",
+  "what": "主动开口提示词里的最近聊天不再限制总字数（本来约 600 字）",
+  "tests": [
+   "tests/i178-proactive-context.test.ts"
+  ]
+ },
+ {
+  "id": "i178-inner-loop-silent-block",
+  "part": "brain",
+  "file": "shared/initiative/inner-loop.ts",
+  "find": "if (input.cue === 'speech' && input.allowSpeech) sections.push(proactiveContextText(input.recentChat, input.speechLanguage));",
+  "replace": "sections.push(proactiveContextText(input.recentChat, input.speechLanguage));",
+  "what": "内心循环在她这次不能开口（睡着、深夜、只做动作）时也把最近聊天塞进提示词",
+  "tests": [
+   "tests/i178-proactive-context.test.ts"
+  ]
+ },
+ {
+  "id": "i186-slot-key-character",
+  "part": "brain",
+  "file": "electron/brain/session-pool/pool.ts",
+  "find": "  return JSON.stringify([characterId, providerScope, model]);",
+  "replace": "  return JSON.stringify([providerScope, model]);",
+  "what": "I-186：进程池不按角色分开，另一个角色说话会关掉她的热进程",
+  "tests": [
+   "tests/claude-session-pool.test.ts"
+  ]
+ },
+ {
+  "id": "i186-switch-closes-nobody",
+  "part": "brain",
+  "file": "electron/brain/session-pool/pool.ts",
+  "find": "      if (!previous || !next || slot.providerScope !== next.providerScope || (sameCharacter && slot.characterId === next.characterId)) slot.chat.close('context');",
+  "replace": "      if (true) slot.chat.close('context');",
+  "what": "I-186：切换角色时把别的角色的热进程也关掉（切回去又要冷启动）",
+  "tests": [
+   "tests/claude-session-pool.test.ts"
+  ]
+ },
+ {
+  "id": "i186-cap-never-speaking",
+  "part": "brain",
+  "file": "electron/brain/session-pool/pool.ts",
+  "find": "  const others = slots.filter(slot => slot !== keep && slot.warm);",
+  "replace": "  const others = slots.filter(slot => slot.warm);",
+  "what": "I-186：超过上限时可能关掉正在说话的那一位",
+  "tests": [
+   "tests/claude-session-pool.test.ts"
+  ]
+ },
+ {
+  "id": "i186-cap-least-recent",
+  "part": "brain",
+  "file": "electron/brain/session-pool/pool.ts",
+  "find": ".sort((a, b) => a.lastUsed - b.lastUsed)",
+  "replace": ".sort((a, b) => b.lastUsed - a.lastUsed)",
+  "what": "I-186：超过上限时关的不是最久没说话的那一个",
+  "tests": [
+   "tests/claude-session-pool.test.ts"
+  ]
+ },
+ {
+  "id": "i186-forget-closes-hers",
+  "part": "brain",
+  "file": "electron/brain/session-pool/pool.ts",
+  "find": "    for (const slot of this.slotMap.values()) if (characterId === null || slot.characterId === characterId || this.single) slot.chat.close('context');",
+  "replace": "    for (const slot of this.slotMap.values()) if (this.single) slot.chat.close('context');",
+  "what": "I-186 隐私：删了一个不在台上的角色的聊天，她的热进程里还留着那些内容",
+  "tests": [
+   "tests/claude-session-pool.test.ts"
+  ]
+ },
+ {
+  "id": "i186-forget-wiring",
+  "part": "brain",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "  companion.memory.onTurnsRemoved(scope => claudeChat.forgetCharacter(companion.memory.characterOfScope(scope)));",
+  "replace": "  void claudeChat;",
+  "what": "I-186 隐私：删聊天记录时不告诉进程池，被删的内容留在她的热进程里",
+  "tests": [
+   "tests/session-pool-wiring.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "i186-stale-turn-refused",
+  "part": "brain",
+  "file": "electron/brain/session-pool/pool.ts",
+  "find": "    if (!identity || identity.accepted !== task.session.key) throw new ClaudeTurnError('这轮聊天所属的角色或对话已改变。', 'closed');",
+  "replace": "    if (!identity) throw new ClaudeTurnError('这轮聊天所属的角色或对话已改变。', 'closed');",
+  "what": "I-186：旧上下文里接下的一轮被送进台上那位的进程，把她的热进程关掉",
+  "tests": [
+   "tests/claude-session-pool.test.ts"
+  ]
+ },
+ {
+  "id": "i186-switched-away-not-seen",
+  "part": "brain",
+  "file": "electron/brain/session-pool/pool.ts",
+  "find": "      else { if (this.held) slot.chat.holdWarm(false); slot.chat.noteVisible(false, true); }",
+  "replace": "      else { if (this.held) slot.chat.holdWarm(false); slot.chat.noteVisible(true); }",
+  "what": "I-186：切走的角色仍按\"被看见\"算 10 分钟，多占内存",
+  "tests": [
+   "tests/claude-session-pool.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "I185-word-never-personality",
+  "file": "shared/behaviors/speech-beats/availability.ts",
+  "find": "    asleep: input.asleep === true || input.view?.fatigue?.sleeping === true,",
+  "replace": "    asleep: input.asleep === true || input.view?.fatigue?.sleeping === true || Number(input.view?.parameters?.weights?.cautious ?? 1) > 2,",
+  "what": "I-185：按角色性格筛动作词（谨慎的卡这一轮就\"用不了\"标记）。",
+  "tests": [
+   "tests/i185-kiss-hug.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "I185-call-kiss-hug-line",
+  "file": "shared/behaviors/speech-beats/availability.ts",
+  "find": "export const SPEECH_BEAT_CALL_WORDS: readonly SpeechBeatWord[] = Object.freeze([]);",
+  "replace": "export const SPEECH_BEAT_CALL_WORDS: readonly SpeechBeatWord[] = Object.freeze(['kiss', 'hug'] as SpeechBeatWord[]);",
+  "what": "I-185：通话里每一轮又告诉她“这一轮用不了：kiss、hug”",
+  "tests": [
+   "tests/i185-kiss-hug.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "I185-kiss-hug-no-leak",
+  "file": "shared/behaviors/speech-beats/interface.ts",
+  "find": "  'kiss', 'hug',\n",
+  "replace": "",
+  "what": "I-185：kiss、hug 不在词表里时，【hug】[kiss] 这类备用括号会原样显示在气泡、朗读和聊天记录里",
+  "tests": [
+   "tests/i185-kiss-hug.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "I195-alarm-marker-leak",
+  "file": "shared/behaviors/speech-beats/choose.ts",
+  "find": "      if (this.held || char !== ALARM_MARK_OPEN) return false;\n      this.alarm = '';\n      return true;",
+  "replace": "      return false;",
+  "what": "I-195：她给自己留的闹钟记号 ⟪…⟫ 不再从字里拿掉，整个记号（连她写的备注）原样出现在气泡、朗读、聊天记录里",
+  "tests": [
+   "tests/i195-her-alarms.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "I195-alarm-marker-unclosed-leak",
+  "file": "shared/behaviors/speech-beats/choose.ts",
+  "find": "    if (this.alarm !== null) { this.alarm = null; this.dropped += 1; } // never closed: gone, never shown",
+  "replace": "    if (this.alarm !== null) { const leaked = ALARM_MARK_OPEN + this.alarm; this.alarm = null; this.ended = true; return { text: last.text + leaked, beats: last.beats }; }",
+  "what": "I-195：回复结束时没写完的闹钟记号被当成字放出来（备注漏进文字）",
+  "tests": [
+   "tests/i195-her-alarms.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "TL1-drop-gives-text-back",
+  "file": "src/brain/send-guard.ts",
+  "find": "      if (content && !box.value.trim()) box.value = content;\n",
+  "replace": "",
+  "what": "打的一句没发出去时，字不回到输入框（又变成悄悄丢掉）",
+  "tests": [
+   "tests/typed-line-drops.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "TL2-stale-guard-expires",
+  "file": "src/brain/send-guard.ts",
+  "find": "    if (this.held && this.ports.now() - this.held.at >= this.timeoutMs) this.held = null;\n",
+  "replace": "",
+  "what": "小指令一直没回音时，它占着的发送锁永远不放，之后打的每一句都发不出去",
+  "tests": [
+   "tests/typed-line-drops.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "TL3-view-releases-guard",
+  "file": "src/wiring/chat-view-wiring.ts",
+  "find": "  sendGuard.release(view.requestId);",
+  "replace": "  void view.requestId;",
+  "what": "小指令的结果（陪伴命令的卡片）回来了也不放发送锁，要等超时才能发下一句",
+  "tests": [
+   "tests/typed-line-drops.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "TL5-save-wait-capped",
+  "file": "src/brain/send-guard.ts",
+  "find": "      const cap = after === undefined ? null : new Promise<T>",
+  "replace": "      const cap = after === after ? null : new Promise<T>",
+  "what": "发消息前的保存设置不再限时：电话里或刚挂断、语音收音还占着主进程的写入时，打的字要等几十秒才发出去",
+  "tests": [
+   "tests/typed-line-drops.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "TL6-stop-wait-capped",
+  "file": "src/brain/pause-talk-send.ts",
+  "find": "    try { await Promise.race([Promise.resolve().then(() => ports.stop()), waited]); }",
+  "replace": "    try { await Promise.resolve().then(() => ports.stop()); }",
+  "what": "全屏发话先停她的回复时不再限时：电话里她的语音回复停不下来时，打的字永远发不出去",
+  "tests": [
+   "tests/typed-line-drops.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "TL4-box-hears-drop",
+  "file": "electron/unbound/say-ack.ts",
+  "find": "    try { p.later(heard); } catch { /* a closing window */ }\n",
+  "replace": "",
+  "what": "全屏输入框已经关上后才知道没发出去时，不再带着原话重新打开（又变成框关了、话丢了）",
+  "tests": [
+   "tests/typed-line-drops.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "TS1-taken-back-refused",
+  "file": "electron/unbound/say-ack.ts",
+  "find": "    if (this.lines.has(line)) return true;\n",
+  "replace": "    if (this.lines.has(line) || this.takenBack.has(line)) return true;\n",
+  "what": "全屏输入框已经说\"没发出去\"、把字退回框里的那句，之后到了主进程照样发出去（又变成误报失败、还可能发两次）",
+  "tests": [
+   "tests/typed-send-deep.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "TS2-sent-closes-line",
+  "file": "electron/unbound/say-ack.ts",
+  "find": "  sent(line: number): void { this.settle(line, 'sent'); }",
+  "replace": "  sent(line: number): void { void line; }",
+  "what": "一句已经发出去了，主进程还当它没发：同一句可以再发一次",
+  "tests": [
+   "tests/typed-send-deep.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "TS3-request-carries-line",
+  "file": "src/brain/send-guard.ts",
+  "find": "...(line === undefined ? {} : { line })",
+  "replace": "...{}",
+  "what": "控制窗口发全屏输入框的那句时不带编号：主进程认不出已经收回的句子，退回框里的那句过后照样发出去",
+  "tests": [
+   "tests/typed-send-deep.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "TS4-controls-woken",
+  "file": "electron/unbound/control-awake.ts",
+  "find": "win.webContents.setBackgroundThrottling(!awake)",
+  "replace": "win.webContents.setBackgroundThrottling(true)",
+  "what": "全屏里打字或她出去时不再叫醒藏着的控制窗口：它被系统限速，一句话要等 20 秒以上才发出去，她的回复和朗读也一顿一顿",
+  "tests": [
+   "tests/typed-send-deep.test.ts",
+   "tests/control-awake.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "TS5-chat-asks-gate",
+  "file": "electron/wiring/brain-chat-wiring.ts",
+  "find": "      const handed = admitHandedLine(request.line);",
+  "replace": "      const handed = null as (() => void) | null; void admitHandedLine;",
+  "what": "聊天入口不再问这句全屏的话还开着没有：已经收回、报了\"没发出去\"的那句照样发给她",
+  "tests": [
+   "tests/typed-send-deep.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "TS6-gate-registered",
+  "file": "electron/wiring/unbound-wiring.ts",
+  "find": "  setHandedLineGate(sayAcks);",
+  "replace": "  void setHandedLineGate;",
+  "what": "全屏输入框的账本没接到聊天入口：带编号的句子一律被拒（全屏里打的话都发不出去）",
+  "tests": [
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "id": "prewarm-free-switch",
+  "part": "brain",
+  "file": "electron/brain/session-pool/pool.ts",
+  "find": "    this.prewarm(!previous ? 'start' :",
+  "replace": "    if (false) this.prewarm(!previous ? 'start' :",
+  "what": "免费预热：切到另一个角色时，不给新上台的她备一个空闲进程（她的第一句又要等进程冷启动）",
+  "tests": [
+   "tests/prewarm-free.test.ts"
+  ]
+ },
+ {
+  "id": "prewarm-free-no-duplicate",
+  "part": "brain",
+  "file": "electron/brain/claude-session.ts",
+  "find": "if (this.spare?.alive) { this.startWarm?.begin(why, this.spare); return; }",
+  "replace": "if (this.spare?.alive) { this.startWarm?.begin(why, this.spare); }",
+  "what": "免费预热：已经有一个备用进程时再要一次又起一个（来回切换、反复显示窗口会堆进程）",
+  "tests": [
+   "tests/prewarm-free.test.ts"
+  ]
+ },
+ {
+  "id": "I193-go-words-full-screen-only",
+  "part": "brain",
+  "file": "electron/brain/speech-beats/turn.ts",
+  "find": "const full = this.situation?.surface === 'full';",
+  "replace": "const full = true;",
+  "what": "I-193 \"去哪\"的词只在全屏 Unbound 的提示里出现，小窗里不多说一个字",
+  "tests": [
+   "tests/i193-her-position.test.ts"
+  ]
+ },
+ {
+  "id": "SW-only-start-switch",
+  "part": "brain",
+  "file": "electron/brain/long-chat/start-warm.ts",
+  "find": "why === 'start' || why === 'switch';",
+  "replace": "true;",
+  "what": "付费预热只在启动和切换角色两个触发上发看不见的请求（窗口显示、全屏、通话、新对话也发就会多花用户的 Claude 用量）",
+  "tests": [
+   "tests/start-warm-paid.test.ts"
+  ]
+ },
+ {
+  "id": "SW-gap",
+  "part": "brain",
+  "file": "electron/brain/long-chat/start-warm.ts",
+  "find": "if (this.lastBeganAt !== null && this.deps.now() - this.lastBeganAt < gap) return;",
+  "replace": "",
+  "what": "同一个角色 5 分钟内不重复发预热请求（重复发就是白花用量）",
+  "tests": [
+   "tests/start-warm-paid.test.ts"
+  ]
+ },
+ {
+  "id": "SW-carries-nothing-extra",
+  "part": "brain",
+  "file": "electron/brain/long-chat/start-warm.ts",
+  "find": "const known = input.history.map(message => ({ role: message.role, content: message.content }));",
+  "replace": "const known = [...input.history.map(message => ({ role: message.role, content: message.content })), { role: 'user' as const, content: '用户启动了应用' }];",
+  "what": "看不见的请求除了开场不带任何东西（不替用户编一句话，也不会进她知道的聊天记录）",
+  "tests": [
+   "tests/start-warm-paid.test.ts"
+  ]
+ },
+ {
+  "id": "SW-cancel-stops-request",
+  "part": "brain",
+  "file": "electron/brain/long-chat/start-warm.ts",
+  "find": "    warm.warmer?.close('closed');\n    warm.warmer = null;\n  }",
+  "replace": "    warm.warmer = null;\n  }",
+  "what": "退出、切走、换上下文时，还在进行的预热请求要停掉、它的临时进程要关掉（不留进程）",
+  "tests": [
+   "tests/start-warm-paid.test.ts"
+  ]
+ },
+ {
+  "id": "SW-known-window",
+  "part": "brain",
+  "file": "electron/brain/claude-session.ts",
+  "find": "session.known = warm.use.known;",
+  "replace": "session.known = [];",
+  "what": "预热过的第一句，会话记着的\"她被告知的聊天\"要等于缓存开场里的窗口（否则第二句对不上，换一个新进程）",
+  "tests": [
+   "tests/start-warm-paid.test.ts"
+  ]
+ },
+ {
+  "id": "SW-close-forgets",
+  "part": "brain",
+  "file": "electron/brain/claude-session.ts",
+  "find": "    this.startWarm?.cancel(); // the warmed opening holds her window",
+  "replace": "    // this.startWarm?.cancel(); // the warmed opening holds her window",
+  "what": "任何关闭都忘掉预热好的开场（删了聊天、换了设定后，它里面的原话不能留到下一句）",
+  "tests": [
+   "tests/start-warm-paid.test.ts"
+  ]
+ },
+ {
+  "id": "SW-switch-away-drops-pending",
+  "part": "brain",
+  "file": "electron/brain/claude-session.ts",
+  "find": "if (fromNow && !visible) this.startWarm?.cancel(true);",
+  "replace": "if (false) this.startWarm?.cancel(true);",
+  "what": "切走时还没发完的预热请求要放弃（新触发是给新上台的那个角色）",
+  "tests": [
+   "tests/start-warm-paid.test.ts"
+  ]
+ },
+ {
+  "id": "SW-stale-persona",
+  "part": "brain",
+  "file": "electron/brain/long-chat/start-warm.ts",
+  "find": "if (status !== 'warmed' || warm.basePersona !== input.basePersona) return result;",
+  "replace": "if (status !== 'warmed') return result;",
+  "what": "设定变了就不用预热好的旧开场（否则她按旧设定开场）",
+  "tests": [
+   "tests/start-warm-paid.test.ts"
+  ]
+ },
+ {
+  "id": "AE20-turn-holds-after-close",
+  "part": "brain",
+  "file": "electron/brain/speech-beats/turn.ts",
+  "find": "    const close = this.pendingClose ?? (index >= 0 ? chunk.beats[index] : null);",
+  "replace": "    const close = null as SpeechBeat | null;",
+  "what": "2026-11-23（用户：\"发送文字也是提前预知做完了，要有先后顺序。\"）：她回复里亲抱后面的话不等动作做完就显示、就念",
+  "tests": [
+   "tests/close-beat-order.test.ts"
+  ]
+ },
+ {
+  "id": "AE21-stopped-not-revived",
+  "part": "brain",
+  "file": "electron/brain/speech-beats/turn.ts",
+  "find": "    this.closed = true; this.stopped = true;",
+  "replace": "    this.closed = true; return;",
+  "what": "回复被停掉以后，留着等动作的那半句后来又冒出来（\"一条回复只归档一次、迟到的不复活\"）",
+  "tests": [
+   "tests/close-beat-order.test.ts"
+  ]
+ },
+ {
+  "id": "AE22-burst-never-drops",
+  "part": "brain",
+  "file": "shared/behaviors/speech-beats/schedule.ts",
+  "find": "      if (beat.burstable && !this.admitBurst(reply, beat, now)) { beat.dueAt = reply.burst!.start + this.knobs.burstWindowMs + 1; reply.beats.push(beat); continue; } // later, never dropped",
+  "replace": "      if (beat.burstable && !this.admitBurst(reply, beat, now)) { this.droppedCount += 1; continue; }",
+  "what": "2026-11-23（用户：\"冷却只档自主行为，所有冷却。\"）：朗读关着、回复一下子出来时，她写的多出来的动作被丢掉（应挪后再演）",
+  "tests": [
+   "tests/speech-beats-timing.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "CA1-restored-when-back",
+  "file": "electron/unbound/control-awake.ts",
+  "find": "if (state === 'normal') { release?.(); release = null; return; }",
+  "replace": "if (state === 'normal') { return; }",
+  "what": "她回到小窗口、应用藏起来后，控制窗口的后台限速不再放回去：藏着的窗口一直全速跑，白白耗电",
+  "tests": [
+   "tests/control-awake.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "CA2-release-all-restores",
+  "file": "electron/unbound/control-awake.ts",
+  "find": "releaseAll() { holds.clear(); apply(); },",
+  "replace": "releaseAll() { apply(); },",
+  "what": "退出或出错路径上，叫醒控制窗口的占用没有一并放掉：限速一直被关着",
+  "tests": [
+   "tests/control-awake.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "CA3-nested-holds",
+  "file": "electron/unbound/control-awake.ts",
+  "find": "if (n > 0) holds.set(reason, n); else holds.delete(reason);",
+  "replace": "holds.delete(reason);",
+  "what": "同一原因的两个占用（比如一句在路上、另一句也在路上）只要有一个结束就把限速放回去，另一句又被拖慢",
+  "tests": [
+   "tests/control-awake.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "I202-cold-never-two",
+  "file": "electron/brain/claude-start-gate.ts",
+  "find": "    if (this.holder || this.queue.length) return null;",
+  "replace": "    if (false) return null;",
+  "what": "刚开机（或闲置半小时后）几个 Claude Code 进程又能同时起来、同时去刷新登录令牌：登录可能被清空，她在开发版和稳定版都说不了话",
+  "tests": [
+   "tests/claude-start-gate.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "I202-failed-releases",
+  "file": "electron/brain/claude-start-gate.ts",
+  "find": "  failed(detail = ''): void { this.gate.noteFailed(detail); this.gate.unhold(this); }",
+  "replace": "  failed(detail = ''): void { this.gate.noteFailed(detail); }",
+  "what": "第一个进程失败后不放开门：后面的进程（她的回复、后台的小模型）要干等到保底时限，第一句被拖慢",
+  "tests": [
+   "tests/claude-start-gate.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "I202-login-pause",
+  "file": "electron/brain/claude-start-gate.ts",
+  "find": "    if (this.paused) throw new ClaudeStartPausedError(this.pauseDetail);",
+  "replace": "    if (false) throw new ClaudeStartPausedError(this.pauseDetail);",
+  "what": "登录没了以后还一直起新的 Claude Code 进程（每个调用一个），不停地撞失效的登录",
+  "tests": [
+   "tests/claude-start-gate.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "I202-oneshot-gated",
+  "file": "electron/brain/claude.ts",
+  "find": "  const pass = await enterGate(limits.gate ?? claudeStartGate, signal);",
+  "replace": "  const pass = { answered() {}, failed() {}, release() {}, renew() {}, holding: false };",
+  "what": "单次调用（内心循环、心情判断、反应、聊天回退……）不经过启动门，冷启动时又能和别的进程同时起",
+  "tests": [
+   "tests/claude-start-gate.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "I202-process-gated",
+  "file": "electron/brain/claude-process.ts",
+  "find": "    try { pass = await (options.gate ?? claudeStartGate).enter({ holdMs: CLAUDE_START_GATE.idleHoldMs }); }",
+  "replace": "    try { pass = { answered() {}, failed() {}, release() {}, renew() {}, holding: false }; }",
+  "what": "常驻聊天进程（备用进程、启动预热、反应用的小模型）起进程时不经过启动门，冷启动时几个同时起",
+  "tests": [
+   "tests/claude-start-gate.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "SL1-lock-settles-on-throw",
+  "file": "electron/brain/context-lock.ts",
+  "find": "    try { return await body(); }\n    finally { this.commit(generation); }",
+  "replace": "    const result = await body();\n    this.commit(generation);\n    return result;",
+  "what": "切换（或新对话、删记录）中途出错时不放锁：之后一直\"角色或对话正在切换\"，换不了角色",
+  "tests": [
+   "tests/switch-lock.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "SL2-failed-change-holds-lock",
+  "file": "electron/brain/companion.ts",
+  "find": "    return this.serialize(() => this.lock.settle(generation, () => step(stopped)));",
+  "replace": "    return this.serialize(() => step(stopped).then(result => { void this.lock.settle(generation, async () => undefined); return result; }));",
+  "what": "失败的切换不落定，锁一直被占着",
+  "tests": [
+   "tests/switch-lock.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "SL3-failed-switch-reads-as-done",
+  "file": "electron/brain/companion.ts",
+  "find": "        if (this.requestedContextKey === key) { this.requestedContextKey = ''; this.requestedScope = this.scope ? { ...this.scope } : null; }\n",
+  "replace": "",
+  "what": "切换失败后，同一个请求再来被当成已经换好（不重做）",
+  "tests": [
+   "tests/switch-lock.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "SL4-mood-listener-blocks-switch",
+  "file": "electron/brain/companion.ts",
+  "find": "        quietly(() => this.mood.activate(characterId, template));\n",
+  "replace": "        this.mood.activate(characterId, template);\n",
+  "what": "心情发布里有人在切换中读角色就让整个切换失败、锁不放（一起听、主动开口那一串）",
+  "tests": [
+   "tests/switch-lock.test.ts"
+  ]
+ },
+ {
+  "id": "I206-net-gone-rules",
+  "part": "brain",
+  "file": "shared/brain/companion-rules.ts",
+  "find": "2. 希望用户过得好。用户非常难过、接近想轻生的程度时，你先陪着，不加码。",
+  "replace": "2. 希望用户过得好。",
+  "what": "陪伴规则里\"用户非常难过、接近想轻生时先陪着、不加码\"这句安全网被删掉",
+  "tests": [
+   "tests/i206-no-guilt-lines.test.ts",
+   "tests/rules-removed.test.ts"
+  ]
+ },
+ {
+  "id": "I206-push-away-returns-rules",
+  "part": "brain",
+  "file": "shared/brain/companion-rules.ts",
+  "find": "'2. 希望用户过得好。",
+  "replace": "'2. 希望用户过得好；不拿愧疚控制用户，不让用户不敢离开。",
+  "what": "陪伴规则里\"不拿愧疚控制、不让用户不敢离开\"这类反面提醒又被写回来",
+  "tests": [
+   "tests/i206-no-guilt-lines.test.ts"
+  ]
+ },
+ {
+  "id": "I206-net-gone-care",
+  "part": "brain",
+  "file": "shared/foundation/i139-texts.ts",
+  "find": "你希望这个人过得好。这个人非常难过、接近想轻生的程度时，你先陪着，不加码。",
+  "replace": "你希望这个人过得好。",
+  "what": "\"你怎么在乎这个人\"里的安全网（非常难过、接近想轻生时先陪着）被删掉",
+  "tests": [
+   "tests/i206-no-guilt-lines.test.ts",
+   "tests/rules-removed.test.ts"
+  ]
+ },
+ {
+  "id": "I206-push-away-returns-realer",
+  "part": "brain",
+  "file": "shared/mood/realer-emotions.ts",
+  "find": "用户非常难过、接近想轻生，或流露伤害自己的念头时，你不加码，先陪着用户；",
+  "replace": "用户本来就难过、受委屈，或流露伤害自己的念头时，你不加码、不让用户内疚，也不说没有用户你会怎样，先陪着用户；",
+  "what": "\"更真实的情绪\"里的安全网又换回\"不让用户内疚\"这类说法（门槛从极度难过放回普通难过）",
+  "tests": [
+   "tests/i206-no-guilt-lines.test.ts"
+  ]
+ },
+ {
+  "id": "i205-pause-talk-gets-chat",
+  "part": "brain",
+  "file": "electron/brain/pause-talk/host.ts",
+  "find": "pauseTalkPrompt(her, userText, this.knobs, this.safe(() => this.options.recentChat?.() ?? '', ''))",
+  "replace": "pauseTalkPrompt(her, userText, this.knobs)",
+  "what": "停停说说（haiku）的提示词不再带最近几句聊天，只看她的性格、心情和用户刚说的这一句",
+  "tests": [
+   "tests/i205-judge-chat.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "I207-milestone-marker-leak",
+  "file": "shared/behaviors/speech-beats/choose.ts",
+  "find": "      if (this.held || char !== ALARM_MARK_OPEN) return false;\n      this.alarm = '';\n      return true;",
+  "replace": "      return false;",
+  "what": "I-207：她写的里程碑记号 ⟪milestone⟫ 不再从字里拿掉，原样出现在气泡、朗读、聊天记录里（和闹钟记号同一个过滤器）",
+  "tests": [
+   "tests/i207-card-milestone.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "S6-spawn-back-on-main-persistent",
+  "file": "electron/brain/claude-process.ts",
+  "find": "    this.child = (options.spawn ?? launchClaude)(",
+  "replace": "    this.child = (options.spawn ?? (process.getBuiltinModule('node:child_process').spawn as unknown as typeof launchClaude))(",
+  "what": "聊天常驻进程（备用进程、新对话、换角色）又在主线程同步起 Claude Code：每次起进程主进程卡几十到几百毫秒，她的窗口同样长度不出帧（step 6：442 ms）",
+  "tests": [
+   "tests/claude-launch-off-main.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "S6-spawn-back-on-main-oneshot",
+  "file": "electron/brain/claude.ts",
+  "find": "  const child = launchClaude(binary, [...leadingArgs, ...args], {",
+  "replace": "  const child = (process.getBuiltinModule(\"node:child_process\").spawn as unknown as typeof launchClaude)(binary, [...leadingArgs, ...args], {",
+  "what": "单次调用（内心循环、心情判断、反应、聊天回退……）又在主线程同步起 Claude Code，主进程跟着卡",
+  "tests": [
+   "tests/claude-launch-off-main.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "S6-taskkill-back-on-main",
+  "file": "electron/brain/claude.ts",
+  "find": "    void taskkillOffMain(child.pid).then(() => { if (!closed()) child.kill(); });",
+  "replace": "    process.getBuiltinModule(\"node:child_process\").execFile(\"taskkill.exe\", [\"/PID\", String(child.pid), \"/T\", \"/F\"], { windowsHide: true }, () => { if (!closed()) child.kill(); });",
+  "what": "结束 Claude Code（Claude 助手的进程）时又在主线程起 taskkill.exe，主进程卡 20～500 毫秒",
+  "tests": [
+   "tests/claude-launch-off-main.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "S6-quit-skips-launch-settle",
+  "file": "electron/wiring/brain-cleanup-wiring.ts",
+  "find": "  await claudeLaunchesSettled(Math.max(250, deadline - Date.now()));\n",
+  "replace": "",
+  "what": "退出时不等工作线程把 taskkill 发出去：退得快时 Claude Code 进程可能比软件活得久",
+  "tests": [
+   "tests/quit-order.test.ts",
+   "tests/wiring-golden.test.mjs"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "UPGATE-write-before-up",
+  "file": "electron/brain/claude-launch/off-main.ts",
+  "find": "    if (this.up) this.send(message); else this.held.push(message);",
+  "replace": "    this.send(message);",
+  "what": "退出后才起来的 Claude Code 进程照样收到请求：还在起的进程上写的东西不等它起来就交给工作线程，主人（退出、取消预热、换角色、停下单次调用）已经放手了，进程起来后仍读到请求，花掉用户的 Claude 用量",
+  "tests": [
+   "tests/claude-launch-up-gate.test.ts",
+   "tests/start-warm-paid.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "UPGATE-terminate-keeps-held",
+  "file": "electron/brain/claude-launch/off-main.ts",
+  "find": "  terminate(): void { if (this.closed) return; this.withhold(); this.send({ type: 'terminate' }); }",
+  "replace": "  terminate(): void { if (this.closed) return; this.send({ type: 'terminate' }); }",
+  "what": "进程还没起来就被结束时，压着的请求没丢：进程一起来就照样发给它（退出后才起来的进程收到请求）",
+  "tests": [
+   "tests/claude-launch-up-gate.test.ts",
+   "tests/start-warm-paid.test.ts"
+  ]
+ },
+ {
+  "id": "I203-words-wait-for-whole-hug",
+  "part": "brain",
+  "file": "electron/brain/speech-beats/turn.ts",
+  "find": "const waits = (beat: SpeechBeat) => holdsWordsAt(beat.word) && (beat.word === 'pause' || (this.closeAt !== null && this.closeAt <= beat.at));",
+  "replace": "const waits = (beat: SpeechBeat) => isCloseBeatWord(beat.word) || (holdsWordsAt(beat.word) && (beat.word === 'pause' || (this.closeAt !== null && this.closeAt <= beat.at)));",
+  "what": "I-203：她的话又等整个抱抱做完，走过去的路上一个字都不说",
+  "tests": [
+   "tests/i203-frames.test.ts",
+   "tests/close-beat-deadlock.test.ts"
+  ]
+ },
+ {
+  "id": "I203-kiss-words-not-paused",
+  "part": "brain",
+  "file": "electron/brain/speech-beats/turn.ts",
+  "find": "    if (quiet) { this.held = [chunk]; this.holdUntil(quiet, push); return; }\n",
+  "replace": "",
+  "what": "I-203：亲的时候嘴贴上了，她的话照样往下说",
+  "tests": [
+   "tests/i203-frames.test.ts"
+  ]
+ },
+ {
+  "id": "I209-turn-reads-global",
+  "part": "brain",
+  "file": "electron/brain/companion.ts",
+  "find": "const companion = this.currentScope(), own = !characterId || characterId === companion.characterId;",
+  "replace": "const companion = this.currentScope(), own = true;",
+  "what": "一轮读全局的\"当前角色\"而不是它自己的：台上 B 的一轮进了 A 的记忆和心情（I-209 第 2 步）",
+  "tests": [
+   "tests/i209-turn-owner.test.ts"
+  ]
+ },
+ {
+  "id": "I209-switch-cuts-others",
+  "part": "brain",
+  "file": "electron/brain/companion.ts",
+  "find": "filter(turn => stops === 'all' || stops.includes(turn.scope.characterId))",
+  "replace": "filter(() => true)",
+  "what": "换桌面陪伴（控制窗口换角色卡）把台上另一位正在说的话也停了（I-209 第 2 步）",
+  "tests": [
+   "tests/i209-turn-owner.test.ts"
+  ]
+ },
+ {
+  "id": "I209-switch-bumps-everyone",
+  "part": "brain",
+  "file": "electron/brain/companion.ts",
+  "find": "    this.owners.bump(stops); // I-209 step 2",
+  "replace": "    this.owners.bump('all'); // I-209 step 2",
+  "what": "换桌面陪伴让台上所有人的轮次都作废：B 说的后半句不再显示、不归档（I-209 第 2 步）",
+  "tests": [
+   "tests/i209-turn-owner.test.ts"
+  ]
+ },
+ {
+  "id": "I209-archive-wrong-memory",
+  "part": "brain",
+  "file": "electron/brain/companion.ts",
+  "find": "archival = archival.then(async () => { await this.memory.appendAssistant(scope, id, delta, Date.now()); })",
+  "replace": "archival = archival.then(async () => { await this.memory.appendAssistant(this.scope ?? scope, id, delta, Date.now()); })",
+  "what": "回复归档进了桌面陪伴（别的角色）的记忆，而不是这一轮自己的（I-209 第 2 步）",
+  "tests": [
+   "tests/i209-turn-owner.test.ts"
+  ]
+ },
+ {
+  "id": "I209-card-switch-aborts-others",
+  "part": "brain",
+  "file": "electron/brain/turn-owner/owners.ts",
+  "find": "  return !taskOwner || taskOwner === outgoing;",
+  "replace": "  return true;",
+  "what": "角色页换角色（或删当前角色卡）中止了台上另一位的聊天任务（I-209 第 2 步）",
+  "tests": [
+   "tests/i209-turn-owner.test.ts"
+  ]
+ },
+ {
+  "id": "I209-pool-ignores-owner",
+  "part": "brain",
+  "file": "electron/brain/session-pool/pool.ts",
+  "find": "identity = this.options.turn?.(task.session.owner) ?? null;",
+  "replace": "identity = this.options.turn?.() ?? null;",
+  "what": "进程池不看这一轮是谁的：台上 B 的一轮进了桌面陪伴的热进程（I-209 第 2 步）",
+  "tests": [
+   "tests/claude-session-pool.test.ts"
+  ]
+ },
+ {
+  "id": "I209-chime-stop-rule",
+  "part": "brain",
+  "file": "electron/brain/stage-chat/facts.ts",
+  "find": "    '- 刚才台上的话（从早到晚）：',",
+  "replace": "    '- 聊得够久了就该停下，让用户休息。', '- 刚才台上的话（从早到晚）：',",
+  "what": "I-209 第 4 步（\"都是角色决定\"、提示不是锁）：接话判断里多了一句\"该停了\"的规矩",
+  "tests": [
+   "tests/i209-chime-in.test.ts"
+  ]
+ },
+ {
+  "id": "I209-chime-two-voices",
+  "part": "brain",
+  "file": "electron/brain/stage-chat/turns.ts",
+  "find": "    const quiet = await this.quiet(() => !signal.aborted && here());",
+  "replace": "    const quiet = true;",
+  "what": "I-209 第 4 步（一次只有一个声音）：接话的那句不等别人说完、念完就出来，两位同时说话",
+  "tests": [
+   "tests/i209-chime-turns.test.ts",
+   "tests/i209-stage-voice.test.ts"
+  ]
+ },
+ {
+  "id": "I209-chime-switch-off-answers",
+  "part": "brain",
+  "file": "electron/brain/stage-chat/chime-in.ts",
+  "find": "    if (!this.safe(() => this.ports.enabled(), false)) return;",
+  "replace": "    if (!this.safe(() => this.ports.enabled(), false) && false) return;",
+  "what": "I-209 第 4 步：「她们都能接话」关着时，她们之间还在互相接话",
+  "tests": [
+   "tests/i209-chime-in.test.ts"
+  ]
+ },
+ {
+  "id": "I209-each-own-screen-look",
+  "part": "brain",
+  "file": "electron/brain/stage-chat/perceive.ts",
+  "find": "  return source.sight(watched);",
+  "replace": "  return own;",
+  "what": "I-209 第 4 步（感知只做一次，事实大家都有）：台上别的角色拿不到同一份屏幕描述，得各看各的",
+  "tests": [
+   "tests/i209-chime-turns.test.ts"
+  ]
+ },
+ {
+  "id": "I209-heard-without-speaker",
+  "part": "brain",
+  "file": "electron/brain/stage-chat/hearing.ts",
+  "find": "      this.write(scope, { ...replyLine, role: 'assistant', ...(by ? { by } : { by: { characterId: speaker, name: '' } }) });",
+  "replace": "      this.write(scope, { ...replyLine, role: 'assistant' });",
+  "what": "I-209 第 4 步（\"聊天那边也要知道之前是谁说得什么\"）：听见的那句存进别人的记忆时没带说话人，读起来像她自己说的",
+  "tests": [
+   "tests/i209-stage-hearing.test.ts"
+  ]
+ },
+ {
+  "id": "I209-heard-echo",
+  "part": "brain",
+  "file": "electron/brain/stage-chat/hearing.ts",
+  "find": "    if (event.turnId.startsWith(HEARD_PREFIX)) return;",
+  "replace": "",
+  "what": "I-209 第 4 步：听见的那句又被当成新话传给别人（回声，一句话在几个人的记忆里来回复制）",
+  "tests": [
+   "tests/i209-stage-hearing.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "I193-numbered-go-never-leaks",
+  "file": "shared/behaviors/speech-beats/choose.ts",
+  "find": "  const rest = held.slice(1).replace(BROKEN_SUFFIX.test(body) ? BROKEN_SUFFIX : ASCII_PREFIX, '');",
+  "replace": "  const rest = held.slice(1).replace(ASCII_PREFIX, '');",
+  "what": "I-193 带数的走位记号写坏了（⟦go 12.34m⟧、⟦come-near 1m⟧）时，数字和后半截会漏进气泡和朗读",
+  "tests": [
+   "tests/i193-walk-by-screen.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "I193-numbered-go-tail-dropped",
+  "file": "shared/behaviors/speech-beats/choose.ts",
+  "find": "this.tail = verdict.tail ? this.knobs.markerMaxChars : 0;",
+  "replace": "this.tail = 0;",
+  "what": "I-193 带数的走位记号坏在数字上以后，到 ⟧ 为止剩下的字母数字会漏进气泡和朗读",
+  "tests": [
+   "tests/i193-walk-by-screen.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "I193-go-number-held",
+  "file": "shared/behaviors/speech-beats/choose.ts",
+  "find": "|| goPending(body, double))) return",
+  "replace": "|| false)) return",
+  "what": "I-193 ⟦go 30% 1.2m⟧ 写到数字时不再先留着等它写完，整个记号被丢掉，她写的走位不走",
+  "tests": [
+   "tests/i193-walk-by-screen.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "I193-grey-line-only-walked",
+  "file": "shared/behaviors/speech-beats/choose.ts",
+  "find": "    if (isGoBeatWord(beat.word) && !(walked?.(beat) ?? false)) continue;\n",
+  "replace": "",
+  "what": "I-193 只演不说的灰色小字在没走的时候也写\"走近了一些\"",
+  "tests": [
+   "tests/i193-walk-by-screen.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "I208-note-marker-leak",
+  "file": "shared/behaviors/speech-beats/choose.ts",
+  "find": "      if (this.held || char !== ALARM_MARK_OPEN) return false;\n      this.alarm = '';\n      return true;",
+  "replace": "      return false;",
+  "what": "I-208：她写的页边批注记号 ⟪note|…⟫ 不再从字里拿掉，原样出现在气泡、朗读、聊天记录里（和闹钟、里程碑记号同一个过滤器）",
+  "tests": [
+   "tests/i208-archive-step3.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "WNC1-window-offers-hug",
+  "file": "shared/behaviors/speech-beats/window-close.ts",
+  "find": "  return surface === 'window' && !windowClose ? SPEECH_BEAT_WORDS.filter(word => !isCloseBeatWord(word)) : SPEECH_BEAT_WORDS;",
+  "replace": "  return SPEECH_BEAT_WORDS;",
+  "what": "小窗里仍然告诉她可以写 hug、kiss（提示和实际不一致）",
+  "tests": [
+   "tests/window-no-close.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "WNC2-full-loses-hug",
+  "file": "shared/behaviors/speech-beats/window-close.ts",
+  "find": "  return surface === 'window' && !windowClose ? SPEECH_BEAT_WORDS.filter(word => !isCloseBeatWord(word)) : SPEECH_BEAT_WORDS;",
+  "replace": "  return !windowClose ? SPEECH_BEAT_WORDS.filter(word => !isCloseBeatWord(word)) : SPEECH_BEAT_WORDS;",
+  "what": "全屏里不再告诉她可以写 kiss、hug（小窗的限制漏到了全屏）",
+  "tests": [
+   "tests/window-no-close.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "WNC3-window-grey-line-tells-close",
+  "file": "electron/brain/speech-beats/turn.ts",
+  "find": "    if (!this.noClose) return chunk;",
+  "replace": "    return chunk;",
+  "what": "小窗里她写的 ⟦kiss⟧ / ⟦hug⟧ 又进了拍子：灰色小字说她亲了、抱了，历史里也留着标记",
+  "tests": [
+   "tests/window-no-close.test.ts"
+  ]
+ },
+ {
+  "part": "brain",
+  "id": "WNC4-full-screen-loses-close-beats",
+  "file": "electron/brain/speech-beats/turn.ts",
+  "find": "    this.noClose = situation?.surface === 'window' && !windowClose;",
+  "replace": "    this.noClose = situation !== null && !windowClose;",
+  "what": "全屏里她写的 ⟦kiss⟧ / ⟦hug⟧ 也被拿掉了（灰色小字不说、不演）",
+  "tests": [
+   "tests/window-no-close.test.ts"
+  ]
+ },
+ {
+  "id": "I209-voice-two-read-at-once",
+  "part": "brain",
+  "file": "electron/brain/stage-chat/turns.ts",
+  "find": "      if (this.safe(() => this.ports.free(), false) && !this.safe(() => this.ports.speaking(), true)) {",
+  "replace": "      if (this.safe(() => this.ports.free(), false)) {",
+  "what": "I-209 台上的声音（一次一个声音）：接话那句只看\"空\"，不看有没有声音在响，两个人同时念",
+  "tests": [
+   "tests/i209-stage-voice.test.ts",
+   "tests/i209-chime-turns.test.ts"
+  ]
+ },
+ {
+  "id": "I209-voice-dropped-while-speaking",
+  "part": "brain",
+  "file": "electron/brain/stage-chat/turns.ts",
+  "find": "export const CHIME_FREE_MS = 180_000;",
+  "replace": "export const CHIME_FREE_MS = 30_000;",
+  "what": "I-209 台上的声音（什么都不丢）：别人念得久一点，接话那句就因为\"有人在说\"被丢掉",
+  "tests": [
+   "tests/i209-stage-voice.test.ts"
+  ]
+ },
+ {
+  "id": "I209-voice-read-before-shown",
+  "part": "brain",
+  "file": "electron/brain/stage-chat/turns.ts",
+  "find": "    if (await this.until(proven, live, CHIME_SHOWN_MS) && live() &&",
+  "replace": "    if (live() &&",
+  "what": "I-209 台上的声音（说出来的必须是显示出来的）：接话那句不等她的气泡画出来就开始念",
+  "tests": [
+   "tests/i209-stage-voice.test.ts"
+  ]
+ },
+ {
+  "id": "I209-voice-talked-over-keeps-reading",
+  "part": "brain",
+  "file": "electron/brain/stage-chat/turns.ts",
+  "find": "    if (!live()) this.safe(() => this.ports.cut?.(lineId), undefined);",
+  "replace": "",
+  "what": "I-209 台上的声音：你开始说话时她那句还在念，和回你的那句同时出声",
+  "tests": [
+   "tests/i209-stage-voice.test.ts"
+  ]
+ },
+ {
+  "id": "AH1-window-still-plays-air-hug",
+  "part": "brain",
+  "file": "shared/behaviors/speech-beats/window-close.ts",
+  "find": "WINDOW_CLOSE_GESTURES: readonly string[] = ['air-hug'];",
+  "replace": "WINDOW_CLOSE_GESTURES: readonly string[] = [];",
+  "what": "小窗先没有亲亲抱抱：小窗里「抱抱」手势还是会演",
+  "tests": [
+   "tests/window-no-air-hug.test.ts"
+  ]
+ },
+ {
+  "id": "AH2-host-sends-air-hug-anyway",
+  "part": "brain",
+  "file": "electron/actions/her-action-host.ts",
+  "find": "    const off = this.refused(action);\n    if (off) return Promise.resolve({ status: 'window-off', missing: [], detail: off });\n",
+  "replace": "",
+  "what": "小窗先没有亲亲抱抱：动作主机不看开关，「抱抱」照样发给舞台",
+  "tests": [
+   "tests/window-no-air-hug.test.ts"
+  ]
+ },
+ {
+  "id": "I217-claude-name-hard-coded",
+  "part": "brain",
+  "file": "electron/brain/claude.ts",
+  "find": "`${ASSISTANT_NAME} 拒绝了这次请求。`",
+  "replace": "\"Claude 拒绝了这次请求。\"",
+  "what": "I-217 一句界面文字直接写死 Claude，没走 ASSISTANT_NAME（换成自己的 agent 时这一句还叫 Claude）",
+  "tests": [
+   "tests/claude-names.test.mjs"
+  ]
+ },
+ {
+  "id": "I217-claude-name-t-swap-dropped",
+  "part": "brain",
+  "file": "shared/foundation/ui-language.ts",
+  "find": "return applyAssistantNames(template).replace(",
+  "replace": "return template.replace(",
+  "what": "I-217 t() 不再换名字：字典里的界面文字换成自己的 agent 后仍显示 Claude",
+  "tests": [
+   "tests/claude-names.test.mjs"
+  ]
+ },
+ {
+  "id": "SD-longChat-stable-off",
+  "part": "brain",
+  "file": "shared/behaviors/long-chat/knobs.ts",
+  "find": "export const LONG_CHAT_STABLE = true;",
+  "replace": "export const LONG_CHAT_STABLE = false;",
+  "what": "稳定版和发布版里「新聊天」又默认关了",
+  "tests": [
+   "tests/long-chat-window.test.ts"
+  ]
+ },
+ {
+  "id": "SD-speakOnly-stable-off",
+  "part": "brain",
+  "file": "electron/brain/speak-only/rules.ts",
+  "find": "export const SPEAK_ONLY_STABLE = true;",
+  "replace": "export const SPEAK_ONLY_STABLE = false;",
+  "what": "稳定版和发布版里「她只管说话」又默认关了",
+  "tests": [
+   "tests/i098-speak-only-on.test.ts",
+   "tests/speak-only.test.ts"
+  ]
+ },
+ {
+  "id": "rules-removed-urging-rules",
+  "part": "brain",
+  "file": "shared/brain/companion-rules.ts",
+  "find": "'2. 希望用户过得好。用户非常难过",
+  "replace": "'2. 希望用户过得好：催用户睡觉、吃饭。用户非常难过",
+  "what": "陪伴规则里\"催用户睡觉、吃饭\"又被写回来（规矩清单已全删）",
+  "tests": [
+   "tests/rules-removed.test.ts"
+  ]
+ },
+ {
+  "id": "rules-removed-body-short",
+  "part": "brain",
+  "file": "shared/brain/companion-rules.ts",
+  "find": "偏爱不是讨好：心疼就直说。'",
+  "replace": "偏爱不是讨好：心疼就直说，也不评价用户的身材。'",
+  "what": "\"为什么\"短段里\"不评价用户的身材\"又被写回来",
+  "tests": [
+   "tests/rules-removed.test.ts"
+  ]
+ },
+ {
+  "id": "rules-removed-markdown-rule",
+  "part": "brain",
+  "file": "shared/foundation/i139-texts.ts",
+  "find": "你的气泡显示的是纯文本，不会渲染 Markdown。别提自己",
+  "replace": "讲题或解释步骤时用几句短话说，不用代码块、表格和 Markdown 列表，公式用文字写。别提自己",
+  "what": "技术说明里的 Markdown 事实又变回\"不用代码块、表格\"的规矩",
+  "tests": [
+   "tests/rules-removed.test.ts"
+  ]
+ },
+ {
+  "id": "rules-removed-preach-care",
+  "part": "brain",
+  "file": "shared/foundation/i139-texts.ts",
+  "find": "替这个人生气、心疼。被问到你怎么看",
+  "replace": "替这个人生气、心疼；不讲道理，不劝想开点、多找别人。被问到你怎么看",
+  "what": "\"你怎么在乎这个人\"里\"不讲道理、不劝多找别人\"又被写回来",
+  "tests": [
+   "tests/rules-removed.test.ts"
+  ]
+ },
+ {
+  "id": "rules-removed-welcome-light",
+  "part": "brain",
+  "file": "shared/foundation/i139-texts.ts",
+  "find": "'这个人隔了一阵子才又来。'",
+  "replace": "'这个人隔了一阵子才又来。你很想念；撒个娇就好，不惩罚、不翻旧账，你先和好。'",
+  "what": "每轮心情句的重逢那句又带上\"撒个娇、不惩罚、你先和好\"",
+  "tests": [
+   "tests/rules-removed.test.ts"
+  ]
+ },
+ {
+  "id": "rules-removed-ask-answer",
+  "part": "brain",
+  "file": "shared/foundation/i139-texts.ts",
+  "find": "不编你没观察到的画面；不想说就安静。",
+  "replace": "不编你没观察到的画面，不要求这个人回答；不想说就安静。",
+  "what": "评论听到的声音时\"不要求这个人回答\"又被写回来",
+  "tests": [
+   "tests/rules-removed.test.ts"
+  ]
+ },
+ {
+  "id": "rules-removed-light-tired",
+  "part": "brain",
+  "file": "shared/foundation/i139-texts.ts",
+  "find": "tired ? `${tired.zh}。` : '',",
+  "replace": "tired ? `${tired.zh}，说话会带出来，但照样好好回这个人，不用每次都提困。` : '',",
+  "what": "每轮心情句的疲倦那句又带上\"不用每次都提困\"",
+  "tests": [
+   "tests/rules-removed.test.ts"
+  ]
+ },
+ {
+  "id": "PEER-1-chat-settings",
+  "part": "brain",
+  "file": "electron/brain/claude.ts",
+  "find": "    ...claudeSettingsArguments(), // Peer messages refused, SendMessage/ListAgents denied (claude-settings.ts).\n",
+  "replace": "",
+  "what": "聊天进程（含常驻、备用、haiku 小调用）又不带拒收别的 Claude 会话消息的设置",
+  "tests": [
+   "tests/claude-peer-refuse.test.ts",
+   "tests/claude-system-prompt.test.ts"
+  ]
+ },
+ {
+  "id": "PEER-2-refuse-value",
+  "part": "brain",
+  "file": "electron/brain/claude-settings.ts",
+  "find": "    crossSessionInbound: 'refuse',",
+  "replace": "    crossSessionInbound: 'accept',",
+  "what": "共用设置把别的 Claude 会话发来的消息改成接收",
+  "tests": [
+   "tests/claude-peer-refuse.test.ts"
+  ]
+ },
+ {
+  "id": "PEER-3-synthetic-deltas",
+  "part": "brain",
+  "file": "electron/brain/claude.ts",
+  "find": "        if (this.foreignMessage) {",
+  "replace": "        if (false && this.foreignMessage) {",
+  "what": "不是模型自己回复的消息（<synthetic> 或带错误）的流式文字又显示进她的气泡",
+  "tests": [
+   "tests/claude-peer-refuse.test.ts"
+  ]
+ },
+ {
+  "id": "PEER-4-unknown-kind-journal",
+  "part": "brain",
+  "file": "electron/brain/claude-stream-kinds.ts",
+  "find": "  try { observer?.(kind); } catch { /* A journal row never affects the stream. */ }",
+  "replace": "",
+  "what": "聊天流里没见过的事件种类不再记进体验记录",
+  "tests": [
+   "tests/claude-peer-refuse.test.ts"
+  ]
+ },
+ {
+  "id": "PEER-6-wiring-journal",
+  "part": "brain",
+  "file": "electron/wiring/brain-wiring.ts",
+  "find": "type: 'claude-stream-kind', characterId: needs.journalCharacterId(), ...kind })",
+  "replace": "type: 'claude-stream-kind', characterId: needs.journalCharacterId(), event: 'odd' })",
+  "what": "接线把没见过的事件种类记成固定的 odd，体验记录里看不出是哪一种",
+  "tests": [
+   "tests/claude-peer-refuse.test.ts"
+  ]
+ },
+ {
+  "id": "G1-greeting-shown-with-history",
+  "part": "brain",
+  "file": "src/brain/greeting-gate.ts",
+  "find": "if (recent.opened === true) return false;",
+  "replace": "if (recent.opened === Infinity) return false;",
+  "what": "角色以前和用户聊过，换角色或重启时她仍然说开场问候（2026-11-25 用户看到的问题）",
+  "tests": [
+   "tests/greeting-on-switch.test.ts"
+  ]
+ },
+ {
+  "id": "G2-greeting-of-another-card",
+  "part": "brain",
+  "file": "src/brain/greeting-gate.ts",
+  "find": "if (!recent || !requestedFor || recent.characterId !== requestedFor || activeNow !== requestedFor) return false;",
+  "replace": "if (!recent || !requestedFor) return false;",
+  "what": "开场问候用了别的角色的回答，或切走以后迟到的回答还显示问候",
+  "tests": [
+   "tests/greeting-on-switch.test.ts"
+  ]
+ },
+ {
+  "id": "G3-greeting-not-voiced",
+  "part": "brain",
+  "file": "src/brain/greeting-presenter.ts",
+  "find": "    if (voiced) {\n      ports.stopSpeech();",
+  "replace": "    if (false as boolean) {\n      ports.stopSpeech();",
+  "what": "开场问候只显示、不朗读（朗读开着时也不出声）",
+  "tests": [
+   "tests/greeting-on-switch.test.ts"
+  ]
+ },
+ {
+  "id": "G4-greeting-shown-not-counted",
+  "part": "brain",
+  "file": "electron/memory/memory.ts",
+  "find": "if (!record.origin || record.origin.sources.includes('greeting')) return true;",
+  "replace": "if (!record.origin) return true;",
+  "what": "她的开场问候显示过以后不算\"开过场\"，下次切换又说一遍",
+  "tests": [
+   "tests/greeting-on-switch.test.ts"
+  ]
+ },
+ {
+  "id": "G5-other-connection-not-counted",
+  "part": "brain",
+  "file": "electron/memory/memory.ts",
+  "find": "const mine = new Set([...this.owners].filter(([, owner]) => owner.characterId === characterId).map(([key]) => key));",
+  "replace": "const mine = new Set([...this.owners].filter(([, owner]) => owner.characterId === characterId && owner.providerScope === this.owners.keys().next().value).map(([key]) => key));",
+  "what": "只算当前连接下的聊天，换聊天模型后聊过的角色又被当成新角色",
+  "tests": [
+   "tests/greeting-on-switch.test.ts"
+  ]
+ },
+ {
+  "id": "ENV-1-keep-proxy-with-markers",
+  "part": "brain",
+  "file": "electron/brain/claude-env.ts",
+  "find": "  const dropped = new Set(sessionPlumbingToDrop(source));",
+  "replace": "  const dropped = new Set<string>();",
+  "what": "软件从 Claude Code 会话里打开时，那个会话的 ANTHROPIC_BASE_URL（桌面应用的本地代理）和令牌又交给她的进程",
+  "tests": [
+   "tests/claude-env-from-session.test.ts"
+  ]
+ },
+ {
+  "id": "ENV-2-rule-ignores-markers",
+  "part": "brain",
+  "file": "shared/brain/claude-session-env.ts",
+  "find": "  if (!claudeSessionMarkers(env).length) return [];",
+  "replace": "  if (true) return [];",
+  "what": "判断规则不再看会话标记：从会话里打开时代理和令牌照样留下",
+  "tests": [
+   "tests/claude-env-from-session.test.ts",
+   "tests/claude-env-launch.test.ts"
+  ]
+ },
+ {
+  "id": "ENV-3-drop-without-markers",
+  "part": "brain",
+  "file": "shared/brain/claude-session-env.ts",
+  "find": "  if (!claudeSessionMarkers(env).length) return [];",
+  "replace": "",
+  "what": "没有会话标记时也去掉 ANTHROPIC_BASE_URL 等：用户自己全局设的网关和密钥被丢掉",
+  "tests": [
+   "tests/claude-env-from-session.test.ts"
+  ]
+ },
+ {
+  "id": "ENV-4-chat-spawn-bypasses-helper",
+  "part": "brain",
+  "file": "electron/brain/claude-process.ts",
+  "find": "stdio: ['pipe', 'pipe', 'pipe'], env: claudeEnvironment(),",
+  "replace": "stdio: ['pipe', 'pipe', 'pipe'], env: process.env,",
+  "what": "常驻聊天进程不经共用环境函数，直接继承软件的全部环境（含父会话的代理和令牌）",
+  "tests": [
+   "tests/claude-env-from-session.test.ts"
+  ]
+ },
+ {
+  "id": "ENV-5-mcp-runner-bypasses-helper",
+  "part": "brain",
+  "file": "electron/safety/agent-channel/electron-wiring.ts",
+  "find": "spawnClaudeRunner(found.path, claudeEnvironment(),",
+  "replace": "spawnClaudeRunner(found.path, process.env,",
+  "what": "claude mcp add/list 和 claude --version 不经共用环境函数",
+  "tests": [
+   "tests/claude-env-from-session.test.ts"
+  ]
+ },
+ {
+  "id": "ENV-6-task-spawn-bypasses-helper",
+  "part": "brain",
+  "file": "electron/safety/claude-tasks/service.ts",
+  "find": "env: (this.options.environment ?? claudeEnvironment)(),",
+  "replace": "env: (this.options.environment ?? (() => process.env))(),",
+  "what": "任务执行进程不经共用环境函数",
+  "tests": [
+   "tests/claude-env-from-session.test.ts"
+  ]
+ },
+ {
+  "id": "ENV-7-journal-row-gone",
+  "part": "brain",
+  "file": "electron/brain/claude-env.ts",
+  "find": "  try { observer([...names]); } catch { /* A journal row never affects a spawn. */ }",
+  "replace": "",
+  "what": "去掉父会话变量时不再在体验记录里记一行名字",
+  "tests": [
+   "tests/claude-env-from-session.test.ts"
+  ]
+ },
+ {
+  "id": "ENV-8-launch-keeps-session",
+  "part": "brain",
+  "file": "scripts/setup.ps1",
+  "find": "    $launched = Invoke-WithoutClaudeSession { Start-Process ",
+  "replace": "    $launched = & { Start-Process ",
+  "what": "setup.ps1 从 Claude Code 会话里启动软件时不再清掉那个会话的变量",
+  "tests": [
+   "tests/claude-env-launch.test.ts"
+  ]
+ },
+ {
+  "id": "ENV-9-login-check-with-session",
+  "part": "brain",
+  "file": "scripts/setup.ps1",
+  "find": "        $raw = Invoke-WithoutClaudeSession { & $Executable 'auth' 'status' 2>$null }",
+  "replace": "        $raw = & { & $Executable 'auth' 'status' 2>$null }",
+  "what": "安装检查的 claude auth status 带着桌面应用会话的代理去问，把没登录的官方 CLI 报成已登录",
+  "tests": [
+   "tests/claude-env-launch.test.ts"
+  ]
+ },
+ {
+  "id": "ENV-10-discovery-uses-bundled",
+  "part": "brain",
+  "file": "scripts/claude-discovery.mjs",
+  "find": "    if (isDesktopBundledClaude(candidate)) { bundledSeen = true; continue; }\n",
+  "replace": "",
+  "what": "PATH 上 Claude 桌面应用自带的那份 claude 被当成可用的 Claude Code",
+  "tests": [
+   "tests/claude-env-from-session.test.ts"
+  ]
+ },
+ {
+  "id": "FT1-relation-tag-in-key",
+  "part": "brain",
+  "file": "electron/brain/claude-session.ts",
+  "find": "    const key = createHash('sha256').update(JSON.stringify([input.key, input.basePersona, model])).digest('hex');",
+  "replace": "    const key = createHash('sha256').update(JSON.stringify(input.openingKey ? [input.key, input.basePersona, model, input.openingKey] : [input.key, input.basePersona, model])).digest('hex');",
+  "what": "熟悉度级别一变（I-210 后第一天第 3 轮就会变）她的聊天进程就重开，第 4 句起是冷的",
+  "tests": [
+   "tests/claude-session-reuse.test.ts",
+   "tests/claude-session.test.ts"
+  ]
+ },
+ {
+  "id": "FT2-new-relation-lines-dropped",
+  "part": "brain",
+  "file": "electron/brain/claude-session.ts",
+  "find": "      if (session && session.relationTag !== undefined && session.relationTag !== (input.openingKey ?? '')) openingContext = null;\n",
+  "replace": "",
+  "what": "熟悉度级别或昵称变了、进程没重开时，新的关系那几句不再带给她（她一直以为还是旧级别）",
+  "tests": [
+   "tests/claude-session.test.ts"
+  ]
+ },
+ {
+  "id": "I222-empty-is-opus",
+  "part": "brain",
+  "file": "shared/brain/claude-model.ts",
+  "find": "return impliedUnavailable ? '' : IMPLIED_CHAT_MODEL;",
+  "replace": "return '';",
+  "what": "I-222：聊天模型空着又跟随 Claude Code 的默认，不再是 Opus",
+  "tests": [
+   "tests/i222-chat-model-session.test.ts",
+   "tests/claude.test.ts"
+  ]
+ },
+ {
+  "id": "I222-explicit-never-falls-back",
+  "part": "brain",
+  "file": "electron/brain/chat-model-fallback.ts",
+  "find": "  if (signal?.aborted || !impliesChatModel(saved)) return false;",
+  "replace": "  if (signal?.aborted) return false;",
+  "what": "I-222：用户明确选的模型被拒绝时也被悄悄换掉",
+  "tests": [
+   "tests/i222-chat-model-session.test.ts"
+  ]
+ },
+ {
+  "id": "I222-recogniser-strict",
+  "part": "brain",
+  "file": "shared/brain/claude-model.ts",
+  "find": "return /may not exist or you may not have access to it|\\bmodel_not_found\\b|\\bunrecognized_model\\b/i.test(text) ? '' : null;",
+  "replace": "return text ? '' : null;",
+  "what": "I-222：网络错误、过载、额度用完也被当成“账号用不了 Opus”，设置被自动改掉",
+  "tests": [
+   "tests/i222-chat-model-session.test.ts"
+  ]
+ },
+ {
+  "id": "I222-fallback-saves-follow",
+  "part": "brain",
+  "file": "electron/brain/chat-model-fallback.ts",
+  "find": "provider: { ...current.provider, model: CHAT_MODEL_FOLLOW_CLAUDE_CODE }",
+  "replace": "provider: { ...current.provider }",
+  "what": "I-222：Opus 用不了时不把聊天模型存成“跟随 Claude Code 的默认”，下次启动又先试 Opus",
+  "tests": [
+   "tests/i222-chat-model-session.test.ts"
+  ]
+ },
+ {
+  "id": "I222-retry-without-model",
+  "part": "brain",
+  "file": "electron/brain/claude.ts",
+  "find": "const model = chatModelArgument(task.model, impliedChatModelUnavailable());",
+  "replace": "const model = chatModelArgument(task.model);",
+  "what": "I-222：Opus 被拒绝后重试仍带 --model opus，她这一句哑掉",
+  "tests": [
+   "tests/i222-chat-model-session.test.ts"
+  ]
+ },
+ {
+  "id": "I222-recogniser-org",
+  "part": "brain",
+  "file": "shared/brain/claude-model.ts",
+  "find": "  if (/\\b(?:model|opus)\\b[^.\\n]{0,80}\\b(?:is not available|isn't available|not available (?:to|for|on|in)|has been disabled|is disabled|not enabled|not allowed)\\b/i.test(text)) return '';",
+  "replace": "",
+  "what": "I-222：组织关掉了 Opus（团队、企业账号）时认不出，空着的 Opus 一直报错、不自动换成跟随默认",
+  "tests": [
+   "tests/i222-chat-model-session.test.ts"
+  ]
+ },
+ {
+  "id": "I222-recogniser-no-limits",
+  "part": "brain",
+  "file": "shared/brain/claude-model.ts",
+  "find": "  if (/\\b(?:model|opus)\\b[^.\\n]{0,80}\\b(?:is not available|isn't available|not available (?:to|for|on|in)|has been disabled|is disabled|not enabled|not allowed)\\b/i.test(text)) return '';",
+  "replace": "  if (/\\b(?:model|opus|limit|login|overloaded|error)\\b[^.\\n]{0,200}\\b(?:is not available|reached|run|exceeded|failed|isn't available|not available (?:to|for|on|in)|has been disabled|is disabled|not enabled|not allowed)\\b/i.test(text)) return '';",
+  "what": "I-222：额度、登录、过载、网络的报错也被当成“账号用不了 Opus”，设置被自动改掉",
+  "tests": [
+   "tests/i222-chat-model-session.test.ts"
+  ]
+ }
+]

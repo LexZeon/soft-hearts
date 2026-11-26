@@ -6,8 +6,8 @@
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { applyMoodEvent, createMoodState, DEFAULT_MOOD_PARAMETERS, validateMoodParameters, type MoodLabel, type MoodParameters, type MoodTendency } from '../shared/mood';
-import { MOOD_LABELS } from '../shared/mood-runtime';
+import { applyMoodEvent, createMoodState, DEFAULT_MOOD_PARAMETERS, validateMoodParameters, type MoodLabel, type MoodParameters, type MoodTendency } from '../shared/foundation/mood';
+import { MOOD_LABELS } from '../shared/mood/mood-runtime';
 import { drawTouchFeed, freshnessDepth, freshnessLeft, tireFactor, tiredFreshness, touchFeedEffectSafe, touchFeedNow, TouchFeedEffectDirector } from '../shared/behaviors/touch-feed-effect/choose';
 import { FixedTouchFeedEffect } from '../shared/behaviors/touch-feed-effect/fake';
 import { withTouchFeedEffect } from '../shared/behaviors/touch-feed-effect/perform';

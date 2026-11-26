@@ -4,9 +4,9 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { startPoseWorker } from '../electron/pose/worker';
-import type { OrtLike, OrtTensorLike } from '../electron/pose/engine';
-import { parseWorkerMessage } from '../electron/pose/protocol';
+import { startPoseWorker } from '../electron/senses/pose/worker';
+import type { OrtLike, OrtTensorLike } from '../electron/senses/pose/engine';
+import { parseWorkerMessage } from '../electron/senses/pose/protocol';
 
 // The utilityProcess entry with its process boundary replaced: a parent port, a sensor port, a fake runtime.
 const fakeOrt: OrtLike = {

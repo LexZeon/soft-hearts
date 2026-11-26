@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createFatigue, fatigueSnapshot, type FatiguePhase } from '../shared/fatigue';
+import { createFatigue, fatigueSnapshot, type FatiguePhase } from '../shared/mood/fatigue';
 import { FatiguePresentation } from '../src/stage/fatigue-presentation';
 
 const view = (phase: FatiguePhase) => ({ ...fatigueSnapshot(createFatigue({ monotonicMs: 0, localMinute: 900 }, { A: .9, F: .8, phase })), sleepEntryReady: true });

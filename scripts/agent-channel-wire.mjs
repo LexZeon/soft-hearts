@@ -1,4 +1,4 @@
-// Agent channel wire format, shared by the app (electron/agent-channel/transport.ts)
+// Agent channel wire format, shared by the app (electron/safety/agent-channel/transport.ts)
 // and the MCP shim (scripts/soft-hearts-mcp.mjs). Newline-delimited JSON frames over a
 // local pipe/socket. Both sides prove they hold the profile token with HMAC; the token
 // itself never crosses the wire, so a process squatting on the pipe name learns nothing.

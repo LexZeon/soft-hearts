@@ -8,22 +8,24 @@ import { readFileSync } from 'node:fs';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import type { Attachment } from '../shared/contracts';
-import { isLookDecline, scanLookRequest, withheldLook } from '../shared/look-request';
-import { DECLINE_HOLDS, LookTurns, REFUSAL_HOLDS, type LookOfferView } from '../electron/look-turns';
-import { LookAttachments } from '../electron/look-attachments';
-import { ScreenSnapshots } from '../electron/screen-snapshots';
-import { ScreenGlance } from '../electron/screen-glance';
-import type { ForegroundReading } from '../electron/foreground-app';
-import { PersistentClaudeChat } from '../electron/claude-session';
-import { validateChatRequest } from '../electron/validation';
-import { lookHint, turnAttachments } from '../src/look-send';
-import { lookOfferContent } from '../src/ui/LookOfferPrompt';
+import type { Attachment } from '../shared/foundation/chat';
+import { isLookDecline, scanLookRequest, withheldLook } from '../shared/senses/look-request';
+import { DECLINE_HOLDS, LookTurns, REFUSAL_HOLDS, type LookOfferView } from '../electron/senses/look-turns';
+import { LookAttachments } from '../electron/senses/look-attachments';
+import { ScreenSnapshots } from '../electron/senses/screen-snapshots';
+import { ScreenGlance } from '../electron/senses/screen-glance';
+import type { ForegroundReading } from '../electron/senses/foreground-app';
+import { PersistentClaudeChat } from '../electron/brain/claude-session';
+import { validateChatRequest } from '../electron/settings/validation';
+import { lookHint, turnAttachments } from '../src/senses/look-send';
+import { lookOfferContent } from '../src/senses/LookOfferPrompt';
 import {
   PERCEPTION_LINE_MAX, PERCEPTION_RULE, ROUGH_UNKNOWN_LINE, SCREEN_LOOK_LINE, SHARING_LINE, perceptionTurnLine, perceptionTurnState, roughLine,
-} from '../shared/perception-rule';
-import { SCREEN_ACTIVITIES, type ScreenActivity } from '../shared/screen-activity';
-import type { HearingNow, HerContact } from '../shared/her-state';
+} from '../shared/brain/perception-rule';
+import { SCREEN_ACTIVITIES, type ScreenActivity } from '../shared/senses/screen-activity';
+import type { HearingNow, HerContact } from '../shared/mood/her-state';
+// Reads as text (test-affected selects this test when they change): 'electron/main.ts' (wiring rewrite step 4c: with electron/wiring/*.ts).
+import { wiringSource } from './helpers/wiring-source';
 
 const flush = async () => { for (let i = 0; i < 16; i++) await Promise.resolve(); };
 function deferred<T>() {
@@ -72,7 +74,7 @@ function fakeProbe() {
 
 /**
  * The host as electron/main.ts wires it now: real ScreenSnapshots (never turned on: no background frame), real LookTurns (with the
- * pet's prompt listener), real LookAttachments, real ScreenGlance with a fake foreground reader and a fake small model; fake capture.
+ * companion's prompt listener), real LookAttachments, real ScreenGlance with a fake foreground reader and a fake small model; fake capture.
  */
 function host() {
   let now = 1_000, sequence = 0, captures = 0;
@@ -207,7 +209,7 @@ test('她问"要我凑近看看吗"：桌宠收到邀请；点"看吧"像按钮�
   const h = host();
   h.share(true);
   h.reader.read({ exe: 'Code.exe' });
-  // 看吧 on the pet: src/main.ts sends lookOfferContent(the box) with look: true, like "给她看看屏幕".
+  // 看吧 on the companion: src/main.ts sends lookOfferContent(the box) with look: true, like "给她看看屏幕".
   h.herOffer();
   assert.equal(h.offers.length, 1);
   assert.ok(h.offers[0]?.id);
@@ -216,7 +218,7 @@ test('她问"要我凑近看看吗"：桌宠收到邀请；点"看吧"像按钮�
   assert.equal(yes.images.length, 1, '看吧: one clear frame, this turn');
   assert.equal(yes.sight, '【此刻的感知】' + SCREEN_LOOK_LINE);
   assert.equal(h.offers.at(-1), null, 'answered: the prompt goes');
-  // 不用 on the pet: preload declineLookOffer(id) → electron/main.ts → LookTurns.decline.
+  // 不用 on the companion: preload declineLookOffer(id) → electron/main.ts → LookTurns.decline.
   h.herOffer();
   const id = h.offers.at(-1)!.id;
   assert.equal(h.turns.decline(id, h.state()), true);
@@ -391,19 +393,21 @@ test('首字（假 Claude）：共享开着的普通消息送到 stdin 不比关
 });
 
 test('electron/main.ts 接线：不再保留最新一帧、不再打字时截屏；大概随共享开关；"别看"时不说大概；"不用"只收桌宠的', () => {
-  const main = readFileSync(new URL('../electron/main.ts', import.meta.url), 'utf8');
+  const main = wiringSource();
   assert.doesNotMatch(main, /latestScreen|freshen\(|sharedFrame|unasked\(\)/u, 'the V1 kept frame is gone');
   assert.doesNotMatch(main, /screenSnapshots\.setOptions\(\{ enabled: next\.screenSharing \}\)/u, 'nothing turns the 10 s frame on');
   assert.match(main, /if \(!next\.screenSharing && screenSnapshots\.state\.enabled\) try \{ screenSnapshots\.setOptions\(\{ enabled: false \}\); \}/u);
   assert.match(main, /screenGlance\.setSharing\(next\.screenSharing\);/u);
-  assert.match(main, /scopedHost\('noteChatTyping', \(\) => \{ companion\.noteTyping\(\); screenGlance\.noteTalk\(\); \}/u);
+  assert.match(main, /scopedHost\('noteChatTyping', \(\) => \{ companion\.noteTyping\(\); screenGlance\.noteTalk\(\); see\.typing\(\); (?:faceCheck\?\.host\.noteTalk\(\); )?\}/u); // I-168: typing no longer holds her own look (no quiet window); I-135: it may start a face-check burst
   assert.match(main, /const roughForTurn = \(\) => media\.state\.screenSharing && !lookTurns\.refusedIn\(lookState\(\)\) \? screenGlance\.rough\(\) : undefined;/u);
   // I-036: the line also learns whether the camera frame is 「发图片」's small one.
-  assert.match(main, /perceptionTurnState\(media\.state, request\.attachments, request\.messages\.at\(-1\)\?\.content, \{ rough, cameraGlance: turnFrames\.cameraGlance\(\) \}\)/u);
+  // I-085 第 3 步: and the text she has instead of a picture (firstTurn.glance: the watch line, her closer look, her own recent look).
+  assert.match(main, /perceptionTurnState\(media\.state, request\.attachments, request\.messages\.at\(-1\)\?\.content, \{ rough, cameraGlance: turnFrames\.cameraGlance\(\), screenSmall: turnFrames\.screenGlance\(\), \.\.\.firstTurn\.glance \}\)/u); // I-166: the small screen picture of every turn
   assert.match(main, /scopedHost\('declineLookOffer', \(sender, id: unknown\) => sender === pet\?\.webContents\.id && lookTurns\.decline\(id, lookState\(\)\), false\);/u);
-  assert.match(main, /new LookTurns\(Date\.now, offer => broadcast\('desk:look-offer', offer\)\)/u);
+  assert.match(main, /new LookTurns\(Date\.now, offer => broadcast\('desk:look-offer', offer\), \{ holds: SEE_AND_SAY\.holdOnNo \}\)/u); // I-168: "别看" holds nothing (tests/i168-she-decides-to-look.test.ts)
   assert.match(main, /lookTurns\.clear\(\);/u, 'a cleared vision context (sharing off) closes her offer and the prompt');
-  assert.match(main, /thumbnailSize: \{ width: 320, height: 200 \}/u, 'the glance thumbnail is small');
+  // I-174: the screen's two reads moved to electron/senses/screen-capture.ts (unchanged).
+  assert.match(readFileSync(new URL('../electron/senses/screen-capture.ts', import.meta.url), 'utf8'), /read\(sourceId, \{ width: 320, height: 200 \}\)/u, 'the glance thumbnail is small'); // I-190: through the source choice (read → pick)
   assert.match(main, /quickLineWithClaude\(GLANCE_PROMPT, GLANCE_SYSTEM_PROMPT, signal, undefined, \[picture\]\)/u, 'haiku, the picture only');
   assert.match(main, /return \{ autoCapture: false, intervalSeconds/u, 'R09 stays reported as off');
 });

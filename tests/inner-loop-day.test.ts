@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { runInnerLoopDay, type DayCard, type DayDecide } from '../scripts/lib/inner-loop-day';
 import { GENE_DAY_CARD, SLOW_TIRED_CARD } from '../scripts/inner-loop-day-cards';
-import { DEFAULT_FATIGUE_PARAMETERS } from '../shared/fatigue';
+import { DEFAULT_FATIGUE_PARAMETERS } from '../shared/mood/fatigue';
 import { BoredomTimingDirector } from '../shared/behaviors/boredom-timing/choose';
 import { FixedBoredomTiming } from '../shared/behaviors/boredom-timing/fake';
 import { seeded } from './helpers/seeded';
@@ -46,7 +46,7 @@ test('a spoken line keeps the shared speech quota; an unspoken decision returns 
   // Gene allows one unanswered line: after it, no speech opportunity (for any source) until the user replies.
   assert.equal(spoken.spoken.length, 1); assert.equal(spoken.opportunities.speech, 1);
   const invalid = await runDay({ card: GENE_DAY_CARD, blocks: afternoon,
-    decide: async () => ({ text: '{"action":"speak","text":"太长太长太长太长太长太长太长太长太长太长太长"}' }) });
+    decide: async () => ({ text: '{"action":"speak","text":"太长太长太长太长太长太长太长太长太长太长太长太长太长太长太长太长"}' }) });
   assert.deepEqual(invalid.spoken, []);
   assert.equal(invalid.opportunities.speech, 2, 'the quota came back; the next chance still waited a full speech interval');
   assert.ok(invalid.diagnostics.every(entry => entry.result === 'invalid'));

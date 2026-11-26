@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { classifyCompanionCommand, formatCompanionCommandReceipt } from '../electron/companion-command-intent';
-import type { CompanionCommandIntentInput, CompanionCommandReceipt } from '../shared/companion-commands';
+import { classifyCompanionCommand, formatCompanionCommandReceipt } from '../electron/settings/companion-command-intent';
+import type { CompanionCommandIntentInput, CompanionCommandReceipt } from '../shared/settings/companion-commands';
 
 const input = (text: string): CompanionCommandIntentInput => ({ requestId: 'volume-request', contextId: 'current-context',
   text, currentValue: false, currentVisible: true, currentFollowMouse: false, currentReadoutVolume: 0.4 });

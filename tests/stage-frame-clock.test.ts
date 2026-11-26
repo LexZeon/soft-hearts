@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { acceptStageFrame, FrameHeartbeat, frameRate, MAX_ANIMATION_DELTA, type FrameSurface } from '../src/stage/frame-clock';
-import { SpeakingSources } from '../src/stage/speaking-sources';
+import { SpeakingSources } from '../src/voice/speaking-sources';
 
 const VISIBLE: FrameSurface = { hostVisible: true, documentHidden: false, width: 400, height: 560 };
 

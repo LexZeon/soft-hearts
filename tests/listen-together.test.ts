@@ -5,22 +5,22 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { ListenKindHost, type ListenKind } from '../shared/listen-kind';
-import { createAudioReadingView } from '../shared/audio-reading-toggles';
-import { LISTEN_LIMITS, listenSwitchOn, listenWordsOn, rawSegmentsToKeep, type ListenNote, type ListenSegment } from '../shared/listen-together';
-import { LISTEN_NOTE_SYSTEM_PROMPT, copiesRun, listenNotePrompt, noteDecision, parseListenNote, withoutRecital } from '../shared/listen-note';
-import { ASK_LIMITS, LISTEN_ASK_MAX, listenAskContext, matchListenAsk } from '../shared/listen-ask';
-import { listenSpeakPrompt, listenWillSpeak } from '../shared/listen-proactive';
-import { carriesTranscript } from '../shared/her-state';
-import { ListenTogetherCore, emptyListenFile, type ListenFile } from '../electron/listen-together/core';
-import { ListenStore, validateListenFile } from '../electron/listen-together/store';
-import { ListenProactive, routeAmbientComments, type AmbientCommentsLike } from '../electron/listen-together/proactive';
-import { ListenTogether } from '../electron/listen-together/host';
-import { listenSwitchStatus } from '../src/ui/ListenTogetherSwitch';
-import { ENGLISH_LISTEN_UI_COPY } from '../shared/ui-copy.listen.en';
-import { createMoodState, getMoodSnapshot, DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
-import type { MoodView } from '../shared/mood-runtime';
-import type { NoteRequest } from '../shared/listen-note';
+import { ListenKindHost, type ListenKind } from '../shared/senses/listen-kind';
+import { createAudioReadingView } from '../shared/voice/audio-reading-toggles';
+import { LISTEN_LIMITS, listenSwitchOn, listenWordsOn, rawSegmentsToKeep, type ListenNote, type ListenSegment } from '../shared/senses/listen-together';
+import { LISTEN_NOTE_SYSTEM_PROMPT, copiesRun, listenNotePrompt, noteDecision, parseListenNote, withoutRecital } from '../shared/senses/listen-note';
+import { ASK_LIMITS, LISTEN_ASK_MAX, listenAskContext, matchListenAsk } from '../shared/senses/listen-ask';
+import { listenSpeakPrompt, listenWillSpeak } from '../shared/senses/listen-proactive';
+import { carriesTranscript } from '../shared/mood/her-state';
+import { ListenTogetherCore, emptyListenFile, type ListenFile } from '../electron/senses/listen-together/core';
+import { ListenStore, validateListenFile } from '../electron/senses/listen-together/store';
+import { ListenProactive, routeAmbientComments, type AmbientCommentsLike } from '../electron/senses/listen-together/proactive';
+import { ListenTogether } from '../electron/senses/listen-together/host';
+import { listenSwitchStatus } from '../src/senses/ListenTogetherSwitch';
+import { ENGLISH_LISTEN_UI_COPY } from '../shared/foundation/ui-copy.listen.en';
+import { createMoodState, getMoodSnapshot, DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
+import type { MoodView } from '../shared/mood/mood-runtime';
+import type { NoteRequest } from '../shared/senses/listen-note';
 
 const MIN = 60_000;
 const flush = async () => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
@@ -54,6 +54,8 @@ test('one switch: any of the computer\'s-sound cells or its rhythm counts as on;
   const mic = createAudioReadingView('scope-2'); mic.sources.microphone.music.intent = true; mic.sources.microphone.movie.intent = true;
   assert.equal(listenSwitchOn(mic, false), false, 'the microphone is not part of 「和她一起听」');
   assert.equal(listenWordsOn(mic), false);
+  assert.equal(listenSwitchStatus({ view, systemDance: true, danceActive: false }), '关着', 'I-187: 一起看\'s dialogue alone is not the 一起听 switch');
+  view.sources['system-audio'].music.intent = true;
   assert.equal(listenSwitchStatus({ view, systemDance: false, danceActive: false }), '正在准备…');
   view.sources['system-audio'].capture = { revision: 1, active: true, phase: 'ready', status: '' };
   assert.match(listenSwitchStatus({ view, systemDance: true, danceActive: true }), /在听/);
@@ -62,7 +64,7 @@ test('one switch: any of the computer\'s-sound cells or its rhythm counts as on;
 });
 
 test('every new UI line has an English translation', async () => {
-  const sources = await Promise.all(['src/ui/ListenTogetherSwitch.ts', 'src/ui/ListenTogetherPanel.ts', 'src/ui/AudioReadingClient.ts', 'src/ui/PetUI.ts']
+  const sources = await Promise.all(['src/senses/ListenTogetherSwitch.ts', 'src/senses/ListenTogetherPanel.ts', 'src/voice/AudioReadingClient.ts', 'src/stage/PetUI.ts']
     .map(file => readFile(new URL(`../${file}`, import.meta.url), 'utf8')));
   const keys = new Set<string>();
   for (const source of sources) for (const m of source.matchAll(/uiText\('([^']*(?:一起听|她|转写|笔记|原文|分钟|段|删|清空|准备|节奏|朗读|打开|关掉)[^']*)'\)/gu)) keys.add(m[1]);
@@ -417,7 +419,7 @@ test('she may not want to; no mention, a changed session, an interruption or a d
   const flat = proactiveRig();
   flat.p.candidate(note({ id: 'ln-x', mention: false }), 'ended'); assert.equal(flat.p.nextSourceObservation(), undefined);
   const expire = proactiveRig();
-  expire.p.candidate(note({ id: 'ln-x' }), 'ended'); expire.advance(3 * MIN + 1); assert.equal(expire.p.nextSourceObservation(), undefined, 'a pause candidate expires');
+  expire.p.candidate(note({ id: 'ln-x' }), 'ended'); expire.advance(MIN + 1); assert.equal(expire.p.nextSourceObservation(), undefined, 'a pause candidate expires');
   const moved = proactiveRig();
   moved.p.candidate(note({ id: 'ln-x' }), 'ended'); const s = moved.p.nextSourceObservation()!;
   moved.setSession({ owner: 2, sessionId: 'scope2', startedAt: 0, captureReadyAt: 0, mode: 'music', scope: { characterId: 'card-a', providerScope: 'p' }, contextIdentity: 'ctx' });
@@ -525,7 +527,7 @@ test('control window: the raw count, a one-click clear (asked first), and each n
   const previous = globalThis.document;
   globalThis.document = { createElement: (tag: string) => new FakeNode(tag) } as unknown as Document;
   try {
-    const { ListenTogetherPanel } = await import('../src/ui/ListenTogetherPanel');
+    const { ListenTogetherPanel } = await import('../src/senses/ListenTogetherPanel');
     const calls: string[] = []; let answer = false;
     const view = { raw: { segments: 3, characters: 420, oldestAt: 1 }, total: 2, notes: [
       { id: 'ln-1', kind: 'music' as const, startedAt: 0, endedAt: 4 * MIN, local: false, talked: true, what: '歌' as const, gist: '一首等人回来的歌', mood: '温柔', points: ['伞'] },

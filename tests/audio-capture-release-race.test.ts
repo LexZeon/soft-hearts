@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { AudioCaptureHost } from '../electron/audio-capture-host';
+import { AudioCaptureHost } from '../electron/senses/audio-capture-host';
 
 test('navigation revokes consumers but cannot resolve physical release or create a replacement', async () => {
-  const states: import('../shared/audio-capture').AudioCaptureState[] = [], lost: string[] = [];
+  const states: import('../shared/senses/audio-capture').AudioCaptureState[] = [], lost: string[] = [];
   const host = new AudioCaptureHost({ available: () => true, publish: state => { states.push(state); }, lost: source => { lost.push(source); } });
   host.setChat('controls'); const first = host.getState().slots.microphone!;
   assert.equal(host.ack('controls', { source: first.source, id: first.id, revision: first.revision, phase: 'ready' }), true);
@@ -53,7 +53,7 @@ test('a delayed physical-loss receipt survives metadata/off edits and releases o
 });
 
 test('same physical ready facts tolerate permission metadata edits, but never future or older-lifetime revisions', () => {
-  const published: import('../shared/audio-capture').AudioCaptureState[] = [];
+  const published: import('../shared/senses/audio-capture').AudioCaptureState[] = [];
   const host = new AudioCaptureHost({ available: () => true, publish: state => { published.push(state); }, lost: () => {}, id: () => 'fixed-synthetic-id' });
   host.setChat('pet'); const first = host.getState().slots.microphone!;
   host.touch('microphone'); const latest = host.getState().slots.microphone!;

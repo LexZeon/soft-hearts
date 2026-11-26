@@ -1,0 +1,568 @@
+[
+ {
+  "id": "A1-rps-in-controls",
+  "part": "renderer",
+  "file": "src/wiring/initiative-wiring.ts",
+  "find": "if (isPet) { rpsOverlay = new RpsOverlay(",
+  "replace": "if (true) { rpsOverlay = new RpsOverlay(",
+  "what": "the pet's rock-paper-scissors overlay is made in the control window too",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "A2-reaction-in-controls",
+  "part": "renderer",
+  "file": "src/wiring/initiative-wiring.ts",
+  "find": "if (isPet) window.desktop.onReaction(",
+  "replace": "if (true) window.desktop.onReaction(",
+  "what": "the control window also plays reaction cues (and answers the host)",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "A3-navigate-on-pet",
+  "part": "renderer",
+  "file": "src/wiring/initiative-wiring.ts",
+  "find": "if (!isPet) window.desktop.onControlNavigate(",
+  "replace": "if (true) window.desktop.onControlNavigate(",
+  "what": "the pet window also follows control-page navigation requests",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "A4-capability-preview-in-controls",
+  "part": "renderer",
+  "file": "src/wiring/stage-wiring.ts",
+  "find": "if (isPet) bindCapabilityPreview(",
+  "replace": "if (true) bindCapabilityPreview(",
+  "what": "试一下 also plays on the control window's stage",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "A5-self-look-in-controls",
+  "part": "renderer",
+  "file": "src/wiring/initiative-wiring.ts",
+  "find": "if (isPet) new SelfLookMark(",
+  "replace": "if (true) new SelfLookMark(",
+  "what": "her self-look mark is made in the control window too",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "A6-ambient-offer-in-controls",
+  "part": "renderer",
+  "file": "src/wiring/senses-wiring.ts",
+  "find": "if (isPet) window.desktop.onAmbientCommentOffer(",
+  "replace": "if (true) window.desktop.onAmbientCommentOffer(",
+  "what": "the control window also presents her comment offers",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "A7-committed-comment-on-pet",
+  "part": "renderer",
+  "file": "src/wiring/senses-wiring.ts",
+  "find": "if (isPet || activeChat || ambientDisplayedComments.has(comment.id)) return;",
+  "replace": "if (activeChat || ambientDisplayedComments.has(comment.id)) return;",
+  "what": "the pet also adds a committed comment as a chat row",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "A8-pet-ui-in-controls",
+  "part": "renderer",
+  "file": "src/main.ts",
+  "find": "  if (isPet) mountPetWindow();",
+  "replace": "  if (true) mountPetWindow();",
+  "what": "the control window mounts the pet UI",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "B1-look-buttons-without-switch",
+  "part": "renderer",
+  "file": "src/wiring/senses-wiring.ts",
+  "find": "lookButton?.update(next); lookMeButton?.update(next);",
+  "replace": "lookButton?.update({ ...next, screenSharing: true }); lookMeButton?.update({ ...next, cameraImages: true });",
+  "what": "the look buttons are offered as if screen sharing and camera pictures were on",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts",
+   "tests/i084-look-at-me.test.ts"
+  ]
+ },
+ {
+  "id": "B2-privacy-indicator-says-screen",
+  "part": "renderer",
+  "file": "src/wiring/senses-wiring.ts",
+  "find": "next.screenSharing ? uiText('屏幕共享') : ''",
+  "replace": "uiText('屏幕共享')",
+  "what": "the privacy line says screen sharing is on when it is off",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "B3-runtime-switches-shown-on",
+  "part": "renderer",
+  "file": "src/wiring/senses-wiring.ts",
+  "find": "if (input) input.checked = next[feature] === true;",
+  "replace": "if (input) input.checked = true;",
+  "what": "the control window's input and sharing switches show on whatever the host says",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "B4-sharing-off-cuts-her",
+  "part": "renderer",
+  "file": "src/wiring/senses-wiring.ts",
+  "find": "void mediaInput?.applyRuntime(next);",
+  "replace": "void mediaInput?.applyRuntime(next); clearChat(true, false, true);",
+  "what": "I-221：关掉发图片或屏幕共享时窗口自己清空聊天（停掉她正在说的回复，页面变成\"新对话已开始\"）",
+  "tests": [
+   "tests/off-switch-interrupts.test.ts",
+   "tests/look-frame-source.test.ts"
+  ]
+ },
+ {
+  "id": "B5-sharing-options-say-on",
+  "part": "renderer",
+  "file": "src/wiring/senses-wiring.ts",
+  "find": "screenSharingOptions?.update({ ...visionRuntime, ...next });",
+  "replace": "screenSharingOptions?.update({ ...visionRuntime, ...next, screenSharing: true });",
+  "what": "the screen sharing options are told sharing is on",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "B6-vision-line-while-hidden",
+  "part": "renderer",
+  "file": "src/wiring/senses-wiring.ts",
+  "find": "if (!petUI || !hostVisible || activeChat || $<HTMLTextAreaElement>('chat-input').value.trim() || shownInitiatives.has(message.id)) {",
+  "replace": "if (!petUI || activeChat || $<HTMLTextAreaElement>('chat-input').value.trim() || shownInitiatives.has(message.id)) {",
+  "what": "her look-line is shown while the window is hidden",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "B7-hidden-page-keeps-snapshots",
+  "part": "renderer",
+  "file": "src/wiring/chat-wiring.ts",
+  "find": "      captureController?.abort();\n      attachments = [];\n      if (!isPet) renderAttachments();",
+  "replace": "      captureController?.abort();\n      if (!isPet) renderAttachments();",
+  "what": "hiding the page keeps the draft's screen snapshots",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "B8-hidden-window-keeps-snapshots",
+  "part": "renderer",
+  "file": "src/wiring/chat-wiring.ts",
+  "find": "captureController?.abort(); attachments = [];",
+  "replace": "captureController?.abort();",
+  "what": "a hidden window keeps the draft's screen snapshots",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "C1-passthrough-in-controls",
+  "part": "renderer",
+  "file": "src/wiring/pet-window-wiring.ts",
+  "find": "if (isPet) petPointer = installPetPointerPassthrough(",
+  "replace": "if (true) petPointer = installPetPointerPassthrough(",
+  "what": "click-through pointer handling is installed in the control window",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "C2-passthrough-without-switch",
+  "part": "renderer",
+  "file": "src/wiring/pet-window-wiring.ts",
+  "find": "enabled: () => settings.pet.clickThrough && hostVisible,",
+  "replace": "enabled: () => hostVisible,",
+  "what": "click-through is on whether or not the user turned it on",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "C3-passthrough-ignores-holds",
+  "part": "renderer",
+  "file": "src/wiring/pet-window-wiring.ts",
+  "find": "holds: () => cameraEditing || !!petUI?.windowInteractionBlocked,",
+  "replace": "holds: () => false,",
+  "what": "click-through ignores camera editing and window adjusting",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "C4-follow-mouse-without-switch",
+  "part": "renderer",
+  "file": "src/wiring/stage-wiring.ts",
+  "find": "if (!settings.pet.followMouse || !hostVisible || document.hidden) return;",
+  "replace": "if (!hostVisible || document.hidden) return;",
+  "what": "the cursor is read without the follow-mouse switch",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "C5-gaze-in-controls",
+  "part": "renderer",
+  "file": "src/wiring/stage-wiring.ts",
+  "find": "if (isPet && ((hostVisible && !document.hidden) || attentionPollWanted())) void window.desktop.userGaze()",
+  "replace": "if (((hostVisible && !document.hidden) || attentionPollWanted())) void window.desktop.userGaze()",
+  "what": "the control window also reads where pose sensing says you are",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "C6-behaviour-gate-ignores-click-through",
+  "part": "renderer",
+  "file": "src/wiring/stage-wiring.ts",
+  "find": "clickThrough: settings.pet.clickThrough, preview:",
+  "replace": "clickThrough: false, preview:",
+  "what": "the stage's behaviour gate is told click-through is off",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "D1-stream-any-id",
+  "part": "renderer",
+  "file": "src/wiring/chat-wiring.ts",
+  "find": "if (event.kind === \"chat\" && event.id === activeChat) {",
+  "replace": "if (event.kind === \"chat\") {",
+  "what": "a stream event of an old reply id updates the current reply",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts",
+   "tests/conversation-flow.test.ts"
+  ]
+ },
+ {
+  "id": "D2-voice-row-older-seq",
+  "part": "renderer",
+  "file": "src/wiring/voice-chat-wiring.ts",
+  "find": "if (group && event.seq <= group.seq) return;",
+  "replace": "",
+  "what": "an older voice row (lower seq) overwrites the group",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "D3-voice-start-unknown-group",
+  "part": "renderer",
+  "file": "src/wiring/voice-chat-wiring.ts",
+  "find": "if (!voiceUiGroups.has(key)) return;",
+  "replace": "",
+  "what": "a voice reply starts for a group this window never showed",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "D4-voice-delta-any-reply",
+  "part": "renderer",
+  "file": "src/wiring/voice-chat-wiring.ts",
+  "find": "if (event.type === 'delta') { if (voiceReplyIds.has(event.replyId)) onStream(",
+  "replace": "if (event.type === 'delta') { if (true) onStream(",
+  "what": "a voice delta for a reply that is not a voice reply goes to the stream",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "D5-chat-wire-old-context",
+  "part": "renderer",
+  "file": "src/wiring/chat-wiring.ts",
+  "find": "  if (message.context !== chatContext()) return;\n",
+  "replace": "",
+  "what": "a chat message from another card context is taken",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "D6-speech-ended-old-context",
+  "part": "renderer",
+  "file": "src/wiring/chat-wiring.ts",
+  "find": "&& ordinaryReplyPresentation.context !== message.replyContext) return;",
+  "replace": "&& false) return;",
+  "what": "a speech-ended of an older reply context ends the current reading",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "D7-segment-out-of-order",
+  "part": "renderer",
+  "file": "src/wiring/voice-wiring.ts",
+  "find": "|| segment.index !== accepted.index + 1 ",
+  "replace": "",
+  "what": "a reply-speech segment out of order is accepted",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "D8-readout-after-finish",
+  "part": "renderer",
+  "file": "src/wiring/chat-wiring.ts",
+  "find": "  if (turn.finished) return true;\n",
+  "replace": "",
+  "what": "a readout-control turn keeps taking events after it finished",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts",
+   "tests/readout-control-renderer.test.ts"
+  ]
+ },
+ {
+  "id": "D9-vision-line-twice",
+  "part": "renderer",
+  "file": "src/wiring/senses-wiring.ts",
+  "find": "$<HTMLTextAreaElement>('chat-input').value.trim() || shownInitiatives.has(message.id)) {",
+  "replace": "$<HTMLTextAreaElement>('chat-input').value.trim()) {",
+  "what": "her look-line already shown is shown again",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "E1-stream-twice",
+  "part": "renderer",
+  "file": "src/wiring/chat-view-wiring.ts",
+  "find": "  window.desktop.onStream(onStream);\n",
+  "replace": "  window.desktop.onStream(onStream);\n  window.desktop.onStream(onStream);\n",
+  "what": "the chat stream is subscribed twice",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "E2-voice-conversation-twice",
+  "part": "renderer",
+  "file": "src/wiring/voice-chat-wiring.ts",
+  "find": "  window.desktop.onVoiceConversation(receiveVoiceConversation);\n",
+  "replace": "  window.desktop.onVoiceConversation(receiveVoiceConversation);\n  window.desktop.onVoiceConversation(receiveVoiceConversation);\n",
+  "what": "voice conversation events are subscribed twice",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "E3-window-visibility-twice",
+  "part": "renderer",
+  "file": "src/main.ts",
+  "find": "window.desktop.onWindowVisibility(acceptWindowVisibility);\n",
+  "replace": "window.desktop.onWindowVisibility(acceptWindowVisibility);\nwindow.desktop.onWindowVisibility(acceptWindowVisibility);\n",
+  "what": "window visibility is subscribed twice",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts",
+   "tests/conversation-flow.test.ts",
+   "tests/paced-stream-target.test.ts",
+   "tests/r27-completed-prefix-renderer.test.ts"
+  ]
+ },
+ {
+  "id": "E4-chat-channel-twice",
+  "part": "renderer",
+  "file": "src/wiring/chat-view-wiring.ts",
+  "find": "chatChannel.onmessage = event => receiveChat(event.data);",
+  "replace": "chatChannel.onmessage = event => receiveChat(event.data); chatChannel.addEventListener('message', event => receiveChat(event.data));",
+  "what": "the windows' chat channel delivers each message twice",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "E5-settings-twice",
+  "part": "renderer",
+  "file": "src/wiring/settings-wiring.ts",
+  "find": "  hostSettingsStartup().attach((next) => {",
+  "replace": "  window.desktop.onSettings(() => {});\n  hostSettingsStartup().attach((next) => {",
+  "what": "settings broadcasts are subscribed twice",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "O1-physics-after-music",
+  "part": "renderer",
+  "file": "src/main.ts",
+  "find": "  await initModelPhysicsSettings();\n  await initMusicSettings();",
+  "replace": "  await initMusicSettings();\n  await initModelPhysicsSettings();",
+  "what": "music settings are read before physics settings",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "O2-cards-before-subscribe",
+  "part": "renderer",
+  "file": "src/wiring/cards-wiring.ts",
+  "find": "  window.desktop.onCharacterCards(applyCharacterCards);\n",
+  "replace": "",
+  "what": "the character cards are read before the window subscribes to their changes",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "O3-chat-state-request-first",
+  "part": "renderer",
+  "file": "src/wiring/chat-view-wiring.ts",
+  "find": "  chatChannel.onmessage = event => receiveChat(event.data);\n  chatChannel.postMessage({ type: 'request-state', context: chatContext() });",
+  "replace": "  chatChannel.postMessage({ type: 'request-state', context: chatContext() });\n  chatChannel.onmessage = event => receiveChat(event.data);",
+  "what": "the window asks the other window for the chat before it listens for the answer",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "N1-step-order",
+  "part": "renderer",
+  "file": "src/main.ts",
+  "find": "  wireChatStream();\n  wireReplyExtras();",
+  "replace": "  wireReplyExtras();\n  wireChatStream();",
+  "what": "after the move: two start-up steps swapped in init() (the reply's cards subscribe before the stream)",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "N2-history-setter-dropped",
+  "part": "renderer",
+  "file": "src/wiring/chat-wiring.ts",
+  "find": "export function setHistory(value: typeof history): void { history = value; }",
+  "replace": "export function setHistory(value: typeof history): void { void value; }",
+  "what": "after the move: the history setter writes nothing (voice rows and R20's question never reach the history)",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "N3-voice-ready-setter-dropped",
+  "part": "renderer",
+  "file": "src/wiring/chat-wiring.ts",
+  "find": "export function setVoiceSpeechReady(value: typeof voiceSpeechReady): void { voiceSpeechReady = value; }",
+  "replace": "export function setVoiceSpeechReady(value: typeof voiceSpeechReady): void { void value; }",
+  "what": "after the move: the voice-speech-ready setter writes nothing (a revoked reading stays ready)",
+  "tests": [
+   "tests/renderer-golden.test.mjs",
+   "tests/renderer-gates.test.ts",
+   "tests/paced-stream-target.test.ts"
+  ]
+ },
+ {
+  "id": "R-recycle-pet",
+  "part": "renderer",
+  "file": "src/wiring/memory-wiring.ts",
+  "find": "const recycle = isPet ? undefined : window.desktop;",
+  "replace": "const recycle = window.desktop;",
+  "what": "桌宠窗口的画像和文字纪念也挂「最近删除的」（读回收站只给控制窗口，会被拒）",
+  "tests": [
+   "tests/renderer-gates.test.ts"
+  ]
+ },
+ {
+  "id": "R-hands-target-focus-ring",
+  "part": "renderer",
+  "file": "src/initiative/HandsOverlay.ts",
+  "find": "background: 'transparent', outline: 'none' });",
+  "replace": "background: 'transparent' });",
+  "what": "牵手的点击区域又画出焦点圈（一个大的薄荷色圆圈罩着她的手，emoji 已经在提示了）",
+  "tests": [
+   "tests/i087-hands-wiring.test.ts"
+  ]
+ },
+ {
+  "id": "R-give-target-focus-ring",
+  "part": "renderer",
+  "file": "src/initiative/GiveOverlay.ts",
+  "find": "this.target.style.outline = 'none';",
+  "replace": "",
+  "what": "递东西的点击区域又画出焦点圈",
+  "tests": [
+   "tests/i086-give-wiring.test.ts"
+  ]
+ },
+ {
+  "id": "R-hands-done-emoji",
+  "part": "renderer",
+  "file": "shared/behaviors/hands/session.ts",
+  "find": "return HAND_DONE_EMOJI[this.offer.use];",
+  "replace": "return HAND_EMOJI[this.offer.use];",
+  "what": "碰上之后的 emoji 又和等待时一样（没有\"成了\"的提示）",
+  "tests": [
+   "tests/i087-hands.test.ts"
+  ]
+ },
+ {
+  "id": "I222-window-keeps-page",
+  "part": "renderer",
+  "file": "shared/foundation/memory-connection.ts",
+  "find": "typeof provider.memoryModel === 'string' || pin === undefined ? provider : { ...provider, memoryModel: pin }",
+  "replace": "{ ...provider, memoryModel: provider.model }",
+  "what": "I-222：窗口里换聊天模型又被当成换了连接：聊天页被清空、记忆面板重置",
+  "tests": [
+   "tests/i222-memory-pin.test.ts"
+  ]
+ }
+]

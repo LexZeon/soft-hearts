@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CompanionCommandHost } from '../electron/companion-command-host';
-import { classifyCompanionCommand, formatCompanionCommandReceipt } from '../electron/companion-command-intent';
-import { createCommandDialogueTurn } from '../electron/companion-command-dialogue';
-import type { CompanionCommandActionId, CompanionCommandIntentInput, CompanionCommandView } from '../shared/companion-commands';
+import { CompanionCommandHost } from '../electron/settings/companion-command-host';
+import { classifyCompanionCommand, formatCompanionCommandReceipt } from '../electron/settings/companion-command-intent';
+import { createCommandDialogueTurn } from '../electron/settings/companion-command-dialogue';
+import type { CompanionCommandActionId, CompanionCommandIntentInput, CompanionCommandView } from '../shared/settings/companion-commands';
 
 test('frozen Main class + actual Voice classifier/dialogue: third-domain isolation, refusal and stale single consumption', async () => {
   const state = {

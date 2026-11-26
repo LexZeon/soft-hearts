@@ -12,8 +12,9 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { _electron as electron } from 'playwright';
 import { createClaudeIsolation } from './lib/claude-smoke-fixture.mjs';
-import { DEFAULT_SETTINGS } from '../shared/defaults.ts';
-import { DEFAULT_MOOD_PARAMETERS, createMoodState, serializeMoodState } from '../shared/mood.ts';
+import { stageSourceFiles } from './lib/stage-source-files.mjs';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults.ts';
+import { DEFAULT_MOOD_PARAMETERS, createMoodState, serializeMoodState } from '../shared/foundation/mood.ts';
 
 const root = await realpath(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'));
 const choice = process.env.BODY_QA_RECIPE;
@@ -35,11 +36,11 @@ assert.ok((await lstat(source)).isDirectory()); assert.ok((await lstat(executabl
 const candidate = candidates[choice], asar = await realpath(path.join(path.dirname(executable), 'resources/app.asar'));
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const fileSha = async filename => sha(await readFile(filename));
-const helpers = ['shared/defaults.ts', 'shared/mood.ts', 'shared/mood-runtime.ts', 'shared/body-motion.ts', 'shared/behavior-recipes.ts',
-  'shared/contracts.ts', 'electron/main.ts', 'electron/mood.ts', 'electron/body-motion.ts', 'electron/body-motion-access.ts',
-  'electron/body-motion-bindings.ts', 'electron/body-motion-qa.ts', 'electron/preload.ts', 'src/main.ts', 'src/stage/MmdStage.ts',
-  'src/stage/body-motion-controller.ts', 'src/stage/behavior-body.ts', 'src/stage/motion-layers.ts', 'src/stage/vmd.ts',
-  'src/stage/vmd-tracks.ts', 'shared/bundled-assets.json', 'shared/motion-catalog.json', 'scripts/body-motion-qa-smoke.mjs'];
+const helpers = ['shared/foundation/defaults.ts', 'shared/foundation/mood.ts', 'shared/mood/mood-runtime.ts', 'shared/actions/body-motion.ts', 'shared/actions/behavior-recipes.ts',
+  'shared/contracts.ts', 'electron/main.ts', 'electron/mood/mood.ts', 'electron/actions/body-motion.ts', 'electron/actions/body-motion-access.ts',
+  'electron/actions/body-motion-bindings.ts', 'electron/actions/body-motion-qa.ts', 'electron/safety/preload.ts', 'src/main.ts', ...stageSourceFiles(root),
+  'src/stage/body-motion-controller.ts', 'src/stage/behavior-body.ts', 'src/stage/motion-layers.ts', 'src/foundation/vmd.ts',
+  'src/foundation/vmd-tracks.ts', 'shared/actions/bundled-assets.json', 'shared/actions/motion-catalog.json', 'scripts/body-motion-qa-smoke.mjs'];
 const helperHashes = {};
 for (const relative of helpers) {
   helperHashes[relative] = await fileSha(path.join(source, relative));
@@ -80,8 +81,8 @@ for (const relative of compiled) {
   compiledHashes[relative] = await fileSha(path.join(source, relative));
   assert.equal(sha(extractFile(asar, relative)), compiledHashes[relative], `Frozen/package byte mismatch: ${relative}`);
 }
-const manifest = JSON.parse(await readFile(path.join(source, 'shared/bundled-assets.json'), 'utf8'));
-const catalog = JSON.parse(await readFile(path.join(source, 'shared/motion-catalog.json'), 'utf8'));
+const manifest = JSON.parse(await readFile(path.join(source, 'shared/actions/bundled-assets.json'), 'utf8'));
+const catalog = JSON.parse(await readFile(path.join(source, 'shared/actions/motion-catalog.json'), 'utf8'));
 const modelPath = await realpath(path.join(source, 'assets/bundled', manifest.root, manifest.model.relativePath));
 assert.equal(await fileSha(modelPath), '0ef63a75a7699f58399ae655357f91542fc5209355aac925a589aac42669df37');
 function motionFile(packId, motionId) {
@@ -91,7 +92,7 @@ function motionFile(packId, motionId) {
 const stand = motionFile('gene', 'stand'), selected = motionFile(candidate.packId, candidate.motionId);
 assert.equal(await fileSha(stand.filename), '42080246b98aaa8a5b98d1ecd73994cf42b2587f9c04c3ed7435cf859fef83aa');
 assert.equal(await fileSha(selected.filename), candidate.sha256);
-// One canonical duration (shared/vmd-duration.ts): frames / 30 * 1000, the same double on host, parser, clip and player state.
+// One canonical duration (shared/actions/vmd-duration.ts): frames / 30 * 1000, the same double on host, parser, clip and player state.
 assert.equal(selected.durationFrames / 30 * 1_000, candidate.durationMs);
 
 const canonicalTemp = await realpath(tmpdir());
@@ -197,7 +198,7 @@ try {
   check('packaged executable/ASAR, exact startup arguments and unique canonical Temp profile');
   phase = 'natural-stage-prepare';
   // Do not call getBehaviorBodyPlan/resolveBehaviorBody, useBundledModel,
-  // recoverPet, activateCharacterCard or any motion playback API here. The pet
+  // recoverPet, activateCharacterCard or any motion playback API here. The companion
   // Stage must prepare and resolve naturally after its committed Stand is ready.
   const first = await poll(async () => { const row = await frame(); return row.body?.active && row.body.weight > 0 ? row : null; });
   const hostView = await controls.evaluate(() => window.desktop.getMood());

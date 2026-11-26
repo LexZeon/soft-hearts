@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { DEFAULT_PET_INTERACTION_CONFIG, PetInteraction, PetInteractionTracker, isSnackImage, validatePetInteractionConfig, type PetHeadRegion, type PetInteractionEvent, type PetInteractionFeedback, type PetInteractionState } from "../src/ui/PetInteraction";
+import { DEFAULT_PET_INTERACTION_CONFIG, PetInteraction, PetInteractionTracker, isSnackImage, validatePetInteractionConfig, type PetHeadRegion, type PetInteractionEvent, type PetInteractionFeedback, type PetInteractionState } from "../src/mood/PetInteraction";
 
 const head: PetHeadRegion = { x: 100, y: 100, radius: 50 };
 type InputTrace = { kind: 'state'; state: PetInteractionState } | { kind: 'event'; event: PetInteractionEvent };

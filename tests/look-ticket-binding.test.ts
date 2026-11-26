@@ -8,13 +8,13 @@
 // 这里用真实的媒体开关、宿主附图、聊天请求校验（经过 structuredClone，像 IPC 一样）、这一轮的帧和感知行；取图口和 Claude 是假的。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { Attachment } from '../shared/contracts';
-import { LookTurns } from '../electron/look-turns';
-import { LookAttachments } from '../electron/look-attachments';
-import { MediaRuntime } from '../electron/runtime';
-import { validateChatRequest } from '../electron/validation';
-import { lookHint, turnAttachments } from '../src/look-send';
-import { perceptionTurnLine, perceptionTurnState } from '../shared/perception-rule';
+import type { Attachment } from '../shared/foundation/chat';
+import { LookTurns } from '../electron/senses/look-turns';
+import { LookAttachments } from '../electron/senses/look-attachments';
+import { MediaRuntime } from '../electron/senses/media-runtime';
+import { validateChatRequest } from '../electron/settings/validation';
+import { lookHint, turnAttachments } from '../src/senses/look-send';
+import { perceptionTurnLine, perceptionTurnState } from '../shared/brain/perception-rule';
 
 const PERSONA = '你是测试角色。';
 

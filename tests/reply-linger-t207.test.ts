@@ -5,7 +5,7 @@
  *  2B  a flag counted 0 characters and a keycap 0.3;
  *  2C  a completion that came while the bubble could not show yet kept counting: once it showed, 167 ms were left;
  *  2D  past the 32000-character preview bound the newest sentences lost their own R27 bubbles.
- * The real host window (electron/reply-window.ts, fake Electron boundaries), the real pet window (src/ui/PetUI.ts, fake DOM
+ * The real host window (electron/brain/reply-window.ts, fake Electron boundaries), the real companion window (src/stage/PetUI.ts, fake DOM
  * and IPC) and the real readout run here; no app window, model or chat record is used.
  */
 import test, { type TestContext } from 'node:test';
@@ -16,15 +16,15 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { transformSync } from 'esbuild';
-import type { PetReplyAnchor, PetReplyUpdate } from '../shared/contracts';
+import type { PetReplyAnchor, PetReplyUpdate } from '../shared/foundation/pet-reply';
 import type { ReplyLingerBubble } from '../shared/behaviors/reply-linger/interface';
 import { chooseReplyLinger, lastBubble, readableChars, replyLingerNow } from '../shared/behaviors/reply-linger/choose';
 import { REPLY_LINGER_KNOBS } from '../shared/behaviors/reply-linger/knobs';
-import { replyPieces } from '../shared/reply-bubbles';
-import { PetUI } from '../src/ui/PetUI';
-import { ReplyReader } from '../src/ui/ReplyReader';
-import { ReplySpeechState } from '../src/ui/reply-speech';
-import { ReplyPresentationState } from '../src/ui/reply-presentation';
+import { replyPieces } from '../shared/voice/reply-bubbles';
+import { PetUI } from '../src/stage/PetUI';
+import { ReplyReader } from '../src/brain/ReplyReader';
+import { ReplySpeechState } from '../src/voice/reply-speech';
+import { ReplyPresentationState } from '../src/brain/reply-presentation';
 
 const { noticeMs, charsPerSecond } = REPLY_LINGER_KNOBS.readable;
 const floorFor = (chars: number) => Math.round(noticeMs + chars / charsPerSecond * 1000);
@@ -104,7 +104,7 @@ function hostWindow(t: TestContext, options: { lateLoad?: boolean } = {}) {
     showInactive() { if (!this.visible) { this.visible = true; this.shown.push(Date.now()); this.emit('show'); } }
     destroy() { this.destroyed = true; this.emit('closed'); }
   }
-  const filename = new URL('../electron/reply-window.ts', import.meta.url);
+  const filename = new URL('../electron/brain/reply-window.ts', import.meta.url);
   const localRequire = createRequire(filename), module = { exports: {} };
   const code = transformSync(readFileSync(filename, 'utf8'), { loader: 'ts', format: 'cjs', target: 'es2022' }).code;
   const injected = (name: string) => name === 'electron'
@@ -175,7 +175,7 @@ test('T-207 2C: a pat or feed fade still counts (user-confirmed: fades never ren
   t.mock.timers.tick(1); assert.equal(f.child().visible, false);
 });
 
-/** The real pet window wired to the real host window, as electron/main.ts wires updatePetReply. */
+/** The real companion window wired to the real host window, as electron/main.ts wires updatePetReply. */
 function petAndHost(t: TestContext) {
   const host = hostWindow(t);
   const published: PetReplyUpdate[] = [];
@@ -200,7 +200,7 @@ test('T-207 2C: the pet window and the host count from the same moment the bubbl
     ui.setFaceAnchor(at < 2500 ? OFF : FACE); await settle();
   }
   assert.deepEqual(host.child().shown, [2500]);
-  // Her face keeps being reported every 100 ms until a moment before the host's time is up: the pet window never lets go.
+  // Her face keeps being reported every 100 ms until a moment before the host's time is up: the companion window never lets go.
   let at = 2500;
   while (at + 100 < 2500 + ms) { t.mock.timers.tick(100); at += 100; ui.setFaceAnchor(FACE); await settle(); }
   t.mock.timers.tick(2500 + ms - 1 - at); ui.setFaceAnchor(FACE); await settle();

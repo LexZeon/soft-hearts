@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { composeSpeechConfig, freezeTurnSpeechStyle, ReplySpeechStyles, SPEECH_EMOTION_INSTRUCTIONS, TURN_SPEECH_INSTRUCTION_LIMIT, type SpeechMood } from '../electron/speech-emotion';
-import { characterSpeechPersona, SPEECH_PERSONA_LIMIT } from '../electron/speech-persona';
-import { synthesizeBailianSpeech, ttsInstruction } from '../electron/tts';
-import { DEFAULT_TTS_CONFIG, type TtsConfig } from '../shared/tts';
+import { composeSpeechConfig, freezeTurnSpeechStyle, ReplySpeechStyles, SPEECH_EMOTION_INSTRUCTIONS, TURN_SPEECH_INSTRUCTION_LIMIT, type SpeechMood } from '../electron/mood/speech-emotion';
+import { characterSpeechPersona, SPEECH_PERSONA_LIMIT } from '../electron/voice/speech-persona';
+import { synthesizeBailianSpeech, ttsInstruction } from '../electron/voice/tts';
+import { DEFAULT_TTS_CONFIG, type TtsConfig } from '../shared/voice/tts';
 
 /*
  * R02 goal 5. Codex observed byte-identical PCM for different LONG instruction

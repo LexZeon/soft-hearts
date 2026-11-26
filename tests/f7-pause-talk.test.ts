@@ -3,26 +3,26 @@
 // background, once. Fake haiku and fake clocks only: no model is called. Invented replies only.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ReplyPresentationState, type ReadoutClock } from '../src/ui/reply-presentation';
+import { ReplyPresentationState, type ReadoutClock } from '../src/brain/reply-presentation';
 import { ReplyPresentationState as BeforeF7 } from './fixtures/reply-presentation-before-f7';
-import { pauseCutForSend } from '../src/ui/pause-talk-send';
-import { PauseTalkHost } from '../electron/pause-talk/host';
-import { createPauseTalk, pauseTalkNow } from '../electron/pause-talk/wiring';
-import { ReplyLatencyProbe, type ReplyLatencyRecord } from '../electron/reply-latency';
-import { ReplyDraftGuard } from '../electron/reply-draft-guard';
-import { validateChatRequest, validateSettings } from '../electron/validation';
-import { settingDetail } from '../electron/agent-channel/app-tools';
+import { pauseCutForSend } from '../src/brain/pause-talk-send';
+import { PauseTalkHost } from '../electron/brain/pause-talk/host';
+import { createPauseTalk, pauseTalkNow } from '../electron/brain/pause-talk/wiring';
+import { ReplyLatencyProbe, type ReplyLatencyRecord } from '../electron/brain/reply-latency';
+import { ReplyDraftGuard } from '../electron/brain/reply-draft-guard';
+import { validateChatRequest, validateSettings } from '../electron/settings/validation';
+import { settingDetail } from '../electron/safety/agent-channel/app-tools';
 import {
-  PAUSE_TALK_SYSTEM_PROMPT, isQuestionSentence, parsePauseTalkAnswer, pauseTalkBackground, pauseTalkPrompt, pauseTalkStep, validPauseTalkCue, validPauseTalkCut,
+  PAUSE_TALK_CUT_NOTE, PAUSE_TALK_SYSTEM_PROMPT, isQuestionSentence, parsePauseTalkAnswer, pauseTalkBackground, pauseTalkPrompt, pauseTalkStep, validPauseTalkCue, validPauseTalkCut,
 } from '../shared/behaviors/pause-talk/choose';
 import { PAUSE_TALK_KNOBS } from '../shared/behaviors/pause-talk/knobs';
 import { hangingPauseTalk, neverAskedPauseTalk, pauseTalkAnswer, scriptedPauseTalk, type PauseTalkScripted } from '../shared/behaviors/pause-talk/fake';
 import type { PauseTalkCue, PauseTalkNow, PauseTalkPlan } from '../shared/behaviors/pause-talk/interface';
-import { buildJournalEntry, describeJournalEntry } from '../shared/journal';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { agentSetting } from '../shared/agent-channel';
-import { capability, capabilityChannel } from '../shared/capabilities';
-import { formatPauseTalkLines } from '../src/ui/MoodPanel';
+import { buildJournalEntry, describeJournalEntry } from '../shared/memory/journal';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { agentSetting } from '../shared/safety/agent-channel';
+import { capability, capabilityChannel } from '../shared/settings/capabilities';
+import { formatPauseTalkLines } from '../src/mood/MoodPanel';
 import { CASES, PROFILES, replay } from './fixtures/first-chunk-replay';
 
 // ---------------------------------------------------------------- one fake clock for the host and the window
@@ -119,10 +119,6 @@ test('switch off: the host asks nothing, sets no timer, sends nothing, keeps no 
   // Turned on now: the earlier reply was never kept, so a cut into it brings nothing.
   rig.on.value = true;
   assert.equal(rig.host.userTurn('r2', '嗯', { id: 'r1', shown: 5 }, 'gene'), null);
-  // The window: off, the send path never touches the reveal.
-  let interrupted = 0;
-  assert.equal(pauseCutForSend(false, { interrupt: () => { interrupted++; return { id: 'r1', shown: 1 }; } }), undefined);
-  assert.equal(interrupted, 0);
   // Settings and requests: off is absent, exactly as before.
   assert.equal('pauseTalk' in validateSettings(structuredClone(DEFAULT_SETTINGS)).voice, false);
   assert.equal('pauseTalk' in validateSettings({ ...structuredClone(DEFAULT_SETTINGS), voice: { ...DEFAULT_SETTINGS.voice, pauseTalk: 'yes' } }).voice, false);
@@ -221,7 +217,7 @@ test('the user speaks while she waits: the rest is never shown, and becomes the 
   for (const cue of rig.sent.splice(0)) view.state.setPausePlan(cue.id, cue);
   await time.advanceTo(5000);
   assert.equal(view.paints.at(-1)![1], '你回来啦。今天过得怎么样？', 'she is waiting after her question');
-  const cut = pauseCutForSend(true, view.state);
+  const cut = pauseCutForSend(view.state);
   assert.deepEqual(cut, { id: 'r1', shown: '你回来啦。今天过得怎么样？'.length });
   const painted = view.paints.length;
   await time.advance(60_000);
@@ -426,4 +422,47 @@ test('the switch: settings window, capability list (needs the user\'s words to t
   assert.equal(spec.kind, 'boolean'); assert.deepEqual(spec.confirmWhen, [true]); assert.equal(spec.chat, 'turn'); assert.deepEqual(spec.chatWords, ['停停说说']);
   assert.match(settingDetail('pause_talk', true) ?? '', /haiku.*占用量/u);
   assert.equal(settingDetail('pause_talk', false), undefined);
+});
+
+// ---------------------------------------------------------------- 2026-11-22: switch off, a send while the finished reply is still being let out
+
+test('switch off: a send while her finished reply is still pacing stops the reveal and tells her next turn the rest was not seen', async () => {
+  const time = fakeTime(), view = bubbles(time, 'r1'), rig = hostRig(neverAskedPauseTalk(), { on: false, time });
+  const text = '你回来啦。今天过得怎么样？我刚才一直在想你。还有件事想跟你说。';
+  view.state.readoutContent('r1', text); view.finish();
+  await time.advanceTo(1000);
+  const shown = view.paints.at(-1)![1];
+  assert.ok(shown.length > 0 && shown.length < text.length, 'still pacing: ' + shown);
+  const cut = pauseCutForSend(view.state);
+  assert.deepEqual(cut, { id: 'r1', shown: shown.length });
+  await time.advance(60_000);
+  assert.equal(view.paints.at(-1)![1], shown, 'the screen keeps what was shown: no sudden dump of the rest');
+  assert.equal(view.drainedAt(), null);
+  const line = rig.host.userTurn('r2', '还行吧', cut, 'gene');
+  assert.equal(line, PAUSE_TALK_CUT_NOTE);
+  assert.ok(!line!.includes('想你') && !line!.includes('还有件事'), 'nothing of the unshown text; the host keeps none while off');
+  assert.equal(rig.time.pending(), 0, 'off: still no call and no timer');
+  assert.equal(rig.host.userTurn('r3', '嗯', null, 'gene'), null, 'once');
+});
+
+test('switch off: a reply fully shown before the send brings no note; a stopped one neither', async () => {
+  const time = fakeTime(), view = bubbles(time, 'r1'), rig = hostRig(neverAskedPauseTalk(), { on: false, time });
+  view.state.readoutContent('r1', '你回来啦。今天过得怎么样？'); view.finish();
+  await time.advance(60_000);
+  assert.equal(view.drainedAt() !== null, true);
+  const cut = pauseCutForSend(view.state);
+  assert.equal(cut, undefined);
+  assert.equal(rig.host.userTurn('r2', '嗯', cut, 'gene'), null);
+  const second = bubbles(time, 'r3'); second.state.readoutContent('r3', '一句。两句。三句。'); second.finish();
+  second.state.cancelReadout(); // stopped / errored
+  assert.equal(pauseCutForSend(second.state), undefined);
+});
+
+test('switch on: the cut still carries her unsaid words, not the generic line', () => {
+  const time = fakeTime(), rig = hostRig(neverAskedPauseTalk(), { time });
+  rig.host.userTurn('r1', '你好', null, 'gene');
+  rig.host.delta('r1', '你回来啦。今天过得怎么样？我刚才一直在想你。');
+  const line = rig.host.userTurn('r2', '嗯', { id: 'r1', shown: 5 }, 'gene')!;
+  assert.notEqual(line, PAUSE_TALK_CUT_NOTE);
+  assert.ok(line.includes('今天过得怎么样'), line);
 });

@@ -3,19 +3,19 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import type { ChatMessage } from '../shared/contracts';
-import { CompanionService } from '../electron/companion';
-import { PersistentClaudeChat, type CompanionClaudeTask } from '../electron/claude-session';
-import { VoiceChatHost } from '../electron/voice-chat-host';
-import { VoiceConversationSession } from '../electron/voice-conversation-session';
-import type { VoiceTextCompletion, VoiceTextLeg, VoiceTextSettlement } from '../electron/voice-text-continuation';
-import { encodeWav } from '../src/ui/MediaInput';
-import { VoiceContinuationStatus } from '../src/ui/VoiceContinuationStatus';
-import { appendVoiceReply, outgoingChatMessages, trimReplyHistory } from '../src/ui/reply-history';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { voiceUtteranceMessages, type VoiceConversationEvent } from '../shared/voice-conversation';
-import { memoryProviderScope } from '../electron/companion';
-import type { ClaudeTimingInfo } from '../electron/claude-session';
+import type { ChatMessage } from '../shared/foundation/chat';
+import { CompanionService } from '../electron/brain/companion';
+import { PersistentClaudeChat, type CompanionClaudeTask } from '../electron/brain/claude-session';
+import { VoiceChatHost } from '../electron/voice/voice-chat-host';
+import { VoiceConversationSession } from '../electron/voice/voice-conversation-session';
+import type { VoiceTextCompletion, VoiceTextLeg, VoiceTextSettlement } from '../electron/voice/voice-text-continuation';
+import { encodeWav } from '../src/senses/MediaInput';
+import { VoiceContinuationStatus } from '../src/voice/VoiceContinuationStatus';
+import { appendVoiceReply, outgoingChatMessages, trimReplyHistory } from '../src/brain/reply-history';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { voiceUtteranceMessages, type VoiceConversationEvent } from '../shared/voice/voice-conversation';
+import { memoryProviderScope } from '../electron/brain/companion';
+import type { ClaudeTimingInfo } from '../electron/brain/claude-session';
 import { fakeClaudeStream } from './helpers/fake-claude-stream';
 
 /**
@@ -162,7 +162,7 @@ test('one sentence goes out at once; three more merge into the reply or continue
     assert.equal(at, order.length, 'UI went request → merging → merged → … → continuation → settled: ' + h.states.join(','));
     assert.deepEqual(h.rewards, ['chat', 'appraisal'], 'one acceptance and one appraisal for the whole utterance');
     assert.equal(h.speech().length, 1); assert.equal(h.speech()[0].replyId, r4);
-    assert.equal(h.speech()[0].text, '收到，第四句', 'only the final reply is read aloud');
+    assert.equal(h.speech()[0].text, '好哒，第四句', 'only the final reply is read aloud');
     const record = h.record();
     assert.equal(record.messages[0].content, '#hold:a 先说第一句\n#hold:b 第二句\n#hold:c 第三句\n第四句');
     assert.equal(record.messages[1].status, 'complete');
@@ -190,7 +190,7 @@ test('race 1: the next sentence arrives before the first one reaches Claude; it 
     const [r1, r2] = h.starts();
     assert.equal(h.text(r1), '', 'the stopped first reply showed nothing');
     assert.equal(h.terminal(r1)?.superseded, true);
-    assert.equal(h.text(r2).startsWith('收到，第二句'), true);
+    assert.equal(h.text(r2).startsWith('好哒，第二句'), true);
     assert.deepEqual(h.rewards, ['chat', 'appraisal']);
     assert.equal(h.record().messages[0].content, '#wait:w 第一句\n第二句');
   });
@@ -203,13 +203,13 @@ test('race 2: the next sentence arrives while the reply streams; text already sh
     await h.say('第二句');
     await until(() => h.starts().length === 2 && !!h.terminal(h.starts()[1]), 5000, 'second reply done');
     const [r1, r2] = h.starts();
-    assert.equal(h.text(r1), '收到，（迟到的半句）', 'everything Claude streamed before it stopped belongs to the first reply');
+    assert.equal(h.text(r1), '好哒，（迟到的半句）', 'everything Claude streamed before it stopped belongs to the first reply');
     assert.ok(!h.text(r2).includes('迟到'), 'late text of the stopped turn never leaks into the next reply');
-    assert.equal(h.text(r2), '收到，第二句');
+    assert.equal(h.text(r2), '好哒，第二句');
     assert.equal(h.seal(), true);
     await until(() => h.states.includes('settled'), 5000, 'settled'); await h.host.drain();
     const record = h.record();
-    assert.equal(record.messages[1].content, '收到，（迟到的半句）\n收到，第二句', 'the archive keeps what was shown; a cut-off reply ends its own line');
+    assert.equal(record.messages[1].content, '好哒，（迟到的半句）\n好哒，第二句', 'the archive keeps what was shown; a cut-off reply ends its own line');
     assert.deepEqual(h.rewards, ['chat', 'appraisal']);
   });
 });
@@ -225,7 +225,7 @@ test('race 3: the reply already finished; the next sentence is an explicit conti
     assert.deepEqual(await h.claude.controls(), []);
     assert.ok(h.states.includes('continuation') && !h.states.includes('merging'));
     assert.deepEqual(h.rewards, ['chat', 'appraisal']);
-    assert.equal(h.speech().length, 1); assert.equal(h.speech()[0].text, '收到，第二句');
+    assert.equal(h.speech().length, 1); assert.equal(h.speech()[0].text, '好哒，第二句');
   });
 });
 
@@ -238,15 +238,15 @@ test('race 3b: the merge was asked for but Claude had just finished; that reply 
     const [r1, r2] = h.starts();
     assert.equal(h.terminal(r1)?.complete, true, 'it finished before the interrupt was read');
     assert.equal(h.terminal(r1)?.superseded ?? false, false);
-    assert.equal(h.text(r1), '收到，#first:f 第一句');
-    assert.equal(h.text(r2), '收到，第二句', 'the next turn was not hit by the stale interrupt');
+    assert.equal(h.text(r1), '好哒，#first:f 第一句');
+    assert.equal(h.text(r2), '好哒，第二句', 'the next turn was not hit by the stale interrupt');
     assert.ok(h.states.includes('merging') && h.states.includes('continuation'));
     assert.equal(h.seal(), true);
     await until(() => h.states.includes('settled'), 5000, 'settled'); await h.host.drain();
     assert.deepEqual(await h.claude.users(), ['#first:f 第一句', '第二句'], 'no hidden third request');
     assert.deepEqual(await h.claude.controls(), ['interrupt']);
     assert.deepEqual(h.rewards, ['chat', 'appraisal']);
-    assert.equal(h.speech()[0].text, '收到，第二句');
+    assert.equal(h.speech()[0].text, '好哒，第二句');
   });
 });
 
@@ -265,9 +265,9 @@ test('correction "不是A，是B": Claude gets only the correction plus the merg
     const nonces = inputs.map(row => [...row.prompt!.matchAll(/<sh-state-([a-f0-9]+)>/g)].map(match => match[1]).at(-1));
     assert.notEqual(nonces[0], nonces[1], 'each Claude turn has its own tail nonce');
     const [r1, r2] = h.starts();
-    assert.equal(h.text(r1), '收到，#tail:x 我想去A', 'the half-written tail of the stopped reply is hidden');
-    assert.equal(h.text(r2), '收到，不是A，是B');
-    assert.equal(h.speech().length, 1); assert.equal(h.speech()[0].text, '收到，不是A，是B');
+    assert.equal(h.text(r1), '好哒，#tail:x 我想去A', 'the half-written tail of the stopped reply is hidden');
+    assert.equal(h.text(r2), '好哒，不是A，是B');
+    assert.equal(h.speech().length, 1); assert.equal(h.speech()[0].text, '好哒，不是A，是B');
     assert.deepEqual(h.rewards, ['chat', 'appraisal']);
     assert.equal(h.record().messages[0].content, '#tail:x 我想去A\n不是A，是B');
     assert.equal((await h.claude.spawns()).length, 1, 'a reply cut inside its tail still lines up with the warm session');
@@ -358,7 +358,7 @@ test('one process per message (persistent off): no merge is possible, the additi
     assert.deepEqual(await h.claude.controls(), []);
     assert.equal((await h.claude.spawns()).length, 2);
     assert.deepEqual(h.rewards, ['chat', 'appraisal']);
-    assert.equal(h.speech()[0].text, '收到，第二句');
+    assert.equal(h.speech()[0].text, '好哒，第二句');
   }, { persistent: false });
 });
 
@@ -400,7 +400,7 @@ test('after voice (merged, continued, then another utterance) the next typed mes
     assert.equal(h.seal(), true);
     await until(() => settledCount(h) === 2, 5000, 'second utterance settled'); await h.host.drain();
     const history = rendererHistory(h.events);
-    assert.deepEqual(history, [...firstShown, ...voiceUtteranceMessages('再说一段', ['收到，再说一段'])]);
+    assert.deepEqual(history, [...firstShown, ...voiceUtteranceMessages('再说一段', ['好哒，再说一段'])]);
 
     // The next typed message, exactly as the renderer sends it.
     const typed: string[] = [];
@@ -408,7 +408,7 @@ test('after voice (merged, continued, then another utterance) the next typed mes
       replyId: 'typed', session: { key: 'fixture-scope', basePersona: h.settings.persona, persona: `${h.settings.persona}\n\n当前心情：平静。`,
         messages: outgoingChatMessages(history, { role: 'user', content: '接着打字说一句' }) } },
     new AbortController().signal, (type, text) => { if (type === 'delta') typed.push(text); });
-    assert.equal(outcome.superseded, false); assert.equal(typed.join(''), '收到，接着打字说一句');
+    assert.equal(outcome.superseded, false); assert.equal(typed.join(''), '好哒，接着打字说一句');
     assert.equal((await h.claude.spawns()).length, 1, 'no new Claude process after the voice utterances');
     assert.deepEqual(h.timing.map(row => row.process), ['cold', 'warm', 'warm', 'warm', 'warm'], 'only the very first turn was cold');
     const last = (await h.claude.inputs()).filter(row => row.user !== undefined).at(-1)!;
@@ -449,11 +449,11 @@ test('supersede stops a streaming turn early, keeps its text, and the next turn 
     await until(() => deltas.length > 0, 5000, 'delta');
     assert.ok(hook.supersede); assert.equal(hook.supersede(), true); assert.equal(hook.supersede(), false, 'one request per turn');
     const outcome = await first;
-    assert.deepEqual(outcome, { superseded: true, output: '收到，' });
+    assert.deepEqual(outcome, { superseded: true, output: '好哒，' });
     const second: string[] = [];
-    const next = await chat.stream(task([{ role: 'user', content: '#hold:s 说点什么' }, { role: 'assistant', content: '收到，' }, { role: 'user', content: '补充' }], 'two'),
+    const next = await chat.stream(task([{ role: 'user', content: '#hold:s 说点什么' }, { role: 'assistant', content: '好哒，' }, { role: 'user', content: '补充' }], 'two'),
       new AbortController().signal, (type, text) => { if (type === 'delta') second.push(text); });
-    assert.equal(next.superseded, false); assert.equal(second.join(''), '收到，补充');
+    assert.equal(next.superseded, false); assert.equal(second.join(''), '好哒，补充');
     assert.equal((await claude.spawns()).length, 1);
     const prompts = (await claude.inputs()).filter(row => row.user !== undefined).map(row => row.prompt!);
     const data = JSON.parse(prompts[1].split('<conversation-data>\n')[1].split('\n</conversation-data>')[0]);
@@ -470,12 +470,12 @@ test('supersede on a turn that already finished is a no-op: full reply, next tur
     assert.equal(hook.supersede?.(), true);
     const outcome = await first;
     assert.equal(outcome.superseded, false);
-    assert.ok(outcome.output.startsWith('收到，#first:z 你好'));
+    assert.ok(outcome.output.startsWith('好哒，#first:z 你好'));
     assert.equal(hook.supersede?.(), false, 'nothing to stop any more');
     const next: string[] = [];
-    await chat.stream(task([{ role: 'user', content: '#first:z 你好' }, { role: 'assistant', content: '收到，#first:z 你好' }, { role: 'user', content: '再见' }], 'two'),
+    await chat.stream(task([{ role: 'user', content: '#first:z 你好' }, { role: 'assistant', content: '好哒，#first:z 你好' }, { role: 'user', content: '再见' }], 'two'),
       new AbortController().signal, (type, text) => { if (type === 'delta') next.push(text); });
-    assert.equal(next.join(''), '收到，再见');
+    assert.equal(next.join(''), '好哒，再见');
     assert.deepEqual(await claude.controls(), ['interrupt']);
   });
   let started = 0;
@@ -494,9 +494,9 @@ test('stopping while a merge is pending sends no second interrupt; the drained p
     controller.abort(new Error('已停止。'));
     await assert.rejects(first, /已停止/);
     const next: string[] = [];
-    await chat.stream(task([{ role: 'user', content: '#hold:c 说点什么' }, { role: 'assistant', content: '收到，' }, { role: 'user', content: '换个话题' }], 'two'),
+    await chat.stream(task([{ role: 'user', content: '#hold:c 说点什么' }, { role: 'assistant', content: '好哒，' }, { role: 'user', content: '换个话题' }], 'two'),
       new AbortController().signal, (type, text) => { if (type === 'delta') next.push(text); });
-    assert.equal(next.join(''), '收到，换个话题');
+    assert.equal(next.join(''), '好哒，换个话题');
     assert.deepEqual(await claude.controls(), ['interrupt'], 'one interrupt for the one turn');
     assert.equal((await claude.spawns()).length, 1);
   });
@@ -514,7 +514,7 @@ test('an interrupt that is accepted but never ends the turn: the process is kill
     assert.ok(Date.now() - asked < 3000, 'bounded by the grace period');
     const next: string[] = [];
     await chat.stream(task([{ role: 'user', content: '重新开始' }], 'two'), new AbortController().signal, (type, text) => { if (type === 'delta') next.push(text); });
-    assert.equal(next.join(''), '收到，重新开始');
+    assert.equal(next.join(''), '好哒，重新开始');
     assert.equal((await claude.spawns()).length, 2, 'a fresh process, never the stuck one');
   }, 300);
 });
@@ -524,23 +524,23 @@ test('regroup only rewrites provably identical turns; anything else leaves the r
     const u = (content: string): ChatMessage => ({ role: 'user', content }), a = (content: string): ChatMessage => ({ role: 'assistant', content });
     const signal = new AbortController().signal, none = () => {};
     await chat.stream(task([u('你好')], 'text-1'), signal, none);
-    await chat.stream(task([u('你好'), a('收到，你好'), u('第一句')], 'v-1'), signal, none);
-    await chat.stream(task([u('你好'), a('收到，你好'), u('第一句'), a('收到，第一句'), u('第二句')], 'v-2'), signal, none);
-    const shown = voiceUtteranceMessages('第一句\n第二句', ['收到，第一句', '收到，第二句']);
+    await chat.stream(task([u('你好'), a('好哒，你好'), u('第一句')], 'v-1'), signal, none);
+    await chat.stream(task([u('你好'), a('好哒，你好'), u('第一句'), a('好哒，第一句'), u('第二句')], 'v-2'), signal, none);
+    const shown = voiceUtteranceMessages('第一句\n第二句', ['好哒，第一句', '好哒，第二句']);
     assert.equal(chat.regroup(['v-2'], shown), false, 'not all turns of the utterance');
     assert.equal(chat.regroup(['text-1', 'v-1', 'v-2'], shown), false, 'a turn that is not part of it');
-    assert.equal(chat.regroup(['v-1', 'v-2'], voiceUtteranceMessages('第一句\n第二句\n第三句', ['收到，第一句', '收到，第二句'])), false,
+    assert.equal(chat.regroup(['v-1', 'v-2'], voiceUtteranceMessages('第一句\n第二句\n第三句', ['好哒，第一句', '好哒，第二句'])), false,
       'a sentence Claude never received');
-    assert.equal(chat.regroup(['v-1', 'v-2'], voiceUtteranceMessages('第一句\n第二句', ['收到，第一句', '别的回复'])), false, 'a reply Claude did not give');
-    assert.equal(chat.regroup(['v-1', 'v-2'], voiceUtteranceMessages('第一句\n第二句', ['收到，第一句'])), false, 'a reply left out');
+    assert.equal(chat.regroup(['v-1', 'v-2'], voiceUtteranceMessages('第一句\n第二句', ['好哒，第一句', '别的回复'])), false, 'a reply Claude did not give');
+    assert.equal(chat.regroup(['v-1', 'v-2'], voiceUtteranceMessages('第一句\n第二句', ['好哒，第一句'])), false, 'a reply left out');
     assert.equal(chat.regroup(['v-1', 'v-2'], shown), true);
     assert.equal(chat.regroup(['v-1', 'v-2'], shown), false, 'once');
     const next: string[] = [];
-    await chat.stream(task([u('你好'), a('收到，你好'), ...shown, u('打字')], 'text-2'), signal, (type, text) => { if (type === 'delta') next.push(text); });
-    assert.equal(next.join(''), '收到，打字');
+    await chat.stream(task([u('你好'), a('好哒，你好'), ...shown, u('打字')], 'text-2'), signal, (type, text) => { if (type === 'delta') next.push(text); });
+    assert.equal(next.join(''), '好哒，打字');
     assert.equal((await claude.spawns()).length, 1);
     // Without the regroup the same shown window does not line up and opens a fresh session.
-    await chat.stream(task([u('你好'), a('收到，你好'), u('第一句'), a('收到，第一句'), u('第二句'), a('收到，第二句'), u('打字'), a('收到，打字'), u('再来')], 'text-3'), signal, none);
+    await chat.stream(task([u('你好'), a('好哒，你好'), u('第一句'), a('好哒，第一句'), u('第二句'), a('好哒，第二句'), u('打字'), a('好哒，打字'), u('再来')], 'text-3'), signal, none);
     assert.equal((await claude.spawns()).length, 2, 'a window that differs from the record never reuses the process');
   });
 });
@@ -607,7 +607,7 @@ test('F4: a voice reply the draft filter emptied fails like a voice leg; one err
     await until(() => h.states.includes('settled'), 5000, 'next utterance settled'); await h.host.drain();
     assert.equal(h.terminal(h.starts()[1])?.complete, true);
     assert.deepEqual(h.rewards, ['chat', 'chat', 'appraisal']);
-    assert.equal(h.speech().length, 1); assert.equal(h.speech()[0].text, '收到，再说一句');
+    assert.equal(h.speech().length, 1); assert.equal(h.speech()[0].text, '好哒，再说一句');
     noTail(h);
   });
 });

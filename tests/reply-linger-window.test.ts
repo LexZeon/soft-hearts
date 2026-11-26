@@ -1,7 +1,7 @@
 /**
- * #5 on the real host pieces: the actual PetReplyWindow (electron/reply-window.ts, fake Electron boundaries, no app or native
+ * #5 on the real host pieces: the actual PetReplyWindow (electron/brain/reply-window.ts, fake Electron boundaries, no app or native
  * window) asks how long once per completion and keeps exactly that; R27's display is untouched; the real MoodHost
- * (electron/mood.ts, isolated temporary directory) adds her mood and explains it only in developer mode, memory only.
+ * (electron/mood/mood.ts, isolated temporary directory) adds her mood and explains it only in developer mode, memory only.
  */
 import test, { type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
@@ -13,14 +13,14 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { transformSync } from 'esbuild';
-import type { PetReplyPieces, PetReplyUpdate } from '../shared/contracts';
+import type { PetReplyPieces, PetReplyUpdate } from '../shared/foundation/pet-reply';
 import type { ReplyLingerBubble } from '../shared/behaviors/reply-linger/interface';
 import { REPLY_LINGER_KNOBS } from '../shared/behaviors/reply-linger/knobs';
 import { ReplyLingerDirector } from '../shared/behaviors/reply-linger/choose';
-import { replyPieces } from '../shared/reply-bubbles';
-import { MoodHost } from '../electron/mood';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
-import type { MoodView } from '../shared/mood-runtime';
+import { replyPieces } from '../shared/voice/reply-bubbles';
+import { MoodHost } from '../electron/mood/mood';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
+import type { MoodView } from '../shared/mood/mood-runtime';
 
 const [SHORTEST, LONGEST] = REPLY_LINGER_KNOBS.range;
 interface Render { text?: string; waiting: boolean; pieces: PetReplyPieces | null; segmented: boolean }
@@ -57,7 +57,7 @@ function fixture(t: TestContext, linger?: (bubble: ReplyLingerBubble) => number)
     showInactive() { this.visible = true; this.emit('show'); }
     destroy() { this.destroyed = true; this.emit('closed'); }
   }
-  const filename = new URL('../electron/reply-window.ts', import.meta.url);
+  const filename = new URL('../electron/brain/reply-window.ts', import.meta.url);
   const localRequire = createRequire(filename), module = { exports: {} };
   const code = transformSync(readFileSync(filename, 'utf8'), { loader: 'ts', format: 'cjs', target: 'es2022' }).code;
   const injectedRequire = (name: string) => name === 'electron'

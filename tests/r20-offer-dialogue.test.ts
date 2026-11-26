@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildR20OfferPrompt, classifyR20OfferReply, parseR20OfferCandidate } from '../electron/r20-offer-dialogue';
+import { buildR20OfferPrompt, classifyR20OfferReply, parseR20OfferCandidate } from '../electron/initiative/r20-offer-dialogue';
 
 const candidate = { question: '需要我先帮你梳理计划吗？', goal: '整理安排', plan: '先列出步骤和取舍。', scopeHint: '确认目标和范围' };
 

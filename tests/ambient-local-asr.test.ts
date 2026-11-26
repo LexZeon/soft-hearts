@@ -1,4 +1,4 @@
-// 陪听歌、看剧的转写改用本机识别 (electron/asr/ambient-route.ts). With a fake store, fake
+// 陪听歌、看剧的转写改用本机识别 (electron/senses/asr/ambient-route.ts). With a fake store, fake
 // utilityProcess and fake fetch: only the local recognizer transcribes played sound (I-016 "声音只在本机", Codex T-207: with
 // 识别方式 = compatible the switch hears only the rhythm and no clip is sent), a missing component refuses with a reason and
 // raises the download question, voice input stays ahead of transcription on the one recognizer, the model's language tag goes
@@ -10,21 +10,21 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { AmbientAsrRoute, AmbientNotLocalError, AMBIENT_FAILURE_NOTE_MS, ambientFailureOf, localAmbientResult, refusedReadingAck } from '../electron/asr/ambient-route';
-import { IDLE_STOP_MS, LocalAsrError, LocalAsrHost, type AsrWorkerHandle } from '../electron/asr/host';
-import { ASR_EMOTION_TAGS, ASR_EVENT_TAGS, tokensToUtterance } from '../electron/asr/decode';
-import { parseAsrHostMessage, parseAsrWorkerMessage } from '../electron/asr/protocol';
-import { startAsrWorker } from '../electron/asr/worker';
-import type { AsrOrtLike, AsrOrtSession } from '../electron/asr/engine';
-import { AmbientAsrError, transcribeAmbientWav } from '../electron/ambient-asr';
-import { ForegroundAsr } from '../electron/foreground-asr';
-import { createAudioReadingView, parseAudioReadingAck } from '../shared/audio-reading-toggles';
-import { buildJournalEntry, type JournalInput } from '../shared/journal';
-import { setUiLanguage } from '../shared/ui-language';
-import type { VoiceInputConfig } from '../shared/contracts';
-import { NOTICE_ACTIONS, readingRefusalAction, type NoticeAction } from '../src/notice-policy';
-import { uiText } from '../src/ui/ui-language';
-import { encodeWav } from '../src/ui/MediaInput';
+import { AmbientAsrRoute, AmbientNotLocalError, AMBIENT_FAILURE_NOTE_MS, ambientFailureOf, localAmbientResult, refusedReadingAck } from '../electron/senses/asr/ambient-route';
+import { IDLE_STOP_MS, LocalAsrError, LocalAsrHost, type AsrWorkerHandle } from '../electron/senses/asr/host';
+import { ASR_EMOTION_TAGS, ASR_EVENT_TAGS, tokensToUtterance } from '../electron/senses/asr/decode';
+import { parseAsrHostMessage, parseAsrWorkerMessage } from '../electron/senses/asr/protocol';
+import { startAsrWorker } from '../electron/senses/asr/worker';
+import type { AsrOrtLike, AsrOrtSession } from '../electron/senses/asr/engine';
+import { AmbientAsrError, transcribeAmbientWav } from '../electron/senses/ambient-asr';
+import { ForegroundAsr } from '../electron/senses/foreground-asr';
+import { createAudioReadingView, parseAudioReadingAck } from '../shared/voice/audio-reading-toggles';
+import { buildJournalEntry, type JournalInput } from '../shared/memory/journal';
+import { setUiLanguage } from '../shared/foundation/ui-language';
+import type { VoiceInputConfig } from '../shared/foundation/settings';
+import { NOTICE_ACTIONS, readingRefusalAction, type NoticeAction } from '../src/settings/notice-policy';
+import { uiText } from '../src/foundation/ui-language';
+import { encodeWav } from '../src/senses/MediaInput';
 import { onnxWithMetadata, senseVoiceMetadata } from './helpers/onnx-proto';
 
 const flush = async () => { for (let i = 0; i < 30; i++) await Promise.resolve(); };

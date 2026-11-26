@@ -132,7 +132,7 @@ test('dispose restores only owned materials/callbacks and never disposes model g
 });
 
 test('real bundled Gene selects only 顔 and preserves its actual MMDToonMaterial and late texture references', async () => {
-  const manifest = JSON.parse(await readFile('shared/bundled-assets.json', 'utf8')), bytes = await readFile(join('assets/bundled', manifest.root, manifest.model.relativePath));
+  const manifest = JSON.parse(await readFile('shared/actions/bundled-assets.json', 'utf8')), bytes = await readFile(join('assets/bundled', manifest.root, manifest.model.relativePath));
   const parserModule = 'three/examples/jsm/libs/mmdparser.module.js'; const { MMDParser } = await import(parserModule);
   const data = new MMDParser.Parser().parsePmx(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), true), loader = new MMDLoader() as any;
   loader.meshBuilder.materialBuilder._loadTexture = () => { const texture = new Texture() as any; texture.readyCallbacks = []; return texture; };

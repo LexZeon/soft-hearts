@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { formatPetWindowDiagnostics } from '../src/ui/PetWindowDiagnosticsPanel';
+import { formatPetWindowDiagnostics } from '../src/stage/PetWindowDiagnosticsPanel';
 
 test('the developer log reads as one line per native or renderer fact', () => {
   const text = formatPetWindowDiagnostics({ enabled: true, entries: [

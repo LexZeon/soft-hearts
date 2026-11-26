@@ -1,9 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { suggestCodexTask, validateCodexTaskPrompt } from "../shared/codex-tasks";
+import { suggestCodexTask, validateCodexTaskPrompt } from "../shared/safety/codex-tasks";
 
 // The Codex app-server task service (electron/codex-tasks.ts) was retired on 2026-11-02;
-// tasks run through electron/claude-tasks/ (tests/claude-tasks.test.ts). These shared
+// tasks run through electron/safety/claude-tasks/ (tests/claude-tasks.test.ts). These shared
 // helpers keep their Codex-era names and are still used by the task UI and main.ts.
 test("task suggestions are local hints, with no trigger for normal chat or explanations", () => {
   for (const text of ["早上好", "解释代码重构的原理", "如何修改配置文件", "what is a test file?"]) assert.equal(suggestCodexTask(text), null);

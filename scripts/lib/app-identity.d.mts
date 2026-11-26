@@ -7,6 +7,7 @@ export declare const STABLE_PROFILE_FOLDER: 'soft-hearts-claude';
 export declare const DEVELOPMENT_PROFILE_FOLDER: 'soft-hearts-claude-dev';
 export declare const CHANNELS: readonly DesktopChannel[];
 export declare const SHORTCUT_NAMES: Readonly<Record<DesktopChannel, string>>;
+export declare const SOURCE_SHORTCUT_NAME: string;
 export declare const APP_USER_MODEL_IDS: Readonly<Record<DesktopChannel, string>>;
 export declare const CODEX_EDITION: Readonly<{
   packageName: string; productName: string; executableName: string; appId: string; profileFolder: string;

@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import test, { type TestContext } from 'node:test';
 import type { DesktopAPI } from '../shared/contracts';
-import type { AmbientMode } from '../shared/ambient-audio';
-import type { AmbientAudioView, AmbientRuntimeSubmission, AmbientSubmissionResult } from '../shared/ambient-audio-runtime';
-import { AmbientAudioController } from '../src/ui/ambient-audio-controller';
+import type { AmbientMode } from '../shared/senses/ambient-audio';
+import type { AmbientAudioView, AmbientRuntimeSubmission, AmbientSubmissionResult } from '../shared/senses/ambient-audio-runtime';
+import { AmbientAudioController } from '../src/senses/ambient-audio-controller';
 
 const flush = async () => { for (let index = 0; index < 20; index++) await Promise.resolve(); };
 function deferred<T>() {

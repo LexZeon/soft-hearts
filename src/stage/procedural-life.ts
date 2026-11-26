@@ -42,11 +42,18 @@
  */
 import { SeededRandom, SmoothNoise, hashSeed } from './life-noise';
 import { ContinuousExpression, EXPRESSION_LIMITS, emptyExpression, expressionTargets } from './continuous-expression';
+import type { AccentAvailability, AccentGates } from '../voice';
+import { LabelBlend } from '../mood';
+import { MOOD_FACE_KNOBS } from '../mood';
+import { FaceMoodReading } from '../mood';
+import { anchorWeights } from '../mood';
+import type { LabelWeight } from '../mood';
 import { composeBrows, composeMouthExpression } from './channel-compositors';
 import { PERFORMANCE_LIMITS, emptyPerformance, previewPerformance } from './preview-performance';
 import { SHOW_CLIP, SHOW_KEYS, emptyShow, showRecipeOfClip, showSample } from './expression-show';
 import { SHOW_BONE_KEYS, ShowCarry, StrengthEase, clampStrength } from './show-blend';
-import type { ExpressionRecipe } from '../../shared/expression-preview';
+import type { ExpressionRecipe } from '../../shared/stage/expression-preview';
+import { TalkCalm } from '../../shared/behaviors/talk-calm/talk-calm';
 
 // ---------------------------------------------------------------- inputs
 
@@ -55,6 +62,9 @@ export interface LifeMood {
   companion?: string | null;
   values?: Partial<Record<'D' | 'O' | 'E' | 'N' | 'C', number>>;
   intensity?: { expression?: number; gaze?: number; posture?: number; playful?: number };
+  /** I-073: longing (0..100) and the latest mood event, read by the face (mood-face/reading.ts). */
+  longing?: number;
+  event?: { id: string; delta: Partial<Record<'D' | 'O' | 'E' | 'N' | 'C', number>> } | null;
 }
 export interface LifeFatigue { phase?: string; F?: number; sleeping?: boolean }
 
@@ -88,6 +98,11 @@ export interface LifeGates {
   gazeAllowed: boolean;
   /** A fatigue presentation drives the face this frame (drowsy lids, the reviewed drowsy nod). */
   fatigueFace?: boolean;
+  /**
+   * I-170: a talk signal is on (you type, she thinks, prepares, speaks or reads aloud). Her idle head drift and casual tilts calm to the
+   * talk-calm scale (shared/behaviors/talk-calm), eased; her mood's head, her own life, the music nod and the speaking accents do not.
+   */
+  talking?: boolean;
 }
 /** The card's blush profile (MoodParameters.blush): the continuous blush respects its switch, intensity and size. */
 export interface LifeBlush { enabled: boolean; intensity: number; size: number }
@@ -106,6 +121,8 @@ export interface LifeRig<B> {
   readonly shoulderLeft?: B;
   readonly shoulderRight?: B;
   readonly slots: LifeSlots;
+  /** I-073 part 3: every morph that is a mouth shape (lip-sync, vowels, mouth smile, pucker): a speaking accent never writes one. */
+  readonly mouthShapes?: readonly number[];
 }
 /** The stage's existing writers: bone rotation (remembered/restored), automatic head, calibrated morph write. */
 export interface LifePort<B> {
@@ -140,6 +157,29 @@ export interface LifeInput<B> {
   activity?: LifeActivity | null;
   /** M1 (music-nod.ts): a light nod and sway to the music, added to the head tilt and upper-body sway under their yield weights. */
   beat?: LifeBeat | null;
+  /**
+   * I-073 part 3 (speech-face/layer.ts): the accents while she speaks, ticked here with the face's and the head's owners and
+   * added on top of her mood face (eyes and brows under the face's weight, nod and tilt under the head's). Absent: as before.
+   */
+  accent?: LifeAccent | null;
+}
+/** What procedural life needs of the speaking-accent layer (SpeechFace). */
+export interface LifeAccent {
+  frame(delta: number, gates: AccentGates): Readonly<{ smileEyes: number; browUp: number; jitome: number; blush: number; headX: number; headZ: number; eyeWide?: number; lidSoft?: number }>;
+  reset(): void;
+}
+/**
+ * I-073 part 3, hard rule 1: which accent sliders this model has, a face slider only when its morph is not a mouth shape (a
+ * "smile" that also moves the mouth is skipped; lip-sync keeps the mouth). Missing slots are skipped, never substituted.
+ */
+export function accentAvailability(slots: LifeSlots | undefined, mouth: readonly number[], blush: boolean, head: boolean, lids: boolean): AccentAvailability {
+  const ok = (index: number | undefined) => typeof index === 'number' && index >= 0 && !mouth.includes(index) && index !== slots?.mouthSmile && index !== slots?.mouthOpen;
+  return { smileEyes: ok(slots?.smileEyes), browUp: ok(slots?.browUp), jitome: lids && ok(slots?.jitome), blush, head };
+}
+/** I-077: the two sliders only the music reactions use: eyes widening (the surprise slot, not a mouth shape) and soft lids. */
+export function musicAccentAvailability(slots: LifeSlots | undefined, mouth: readonly number[], lids: boolean): { eyeWide: boolean; lidSoft: boolean } {
+  const wide = slots?.surprise;
+  return { eyeWide: typeof wide === 'number' && wide >= 0 && !mouth.includes(wide), lidSoft: lids };
 }
 /** Radians: head x > 0 nods the chin down; z is a head roll; bodyZ is an upper-body roll. */
 export interface LifeBeat { headX: number; headZ: number; bodyZ: number }
@@ -234,6 +274,8 @@ const TEMPER: Readonly<Record<string, Temper>> = Object.freeze({
   sad: T(0.65, 0.7, 0.75, 0.1, -0.1, 0.3, -0.08, 0.85, 1.15),
   relieved: T(0.9, 0.9, 0.85, 0.15, 0.2, 0, 0, 0.9, 1.05),
   'tense-expectation': T(1.05, 1.2, 1.2, -0.2, 0.25, 0.05, 0, 1.2, 0.8, 0.05),
+  // I-076 害怕 (心情第二批): smaller and quicker, watchful (looks at you and away), the chin a touch up, quicker breath, fewer blinks.
+  afraid: T(0.8, 1.15, 1.15, -0.2, 0.2, 0.15, 0.01, 1.2, 0.85, 0.03),
 });
 const clamp = (value: number, low: number, high: number) => Number.isFinite(value) ? Math.min(high, Math.max(low, value)) : low;
 const clamp01 = (value: number) => clamp(value, 0, 1);
@@ -355,6 +397,12 @@ export class ProceduralLife<B = unknown> {
   private side = 1;
   // clocks and weights
   private time = 0;
+  /**
+   * 2026-11-12 whole-body twitch: the drift noises' own clocks (gaze and head share one, the sway has its own). Each advances at
+   * its tempered speed (clock += speed · dt), so a mood change alters how fast the noise moves, never where it is. The old
+   * time × speed jumped the noise forward by (uptime × change of speed): after an hour, a label change shook her for seconds.
+   */
+  private wanderClock = 0; private swayClock = 0;
   private master = 0;
   private enabled = true;
   private wGaze = 0; private wTilt = 0; private wSway = 0;
@@ -378,10 +426,19 @@ export class ProceduralLife<B = unknown> {
   private blinkIntervalS = 4.2; private blinks = 0; private doubles = 0; private speaking = false;
   // R36 expression
   private readonly expression = new ContinuousExpression();
+  /** Twitch round 3: the mood labels the face drifts between (mood-face/label-blend.ts). */
+  private readonly primaryDrift = new LabelBlend(); private readonly companionDrift = new LabelBlend();
+  /** I-073: what the face reads of the mood (follow, afterglow), its weights over the typical states, and the mood's raised brows. */
+  private readonly reading = new FaceMoodReading(); private readonly anchors: LabelWeight[] = []; private moodBrowUp = 0; private moodEyeWide = 0;
   private readonly exprTarget = emptyExpression();
-  private readonly wobble = { smile: 0, brow: 0, lid: 0, blush: 0 };
+  private readonly wobble = { smile: 0, brow: 0, lid: 0, blush: 0, drift: { face: 0, headX: 0 } };
   private readonly brows = { sad: 0, angry: 0 };
   private yExpr = 0; private wExpr = 0; private speechOwner = 0; private exprHeadX = 0;
+  /** I-073 part 3: this frame's speaking accent on the head (rad; added in tilt() under the head's weight). */
+  private accentHeadX = 0; private accentHeadZ = 0;
+  /** I-170: the idle head scale (1 when nobody talks), eased by its own spring; reset with a new owner. */
+  private readonly talkCalm = new TalkCalm(); private headCalm = 1;
+  get idleHeadScale(): number { return this.headCalm; }
   // expression preview additions
   private readonly performance = emptyPerformance();
   private readonly performanceHeld = emptyPerformance();
@@ -416,7 +473,7 @@ export class ProceduralLife<B = unknown> {
     this.random = new SeededRandom(this.seed);
     this.noise = new SmoothNoise(this.seed ^ 0x5bd1e995);
     this.side = this.random.next() < 0.5 ? -1 : 1;
-    this.time = 0; this.master = 0; this.wGaze = this.wTilt = this.wSway = 0; this.yGaze = this.yTilt = this.ySway = 0;
+    this.time = 0; this.wanderClock = this.swayClock = 0; this.master = 0; this.wGaze = this.wTilt = this.wSway = 0; this.yGaze = this.yTilt = this.ySway = 0;
     this.paramsReady = false; this.breathPhase = this.random.range(0, Math.PI * 2);
     this.saccadeX = this.saccadeY = 0; this.nextSaccade = this.random.range(0.8, 2.5); this.saccades = 0;
     this.moment = 0; this.momentEnd = 0; this.nextMoment = this.random.range(3, 8);
@@ -425,6 +482,7 @@ export class ProceduralLife<B = unknown> {
     this.tiltStart = 0; this.tiltEnd = -1; this.tiltPeak = 0; this.nextTilt = this.random.range(4, 10);
     this.blinkDur = 0.16; this.blinkDouble = false; this.blinks = this.doubles = 0;
     this.yExpr = this.speechOwner = 0;
+    this.talkCalm.reset(); this.headCalm = 1;
     this.zero();
     this.diagnosticsAt = -Infinity;
   }
@@ -439,11 +497,14 @@ export class ProceduralLife<B = unknown> {
     this.speaking = input.gates.speaking === true;
     this.act = input.activity ?? null;
     this.beat = input.beat ?? null;
+    this.headCalm = this.talkCalm.frame(dt, input.gates.talking === true);
     this.master = this.enabled ? Math.min(1, this.master + dt / MASTER_IN) : Math.max(0, this.master - dt / MASTER_OUT);
-    if (this.master <= 0) { this.zero(); return; }
+    if (this.master <= 0) { this.zero(); input.accent?.reset(); return; }
     this.time += dt;
     lifeParameters(input.mood, input.fatigue, this.side, this.target);
     this.temper(dt);
+    const tempo = Math.max(0.3, this.params.speed);
+    this.wanderClock += dt * tempo * (1.25 - 0.5 * this.params.smoothness); this.swayClock += dt * tempo;
     this.yieldWeights(dt, input.gates, input.fatigue);
     const p = this.params, m = smoothstep(this.master);
     this.breathe(dt, p, m);
@@ -586,7 +647,7 @@ export class ProceduralLife<B = unknown> {
     out.previewHeadX = out.previewHeadY = out.previewEyePitch = out.previewEyeYaw = 0;
     out.previewHeadZ = out.previewBodyX = out.previewBodyZ = out.browUp = out.eyeWide = 0;
     this.wGaze = this.wTilt = this.wSway = this.wExpr = 0; this.exprHeadX = 0;
-    this.expression.reset();
+    this.expression.reset(); this.primaryDrift.reset(); this.companionDrift.reset(); this.reading.reset(); this.moodBrowUp = 0; this.moodEyeWide = 0;
     this.previewFade = 0; this.previewClip = null; this.previewMs = 0; this.previewBlocked = false;
     this.showWeight = 0; this.showRecipe = null; showSample(null, Number.NaN, true, this.showHeld);
     this.showStrength.reset(1); this.showCarry.reset(); showSample(null, Number.NaN, true, this.showShown); this.showGain.bone = this.showGain.face = 0;
@@ -661,8 +722,8 @@ export class ProceduralLife<B = unknown> {
     }
     this.userWeight = ease(this.userWeight, this.moment === 1 ? 1 : 0, 0.22, dt);
     this.awayWeight = ease(this.awayWeight, this.moment === 2 ? 1 : 0, 0.3, dt);
-    const f = tempo * (1.25 - 0.5 * p.smoothness);
-    const driftX = 0.032 * p.gaze * n.fbm(t * 0.09 * f, 3), driftY = 0.02 * p.gaze * n.fbm(t * 0.07 * f, 4) + p.gazeDown;
+    const clock = this.wanderClock;
+    const driftX = 0.032 * p.gaze * n.fbm(clock * 0.09, 3), driftY = 0.02 * p.gaze * n.fbm(clock * 0.07, 4) + p.gazeDown;
     const lead = 1 - 0.75 * this.activity, gaze = 1 - 0.75 * this.userWeight;
     // 她自己的生活: her own far look rides on the drift (a moving pointer leads it back too); a look-up turns her eyes to the user.
     const up = act ? clamp01(act.lookUp) * smoothstep(this.master) : 0, ax = act ? act.gazeX * this.side + (act.gazeFixedX ?? 0) : 0, ay = act ? act.gazeY + (act.gazeFixedY ?? 0) : 0;
@@ -673,7 +734,7 @@ export class ProceduralLife<B = unknown> {
   }
 
   private tilt(p: LifeParameters, w: number): void {
-    const t = this.time, r = this.random, n = this.noise, out = this.out, f = Math.max(0.3, p.speed) * (1.25 - 0.5 * p.smoothness);
+    const t = this.time, r = this.random, n = this.noise, out = this.out, clock = this.wanderClock;
     if (t >= this.nextTilt) {
       if (t >= this.tiltEnd && r.next() < 0.5 + 0.25 * Math.abs(p.asymmetry)) {
         const side = r.next() < 0.5 + 0.35 * p.asymmetry ? 1 : -1;
@@ -682,10 +743,10 @@ export class ProceduralLife<B = unknown> {
       this.nextTilt = t + r.range(7, 16) / Math.max(0.3, p.speed);
     }
     const moment = t < this.tiltEnd ? smoothstep((t - this.tiltStart) / 0.45) * (1 - smoothstep((t - (this.tiltEnd - 0.6)) / 0.6)) * this.tiltPeak : 0;
-    const a = p.amplitude * w, act = this.act;
-    let x = a * 0.006 * n.fbm(t * 0.08 * f, 5) + this.exprHeadX * smoothstep(this.master);
-    let y = a * 0.009 * n.fbm(t * 0.06 * f, 6);
-    let z = a * (0.011 * n.fbm(t * 0.11 * f, 7) + 0.005 * p.asymmetry + moment);
+    const a = p.amplitude * w * this.headCalm, act = this.act; // I-170: only her idle drift and casual tilt calm while you talk
+    let x = a * 0.006 * n.fbm(clock * 0.08, 5) + this.exprHeadX * smoothstep(this.master);
+    let y = a * 0.009 * n.fbm(clock * 0.06, 6);
+    let z = a * (0.011 * n.fbm(clock * 0.11, 7) + 0.005 * p.asymmetry + moment);
     // 她自己的生活: her own head angle (mirrored by her side) and the look-up's small chin lift, under the same owners and clamp.
     if (act) { x += w * (act.headX - LIFE_LOOK_UP_LIFT * clamp01(act.lookUp)); y += w * act.headY * this.side; z += w * act.headZ * this.side; }
     // M1: the light nod to the music rides the same weight and the same clamps.
@@ -694,6 +755,8 @@ export class ProceduralLife<B = unknown> {
     x = clamp(x, -LIFE_LIMITS.head.x, LIFE_LIMITS.head.x); y = clamp(y, -LIFE_LIMITS.head.y, LIFE_LIMITS.head.y); z = clamp(z, -LIFE_LIMITS.head.z, LIFE_LIMITS.head.z);
     const norm = Math.sqrt(x * x + y * y + z * z);
     if (norm > LIFE_LIMITS.head.total) { const k = LIFE_LIMITS.head.total / norm; x *= k; y *= k; z *= k; }
+    // I-073 part 3: the speaking nod / tilt, after the idle clamps (its own hard caps, speech-face/knobs.ts), under the same weight.
+    x += w * this.accentHeadX; z += w * this.accentHeadZ;
     // `+ 0` keeps a yielded output a plain zero (never -0) for the stage's `!== 0` checks and diagnostics.
     out.headX = x + 0; out.headY = y + 0; out.headZ = z + 0;
   }
@@ -703,8 +766,16 @@ export class ProceduralLife<B = unknown> {
     const t = this.time, n = this.noise, wobble = this.wobble, target = this.exprTarget, out = this.out, g = input.gates;
     this.speechOwner = ease(this.speechOwner, g.speaking ? 1 : 0, g.speaking ? 0.08 : 0.35, dt);
     wobble.smile = n.sample(t * 0.11, 20); wobble.brow = n.sample(t * 0.09, 21); wobble.lid = n.sample(t * 0.07, 22); wobble.blush = n.sample(t * 0.05, 23);
+    // I-073 part 2: the slow drift, on the same noise as the wobble (slower, its own streams).
+    const slow = t * MOOD_FACE_KNOBS.drift.speed, drift = wobble.drift;
+    drift.face = n.sample(slow, 24); drift.headX = n.sample(slow * 1.13, 25);
     const blush = input.blush, blushScale = blush && blush.enabled === true && blush.size > 0 && Number.isFinite(blush.intensity) ? blush.intensity / 35 : 0;
-    expressionTargets(input.mood, p.expression, p.drowsy, blushScale, wobble, target);
+    // Twitch round 3: the mood label drifts (mood-face/label-blend.ts) instead of switching the whole row on one frame.
+    const labels = this.primaryDrift.frame(dt, input.mood?.primary ?? '', MOOD_FACE_KNOBS.driftSeconds);
+    // I-073 part 1: the typical states blended by how close the face's reading of the mood is to each, plus the label's own style.
+    anchorWeights(this.reading.frame(dt, input.mood), labels, this.anchors);
+    expressionTargets(input.mood, p.expression, p.drowsy, blushScale, wobble, target, {
+      primary: this.anchors, companion: this.companionDrift.frame(dt, input.mood?.companion ?? '', MOOD_FACE_KNOBS.driftSeconds) });
     // 她自己的生活: her own activity's face (humming: smiling eyes, a closed smile) joins the mood's, under the same gates.
     const act = this.act;
     if (act) {
@@ -716,7 +787,9 @@ export class ProceduralLife<B = unknown> {
     this.actLid = act && !this.yExpr ? clamp01(act.lidSoft) * Math.min(1, p.expression) * m * smoothstep(this.wExpr) : 0;
     this.actMouth = act?.mouthOpen && !this.yExpr ? clamp01(act.mouthOpen) * Math.min(1, p.expression) * m * smoothstep(this.wExpr) : 0;
     const slots = this.rig?.slots;
-    if (this.yExpr) target.smileEyes = target.mouthSmile = target.sad = target.angry = target.jitome = target.blush = 0;
+    if (this.yExpr) target.smileEyes = target.mouthSmile = target.sad = target.angry = target.jitome = target.blush = target.browUp = target.eyeWide = 0;
+    if (!slots || (slots.browUp ?? -1) < 0) target.browUp = 0;
+    if (!slots || (slots.surprise ?? -1) < 0) target.eyeWide = 0;
     if (!slots || slots.smileEyes < 0) target.smileEyes = 0;
     if (!slots || slots.mouthSmile < 0 || g.manualMouth) target.mouthSmile = 0;
     if (!slots || slots.sad < 0) target.sad = 0;
@@ -729,6 +802,20 @@ export class ProceduralLife<B = unknown> {
     out.smileEyes = value.smileEyes * m; out.mouthSmile = value.mouthSmile * m; out.sad = value.sad * m; out.angry = value.angry * m;
     out.jitome = value.jitome * m; out.blush = value.blush * m; out.lidSoft = 0; out.mouthOpen = 0;
     this.exprHeadX = clamp(value.headX, -EXPRESSION_LIMITS.headX, EXPRESSION_LIMITS.headX);
+    this.moodBrowUp = value.browUp * m;
+    this.moodEyeWide = value.eyeWide * m;
+    // I-073 part 3: the speaking accents on top of the mood face, under the face's own weight (they yield with it).
+    this.accentHeadX = this.accentHeadZ = 0;
+    if (input.accent) {
+      const a = input.accent.frame(dt, { face: !this.yExpr, head: !this.yTilt, speaking: g.speaking === true,
+        available: { ...accentAvailability(slots, this.rig?.mouthShapes ?? [], blushScale > 0, !!this.rig, !g.fatigueFace), ...musicAccentAvailability(slots, this.rig?.mouthShapes ?? [], !g.fatigueFace) } });
+      const wf = m * smoothstep(this.wExpr);
+      out.smileEyes += a.smileEyes * wf; out.jitome += a.jitome * wf; out.blush += a.blush * wf; this.moodBrowUp += a.browUp * wf;
+      // I-077: the music reactions' widened eyes and soft lids, under the same face weight.
+      if (a.eyeWide) this.moodEyeWide += a.eyeWide * wf;
+      if (a.lidSoft) this.actLid = Math.max(this.actLid, a.lidSoft * wf);
+      this.accentHeadX = a.headX * m; this.accentHeadZ = a.headZ * m;
+    }
   }
 
   /**
@@ -740,7 +827,7 @@ export class ProceduralLife<B = unknown> {
    */
   private perform(dt: number, input: LifeInput<B>, m: number): void {
     const out = this.out, g = input.gates, held = this.performanceHeld, clip = typeof input.previewClip === 'string' ? input.previewClip : null;
-    out.previewHeadZ = out.previewBodyX = out.previewBodyZ = out.browUp = out.eyeWide = 0;
+    out.previewHeadZ = out.previewBodyX = out.previewBodyZ = 0; out.browUp = this.moodBrowUp + 0; out.eyeWide = this.moodEyeWide + 0;
     const show = showRecipeOfClip(clip);
     if (show !== null || (clip === null && this.showRecipe !== null)) { this.performShow(dt, input, m, show); return; }
     if (clip !== null) {
@@ -811,16 +898,16 @@ export class ProceduralLife<B = unknown> {
     out.mouthOpen = g.manualMouth ? 0 : this.actMouth > 0 ? Math.max(mouthOpen, this.actMouth) : mouthOpen;
     out.smileEyes = Math.max(out.smileEyes, c ? shown.smileEyes : held.smileEyes * face);
     out.sad = Math.max(out.sad, c ? shown.browSad : held.browSad * face);
-    out.browUp = (c ? shown.browUp : held.browUp * face) + 0; out.eyeWide = (c ? shown.eyeWide : held.eyeWide * face) + 0;
+    out.browUp = Math.max(this.moodBrowUp, c ? shown.browUp : held.browUp * face) + 0; out.eyeWide = Math.max(this.moodEyeWide, c ? shown.eyeWide : held.eyeWide * face) + 0;
     out.previewHeadX = shown.headX + 0; out.previewHeadY = shown.headY + 0; out.previewHeadZ = shown.headZ + 0;
     out.previewBodyX = shown.bodyX + 0; out.previewBodyZ = shown.bodyZ + 0;
     out.previewEyePitch = shown.eyePitch + 0; out.previewEyeYaw = shown.eyeYaw + 0;
   }
 
   private sway(p: LifeParameters, w: number): void {
-    const t = this.time, n = this.noise, act = this.act, k = act ? clamp(act.sway, 0, 2) : 1, a = p.amplitude * w * k, f = Math.max(0.3, p.speed);
-    this.out.swayZ = clamp(a * 0.0065 * n.fbm(t * 0.07 * f, 8) + (act ? w * act.bodyZ : 0) + (this.beat ? w * this.beat.bodyZ : 0), -LIFE_LIMITS.sway.z, LIFE_LIMITS.sway.z) + 0;
-    this.out.swayY = clamp(a * 0.005 * n.fbm(t * 0.05 * f, 9), -LIFE_LIMITS.sway.y, LIFE_LIMITS.sway.y) + 0;
+    const n = this.noise, act = this.act, k = act ? clamp(act.sway, 0, 2) : 1, a = p.amplitude * w * k, clock = this.swayClock;
+    this.out.swayZ = clamp(a * 0.0065 * n.fbm(clock * 0.07, 8) + (act ? w * act.bodyZ : 0) + (this.beat ? w * this.beat.bodyZ : 0), -LIFE_LIMITS.sway.z, LIFE_LIMITS.sway.z) + 0;
+    this.out.swayY = clamp(a * 0.005 * n.fbm(clock * 0.05, 9), -LIFE_LIMITS.sway.y, LIFE_LIMITS.sway.y) + 0;
   }
 }
 
@@ -836,5 +923,6 @@ export function lifeRig<B>(owner: object, profile: {
     owner, upperBody: profile?.bone('upperBody') ?? fallbackUpper, shoulderLeft: profile?.bone('shoulderLeft'), shoulderRight: profile?.bone('shoulderRight'),
     slots: { smileEyes: slot('smileEyes'), mouthSmile: slot('mouthSmile'), sad: slot('sad'), angry: slot('angry'), jitome: slot('jitome'),
       mouthOpen: open >= 0 && open !== profile?.indices.mouth ? open : -1, browUp: slot('browUp'), surprise: slot('surprise') },
+    mouthShapes: [profile?.indices.mouth ?? -1, ...['a', 'i', 'u', 'e', 'o', 'mouthSmile', 'mouthPucker'].map(slot)].filter(index => index >= 0),
   };
 }

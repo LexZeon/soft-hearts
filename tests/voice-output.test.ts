@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { AppSettings } from "../shared/contracts";
-import { DEFAULT_SETTINGS } from "../shared/defaults";
-import { DEFAULT_TTS_CONFIG, type SpeechRequestContext, type TtsConfig } from "../shared/tts";
-import type { EmotionalVoicePlaybackState, VoicePlaybackEvent } from "../src/ui/EmotionalVoice";
-import { VoiceOutput, splitSpeechText, type VoiceOutputEvent } from "../src/ui/VoiceOutput";
+import type { AppSettings } from "../shared/foundation/settings";
+import { DEFAULT_SETTINGS } from "../shared/foundation/defaults";
+import { DEFAULT_TTS_CONFIG, type SpeechRequestContext, type TtsConfig } from "../shared/voice/tts";
+import type { EmotionalVoicePlaybackState, VoicePlaybackEvent } from "../src/voice/EmotionalVoice";
+import { VoiceOutput, splitSpeechText, type VoiceOutputEvent } from "../src/voice/VoiceOutput";
 
 function deferred<T = void>() {
   let resolve!: (value: T | PromiseLike<T>) => void, reject!: (error: Error) => void;
@@ -298,19 +298,30 @@ test("a provider or effective style change cancels the current stream before acc
   }
 });
 
-test("provider switching or auto-speech disabling during startup cancels the old request and plays nothing", async () => {
-  for (const mode of ["provider", "enabled"] as const) {
+test("auto-speech disabling during startup cancels the old request and plays nothing", async () => {
+  {
     const env = environment({ provider: "bailian" }), ready = deferred(); env.setVoice({ enabled: true });
     env.beginResults.push(ready.promise); env.output.speak("旧请求", env.voice); await flush();
     // Dispatched under the settings that were current when speech started.
     assert.equal(env.requests.length, 1);
-    if (mode === "provider") env.setConfig({ provider: "system" }); else env.setVoice({ enabled: false });
+    env.setVoice({ enabled: false });
     env.audio(0); ready.resolve(); await flush();
     assert.equal(env.requests.length, 1); assert.equal(env.players[0].disposed, 1);
     assert.equal(env.players[0].events.length, 0, "no PCM from the old request is accepted");
     assert.deepEqual(env.cancellations, [env.requests[0].id]);
     assert.deepEqual(env.errors, []); env.output.dispose();
   }
+});
+
+// 2026-11-25 (user: only cutting in interrupts her): a reply keeps the voice it started in; a provider switch applies from her next reply (the host freezes the voice per reply).
+test("a provider switch during startup does not cancel the reply that started", async () => {
+  const env = environment({ provider: "bailian" }), ready = deferred(); env.setVoice({ enabled: true });
+  env.beginResults.push(ready.promise); env.output.speak("旧请求", env.voice); await flush();
+  assert.equal(env.requests.length, 1);
+  env.setConfig({ provider: "system" });
+  env.audio(0); ready.resolve(); await flush();
+  assert.equal(env.requests.length, 1); assert.equal(env.players[0].disposed, 0, "the reply's player is kept");
+  assert.deepEqual(env.cancellations, []); assert.deepEqual(env.errors, []); env.output.dispose();
 });
 
 test("a host cancellation is quiet and does not echo a cancellation command back to the host", async () => {

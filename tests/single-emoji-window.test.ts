@@ -34,7 +34,7 @@ async function fixture(imageFor?:(id:string)=>Promise<string|null>) {
     getDisplayMatching(){return {workArea:this.area};}});
   const ipcMain=new EventEmitter(), key='singleEmojiFixture'+randomUUID().replaceAll('-','');
   (globalThis as any)[key]={BrowserWindow:MockWindow,screen,ipcMain};
-  const compiled=await build({entryPoints:['electron/single-emoji-window.ts'],bundle:true,write:false,
+  const compiled=await build({entryPoints:['electron/stage/single-emoji-window.ts'],bundle:true,write:false,
     format:'esm',platform:'node',target:'node22',define:{__dirname:JSON.stringify('/owned-test-preload')},
     plugins:[{name:'synthetic-electron-boundary',setup(b){
       b.onResolve({filter:/^electron$/},()=>({path:'electron',namespace:'fixture'}));
@@ -86,7 +86,7 @@ test('TTL, owner reload/hide/restore, and disposal retire the pending cue and li
   }finally{f.dispose();}
 });
 test('destroying the owner disposes through its closed event without touching the destroyed owner', async () => {
-  // reply-smoke's last step destroys the pet window: the owner-closed dispose read
+  // reply-smoke's last step destroys the companion window: the owner-closed dispose read
   // owner.webContents, threw "Object has been destroyed" and froze the main process
   // behind Electron's uncaught-exception dialog (docs/claude/2026-11-02-smoke-triage.md).
   const f=await fixture();try{

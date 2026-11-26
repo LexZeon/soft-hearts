@@ -1,0 +1,335 @@
+{
+ "note": "I-217: files whose strings may still hold the whole word Claude, with how many and why. Scanned by scripts/dev/claude-names-scan.mjs, checked by tests/claude-names.test.mjs. Counts may only go down; a file that is not here must build its text from ASSISTANT_NAME / ASSISTANT_CLI_NAME (shared/foundation/assistant-name.ts).",
+ "files": {
+  "electron/brain/claude-launch/off-main.ts": {
+   "count": 2,
+   "class": "worker-code",
+   "why": "a script string run inside a worker thread that cannot import; the text is an error line for the launch failure"
+  },
+  "electron/brain/claude-session-prompt.ts": {
+   "count": 1,
+   "class": "prompt",
+   "why": "text she or the connected agent is told (about Claude, or that she must not say she is Claude); rewording, not substitution"
+  },
+  "electron/brain/outage-lines.ts": {
+   "count": 1,
+   "class": "prompt",
+   "why": "text she or the connected agent is told (about Claude, or that she must not say she is Claude); rewording, not substitution"
+  },
+  "electron/brain/stage-chat/model.ts": {
+   "count": 1,
+   "class": "prompt",
+   "why": "text she or the connected agent is told (about Claude, or that she must not say she is Claude); rewording, not substitution"
+  },
+  "electron/initiative/her-folder/keepsake-prompt.ts": {
+   "count": 1,
+   "class": "prompt",
+   "why": "text she or the connected agent is told (about Claude, or that she must not say she is Claude); rewording, not substitution"
+  },
+  "electron/safety/assistant/prompt.ts": {
+   "count": 2,
+   "class": "prompt",
+   "why": "text she or the connected agent is told (about Claude, or that she must not say she is Claude); rewording, not substitution"
+  },
+  "electron/safety/test-commands/host.ts": {
+   "count": 3,
+   "class": "t-call",
+   "why": "the string is the key of a t()/tr() call: the English dictionary is keyed by this exact text, and t() swaps the name itself"
+  },
+  "electron/wiring/safety-wiring.ts": {
+   "count": 1,
+   "class": "t-call",
+   "why": "the string is the key of a t()/tr() call: the English dictionary is keyed by this exact text, and t() swaps the name itself"
+  },
+  "shared/brain/chat-availability.ts": {
+   "count": 7,
+   "class": "t-call",
+   "why": "the string is the key of a t()/tr() call: the English dictionary is keyed by this exact text, and t() swaps the name itself"
+  },
+  "shared/brain/companion-refusal-rules.ts": {
+   "count": 2,
+   "class": "prompt",
+   "why": "text she or the connected agent is told (about Claude, or that she must not say she is Claude); rewording, not substitution"
+  },
+  "shared/cards/character-understanding.ts": {
+   "count": 3,
+   "class": "prompt",
+   "why": "text she or the connected agent is told (about Claude, or that she must not say she is Claude); rewording, not substitution"
+  },
+  "shared/foundation/assistant-name.ts": {
+   "count": 4,
+   "class": "name-source",
+   "why": "the one place the name is written"
+  },
+  "shared/foundation/i139-texts.ts": {
+   "count": 10,
+   "class": "prompt",
+   "why": "text she or the connected agent is told (about Claude, or that she must not say she is Claude); rewording, not substitution"
+  },
+  "shared/foundation/part-health.ts": {
+   "count": 5,
+   "class": "t-call",
+   "why": "the string is the key of a t()/tr() call: the English dictionary is keyed by this exact text, and t() swaps the name itself"
+  },
+  "shared/foundation/ui-copy.assistant.en.ts": {
+   "count": 10,
+   "class": "t-dictionary",
+   "why": "English dictionary keyed by the Chinese source text; t() swaps the name when the screen text is built (shared/foundation/ui-language.ts)"
+  },
+  "shared/foundation/ui-copy.character.en.ts": {
+   "count": 54,
+   "class": "t-dictionary",
+   "why": "English dictionary keyed by the Chinese source text; t() swaps the name when the screen text is built (shared/foundation/ui-language.ts)"
+  },
+  "shared/foundation/ui-copy.en.ts": {
+   "count": 28,
+   "class": "t-call",
+   "why": "the string is the key of a t()/tr() call: the English dictionary is keyed by this exact text, and t() swaps the name itself"
+  },
+  "shared/foundation/ui-copy.journal.en.ts": {
+   "count": 6,
+   "class": "t-dictionary",
+   "why": "English dictionary keyed by the Chinese source text; t() swaps the name when the screen text is built (shared/foundation/ui-language.ts)"
+  },
+  "shared/foundation/ui-copy.journal-claude.en.ts": {
+   "count": 36,
+   "class": "t-dictionary",
+   "why": "English dictionary keyed by the Chinese source text; t() swaps the name when the screen text is built (shared/foundation/ui-language.ts); split from ui-copy.journal.en.ts (size check, 2026-11-25): the internal channel, start-gate and stream-kind lines, and (2026-11-25) the session-variables line"
+  },
+  "shared/foundation/ui-copy.listen.en.ts": {
+   "count": 2,
+   "class": "t-dictionary",
+   "why": "English dictionary keyed by the Chinese source text; t() swaps the name when the screen text is built (shared/foundation/ui-language.ts)"
+  },
+  "shared/foundation/ui-copy.moving-memory.en.ts": {
+   "count": 4,
+   "class": "t-dictionary",
+   "why": "English dictionary keyed by the Chinese source text; t() swaps the name when the screen text is built (shared/foundation/ui-language.ts)"
+  },
+  "shared/foundation/ui-copy.outage.en.ts": {
+   "count": 16,
+   "class": "t-dictionary",
+   "why": "English dictionary keyed by the Chinese source text; t() swaps the name when the screen text is built (shared/foundation/ui-language.ts)"
+  },
+  "shared/foundation/ui-copy.part-health.en.ts": {
+   "count": 11,
+   "class": "t-dictionary",
+   "why": "English dictionary keyed by the Chinese source text; t() swaps the name when the screen text is built (shared/foundation/ui-language.ts)"
+  },
+  "shared/foundation/ui-copy.recycle.en.ts": {
+   "count": 4,
+   "class": "t-dictionary",
+   "why": "English dictionary keyed by the Chinese source text; t() swaps the name when the screen text is built (shared/foundation/ui-language.ts)"
+  },
+  "shared/foundation/ui-copy.settings.en.ts": {
+   "count": 10,
+   "class": "t-dictionary",
+   "why": "English dictionary keyed by the Chinese source text; t() swaps the name when the screen text is built (shared/foundation/ui-language.ts)"
+  },
+  "shared/foundation/ui-copy.take-me-there.en.ts": {
+   "count": 8,
+   "class": "t-dictionary",
+   "why": "English dictionary keyed by the Chinese source text; t() swaps the name when the screen text is built (shared/foundation/ui-language.ts)"
+  },
+  "shared/foundation/ui-copy.tasks.en.ts": {
+   "count": 45,
+   "class": "t-dictionary",
+   "why": "English dictionary keyed by the Chinese source text; t() swaps the name when the screen text is built (shared/foundation/ui-language.ts)"
+  },
+  "shared/foundation/ui-copy.test-command.en.ts": {
+   "count": 10,
+   "class": "t-dictionary",
+   "why": "English dictionary keyed by the Chinese source text; t() swaps the name when the screen text is built (shared/foundation/ui-language.ts)"
+  },
+  "shared/foundation/ui-copy.unbound.en.ts": {
+   "count": 6,
+   "class": "t-dictionary",
+   "why": "English dictionary keyed by the Chinese source text; t() swaps the name when the screen text is built (shared/foundation/ui-language.ts)"
+  },
+  "shared/initiative/inner-loop.ts": {
+   "count": 1,
+   "class": "prompt",
+   "why": "text she or the connected agent is told (about Claude, or that she must not say she is Claude); rewording, not substitution"
+  },
+  "shared/initiative/rps-voice.ts": {
+   "count": 1,
+   "class": "prompt",
+   "why": "text she or the connected agent is told (about Claude, or that she must not say she is Claude); rewording, not substitution"
+  },
+  "shared/initiative/take-me-there-coverage.ts": {
+   "count": 4,
+   "class": "matching",
+   "why": "page labels and patterns that match what the user says or what the settings page is called; they read the name from the same words as the page"
+  },
+  "shared/initiative/take-me-there-items.ts": {
+   "count": 1,
+   "class": "matching",
+   "why": "page labels and patterns that match what the user says or what the settings page is called; they read the name from the same words as the page"
+  },
+  "shared/initiative/take-me-there-places.ts": {
+   "count": 2,
+   "class": "matching",
+   "why": "page labels and patterns that match what the user says or what the settings page is called; they read the name from the same words as the page"
+  },
+  "shared/initiative/take-me-there.ts": {
+   "count": 6,
+   "class": "matching",
+   "why": "page labels and patterns that match what the user says or what the settings page is called; they read the name from the same words as the page"
+  },
+  "shared/memory/letter.ts": {
+   "count": 1,
+   "class": "history",
+   "why": "a fixed historical letter, signed by the Claude who wrote it; it must stay as written"
+  },
+  "shared/mood/realer-emotions.ts": {
+   "count": 2,
+   "class": "prompt",
+   "why": "text she or the connected agent is told (about Claude, or that she must not say she is Claude); rewording, not substitution"
+  },
+  "shared/safety/codex-tasks.ts": {
+   "count": 2,
+   "class": "t-call",
+   "why": "the string is the key of a t()/tr() call: the English dictionary is keyed by this exact text, and t() swaps the name itself"
+  },
+  "shared/safety/journal-entries.ts": {
+   "count": 1,
+   "class": "t-call",
+   "why": "the string is the key of a t()/tr() call: the English dictionary is keyed by this exact text, and t() swaps the name itself"
+  },
+  "shared/senses/feed-recognition.ts": {
+   "count": 2,
+   "class": "prompt",
+   "why": "text she or the connected agent is told (about Claude, or that she must not say she is Claude); rewording, not substitution"
+  },
+  "shared/senses/sense-router.ts": {
+   "count": 1,
+   "class": "prompt",
+   "why": "text she or the connected agent is told (about Claude, or that she must not say she is Claude); rewording, not substitution"
+  },
+  "src/brain/ChatSettingCard.ts": {
+   "count": 1,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/cards/CharacterCards.ts": {
+   "count": 1,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/cards/CharacterPage.ts": {
+   "count": 1,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/cards/CharacterStickerControls.ts": {
+   "count": 3,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/cards/CharacterUnderstanding.ts": {
+   "count": 12,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/cards/PersonalizeAuthoringControls.ts": {
+   "count": 4,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/cards/PersonalizeLanguageControls.ts": {
+   "count": 2,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/foundation/recently-deleted.ts": {
+   "count": 2,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/memory/HerAlarmsSection.ts": {
+   "count": 3,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/memory/MovingMemoryPanel.ts": {
+   "count": 2,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/mood/MoodJudgePanel.ts": {
+   "count": 3,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/mood/MoodPanel.ts": {
+   "count": 3,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/mood/ReactionsPanel.ts": {
+   "count": 3,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/safety/AgentChannelPanel.ts": {
+   "count": 13,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/safety/AssistantPanel.ts": {
+   "count": 5,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/safety/CodexTasks.ts": {
+   "count": 23,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/senses/FeedRecognitionPanel.ts": {
+   "count": 3,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/senses/ListenTogetherSwitch.ts": {
+   "count": 1,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/senses/PoseSensingPanel.ts": {
+   "count": 2,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/settings/channel-gates-panel.ts": {
+   "count": 6,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/settings/control-navigation-state.ts": {
+   "count": 4,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/settings/layout.ts": {
+   "count": 4,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/settings/speech-beats-switch.ts": {
+   "count": 6,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/stage/PersonalizeBodyControls.ts": {
+   "count": 2,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  },
+  "src/stage/PersonalizeVisualControls.ts": {
+   "count": 6,
+   "class": "t-window",
+   "why": "window text that reaches the screen through uiText()/t()/uiHtml(), which swap the name"
+  }
+ }
+}

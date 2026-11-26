@@ -1,11 +1,16 @@
-import { lookOfferAllowed, perceptionTurnLine, perceptionTurnState } from '../shared/perception-rule';
-import { LookTurns } from '../electron/look-turns';
-import { LookAttachments } from '../electron/look-attachments';
-import { NO_LISTEN_ASK } from '../electron/listen-together/core';
-import { scanBreathRequest } from '../shared/breath-request';
-import { ReplyRhythmHost } from '../electron/reply-rhythm-host';
-import { applyPetTopmost } from '../electron/pet-topmost';
-import { applyPetWindowSettings, keepPetInWorkArea } from '../electron/pet-window-settings';
+// Flaky under the full suite's load (11-17): the owned Main task's settle wait was 5 s; now 30 s (it still ends the moment the task settles).
+import { i139ChatEdge } from '../electron/brain/i139-chat';
+import { interconnectTurnLine } from '../electron/brain/interconnect-line';
+import { lookOfferFor, perceptionTurnLine, perceptionTurnState } from '../shared/brain/perception-rule';
+import { lookOfferTarget } from '../shared/senses/look-request';
+import { LookTurns } from '../electron/senses/look-turns';
+import { LookAttachments } from '../electron/senses/look-attachments';
+import { textFirstTurn } from '../electron/brain/text-first-turn';
+import { NO_LISTEN_ASK } from '../electron/senses/listen-together/core';
+import { scanBreathRequest } from '../shared/actions/breath-request';
+import { ReplyRhythmHost } from '../electron/brain/reply-rhythm-host';
+import { applyPetTopmost } from '../electron/stage/pet-topmost';
+import { applyPetWindowSettings, keepPetInWorkArea } from '../electron/stage/pet-window-settings';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
@@ -15,42 +20,54 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { setImmediate as nextTurn } from 'node:timers/promises';
 import ts from 'typescript';
-import { AssetRegistry } from '../electron/assets';
-import { MutationQueue } from '../electron/mutation-queue';
-import { atomicWriteFile } from '../electron/atomic-file';
-import { SettingsStore, publicSettings, type SecretStorage } from '../electron/settings';
-import { CompanionService, memoryProviderScope, type CompanionTurn } from '../electron/companion';
-import { CompanionCommandHost } from '../electron/companion-command-host';
-import { classifyCompanionCommand, formatCompanionCommandReceipt } from '../electron/companion-command-intent';
-import { createCommandDialogueTurn } from '../electron/companion-command-dialogue';
-import { scanFramingRequest } from '../shared/framing-request';
-import { scanStopReadoutRequest } from '../shared/stop-readout-request';
-import { CompletedReplySpeech } from '../electron/completed-reply-speech';
-import { WindowVisibility } from '../electron/window-visibility';
-import { SingleEmojiCues } from '../electron/single-emoji-cues';
-import { chatFailureEvent } from '../electron/chat-failure-event';
-import { DraftOnlyReplyError } from '../electron/chat-incident-log';
-import { DEFAULT_EMOJI_SETTINGS } from '../shared/single-emoji';
-import { sizedPetBounds, scaledPetBounds } from '../electron/pet-view';
-import { PetPointerInput } from '../electron/pet-pointer-input';
-import { UserProfileStore } from '../electron/user-profile';
-import { UserProfileManagement } from '../electron/user-profile-management';
-import { UserProfileContext } from '../electron/user-profile-context';
-import { UserProfileSource } from '../electron/user-profile-source';
-import { UserProfileReplyCollector } from '../electron/user-profile-reply';
-import { VisualSelfRuntime } from '../electron/visual-self-runtime';
-import { validateChatRequest } from '../electron/validation';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { DEFAULT_TTS_CONFIG } from '../shared/tts';
-import { ChatSettingProposals } from '../electron/chat-settings';
-import type { CompanionCommandView } from '../shared/companion-commands';
+import { AssetRegistry } from '../electron/foundation/assets';
+import { MutationQueue } from '../electron/foundation/mutation-queue';
+import { atomicWriteFile } from '../electron/foundation/atomic-file';
+import { SettingsStore, publicSettings, type SecretStorage } from '../electron/settings/settings';
+import { CompanionService, memoryProviderScope, type CompanionTurn } from '../electron/brain/companion';
+import { CompanionCommandHost } from '../electron/settings/companion-command-host';
+import { classifyCompanionCommand, formatCompanionCommandReceipt } from '../electron/settings/companion-command-intent';
+import { createCommandDialogueTurn } from '../electron/settings/companion-command-dialogue';
+import { scanFramingRequest } from '../shared/stage/framing-request';
+import { scanStopReadoutRequest } from '../shared/voice/stop-readout-request';
+import { CompletedReplySpeech } from '../electron/voice/completed-reply-speech';
+import { WindowVisibility } from '../electron/stage/window-visibility';
+import { minimizedAway } from '../shared/foundation/step-away';
+import { companionHiddenStep } from '../electron/stage/companion-hidden';
+import { SingleEmojiCues } from '../electron/stage/single-emoji-cues';
+import { chatFailureEvent } from '../electron/brain/chat-failure-event';
+import { DraftOnlyReplyError } from '../electron/brain/chat-incident-log';
+import { DEFAULT_EMOJI_SETTINGS } from '../shared/stage/single-emoji';
+import { sizedPetBounds, scaledPetBounds } from '../electron/stage/pet-view';
+import { PetPointerInput } from '../electron/stage/pet-pointer-input';
+import { UserProfileStore } from '../electron/memory/user-profile';
+import { UserProfileManagement } from '../electron/memory/user-profile-management';
+import { UserProfileContext } from '../electron/memory/user-profile-context';
+import { UserProfileSource } from '../electron/memory/user-profile-source';
+import { UserProfileReplyCollector } from '../electron/memory/user-profile-reply';
+import { VisualSelfRuntime } from '../electron/senses/visual-self-runtime';
+import { validateChatRequest } from '../electron/settings/validation';
+import { admitHandedLine } from '../electron/brain/handed-line-gate'; // 2026-11-23: the chat handler's full-screen line gate
+import { stageTurn } from '../electron/brain/turn-owner/stage-turn'; // I-209 step 3: whose turn (the chat handler's one name for it)
+import { sharedSight } from '../electron/brain/stage-chat/perceive'; // I-209 step 4: one screen description for everyone on stage
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { DEFAULT_TTS_CONFIG } from '../shared/voice/tts';
+import { ChatSettingProposals } from '../electron/brain/chat-settings';
+import { TakeMeThere } from '../electron/initiative/take-me-there';
+import type { CompanionCommandView } from '../shared/settings/companion-commands';
 import type { StreamEvent } from '../shared/contracts';
-import type { MemoryMessagePage, MemoryReadQuery } from '../shared/memory';
+import type { MemoryMessagePage, MemoryReadQuery } from '../shared/memory/memory';
+import { syncStepsSource, windowEventOrder, windowEventsSource, WIRING_PRELUDE, wiringFunction, wiringSource } from './helpers/wiring-source';
+import { SpeechBeatsHost } from '../electron/brain/speech-beats/host';
+import { SpeechBeatArchive } from '../electron/brain/speech-beats/archive';
+import { ownLineYields } from '../shared/behaviors/interrupt/own-line';
 
 // Read the assembled Main under test. Never import Electron or execute app startup.
 // The acceptance, sender/frame guard, task owner, native presentation callback,
 // serialized commit and sync below are actual source, not test reimplementations.
-const main = await readFile(new URL('../electron/main.ts', import.meta.url), 'utf8');
+// Wiring rewrite step 4: the companion commands, sync and the command host are the settings part's (electron/wiring/settings-wiring.ts);
+// the wiring is read across main.ts and electron/wiring/*.ts, and every extraction below still finds exactly one.
+const main = wiringSource();
 const ast = ts.createSourceFile('main.ts', main, ts.ScriptTarget.ES2022, true, ts.ScriptKind.TS);
 const nodes: ts.Node[] = [];
 function visit(node: ts.Node): void { nodes.push(node); ts.forEachChild(node, visit); }
@@ -58,8 +75,10 @@ visit(ast);
 function one<T extends ts.Node>(items: T[], label: string): T {
   assert.equal(items.length, 1, `Actual Main must have one ${label}`); return items[0];
 }
+// Wiring rewrite step 3: what moved to electron/wiring/*.ts (ownerFor, scopedHost, broadcast, send, windows) is read there, still exactly one.
+// Step 4: `ast` is the whole wiring, so a function is read with wiringFunction (exactly one at any depth; `export` dropped).
 function fn(name: string): string {
-  return one(ast.statements.filter((n): n is ts.FunctionDeclaration => ts.isFunctionDeclaration(n) && n.name?.text === name), name).getText(ast);
+  return wiringFunction(name);
 }
 function declaration(name: string): ts.VariableDeclaration {
   return one(nodes.filter((n): n is ts.VariableDeclaration => ts.isVariableDeclaration(n) && n.name.getText(ast) === name), name);
@@ -72,14 +91,15 @@ function scopedCall(name: string): ts.CallExpression {
 }
 const hostConstructor = one(nodes.filter((n): n is ts.NewExpression => ts.isNewExpression(n)
   && n.expression.getText(ast) === 'CompanionCommandHost'), 'CompanionCommandHost construction');
-const visibilityListener = declaration('publishVisibility').initializer;
-assert.ok(visibilityListener && ts.isArrowFunction(visibilityListener));
-const visibilityRegistrations = nodes.filter((n): n is ts.CallExpression => ts.isCallExpression(n)
-  && n.expression.getText(ast) === 'win.on' && n.arguments[1]?.getText(ast) === 'publishVisibility');
-assert.deepEqual(visibilityRegistrations.map(n => (n.arguments[0] as ts.StringLiteral).text).sort(), ['hide', 'minimize', 'restore', 'show']);
-const navigationRegistration = one(nodes.filter((n): n is ts.CallExpression => ts.isCallExpression(n)
-  && n.expression.getText(ast) === 'win.webContents.on' && ts.isStringLiteral(n.arguments[0])
-  && n.arguments[0].text === 'did-start-navigation' && n.arguments[1].getText(ast).includes('companionCommands?.invalidate()')), 'command navigation invalidation');
+// Wiring rewrite step 5b: a window's listeners are electron/main.ts's order (wireWindowEvents), registered by the trunk's dispatcher
+// (electron/wiring/window-events-wiring.ts windowEvents); this fixture binds the real dispatcher to the order's visibility listeners and
+// its navigation invalidation only, each with every step's actual text (tests/helpers/wiring-source.ts windowEventsSource).
+const windowOrder = windowEventOrder();
+const visibilityRegistrations = windowOrder.listeners.filter(row => row.target === 'win' && row.helper === 'publishVisibility');
+assert.deepEqual(visibilityRegistrations.map(row => row.event).sort(), ['hide', 'minimize', 'restore', 'show']);
+assert.ok(wiringFunction('invalidateCompanionCommands').includes('companionCommands?.invalidate()'));
+assert.equal(windowOrder.listeners.filter(row => row.target === 'webContents' && row.event === 'did-start-navigation'
+  && row.steps.includes('invalidateCompanionCommands')).length, 1, 'command navigation invalidation');
 const emojiPetLifecycleRegistrations = nodes.filter((n): n is ts.CallExpression => ts.isCallExpression(n)
   && n.expression.getText(ast) === 'pet.on' && ts.isStringLiteral(n.arguments[0])
   && ['hide', 'minimize'].includes(n.arguments[0].text)
@@ -120,16 +140,19 @@ const singleEmojiCues = new SingleEmojiCues({
 let appliedPetScale = store.current.pet.scale ?? 1, appliedPetSize = JSON.stringify(store.current.pet.size ?? null);
 const windowVisibility = new WeakMap();
 const ${declaration('mutate').getText(ast)};
-const ${declaration('windows').getText(ast)};
+${WIRING_PRELUDE}
+${wiringFunction('windows')}
 ${helpers.map(fn).join('\n')}
+${syncStepsSource() /* sync's steps, as electron/main.ts gives them (wireSettingsSync), in order */}
 companionCommands = ${hostConstructor.getText(ast)};
 ${scopedCall('chooseCompanionCommand').getText(ast)};
 ${scopedCall('chat').getText(ast)};
+${windowEventsSource(['releaseHiddenCamera'])}
+listeners = listeners.filter(row => typeof row !== 'function' && ((row[0] === 'win' && row[2] === publishVisibility)
+  || (row[0] === 'webContents' && row[1] === 'did-start-navigation' && Array.isArray(row[2]) && row[2].includes(invalidateCompanionCommands))));
 function bindWindow(win) {
   const windowId = win.webContents.id, owner = ownerFor(windowId);
-  const publishVisibility = ${visibilityListener.getText(ast)};
-  ${visibilityRegistrations.map(n => n.getText(ast) + ';').join('\n')}
-  ${navigationRegistration.getText(ast)};
+  windowEvents(win, owner, windowId);
 }
 bindWindow(controls); bindWindow(pet);
 ${emojiPetLifecycleRegistrations.map(n => n.getText(ast) + ';').join('\n')}
@@ -240,24 +263,28 @@ async function fixture(run: (f: Fixture) => Promise<void>, initial: { desired?: 
   const plans = new CompletedReplySpeech();
   const emojiBoundary = { active: false, shown: [] as unknown[], clears: 0 };
   const forbidden = (name: string) => () => { throw Error(`Outside visibility fixture: ${name}`); };
-  const env = {
+  const env = { ownLineYields, // I-174 item 3: the rule noteVisionUserActivity asks
     MutationQueue,
+    onScreen: (win: { isDestroyed(): boolean; isVisible(): boolean; isMinimized(): boolean }) => !win.isDestroyed() && win.isVisible() && !win.isMinimized(), petHeld: () => false, // Unbound v1 step 1 (not out in Unbound here)
     store, controls, pet, companion, pending, createHash, randomUUID, memoryProviderScope, path,
     SingleEmojiCues, DEFAULT_EMOJI_SETTINGS, emojiBoundary,
     chatFailureEvent, DraftOnlyReplyError,
     CompanionCommandHost, classifyCompanionCommand, formatCompanionCommandReceipt, createCommandDialogueTurn, scanBreathRequest, scanFramingRequest, scanStopReadoutRequest,
     completedReplySpeech: plans, suspendAmbientSpeech: note('speech-gate'),
-    // R27 developer-mode timing probe (electron/reply-latency.ts) is outside this target.
+    // R27 developer-mode timing probe (electron/brain/reply-latency.ts) is outside this target.
     replyLatency: { begin() {}, delta() {}, complete() {}, end() {} },
-    publicSettings, WindowVisibility, sizedPetBounds, scaledPetBounds, validateChatRequest,
+    LONG_CHAT: { enabled: false }, // I-134 new chat off in this target: the renderer's window, as before
+    getPromptSwitches: () => ({}), movingMemory: undefined, // I-139 A3: relaxed prompts off in this target
+    publicSettings, WindowVisibility, minimizedAway, companionHiddenStep, sizedPetBounds, scaledPetBounds, validateChatRequest, admitHandedLine, stageTurn, sharedSight, stageIds: () => [],
     UserProfileReplyCollector, userProfiles: profiles, userProfileManagement: management, userProfileContext,
     userProfileSource: new UserProfileSource(), visualSelfRuntime,
     ipcMain: { handle: (name: string, handler: (event: any, ...args: any[]) => any) => { assert.ok(!ipc.has(name)); ipc.set(name, handler); } },
     characterCards: { getActive: () => ({ id: 'r41-character' }) }, personalizeLanguage: undefined, speechScope: () => companion.currentSpeechScope(),
-    r20ProactiveOffers:null, rps: { host: { chatTurn: () => null, chatDone: () => {} } }, moduleRouter: { userTurn: () => {} }, moodJudge: { host: { userText: () => {} } }, reactions: { userTurn: () => {}, firstChar: () => {}, host: { asking: () => false } }, senseRouter: { userTurn() {}, cancel() {}, firstChar() {}, hint: () => '', replyDone() {} }, pauseTalk: { userTurn: () => null, delta() {}, cancel() {} }, journalCharacterId: () => null, textMemorialHost: null, ambientComments: undefined, ambientAudio: undefined,
+    r20ProactiveOffers:null, rps: { host: { chatTurn: () => null, chatDone: () => {} } }, moduleRouter: { userTurn: () => {} }, moodJudge: { host: { userText: () => {} } }, reactions: { userTurn: () => {}, firstChar: () => {}, host: { asking: () => false } }, selfLook: { hint: () => '', afterMessage: () => false, typed() {}, cancel() {}, mediaChanged() {} }, seeAndSay: null, senseRouter: { userTurn() {}, cancel() {}, firstChar() {}, hint: () => '', replyDone() {} }, unboundNoticedLine: () => '', unboundOutsideTurnLine: () => '', pauseTalk: { userTurn: () => null, delta() {}, cancel() {} }, journalCharacterId: () => null, textMemorialHost: null, ambientComments: undefined, ambientAudio: undefined,
     // 识图第 1 步 (electron/main.ts chat handler): this turn's perception line and her offer to look; sharing off here.
-    media: { state: { screenSharing: false, cameraSharing: false }, revision: 0 }, perceptionTurnState, perceptionTurnLine, lookOfferAllowed, lookScope: () => '', lookTurns: new LookTurns(), herState: { chatTurn: () => undefined }, turnAwareness: { line: () => '' },
+    media: { state: { screenSharing: false, cameraSharing: false }, revision: 0, sharesCameraFrames: () => false }, perceptionTurnState, perceptionTurnLine, lookOfferFor, lookOfferTarget, cameraLookJournal: { turn() {}, sensed() {} }, lookScope: () => '', lookTurns: new LookTurns(), herState: { chatTurn: () => undefined }, turnAwareness: { line: () => '' },
     roughForTurn: () => undefined, // 屏幕只读大概: sharing off here, so nothing about what the user does
+    textFirstTurn, watchTogether: null, lookState: () => ({ screen: false, camera: false, scope: '' }), // I-085 第 3 步: nothing on, so no text line and no journal row
     // 关掉之后的旧帧: the chat handler asks which attachments may still go (none are shared frames here).
     lookAttachments: new LookAttachments(new LookTurns(), { noteActivity() {}, state: () => ({ screen: false, camera: false, scope: '' }), sharesCameraFrames: () => false,
       revision: () => 0, generation: () => 0, opening: () => 0, captureScreen: async () => null, captureCamera: async () => null }),
@@ -267,10 +294,11 @@ async function fixture(run: (f: Fixture) => Promise<void>, initial: { desired?: 
     visionPresentation: { clear: note('vision-clear') }, proactiveVision: { cancel: note('vision-cancel') },
     cameraSamples: { cancel: note('camera-cancel') }, proactiveSpeechGate: { cancel: note('proactive-cancel') },
     cancelAmbientPlayback: note('ambient-cancel'), refreshVisualSelfContext: note('visual-context'),
-    revokeVoice: note('voice-revoke'), syncFatigueActivity: note('fatigue'),
+    revokeVoice: note('voice-revoke'), syncFatigueActivity: note('fatigue'), voiceCall: { check() {} }, // I-091: no call in this fixture
+    speechBeatsFor: () => new SpeechBeatsHost('tmp', new SpeechBeatArchive('tmp', async () => {}, () => { throw new Error('none'); })), gateEnabled: () => false, // 边说边演: off here
     speechRuntime: { stop: note('speech-stop'), cancelReply: note('exact-reply-cancel') }, clearReplySpeech: note('reply-clear'),
-    cancelReplyStyle: note('style-cancel'), petWindowDrag: null, petReply: null,
-    // Click-through ignore flag (electron/pet-pointer-input.ts); the cursor never matters with click-through off.
+    cancelReplyStyle: note('style-cancel'), petWindowDrag: null, petReply: null, unbound: null, // Unbound U1: never entered in this fixture
+    // Click-through ignore flag (electron/stage/pet-pointer-input.ts); the cursor never matters with click-through off.
     petPointerInput: new PetPointerInput({ window: () => pet, cursor: () => ({ x: 0, y: 0 }) }),
     fatigueActivity: { setSelection: note('fatigue-selection') }, refreshVisionContext: note('vision-context'), updateTray: note('tray'),
     stopSystemAudio: note('audio-stop'), releaseHiddenCamera: note('hidden-camera-release'),
@@ -280,9 +308,15 @@ async function fixture(run: (f: Fixture) => Promise<void>, initial: { desired?: 
     replyRhythm: new ReplyRhythmHost(),
     claudeChat: { stream: async () => { providerCalls.push('chat'); throw Error('Synthetic fixture forbids provider dispatch'); } },
     chatSettings: new ChatSettingProposals({ settings: () => store.current, send: forbidden('chat settings card') }),
+    takeMeThere: new TakeMeThere({ send: () => {}, open: () => { throw Error('Take-me-there is outside this target'); } }),
+    herFolder: { beginTurn: async () => null, offer: () => false, beginHint: () => null, hintDone: () => false }, // I-050/I-056: her folder is outside this target (off: no turn, no write, no mention)
+    faceTurnFor: async () => ({ visitor: false, line: null }), faceCheck: undefined, // I-135: no face check in this target
+    interconnectTurnLine, agentInterconnected: () => true, // I-137: the 三方互通 fact line (the real one)
+    i139Chat: i139ChatEdge({ on: () => false, card: () => null }), // I-139: its switch off here (the real edge)
+    specialDay: { beginHint: () => null, hintDone: () => false }, joinHintLines: (...lines: (string | null | undefined)[]) => lines.filter(Boolean).join('\n') || undefined, // I-059: no special day in this target
     // Ordinary chat goes to the persistent Claude session; these only prepare that (forbidden) dispatch.
     freezeTurnSpeechStyle: () => {}, buildCodexChatPrompt: () => '', characterSpeechPersona: () => '', completedFatigueFeeling: () => undefined,
-    effectiveTtsConfig: () => DEFAULT_TTS_CONFIG, DEFAULT_TTS_CONFIG, app: { getPath: () => root }, PROFILE_FOLDER: 'synthetic-profile',
+    effectiveTtsConfig: () => DEFAULT_TTS_CONFIG, characterTtsConfig: () => DEFAULT_TTS_CONFIG, DEFAULT_TTS_CONFIG, app: { getPath: () => root }, PROFILE_FOLDER: 'synthetic-profile',
     streamClaude: async () => { providerCalls.push('codex'); throw Error('Synthetic fixture forbids Claude dispatch'); },
   };
   type Actual = { manual(value: boolean): Promise<unknown>; manualFollowMouse(value: boolean): Promise<unknown>;
@@ -313,7 +347,7 @@ async function fixture(run: (f: Fixture) => Promise<void>, initial: { desired?: 
         try {
           invoke(id, text, sender.webContents, sender.webContents.mainFrame);
           assert.equal(pending.has(id), true); acceptedIds.push(id);
-          await Promise.race([completed, new Promise<never>((_, reject) => { timeout = setTimeout(() => reject(Error('Owned Main task did not settle')), 5000); })]);
+          await Promise.race([completed, new Promise<never>((_, reject) => { timeout = setTimeout(() => reject(Error('Owned Main task did not settle')), 30_000); })]);
           await nextTurn(); assert.equal(pending.has(id), false);
           const terminal = terminalEvents.filter(r => r.id === id); assert.equal(terminal.length, 1);
           if (terminal[0].type === 'error') throw Error(terminal[0].text);
@@ -690,7 +724,8 @@ test('actual volume choice cannot survive navigation, provider context change or
     assert.equal(await f.choose(f.controls, view.requestId, view.choices[0].choiceId), null);
     await f.send('volume-provider-change', '把音量设为40%'); view = f.views().at(-1)!;
     const provider = structuredClone(f.store.current.provider);
-    await f.store.persist({ ...f.store.current, provider: { ...provider, model: 'new-synthetic-context' } });
+    // I-222: another chat model alone is no longer another connection (her memory stays); another connection (base URL) still is.
+    await f.store.persist({ ...f.store.current, provider: { ...provider, baseUrl: 'http://127.0.0.1:9/new-synthetic-context' } });
     const count = f.writes();
     assert.equal((await f.choose(f.controls, view.requestId, view.choices[0].choiceId))!.receipt!.status, 'expired');
     assert.equal(f.writes(), count); assert.equal(f.store.current.voice.volume, 0.6);

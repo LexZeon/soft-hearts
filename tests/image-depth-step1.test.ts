@@ -8,14 +8,14 @@ import path from 'node:path';
 import {
   PERCEPTION_RULE, SCREEN_LOOK_LINE, SENSING_OFF_LINE, SHARING_LINE,
   lookOfferAllowed, perceptionTurnLine, perceptionTurnState, type PerceptionTurn,
-} from '../shared/perception-rule';
-import { CLAUDE_SESSION_SYSTEM_PROMPT, composeSessionPrompt } from '../electron/claude-session-prompt';
-import { CLAUDE_CHAT_SYSTEM_PROMPT } from '../electron/claude';
-import { CompanionService } from '../electron/companion';
-import { ScreenSnapshots } from '../electron/screen-snapshots';
-import { acceptVisionOptionsPatch, RETIRED_AUTO_CAPTURE } from '../shared/vision-runtime';
-import { LOOK_BUTTON_MESSAGE, LookButton, lookButtonContent } from '../src/ui/LookButton';
-import type { ProviderConfig } from '../shared/contracts';
+} from '../shared/brain/perception-rule';
+import { CLAUDE_SESSION_SYSTEM_PROMPT, composeSessionPrompt } from '../electron/brain/claude-session-prompt';
+import { CLAUDE_CHAT_SYSTEM_PROMPT } from '../electron/brain/claude';
+import { CompanionService } from '../electron/brain/companion';
+import { ScreenSnapshots } from '../electron/senses/screen-snapshots';
+import { acceptVisionOptionsPatch, RETIRED_AUTO_CAPTURE } from '../shared/senses/vision-runtime';
+import { LOOK_BUTTON_MESSAGE, LookButton, lookButtonContent } from '../src/senses/LookButton';
+import type { ProviderConfig } from '../shared/foundation/settings';
 
 const turn = (patch: Partial<PerceptionTurn> = {}): PerceptionTurn => ({ screen: false, camera: 'off', attached: { screen: false, camera: false }, asked: null, ...patch });
 
@@ -40,7 +40,7 @@ test('感知那一行跟实际状态走：都关着、开着共享没细看、�
   assert.match(local, /摄像头只在用户电脑上识别，你看不到画面/u);
   assert.match(local, /你看不到用户的屏幕/u);
   assert.match(perceptionTurnLine(turn({ screen: true, camera: 'local' })), /用户开着屏幕共享.*摄像头只在用户电脑上识别/u);
-  assert.match(perceptionTurnLine(turn({ camera: 'frames' })), /摄像头开着，但这一轮你没看画面/u);
+  assert.match(perceptionTurnLine(turn({ camera: 'frames' })), /摄像头开着，这一轮没有用户的画面/u);
 
   assert.match(perceptionTurnLine(turn({ asked: 'screen' })), /用户叫你看屏幕，但屏幕共享没开，你看不到画面/u);
   assert.match(perceptionTurnLine(turn({ asked: 'either' })), /屏幕共享没开/u);

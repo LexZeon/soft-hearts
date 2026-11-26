@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CompanionService, type CompanionTurn } from '../electron/companion';
-import { composeSpeechConfig, ReplySpeechStyles, selectSpeechEmotion, SPEECH_EMOTION_INSTRUCTIONS, type SpeechMood } from '../electron/speech-emotion';
-import { SpeechRuntime } from '../electron/speech-runtime';
-import { synthesizeBailianSpeech, ttsInstruction } from '../electron/tts';
-import { DEFAULT_TTS_CONFIG, type SpeechWireEvent, type TtsConfig } from '../shared/tts';
+import { CompanionService, type CompanionTurn } from '../electron/brain/companion';
+import { composeSpeechConfig, ReplySpeechStyles, selectSpeechEmotion, SPEECH_EMOTION_INSTRUCTIONS, type SpeechMood } from '../electron/mood/speech-emotion';
+import { SpeechRuntime } from '../electron/voice/speech-runtime';
+import { synthesizeBailianSpeech, ttsInstruction } from '../electron/voice/tts';
+import { DEFAULT_TTS_CONFIG, type SpeechWireEvent, type TtsConfig } from '../shared/voice/tts';
 
 const calm: SpeechMood = { context: 'neutral', primary: 'calm', gesture: 'none' };
 const happy: SpeechMood = { context: 'positive', primary: 'happy', gesture: 'upbeat' };

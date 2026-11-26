@@ -10,15 +10,15 @@ import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
 import { mkdtemp, rm } from 'node:fs/promises';
-import { MoodHost } from '../electron/mood';
-import { createReactionPerformers } from '../electron/reactions/performers';
-import { createReactions, type ReactionMoodPort } from '../electron/reactions/wiring';
+import { MoodHost } from '../electron/mood/mood';
+import { createReactionPerformers } from '../electron/mood/reactions/performers';
+import { createReactions, type ReactionMoodPort } from '../electron/mood/reactions/wiring';
 import { REACTION_KNOBS } from '../shared/behaviors/reactions/knobs';
 import { REACTION_TABLE } from '../shared/behaviors/reactions/knobs';
 import { readReactionStageCue, readReactionStageReply, type ReactionStageCue } from '../shared/behaviors/reactions/stage';
 import { FakeReactionJudge } from '../shared/behaviors/reactions/fake';
-import { DEFAULT_MOOD_PARAMETERS, getBlushAmount, type MoodValues } from '../shared/mood';
-import type { MoodView } from '../shared/mood-runtime';
+import { DEFAULT_MOOD_PARAMETERS, getBlushAmount, type MoodValues } from '../shared/foundation/mood';
+import type { MoodView } from '../shared/mood/mood-runtime';
 import { FixedBlush } from '../shared/behaviors/blush/fake';
 
 const HEROINE = 'gene';
@@ -64,7 +64,7 @@ test('wiring: the pet window\'s desk:reactionResult reaches the shy performer; o
   assert.deepEqual(await play(cue => reply(12, { id: cue.id, result: 'busy' })), { done: false, why: 'busy' }, 'the stage was busy: not done');
   assert.deepEqual(await play(cue => reply(12, { id: cue.id, result: 'unsupported' })), { done: false, why: 'model' });
   assert.deepEqual(await play(cue => reply(12, { id: cue.id, result: 'played' })), { done: true });
-  // Not the pet window, a bad word, an unknown id: ignored, and the performer then reports that nothing came back.
+  // Not the companion window, a bad word, an unknown id: ignored, and the performer then reports that nothing came back.
   assert.deepEqual(await play(cue => reply(11, { id: cue.id, result: 'played' })), { done: false, why: 'failed' });
   assert.deepEqual(await play(cue => reply(12, { id: cue.id, result: 'no-answer' })), { done: false, why: 'failed' });
   assert.equal(await reply(12, { id: 'nobody', result: 'played' }), false);

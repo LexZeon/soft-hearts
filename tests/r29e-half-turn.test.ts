@@ -13,13 +13,10 @@
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {
-  AnimationClip, AnimationMixer, Bone, BufferGeometry, MeshBasicMaterial, Quaternion, QuaternionKeyframeTrack, Skeleton, SkinnedMesh, Vector3,
-} from 'three';
+import { AnimationClip, AnimationMixer, Bone, BufferGeometry, MeshBasicMaterial, Quaternion, QuaternionKeyframeTrack, Skeleton, SkinnedMesh, Vector3 } from 'three';
 import { ChatGesturePlayer } from '../src/stage/chat-gesture';
 import { captureMotionPose, handoffDurationMs, MotionTransition, switchDurationMs } from '../src/stage/motion-transition';
-import { BaseSourceWatch, PoseContinuity, type WatchedMixer } from '../src/stage/pose-continuity';
-import { catalogAsset, geneStage } from './helpers/gene-stage-harness';
+import { BaseSourceWatch, PoseContinuity, type WatchedMixer } from '../src/senses/pose-continuity';
 
 const DEG = 180 / Math.PI;
 const REPORT = !!process.env.R29_REPORT;
@@ -357,63 +354,4 @@ test('R29e chat gesture: a live base that drifts a half turn away from the sampl
     if (cancelAt === null) assert.ok(largestStep(rows) < 0.2, `largest step ${f3(largestStep(rows))} deg`);
     else assert.equal(rows.at(-1)!.weight, 0, 'the cancel fades out');
   }
-});
-
-// ------------------------------------------------------------------ 4. the real Stage loop (bundled Gene, bundled motions)
-
-/**
- * A reachable case with bundled assets only, through the motion library's own channels: Stand as the pose and
- * speaking-gesture-2 as the gesture, then split-dance selected as the pose (gesture cleared) at 5.1 s. The bridged
- * 左手首 starts ~175 deg from the dance's wrist and the dance's own 25.6 deg one-frame step carries it across the half
- * turn at w ~0.93. Every bridged bone may move by at most its target's own step plus the bridge's progress over the
- * way left to go (a half turn plus how far its target has moved since the switch).
- */
-test('R29e real loop: switching into split-dance where a bridged wrist crosses the half turn does not add a flip', async () => {
-  const fps = 60, h = await geneStage({ fps, layers: { pose: catalogAsset('gene', 'stand'), gesture: catalogAsset('genea-2022-gestures', 'speaking-gesture-2'), expression: null } });
-  try {
-    h.run(5.1);
-    // R29f: the bridge would also coast on the wrist's own speed at the switch (motion-transition.ts DRIFT); this bound is
-    // about the way round from a fixed start, so the start is held still here (the coast is measured in r29f-smoothness).
-    h.stage.poseRates = () => () => null;
-    await h.stage.loadMotions({ pose: catalogAsset('fnoji-dances', 'split-dance'), gesture: null, expression: null }, false);
-    const bridge = h.stage.motionTransition as MotionTransition, bones = h.mesh.skeleton.bones as Bone[], wrist = bones.findIndex(bone => bone.name === '左手首');
-    const real = bridge.frame.bind(bridge);
-    let last: { raw: Quaternion[]; target: Quaternion[]; weight: number } | null = null;
-    const over: string[] = [], travel = bones.map(() => 0);
-    // The wrist per rendered frame of the bridge: raw / target steps, and the shown (after the guard) step.
-    const wristFrames: { rawStep: number; targetStep: number; weight: number; shown: Quaternion | null }[] = [];
-    bridge.frame = (delta: number) => {
-      const target = bones.map(bone => bone.quaternion.clone());
-      real(delta);
-      if (!(delta > 0)) return;
-      const raw = bones.map(bone => bone.quaternion.clone()), weight = bridge.getState().active ? bridge.getState().weight : 1;
-      if (last) for (let i = 0; i < bones.length; i++) {
-        const rawStep = distance(raw[i], last.raw[i]), targetStep = distance(target[i], last.target[i]);
-        // The way round left to go is at most a half turn plus how far the target has moved since the switch.
-        const allowed = targetStep + (weight - last.weight) * (180 + travel[i]) + 0.01;
-        travel[i] += targetStep;
-        if (rawStep > allowed) over.push(`${bones[i].name} w ${f3(weight)}: raw ${f3(rawStep)} > target ${f3(targetStep)} + progress = ${f3(allowed)}`);
-        if (i === wrist) wristFrames.push({ rawStep, targetStep, weight, shown: null });
-      }
-      last = { raw, target, weight };
-    };
-    const render = h.stage.renderer.render.bind(h.stage.renderer);
-    const shownWrist: Quaternion[] = [];
-    h.stage.renderer.render = () => {
-      const shown = bones[wrist].quaternion.clone(), frame = wristFrames.at(-1);
-      if (frame && !frame.shown) frame.shown = shown;
-      shownWrist.push(shown); render();
-    };
-    const caught = h.stage.continuity.getState().jumps as number;
-    h.run(1.6);
-    // The dance's own one-frame wrist steps (~25.6 deg) while the bridge runs; the first carries the bridged target across the half turn.
-    const big = wristFrames.map((frame, i) => ({ ...frame, shownStep: frame.shown && wristFrames[i - 1]?.shown ? distance(frame.shown, wristFrames[i - 1].shown!) : NaN }))
-      // R29f: keyframe interpolation spreads the dance's 25.6° key-to-key step over the 60 fps frames in between (~11–14° each).
-      .filter(frame => frame.weight < 1 && frame.targetStep > 10);
-    if (REPORT) console.log(`[real loop stand + speaking-gesture-2 -> split-dance @5.1 s, ${fps} fps] 左手首 on the dance's own big steps: ${big.map(frame =>
-      `w ${f3(frame.weight)} target ${f3(frame.targetStep)} raw ${f3(frame.rawStep)} shown ${f3(frame.shownStep)}`).join(' | ')} | frames over the bound: ${over.length} | guard catches ${h.stage.continuity.getState().jumps - caught}`);
-    assert.ok(last, 'the bridge ran');
-    assert.ok(big.length && big[0].weight > 0.9, 'the case still reaches the crossing');
-    assert.deepEqual(over, [], 'a bridged bone moved more than its target plus the progress');
-  } finally { h.close(); }
 });

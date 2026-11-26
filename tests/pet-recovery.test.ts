@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { petRecovery } from "../electron/pet-view";
-import { DEFAULT_SETTINGS } from "../shared/defaults";
+import { petRecovery } from "../electron/stage/pet-view";
+import { DEFAULT_SETTINGS } from "../shared/foundation/defaults";
 
 test("pet recovery resets presentation while preserving assets, accounts, voice and agent state", () => {
   const current = structuredClone(DEFAULT_SETTINGS);

@@ -1,0 +1,25 @@
+/** 体验记录: the fixed words of I-188's moment lines (shared/initiative/journal-entries.ts 'moment'). Authored copy only. */
+import { ENGLISH_JOURNAL_WALK_UI_COPY } from './ui-copy.journal-walk.en'; // I-193 (the walk rows)
+export const ENGLISH_JOURNAL_MOMENTS_UI_COPY: Readonly<Record<string, string>> = {
+  ...ENGLISH_JOURNAL_WALK_UI_COPY,
+  '她认出的时刻：深夜你还在用电脑': 'A moment she noticed: you are still at the computer late at night',
+  '她认出的时刻：一起看时屏幕上出了事': 'A moment she noticed: something happened on the screen while watching together',
+  '她认出的时刻：你请她提醒的事': 'A moment she noticed: something you asked her to remind you of',
+  '她认出的时刻：你从全屏程序里出来': 'A moment she noticed: you came out of a full-screen program',
+  '她认出的时刻：今天第一次见': 'A moment she noticed: the first time you meet today',
+  '她认出的时刻：你离开座位又回来': 'A moment she noticed: you came back to your seat',
+  '她认出的时刻：她困得快睡着、你还在': 'A moment she noticed: she is nearly asleep and you are still here',
+  '她认出的时刻：你瘫坐或离屏幕很近很久了': 'A moment she noticed: you have been slumped or very close to the screen for a long time',
+  '她认出的时刻：你盯着屏幕很久没怎么动': 'A moment she noticed: you have stared at the screen for a long time, barely moving',
+  '她认出的时刻：你盯了很久之后把视线移开了': 'A moment she noticed: you looked away after staring for a long time',
+  '她认出的时刻：你连续坐了很久没起身': 'A moment she noticed: you have been sitting a long time without getting up',
+  '她认出的时刻：她给自己留的心': 'A moment she noticed: a note she left for herself',
+  '她认出的时刻：她回复里的亲抱被打断了': 'A moment she noticed: a kiss or hug in her reply was interrupted',
+  '认出来了': 'noticed', '要了一次开口机会': 'asked for a chance to speak', '她说了一句': 'she said something', '这次没说': 'nothing said this time',
+  '没告诉她': 'not passed to her', '没等到机会': 'no chance came', '记下了': 'noted', '取消了': 'cancelled',
+  '你在打字': 'you were typing', '你在通话': 'you were on a call', '你不在': 'you were away', '她睡着了': 'she was asleep', '开关关着或换了角色': 'a switch was off or the character changed',
+  '她没露面': 'she was not on screen', '刚说过不久': 'too soon after the last one', '说话次数或间隔不够': 'speech limit or spacing', '这会儿接不了': 'could not take it right then',
+  '互动余额不够': 'interaction balance too low', '她决定不说': 'she chose not to say anything', '过了太久': 'too late', '今天或今晚已经有过': 'already had one today or tonight',
+  '这次没轮到': 'not this time', '你说不用了': 'you said never mind', '安静时段': 'quiet hours',
+  '报错': 'an error', '一直在加载': 'stuck loading', '游戏输了': 'game lost', '游戏赢了': 'game won', '下载完成': 'download finished', '视频放完': 'video ended',
+};

@@ -74,6 +74,13 @@ createInterface({ input: process.stdin }).on('line', line => {
     send({ type: 'result', subtype: 'error_during_execution', is_error: true, session_id: session, result: 'API Error: 429 rate limit reached' });
     return;
   }
+  // I-138: a forked process asked to compact answers with one short line (the real command's output is unverified).
+  if (text.trim() === '/compact') {
+    send({ type: 'stream_event', session_id: session, event: { type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: '（已压缩）' } } });
+    send({ type: 'assistant', session_id: session, message: { id: `m${turn}`, content: [{ type: 'text', text: '（已压缩）' }] } });
+    send({ type: 'result', subtype: 'success', is_error: false, session_id: session, total_cost_usd: 0, duration_api_ms: 1, usage: { input_tokens: 10, output_tokens: 5, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 } });
+    return;
+  }
   const parts = reply(text);
   for (const part of parts) send({ type: 'stream_event', session_id: session, event: { type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: part } } });
   send({ type: 'assistant', session_id: session, message: { id: `m${turn}`, content: [{ type: 'text', text: parts.join('') }] } });

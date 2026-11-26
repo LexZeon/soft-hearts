@@ -1,8 +1,8 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';
 import {mkdtemp,readFile,rm} from 'node:fs/promises';import path from 'node:path';import os from 'node:os';
-import {BODY_TWEAK_TARGET,BODY_VISUAL_PURPOSE,parseBodyVisualStudy} from '../shared/personalize-body';
-import {bodyPoseBinding} from '../shared/personalize-body-bindings';import {PersonalizeBodyAuthoring} from '../electron/personalize-body-authoring';
-import {PersonalizeBodyStore} from '../electron/personalize-body-store';import type {SelectedVisualImage} from '../electron/selected-visual-image';
+import {BODY_TWEAK_TARGET,BODY_VISUAL_PURPOSE,parseBodyVisualStudy} from '../shared/stage/personalize-body';
+import {bodyPoseBinding} from '../shared/stage/personalize-body-bindings';import {PersonalizeBodyAuthoring} from '../electron/stage/personalize-body-authoring';
+import {PersonalizeBodyStore} from '../electron/stage/personalize-body-store';import type {SelectedVisualImage} from '../electron/senses/selected-visual-image';
 const core={observations:[{region:'left-arm',visibility:'visible',description:'可见'}],inferences:[],questions:[],insufficient:'深度未知'};
 const joint=(offsetDegrees:number|null,sufficiency='sufficient')=>({offsetDegrees,sufficiency});
 const advice={subjectLeft:'unambiguous',shoulder:joint(5),upperArm:joint(null,'uncertain'),elbow:joint(-3),reason:'近似',unknowns:'深度未知'};

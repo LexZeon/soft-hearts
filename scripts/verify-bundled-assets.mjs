@@ -6,8 +6,8 @@ import { fileURLToPath } from "node:url";
 import { verifyPhysicsRuntime } from './verify-physics-runtime.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const catalog = JSON.parse(await readFile(path.join(root, "shared/motion-catalog.json"), "utf8"));
-const manifest = JSON.parse(await readFile(path.join(root, "shared/bundled-assets.json"), "utf8"));
+const catalog = JSON.parse(await readFile(path.join(root, "shared/actions/motion-catalog.json"), "utf8"));
+const manifest = JSON.parse(await readFile(path.join(root, "shared/actions/bundled-assets.json"), "utf8"));
 assert.equal(catalog.schemaVersion, 1);
 assert.ok(catalog.packs.length >= 1 && catalog.packs.length <= 6);
 const pack = catalog.packs.find(entry => entry.id === "gene");
@@ -93,6 +93,61 @@ for (const extra of catalog.packs.filter(entry => entry.id !== "gene" && !Object
   assert.equal(provenance.license.id, "CC-BY-4.0");
   additionalCount += extra.motions.length;
 }
+// I-099: the Silero voice activity model for calls (MIT), byte-for-byte the official file at a pinned tag (shared/voice/silero-vad.json).
+const silero = JSON.parse(await readFile(path.join(root, "shared/voice/silero-vad.json"), "utf8"));
+assert.equal(silero.license.id, "MIT");
+for (const file of [silero.model, silero.licenseFile]) {
+  const body = await readFile(path.join(bundledRoot, ...file.relativePath.split("/")));
+  assert.equal(body.length, file.bytes, `${file.relativePath} size`);
+  assert.equal(createHash("sha256").update(body).digest("hex"), file.sha256, `${file.relativePath} SHA-256`);
+  permitted.add(file.relativePath);
+}
+assert.ok((await readFile(path.join(bundledRoot, ...silero.licenseFile.relativePath.split("/")), "utf8")).includes(silero.license.attribution));
+// I-099/I-100: Smart Turn v3.2 for calls (BSD-2-Clause), byte-for-byte the official CPU ONNX at a pinned revision (shared/voice/smart-turn.json).
+const smartTurn = JSON.parse(await readFile(path.join(root, "shared/voice/smart-turn.json"), "utf8"));
+assert.equal(smartTurn.license.id, "BSD-2-Clause");
+for (const file of [smartTurn.model, smartTurn.licenseFile]) {
+  const body = await readFile(path.join(bundledRoot, ...file.relativePath.split("/")));
+  assert.equal(body.length, file.bytes, `${file.relativePath} size`);
+  assert.equal(createHash("sha256").update(body).digest("hex"), file.sha256, `${file.relativePath} SHA-256`);
+  permitted.add(file.relativePath);
+}
+assert.ok((await readFile(path.join(bundledRoot, ...smartTurn.licenseFile.relativePath.split("/")), "utf8")).includes(smartTurn.license.attribution));
+// Unbound's idle model: weights and quick moves trained on StayStill (MIT), with the licence and the citation
+// (shared/unbound/idle-model.json; docs/claude/2026-11-14-staystill-idle.md). Weights and events only: no raw data, nothing LaFAN1.
+const unboundIdle = JSON.parse(await readFile(path.join(root, "shared/unbound/idle-model.json"), "utf8"));
+assert.equal(unboundIdle.license.id, "MIT");
+for (const file of [unboundIdle.weights, unboundIdle.eventsMeta, unboundIdle.eventsData, unboundIdle.licenseFile, unboundIdle.readme]) {
+  assert.match(file.relativePath, /^unbound\/idle\/[A-Za-z0-9.-]+$/);
+  const body = await readFile(path.join(bundledRoot, ...file.relativePath.split("/")));
+  assert.equal(body.length, file.bytes, `${file.relativePath} size`);
+  assert.equal(createHash("sha256").update(body).digest("hex"), file.sha256, `${file.relativePath} SHA-256`);
+  permitted.add(file.relativePath);
+}
+assert.ok((await readFile(path.join(bundledRoot, ...unboundIdle.licenseFile.relativePath.split("/")), "utf8")).includes(unboundIdle.license.attribution));
+const unboundIdleReadme = await readFile(path.join(bundledRoot, ...unboundIdle.readme.relativePath.split("/")), "utf8");
+for (const cite of ["Atxa Landa", "Rodriguez", "Lazkano", "Kucherenko", "StayStill", "2605.13693", "zenodo.org/records/18741736"]) assert.ok(unboundIdleReadme.includes(cite), `idle README cites ${cite}`);
+assert.ok(!/lafan/i.test(JSON.stringify(JSON.parse(await readFile(path.join(bundledRoot, ...unboundIdle.weights.relativePath.split("/")), "utf8")).source)), "idle weights not from LaFAN1");
+// The preinstalled characters' own models (One, Mumi; 2026-11-25): every file is listed with its size and SHA-256 in
+// shared/cards/bundled-characters.json, and each model folder carries an attribution note naming its author and licence.
+const bundledCharacters = JSON.parse(await readFile(path.join(root, "shared/cards/bundled-characters.json"), "utf8"));
+assert.equal(bundledCharacters.schemaVersion, 1);
+for (const model of bundledCharacters.models) {
+  assert.match(model.key, /^bundled:[a-z0-9-]+$/);
+  const folder = model.key.slice("bundled:".length);
+  assert.ok(model.files.some(file => file.path === model.model), `${model.key} lists its model file`);
+  for (const file of model.files) {
+    assert.match(file.path, /^[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)+$/);
+    assert.ok(file.path.startsWith(`${folder}/`) && !file.path.split("/").includes(".."), `${file.path} stays in its folder`);
+    const body = await readFile(path.join(bundledRoot, ...file.path.split("/")));
+    assert.equal(body.length, file.bytes, `${file.path} size`);
+    assert.equal(createHash("sha256").update(body).digest("hex"), file.sha256, `${file.path} SHA-256`);
+    permitted.add(file.path);
+  }
+  const note = await readFile(path.join(bundledRoot, folder, "attribution.txt"), "utf8");
+  assert.ok(note.trim().length > 40, `${folder}/attribution.txt names the author and the licence`);
+  permitted.add(`${folder}/attribution.txt`);
+}
 async function inspect(directory, prefix = "") {
   for (const name of await readdir(directory)) {
     const relative = prefix ? `${prefix}/${name}` : name;
@@ -112,4 +167,4 @@ assert.ok(attribution.includes(pack.license.attribution));
 assert.ok(attribution.includes(pack.license.url));
 assert.match(attribution, /trademark|design rights/i);
 await verifyPhysicsRuntime();
-console.log(`Bundled assets verified: Gene ${pack.motions.length} motions; ${additionalCount} additional motions with provenance; ${ownedCount} project-owned motions; fixed Ammo runtime.`);
+console.log(`Bundled assets verified: Gene ${pack.motions.length} motions; ${additionalCount} additional motions with provenance; ${ownedCount} project-owned motions; Unbound idle model; fixed Ammo runtime.`);

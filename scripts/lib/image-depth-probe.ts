@@ -19,16 +19,16 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { findClaude } from '../../electron/claude';
-import { claudeSessionSystemPrompt } from '../../electron/claude-session-prompt';
-import { PERCEPTION_RULE } from '../../shared/perception-rule';
-import type { ChatMessage } from '../../shared/contracts';
+import { findClaude } from '../../electron/brain/claude';
+import { claudeSessionSystemPrompt } from '../../electron/brain/claude-session-prompt';
+import { PERCEPTION_RULE } from '../../shared/brain/perception-rule';
+import type { ChatMessage } from '../../shared/foundation/chat';
 import { GENE_DAY_CARD } from '../inner-loop-day-cards';
 import { replay, type TurnRecord } from './prompt-eval-analysis';
 import type { EvalScenario } from './prompt-eval-scenarios';
 import { runEval, type RunOptions } from './prompt-eval-runner';
 import { SHY_CARD } from './draft-leak-probe';
-import { isLookOffer } from '../../shared/look-request';
+import { isLookOffer } from '../../shared/senses/look-request';
 
 const root = path.resolve(import.meta.dirname, '..', '..');
 const DIR = path.join(root, '.local', 'image-depth');
@@ -110,7 +110,7 @@ async function main(): Promise<void> {
   const frame = `data:image/jpeg;base64,${(await readFile(path.join(DIR, 'synthetic-screen-1600.jpg'))).toString('base64')}`;
   const typingMs = dry ? 50 : Number(option('typing-ms', '5000'));
   // The new path's modules are loaded only for the phases that use them (the "before" phase runs on the tree before step 1).
-  const sight = phase === 'before' ? null : await import('../../shared/perception-rule');
+  const sight = phase === 'before' ? null : await import('../../shared/brain/perception-rule');
   const shareLine = (user: string, attached: readonly ('screen' | 'camera')[] = []) => {
     if (!sight || typeof (sight as Record<string, unknown>).perceptionTurnState !== 'function') throw new Error('这一棵树里还没有第 1 步的感知行。');
     const s = sight as unknown as { perceptionTurnLine(input: unknown): string; perceptionTurnState(runtime: unknown, attachments: unknown, text: unknown): unknown };

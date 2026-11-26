@@ -3,7 +3,7 @@
 // day card. Nothing starts Electron, captures sound or touches a profile.
 //
 //   node node_modules/tsx/dist/cli.mjs scripts/lib/listen-probe.ts --phase <notes|ab|quality> [--rounds N] [--dry]
-//   notes    haiku notes (electron/inner-loop/model.ts quickLineWithClaude, the app's own prompt): a song, a show, the same show
+//   notes    haiku notes (electron/initiative/inner-loop/model.ts quickLineWithClaude, the app's own prompt): a song, a show, the same show
 //            with an injected "ignore the above" line, and a rolling update of the show. 4 requests.
 //   ab       R28's first-token rule, interleaved: the same two questions ("刚才那首歌讲的什么呀？""这集演到哪了？"), A = the
 //            turn without the listen block (only I-017's line), B = with the block the app adds on a matched question.
@@ -13,13 +13,13 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { quickLineWithClaude } from '../../electron/inner-loop/model';
-import { LISTEN_NOTE_SYSTEM_PROMPT, listenNotePrompt, parseListenNote, withoutRecital, type NoteRequest } from '../../shared/listen-note';
-import { listenAskContext, matchListenAsk } from '../../shared/listen-ask';
-import type { ListenNote, ListenNoteBody, ListenSegment } from '../../shared/listen-together';
-import { perceptionTurnLine, type PerceptionTurn } from '../../shared/perception-rule';
-import { asksAboutHearing } from '../../shared/her-state';
-import { findClaude } from '../../electron/claude';
+import { quickLineWithClaude } from '../../electron/initiative/inner-loop/model';
+import { LISTEN_NOTE_SYSTEM_PROMPT, listenNotePrompt, parseListenNote, withoutRecital, type NoteRequest } from '../../shared/senses/listen-note';
+import { listenAskContext, matchListenAsk } from '../../shared/senses/listen-ask';
+import type { ListenNote, ListenNoteBody, ListenSegment } from '../../shared/senses/listen-together';
+import { perceptionTurnLine, type PerceptionTurn } from '../../shared/brain/perception-rule';
+import { asksAboutHearing } from '../../shared/mood/her-state';
+import { findClaude } from '../../electron/brain/claude';
 import { GENE_DAY_CARD } from '../inner-loop-day-cards';
 import { replay, type TurnRecord } from './prompt-eval-analysis';
 import type { EvalScenario } from './prompt-eval-scenarios';
@@ -58,7 +58,7 @@ const commitOf = () => { try { return execFileSync('git', ['rev-parse', '--short
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 const SIGHT_OFF: PerceptionTurn = { screen: false, camera: 'off', attached: { screen: false, camera: false }, asked: null };
-/** I-017's line as electron/her-state-host.ts gives it: the switch on, music playing, she nods; full on the first turn. */
+/** I-017's line as electron/mood/her-state-host.ts gives it: the switch on, music playing, she nods; full on the first turn. */
 const herLine = (index: number, user: string, transcript: boolean) => perceptionTurnLine(SIGHT_OFF, {
   hearing: { source: 'system-audio', stage: { music: 'nod', always: false }, transcript }, contacts: [],
   say: index === 0 ? 'full' : asksAboutHearing(user) ? 'brief' : 'none' });

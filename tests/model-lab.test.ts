@@ -17,10 +17,10 @@ import path from 'node:path';
 import test from 'node:test';
 import { Texture, type SkinnedMesh } from 'three';
 import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
-import bundled from '../shared/bundled-assets.json';
-import { buildModelProfile } from '../shared/model-profile';
+import bundled from '../shared/actions/bundled-assets.json';
+import { buildModelProfile } from '../shared/stage/model-profile';
 import { StageModelProfile, modelProfileInput } from '../src/stage/model-profile';
-import { StageMotionRetarget, meshMorphNames, meshRigBones, rigKey } from '../src/stage/motion-retarget';
+import { StageMotionRetarget, meshMorphNames, meshRigBones, rigKey } from '../src/actions/motion-retarget';
 import { analyzeModel, catalogMotionFiles, type LabMotion, type ModelReport } from '../scripts/model-lab/analyze';
 import { loadBundledMotions, runModelLab } from '../scripts/model-lab/cli';
 import {

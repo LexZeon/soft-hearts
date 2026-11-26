@@ -1,5 +1,5 @@
 /**
- * I-037 reactions, the warm haiku (electron/inner-loop/warm-line.ts, docs/claude/2026-11-07-reactions-warm-haiku.md). Never a real
+ * I-037 reactions, the warm haiku (electron/initiative/inner-loop/warm-line.ts, docs/claude/2026-11-07-reactions-warm-haiku.md). Never a real
  * model call: fake processes on a fake clock, and a stand-in Claude Code script (stream-json, no network) for the real-process parts.
  *
  * What it pins: the warm process starts only when wanted, allowed and not busy (never at the moment of a message), is reused across
@@ -18,17 +18,17 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { WarmLine, type WarmLineOptions, type WarmProcess } from '../electron/inner-loop/warm-line';
-import { ClaudeChatProcess, ClaudeTurnError, type ClaudeTurnResult } from '../electron/claude-process';
-import { claudeInput, claudeCallsInFlight } from '../electron/claude';
-import { ReactionHost, type ReactionHostOptions, type ReactionNowSource } from '../electron/reactions/host';
-import { createReactions, type ReactionMoodPort, type ReactionWarmPort } from '../electron/reactions/wiring';
+import { WarmLine, type WarmLineOptions, type WarmProcess } from '../electron/initiative/inner-loop/warm-line';
+import { ClaudeChatProcess, ClaudeTurnError, type ClaudeTurnResult } from '../electron/brain/claude-process';
+import { claudeInput, claudeCallsInFlight } from '../electron/brain/claude';
+import { ReactionHost, type ReactionHostOptions, type ReactionNowSource } from '../electron/mood/reactions/host';
+import { createReactions, type ReactionMoodPort, type ReactionWarmPort } from '../electron/mood/reactions/wiring';
 import { FakeReactionJudge } from '../shared/behaviors/reactions/fake';
 import { REACTION_KNOBS } from '../shared/behaviors/reactions/knobs';
 import type { Dispositions } from '../shared/behaviors/reactions/dispositions';
 import type { ReactionPerformer } from '../shared/behaviors/reactions/interface';
-import { DEFAULT_MOOD_PARAMETERS, type MoodValues } from '../shared/mood';
-import type { MoodView } from '../shared/mood-runtime';
+import { DEFAULT_MOOD_PARAMETERS, type MoodValues } from '../shared/foundation/mood';
+import type { MoodView } from '../shared/mood/mood-runtime';
 
 const SECOND = 1_000;
 /** Invented numbers (no real character's). */
@@ -421,6 +421,9 @@ test('real processes: with a warm haiku her first character does not wait for ha
   // Her reply: another stand-in process whose first character comes 900 ms after the message.
   const chat = await s.startProcess({ binary: process.execPath, binaryArgs: [s.script], model: 'opus', systemPrompt: 'chat' });
   t.after(() => chat.close());
+  // The stand-in only starts counting its 900 ms once the script has booted, and booting node under load takes seconds. One short turn first,
+  // so the process is up and the timings below are the delays and not the boot.
+  await chat.runTurn(claudeInput({ prompt: 'ANSWER=ok', imageDataUrls: [] }), new AbortController().signal, () => {});
   const marks: Record<string, number> = {};
   let haikuCalls = 0;
   const store = { enabled: true, today: () => 0, noteCall: () => 1, chatsToday: () => 0, noteChat: () => 1 };
@@ -458,7 +461,7 @@ test('real processes, knobs.warmParallel off: haiku waits for her first characte
   const host = new ReactionHost({ store, quiet: () => null, lift: () => {}, warm: () => line.ready, knobs: { warmParallel: false },
     now: () => ({ characterId: 'c', dispositions: SIX, mood: 'calm', moodWords: '平静', fatigue: '', sleepy: false, values: null, persona: '' }),
     performers: { blush: performer, shy: performer, happy: performer, action: performer }, journal: () => { marks.reacted ??= performance.now(); },
-    // As electron/reactions/wiring.ts: the warm process whenever it is alive.
+    // As electron/mood/reactions/wiring.ts: the warm process whenever it is alive.
     ask: async (prompt, _system, signal) => { marks.haikuStart = performance.now(); assert.ok(line.alive); return line.ask(prompt, signal); } });
   t.after(() => host.dispose());
   host.userTurn('m1', '你好可爱');

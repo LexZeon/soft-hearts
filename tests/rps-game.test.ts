@@ -1,14 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { RPS_HANDS, RPS_TIMING, rpsBeats, rpsCommit, rpsJudge, rpsLoserAgainst, rpsVerify, rpsWinnerAgainst, readRpsThrow, type RpsHand } from '../shared/rps';
-import { RpsMatch, type RpsMatchOptions } from '../shared/rps-match';
-import { RPS_LIMITS, resolveRpsStyle, type RpsResolvedStyle } from '../shared/rps-personality';
-import { rpsHabits, type RpsGameRecord } from '../shared/rps-memory';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
+import { RPS_HANDS, RPS_TIMING, rpsBeats, rpsCommit, rpsJudge, rpsLoserAgainst, rpsVerify, rpsWinnerAgainst, readRpsThrow, type RpsHand } from '../shared/initiative/rps';
+import { RpsMatch, type RpsMatchOptions } from '../shared/initiative/rps-match';
+import { RPS_LIMITS, resolveRpsStyle, type RpsResolvedStyle } from '../shared/initiative/rps-personality';
+import { rpsHabits, type RpsGameRecord } from '../shared/initiative/rps-memory';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
 import { seeded } from './helpers/seeded';
 const nonces = () => { let n = 0; return () => `nonce${++n}`; };
 const T = RPS_TIMING;
-const style: RpsResolvedStyle = resolveRpsStyle({ soft: 2, tease: 2 }, DEFAULT_MOOD_PARAMETERS);
+const style: RpsResolvedStyle = resolveRpsStyle({ tease: 2 }, DEFAULT_MOOD_PARAMETERS);
 const options = (seed: number, extra: Partial<RpsMatchOptions> = {}): RpsMatchOptions => ({ id: 'match1', origin: 'user', random: seeded(seed), nonce: nonces(), style, habits: null, ...extra });
 
 test('who wins: rock beats scissors beats paper beats rock; the helpers agree', () => {
@@ -24,7 +24,7 @@ test('the seal: the digest opens only with the exact hand, intent and nonce', ()
   const commitment = rpsCommit('g1', 1, 1000, secret);
   assert.match(commitment.digest, /^[0-9a-f]{64}$/u);
   assert.equal(rpsVerify(commitment, secret), true);
-  for (const tampered of [{ ...secret, hand: 'rock' as const }, { ...secret, intent: 'soft' as const }, { ...secret, nonce: 'abd' }])
+  for (const tampered of [{ ...secret, hand: 'rock' as const }, { ...secret, intent: 'read' as const }, { ...secret, nonce: 'abd' }])
     assert.equal(rpsVerify(commitment, tampered), false);
   assert.equal(rpsVerify({ ...commitment, round: 2 }, secret), false);
   assert.equal(rpsVerify({ ...commitment, committedAt: 1001 }, secret), false);
@@ -143,34 +143,45 @@ test('no hand after 布 for the whole wait: she lets it go (timeout), nothing is
   assert.deepEqual(match.record(now).rounds, []);
 });
 
-test('caps: letting the user win, reading a habit and the pretend cheat happen at most once per match, at bounded rates', () => {
-  const greedy = resolveRpsStyle({ soft: 3, tease: 3 }, { ...DEFAULT_MOOD_PARAMETERS, weights: { playful: 3, close: 3, comfortable: 3, cautious: 0 }, intensity: { ...DEFAULT_MOOD_PARAMETERS.intensity, playful: 100 } });
-  assert.ok(greedy.softChance <= RPS_LIMITS.softChance && greedy.teaseChance <= RPS_LIMITS.teaseChance && greedy.readChance <= RPS_LIMITS.readChance);
+test('caps: reading a habit and the pretend cheat happen at most once per match, at bounded rates', () => {
+  const greedy = resolveRpsStyle({ tease: 3 }, { ...DEFAULT_MOOD_PARAMETERS, weights: { playful: 3, close: 3, comfortable: 3, cautious: 0 }, intensity: { ...DEFAULT_MOOD_PARAMETERS.intensity, playful: 100 } });
+  assert.ok(greedy.teaseChance <= RPS_LIMITS.teaseChance && greedy.readChance <= RPS_LIMITS.readChance);
   const habitRecords: RpsGameRecord[] = Array.from({ length: 6 }, (_, i) => ({ at: i, origin: 'user', result: 'none', rounds: [{ her: 'paper', user: 'rock', outcome: 'her' }] }));
   const habits = rpsHabits(habitRecords);
-  let soft = 0, read = 0, tease = 0, rounds = 0, lost = 0;
+  let read = 0, tease = 0, lost = 0;
   const N = 6000;
   for (let seed = 1; seed <= N; seed++) {
     const { match, now } = play(seed, round => RPS_HANDS[(round + seed * 13) % 3], 'early', { style: greedy, habits });
     const intents = match.intents();
-    assert.ok(intents.soft <= RPS_LIMITS.softPerMatch && intents.read <= RPS_LIMITS.readPerMatch && intents.tease <= RPS_LIMITS.teasePerMatch, `seed ${seed}`);
-    soft += intents.soft; read += intents.read; tease += intents.tease;
-    const record = match.record(now); rounds += record.rounds.length; lost += record.rounds.filter(r => r.outcome === 'user').length;
+    assert.ok(intents.read <= RPS_LIMITS.readPerMatch && intents.tease <= RPS_LIMITS.teasePerMatch, `seed ${seed}`);
+    read += intents.read; tease += intents.tease;
+    const record = match.record(now); lost += record.rounds.filter(r => r.outcome === 'user').length;
   }
-  // Per match: soft only while unused, so its share of matches stays near 1 − (1 − p)^rounds and never above 1.
-  assert.ok(soft / N < 0.8, `soft per match ${soft / N}`);
   assert.ok(read / N <= greedy.readChance + 0.03, `read per match ${read / N}`);
   assert.ok(tease / lost <= RPS_LIMITS.teaseChance + 0.02, `tease per lost round ${tease / lost}`);
-  // A gentle default card lets the user win only now and then.
-  const plain = resolveRpsStyle(null, DEFAULT_MOOD_PARAMETERS);
-  let softPlain = 0;
-  for (let seed = 1; seed <= 3000; seed++) softPlain += play(seed, () => 'rock', 'early', { style: plain }).match.intents().soft;
-  assert.ok(softPlain / 3000 < 0.35, `default soft per match ${softPlain / 3000}`);
 });
 
-test('letting the user win uses only earlier games: with a rock habit she plays scissors when she gives way', () => {
-  const records: RpsGameRecord[] = Array.from({ length: 5 }, (_, i) => ({ at: i, origin: 'user', result: 'none', rounds: [{ her: 'scissors', user: 'rock', outcome: 'user' }] }));
-  const always: RpsResolvedStyle = { softChance: 1, teaseChance: 0, readChance: 0 };
-  const match = new RpsMatch(options(1, { style: always, habits: rpsHabits(records) }), 0);
-  assert.deepEqual({ hand: match.sealedForTest().secret.hand, intent: match.sealedForTest().secret.intent }, { hand: 'scissors', intent: 'soft' });
+// Rules audit item 13: her throw is never rigged for the user. No habit to read: uniform.
+test('her throw is not rigged: a thousand seeded games, the user (who always throws rock) wins about a third of the rounds, even when the card is gentle and close', () => {
+  const gentle = resolveRpsStyle(null, { ...DEFAULT_MOOD_PARAMETERS, weights: { playful: 1, close: 3, comfortable: 3, cautious: 1 } });
+  let userWins = 0, herWins = 0, draws = 0;
+  for (let seed = 1; seed <= 1000; seed++) {
+    const { match, now } = play(seed, () => 'rock', 'early', { style: gentle });
+    for (const r of match.record(now).rounds) { if (r.outcome === 'user') userWins++; else if (r.outcome === 'her') herWins++; else draws++; }
+    assert.deepEqual(Object.keys(match.intents()).sort(), ['read', 'tease']);
+  }
+  const total = userWins + herWins + draws;
+  assert.ok(total > 1500, `rounds ${total}`);
+  for (const [name, n] of [['user', userWins], ['her', herWins], ['draw', draws]] as const) assert.ok(Math.abs(n / total - 1 / 3) < 0.05, `${name} share ${(n / total).toFixed(3)} of ${total}`);
+});
+
+test('a hand she names herself is the hand she throws; otherwise a uniform pick', () => {
+  const named: RpsHand[] = ['scissors', 'paper', 'rock', 'rock', 'paper'];
+  const match = new RpsMatch(options(7, { named: round => named[round - 1] ?? null }), 0);
+  assert.equal(match.sealedForTest().secret.hand, 'scissors');
+  const { sealed } = play(3, () => 'rock', 'early', { named: round => named[round - 1] ?? null });
+  for (const row of sealed) assert.equal(row.hand, named[row.round - 1], `round ${row.round}`);
+  const counts = { rock: 0, paper: 0, scissors: 0 };
+  for (let seed = 1; seed <= 3000; seed++) counts[new RpsMatch(options(seed), 0).sealedForTest().secret.hand]++;
+  for (const n of Object.values(counts)) assert.ok(Math.abs(n / 3000 - 1 / 3) < 0.04, JSON.stringify(counts));
 });

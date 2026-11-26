@@ -3,18 +3,18 @@ import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { UserProfileStore, userProfileScopeId, type UserProfileScope } from '../electron/user-profile';
-import { UserProfileContext } from '../electron/user-profile-context';
-import { UserProfileManagement } from '../electron/user-profile-management';
-import { MemoryStore } from '../electron/memory';
-import { CharacterCardStore } from '../electron/character-cards';
-import { buildCodexChatPrompt } from '../electron/conversation-context';
-import { composeSessionPrompt } from '../electron/claude-session-prompt';
-import { DiaryWriter, generateDiaryWithClaude, type DiaryWriterOptions } from '../electron/diary/diary-writer';
-import { DIARY_CONTEXT_NOTE, DIARY_LIMITS, diaryPoints, isConversationOpening } from '../electron/diary/diary-data';
-import { localDateKey, localDayRange, recentDiaryDates, shiftDate } from '../electron/diary/diary-dates';
-import { DIARY_OMITTED, buildDiaryPrompt, diaryMaterial, parseDiaryOutput } from '../electron/diary/diary-prompt';
-import type { ChatMessage } from '../shared/contracts';
+import { UserProfileStore, userProfileScopeId, type UserProfileScope } from '../electron/memory/user-profile';
+import { UserProfileContext } from '../electron/memory/user-profile-context';
+import { UserProfileManagement } from '../electron/memory/user-profile-management';
+import { MemoryStore } from '../electron/memory/memory';
+import { CharacterCardStore } from '../electron/cards/character-cards';
+import { buildCodexChatPrompt } from '../electron/brain/conversation-context';
+import { composeSessionPrompt } from '../electron/brain/claude-session-prompt';
+import { DiaryWriter, generateDiaryWithClaude, type DiaryWriterOptions } from '../electron/memory/diary/diary-writer';
+import { DIARY_CONTEXT_NOTE, DIARY_LIMITS, diaryPoints, isConversationOpening } from '../electron/memory/diary/diary-data';
+import { localDateKey, localDayRange, recentDiaryDates, shiftDate } from '../electron/memory/diary/diary-dates';
+import { DIARY_OMITTED, buildDiaryPrompt, diaryMaterial, parseDiaryOutput } from '../electron/memory/diary/diary-prompt';
+import type { ChatMessage } from '../shared/foundation/chat';
 
 const scope: UserProfileScope = { characterId: 'character-a', providerScope: 'provider-a' };
 const otherCharacter: UserProfileScope = { characterId: 'character-b', providerScope: 'provider-a' };
@@ -251,8 +251,9 @@ test('the writing prompt: her voice, the north-star rules, and chat text kept as
   assert.ok(prompt.includes('角色本人') && prompt.includes('不必一味温顺'));
   // Principle 6: glad for the user's life, missing them is playful; care is being there, not directing the
   // user's life; on the user's side when wronged; real-world help only for truly dangerous signals.
-  for (const rule of ['和朋友出去玩', '去忙别的事', '替用户高兴', '想念时是撒娇', '让用户内疚', '不劝用户少和别人来往',
-    '而不是指点用户的人生', '不说教', '不写劝用户去找别人、多社交、想开点的话', '不分析"也许你也有问题"', '需要被替代',
+  assert.doesNotMatch(prompt, /替用户高兴|想念时是撒娇|让用户内疚|不劝用户少和别人来往/); // I-206
+  for (const rule of [
+    '而不是指点用户的人生',
     '用户受了委屈时，你先站在用户这边', '不是教育用户', '只有出现伤害自己这类真正危险的信号时', '不夸大', '不做诊断'])
     assert.ok(prompt.includes(rule), rule);
   assert.ok(!prompt.includes('严重的困扰') && !prompt.includes('温柔的担心'), 'the older, broader wording is gone');
@@ -361,7 +362,7 @@ test('exporting a character card never carries her diary', async () => fixture(a
   const exported = cards.export(state.activeId);
   assert.equal(exported.includes('SENTINEL'), false);
   assert.equal(/diary|日记/u.test(exported), false);
-  assert.deepEqual(Object.keys(JSON.parse(exported).card).sort(), ['description', 'examples', 'greeting', 'mood', 'name', 'personality', 'scenario', 'systemPrompt'].sort());
+  assert.deepEqual(Object.keys(JSON.parse(exported).card).sort(), ['description', 'examples', 'greeting', 'mood', 'name', 'personality', 'scenario', 'slowWarmUp', 'systemPrompt'].sort());
 }));
 
 test('the Claude adapter is one tool-free chat task and returns only the streamed text', async () => {

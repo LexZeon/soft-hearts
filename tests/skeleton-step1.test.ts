@@ -7,21 +7,21 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import * as profileModule from '../shared/model-profile';
-import { MODEL_PROFILE_VERSION, acceptCachedProfile, buildModelProfile, type ModelProfile } from '../shared/model-profile';
-import { HER_ACTION_PART_NAMES, HER_ACTION_SPECS, HER_FACE_ACTIONS, herActionSupport } from '../shared/her-actions';
-import { GENE_STANDARD_PARENTS, modelAdaptation } from '../shared/model-adaptation';
-import { STANDARD_SOURCE_RIG, rigFromCompact, type CompactRig } from '../shared/motion-retarget';
-import { adaptMotion } from '../shared/motion-fit';
-import { MOTION_SCORE_STAMP, acceptMotionFitRecord, mergeMotionFitRecords, type MotionFitRecord } from '../shared/motion-fit-record';
-import * as skeleton from '../shared/universal-skeleton';
-import { sha256Hex } from '../shared/sha256-sync';
-import { MAX_MOTION_FIT_MODELS, MOTION_FITS_FILE, MotionFitStore } from '../electron/motion-fit-store';
+import * as profileModule from '../shared/stage/model-profile';
+import { MODEL_PROFILE_VERSION, acceptCachedProfile, buildModelProfile, type ModelProfile } from '../shared/stage/model-profile';
+import { HER_ACTION_PART_NAMES, HER_ACTION_SPECS, HER_FACE_ACTIONS, herActionSupport } from '../shared/actions/her-actions';
+import { GENE_STANDARD_PARENTS, modelAdaptation } from '../shared/brain/model-adaptation';
+import { STANDARD_SOURCE_RIG, rigFromCompact, type CompactRig } from '../shared/actions/motion-retarget';
+import { adaptMotion } from '../shared/actions/motion-fit';
+import { MOTION_SCORE_STAMP, acceptMotionFitRecord, mergeMotionFitRecords, type MotionFitRecord } from '../shared/actions/motion-fit-record';
+import * as skeleton from '../shared/foundation/universal-skeleton';
+import { sha256Hex } from '../shared/foundation/sha256-sync';
+import { MAX_MOTION_FIT_MODELS, MOTION_FITS_FILE, MotionFitStore } from '../electron/actions/motion-fit-store';
 import { resolveFaceMorphs } from '../src/stage/face-exclusive';
-import { GENE_SOURCE_RIG, StageMotionRetarget, clearRetargetCache, motionFitStorage, type MotionFitView } from '../src/stage/motion-retarget';
+import { GENE_SOURCE_RIG, StageMotionRetarget, clearRetargetCache, motionFitStorage, type MotionFitView } from '../src/actions/motion-retarget';
 import { catalogMotions, motionBytes, readGene } from './helpers/bundled-motions';
 import { readVmdLite } from './helpers/vmd-lite';
-import { stripDefaultVmdTracks } from '../src/stage/vmd-tracks';
+import { stripDefaultVmdTracks } from '../src/foundation/vmd-tracks';
 import { JAPANESE_MORPHS, profileInput, toThreeMesh, toyModel, type ModelData } from './helpers/model-fixtures';
 
 /** The stage's own lookup for a face action (MmdStage.playFaceAction): the mesh's names, the profile's slots, real vertex movement. */
@@ -285,7 +285,7 @@ test('the stage hooks: stored scores from the cache view, saves under that model
 
 /**
  * Guard for the stored scores: the check's verdict on a fixed model, pinned. If this changes, what the check flags changed, so
- * scores stored by the old check would be stale: bump MOTION_FIT_VERSION (shared/motion-fit.ts) and update the pin.
+ * scores stored by the old check would be stale: bump MOTION_FIT_VERSION (shared/actions/motion-fit.ts) and update the pin.
  */
 test('the scores a stored record holds are pinned to MOTION_FIT_VERSION', () => {
   clearRetargetCache();

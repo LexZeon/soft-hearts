@@ -1,5 +1,5 @@
 // Codex T-207 round 8 (bridge X-273, docs/claude/2026-11-04-reply-guard-x273.md), on the stable line 0dd6246 and still on
-// main 0072b13: in a Chinese chat the head filter (electron/reply-draft-guard.ts) let an English plan line through, or kept it
+// main 0072b13: in a Chinese chat the head filter (electron/brain/reply-draft-guard.ts) let an English plan line through, or kept it
 // out, depending only on where the stream was cut:
 //   * L12: a 294-character plan line whose second kind of cue comes after character 240: a first chunk of 240 characters
 //     dropped it, one of 241 showed, archived and read it;
@@ -13,9 +13,9 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { ReplyDraftGuard, asksForEnglish, type DraftDrop } from '../electron/reply-draft-guard';
-import { MoodReplyProtocol } from '../electron/mood-chat';
-import { CompanionService } from '../electron/companion';
+import { ReplyDraftGuard, asksForEnglish, type DraftDrop } from '../electron/brain/reply-draft-guard';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
+import { CompanionService } from '../electron/brain/companion';
 
 const CHINESE = '……我给你留了盏灯。想说的时候，我就在这儿。';
 const TONE = 'Voice for the reply: gentle and unhurried.';

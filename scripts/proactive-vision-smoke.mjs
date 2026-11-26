@@ -365,7 +365,7 @@ try {
   assert.deepEqual(first.origin.sources, ['screen']);
   assert.deepEqual(first.origin.labels, ['屏幕']);
   assert.equal(first.text, proactiveReply);
-  // This pet body is only a DOM proxy. The actual visible native reply was
+  // This companion body is only a DOM proxy. The actual visible native reply was
   // independently checked above; the controls own the full chat log.
   assert.match(await pet.locator('#pet-answer-body').textContent(), /主动 · 屏幕/);
   assert.match(await pet.locator('#pet-answer-body').textContent(), /蓝色和金色的色块/);

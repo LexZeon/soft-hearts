@@ -11,7 +11,7 @@ import {
 import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
 import { ChatGesturePlayer, isChatGestureTrack } from '../src/stage/chat-gesture';
 import { LayeredMmdAnimation } from '../src/stage/motion-layers';
-import { createVmdParser } from '../src/stage/vmd';
+import { createVmdParser } from '../src/foundation/vmd';
 
 const AXIS = new Vector3(0, 0, 1);
 const orientation = (angle: number) => new Quaternion().setFromAxisAngle(AXIS, angle);
@@ -175,8 +175,8 @@ test('consumed IDs are bounded and externally returned state cannot mutate the p
 });
 
 test('the two curated public VMDs keep Bezier factories, visibly move arms once, and release to an advancing Gene base', async () => {
-  const catalog = JSON.parse(await readFile('shared/motion-catalog.json', 'utf8'));
-  const manifest = JSON.parse(await readFile('shared/bundled-assets.json', 'utf8'));
+  const catalog = JSON.parse(await readFile('shared/actions/motion-catalog.json', 'utf8'));
+  const manifest = JSON.parse(await readFile('shared/actions/bundled-assets.json', 'utf8'));
   const parserModule = 'three/examples/jsm/libs/mmdparser.module.js';
   const { MMDParser } = await import(parserModule);
   const bytes = await readFile(join('assets/bundled', manifest.root, manifest.model.relativePath));

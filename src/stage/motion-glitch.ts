@@ -1,7 +1,7 @@
 /**
  * 动作跳变记录, stage side (on her own model, which tests never use).
  * Each rendered frame it looks at two things and reports what it finds (the host writes it into the experience journal while the
- * user's "保留体验记录（只存本机）" switch is on; shared/journal.ts `motion` holds the whitelist):
+ * user's "保留体验记录（只存本机）" switch is on; shared/memory/journal.ts `motion` holds the whitelist):
  *  - the display guard (pose-continuity.ts) caught a jump: which bone or morph, how big;
  *  - a physics-owned bone (hair, chest: after the guard, so it never sees them) turned unexpectedly far in one frame (its step
  *    departs from the previous step by at least PHYSICS_KICK_DEG): which bone, how many degrees.
@@ -9,8 +9,8 @@
  * kind every REPEAT_MS and BURST lines a minute, so a shaking bone cannot fill the journal. No allocation per frame when quiet.
  */
 import { Quaternion, type Bone, type SkinnedMesh } from 'three';
-import type { MotionActivity, MotionGlitchKind } from '../../shared/journal';
-import type { PoseContinuityState } from './pose-continuity';
+import type { MotionActivity, MotionGlitchKind } from '../../shared/stage/journal-entries';
+import type { PoseContinuityState } from '../senses';
 
 export interface MotionGlitchReport {
   kind: MotionGlitchKind; part: 'bone' | 'morph' | 'geometry' | 'gpu'; name: string; size: number; activities: MotionActivity[]; fps: number | null; frameMs: number | null;
@@ -23,6 +23,14 @@ export const MOTION_GLITCH_REPEAT_MS = 2_000;
 export const MOTION_GLITCH_BURST = 30;
 const DEG = 180 / Math.PI;
 
+/** The rotation `q` turned `k` times as far about the same axis (k = 2: twice the angle), into `out`. */
+export function scaleRotation(q: Quaternion, k: number, out: Quaternion): Quaternion {
+  const sign = q.w < 0 ? -1 : 1, w = Math.min(1, q.w * sign), half = Math.acos(w), s = Math.sqrt(Math.max(0, 1 - w * w));
+  if (s < 1e-9) return out.set(0, 0, 0, 1);
+  const f = Math.sin(half * k) / s * sign;
+  return out.set(q.x * f, q.y * f, q.z * f, Math.cos(half * k));
+}
+
 export class MotionGlitchWatch {
   private jumps = -1;
   private resets = -1;
@@ -33,6 +41,7 @@ export class MotionGlitchWatch {
   private known: Uint8Array = new Uint8Array(0);
   private readonly last = new Map<string, number>();
   private window: number[] = [];
+  private lastFrameMs = NaN;
   private readonly q = new Quaternion(); private readonly s = new Quaternion(); private readonly inv = new Quaternion();
 
   constructor(private readonly report: (glitch: MotionGlitchReport) => void, private readonly now: () => number = () => performance.now()) {}
@@ -64,12 +73,17 @@ export class MotionGlitchWatch {
       this.owner = mesh; this.bones = bones.map(index => mesh.skeleton.bones[index]).filter(Boolean);
       this.previous = this.bones.map(() => new Quaternion()); this.step = this.bones.map(() => new Quaternion()); this.known = new Uint8Array(this.bones.length);
     }
+    // P1 舞台少画 (stage-pace.ts): when the frame interval changes (a slower or faster pace), the same speed is a longer or shorter
+    // step; the previous step is scaled to this frame's interval first, so a pace change is not a kick.
+    const ratio = Number.isFinite(frameMs) && Number.isFinite(this.lastFrameMs) && (frameMs as number) > 0 && this.lastFrameMs > 0 ? (frameMs as number) / this.lastFrameMs : 1;
+    this.lastFrameMs = Number.isFinite(frameMs) && (frameMs as number) > 0 ? frameMs as number : NaN;
     for (let i = 0; i < this.bones.length; i++) {
       const shown = this.bones[i].getWorldQuaternion(this.q);
       if (this.known[i] >= 1) {
         this.s.copy(shown).multiply(this.inv.copy(this.previous[i]).invert());
         if (this.known[i] >= 2) {
-          const kick = this.s.angleTo(this.step[i]) * DEG;
+          const expected = Math.abs(ratio - 1) > 0.01 ? scaleRotation(this.step[i], ratio, this.inv) : this.step[i];
+          const kick = this.s.angleTo(expected) * DEG;
           if (kick >= PHYSICS_KICK_DEG) this.emit({ kind: 'physics', part: 'bone', name: this.bones[i].name, size: kick, activities: activities(), fps, frameMs });
         }
         this.step[i].copy(this.s);

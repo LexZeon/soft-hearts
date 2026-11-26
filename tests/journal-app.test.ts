@@ -1,20 +1,20 @@
 // 体验记录 (E2) in the app: the switch (default off, its own intent), the agent channel's reversible setting, the IPC handlers,
-// the music tier from the pet window and the start/quit lines (electron/journal/app-journal.ts).
+// the music tier from the companion window and the start/quit lines (electron/memory/journal/app-journal.ts).
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test, { type TestContext } from 'node:test';
-import { AppJournal, readBuildCommit, registerJournalIpc } from '../electron/journal/app-journal';
-import { createAppTools, settingViews, type AgentAppBridge } from '../electron/agent-channel/app-tools';
-import { AGENT_HOST_OPERATIONS, createHostBridge } from '../electron/agent-channel/bridge';
-import { AgentToolRegistry } from '../electron/agent-channel/registry';
-import { chatSettingsSystemText, parseChatSettingProposal } from '../electron/chat-settings';
-import { validateSettings } from '../electron/validation';
-import { AGENT_SETTINGS, AGENT_TOOLS, agentSetting, validateAgentSettingValue } from '../shared/agent-channel';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import type { AppSettings } from '../shared/contracts';
-import type { JournalView } from '../shared/journal';
+import { AppJournal, readBuildCommit, registerJournalIpc } from '../electron/memory/journal/app-journal';
+import { createAppTools, settingViews, type AgentAppBridge } from '../electron/safety/agent-channel/app-tools';
+import { AGENT_HOST_OPERATIONS, createHostBridge } from '../electron/safety/agent-channel/bridge';
+import { AgentToolRegistry } from '../electron/safety/agent-channel/registry';
+import { chatSettingsSystemText, parseChatSettingProposal } from '../electron/brain/chat-settings';
+import { validateSettings } from '../electron/settings/validation';
+import { AGENT_SETTINGS, AGENT_TOOLS, agentSetting, validateAgentSettingValue } from '../shared/safety/agent-channel';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import type { AppSettings } from '../shared/foundation/settings';
+import type { JournalView } from '../shared/memory/journal';
 
 async function profile(t: TestContext): Promise<string> {
   const root = await mkdtemp(path.join(os.tmpdir(), 'sh-journal-app-'));
@@ -41,7 +41,7 @@ test('the setting is off by default, comes only from the stored file, and the ag
   assert.deepEqual((tool.inputSchema.properties.id as { enum: string[] }).enum, AGENT_SETTINGS.map(item => item.id), 'the schema lists every catalog setting');
   assert.equal(settingViews({ ...DEFAULT_SETTINGS, experienceJournal: true }).find(view => view.id === 'experience_journal')?.value, true);
   assert.equal(settingViews(DEFAULT_SETTINGS).find(view => view.id === 'experience_journal')?.value, false);
-  // The agent channel only: the pet's own chat never offers it (her system prompt stays byte for byte the same).
+  // The agent channel only: the companion's own chat never offers it (her system prompt stays byte for byte the same).
   assert.ok(!chatSettingsSystemText().includes('experience_journal'));
   assert.equal(parseChatSettingProposal(JSON.stringify({ id: 'experience_journal', value: true }), () => false), null);
   assert.ok(AGENT_HOST_OPERATIONS.includes('setExperienceJournal'));

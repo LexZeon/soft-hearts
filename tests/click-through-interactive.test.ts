@@ -1,11 +1,11 @@
 // Click-through that keeps her touchable: only the transparent space around her
-// lets the mouse through. Host flag (electron/pet-pointer-input.ts), her pixels (src/stage/pixel-probe.ts)
-// and the renderer's decision (src/ui/pointer-passthrough.ts), each imported and driven directly.
+// lets the mouse through. Host flag (electron/stage/pet-pointer-input.ts), her pixels (src/stage/pixel-probe.ts)
+// and the renderer's decision (src/stage/pointer-passthrough.ts), each imported and driven directly.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PetPointerInput, cursorInside, type PointerInputWindow } from '../electron/pet-pointer-input';
+import { PetPointerInput, cursorInside, type PointerInputWindow } from '../electron/stage/pet-pointer-input';
 import { StagePixelProbe, probeBlock, blockAlpha, PROBE_OUTER_RADIUS, PROBE_STALE_MS, type ProbeGl, type StageAlpha } from '../src/stage/pixel-probe';
-import { PointerPassthrough, classifyPetPoint, PASSTHROUGH_TIMING, PASSTHROUGH_ALPHA, type PassthroughPorts, type PointTarget, type HitDocument } from '../src/ui/pointer-passthrough';
+import { PointerPassthrough, classifyPetPoint, PASSTHROUGH_TIMING, PASSTHROUGH_ALPHA, type PassthroughPorts, type PointTarget, type HitDocument } from '../src/stage/pointer-passthrough';
 
 // ---------- host ----------
 class FakeWindow implements PointerInputWindow {

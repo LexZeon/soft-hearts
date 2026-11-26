@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import type { Bounds } from '../electron/pet-view';
+import type { Bounds } from '../electron/stage/pet-view';
 import {
   PET_SETTLE_CHECKS_MS, PetPresentation, PetWindowDiagnostics, presentRecoveredPet, readPetPresentationSample,
   type PetPresentationPorts, type PetWindowLike,
-} from '../electron/pet-restore';
+} from '../electron/stage/pet-restore';
 
 const AREA: Bounds = { x: 0, y: 0, width: 1920, height: 1040 };
 const CENTER: Bounds = { x: 760, y: 240, width: 400, height: 560 };

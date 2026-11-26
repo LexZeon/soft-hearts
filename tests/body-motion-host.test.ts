@@ -4,12 +4,12 @@ import { createHash } from 'node:crypto';
 import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { BodyMotionController, type BodyMotionHostGates } from '../electron/body-motion';
-import { resolveBodyMotionResource } from '../electron/body-motion-bindings';
-import { MoodHost } from '../electron/mood';
-import { MotionLibrary } from '../electron/motion-library';
-import { BODY_START_AGE_MS, isBodyMotionCue, type BodyMotionCue, type BodyRecipeId } from '../shared/body-motion';
-import catalog from '../shared/motion-catalog.json';
+import { BodyMotionController, type BodyMotionHostGates } from '../electron/actions/body-motion';
+import { resolveBodyMotionResource } from '../electron/actions/body-motion-bindings';
+import { MoodHost } from '../electron/mood/mood';
+import { MotionLibrary } from '../electron/actions/motion-library';
+import { BODY_START_AGE_MS, isBodyMotionCue, type BodyMotionCue, type BodyRecipeId } from '../shared/actions/body-motion';
+import catalog from '../shared/actions/motion-catalog.json';
 
 const start = 1_000_000;
 const gates = (): BodyMotionHostGates => ({ enabled: true, visible: true, phase: 'idle', posture: 50,

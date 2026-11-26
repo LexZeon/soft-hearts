@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { layoutSingleEmoji, type EmojiRect } from '../electron/single-emoji-layout';
-import { SingleEmojiCues } from '../electron/single-emoji-cues';
-import { registerSingleEmojiControls } from '../electron/single-emoji-controls-host';
-import { EmojiSettingsStore } from '../electron/single-emoji-settings';
-import { DEFAULT_EMOJI_SETTINGS } from '../shared/single-emoji';
+import { layoutSingleEmoji, type EmojiRect } from '../electron/stage/single-emoji-layout';
+import { SingleEmojiCues } from '../electron/stage/single-emoji-cues';
+import { registerSingleEmojiControls } from '../electron/stage/single-emoji-controls-host';
+import { EmojiSettingsStore } from '../electron/stage/single-emoji-settings';
+import { DEFAULT_EMOJI_SETTINGS } from '../shared/stage/single-emoji';
 
 const overlap = (a: EmojiRect, b: EmojiRect) => a.x < b.x+b.width && a.x+a.width>b.x && a.y<b.y+b.height && a.y+a.height>b.y;
 test('safe native DIP placement avoids whole pet and old/planned reply, including negative display coordinates; no room suppresses', () => {

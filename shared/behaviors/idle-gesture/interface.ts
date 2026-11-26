@@ -2,22 +2,22 @@
  * #11 "动一动""看你一眼"的接口（I-020：一个功能一个文件夹，接口写清楚，换实现只换一块）。
  *
  * 谁调用它、怎么调用：
- *  1. 主机（electron/mood.ts 的 MoodHost）是唯一调用"挑"的一方（IdleGestureHost，真实现 choose.ts 的 IdleGestureDirector）：
+ *  1. 主机（electron/mood/mood.ts 的 MoodHost）是唯一调用"挑"的一方（IdleGestureHost，真实现 choose.ts 的 IdleGestureDirector）：
  *     - 规则时机：MoodHost.tick 到了无聊门槛发出 look / motion 时机 → 来源 'rule'；
- *     - 她自己选：内心循环（electron/inner-loop/）认领了时机、模型选了 look 或 motion，经 realize 发回一个带 `claimed` 的
+ *     - 她自己选：内心循环（electron/initiative/inner-loop/）认领了时机、模型选了 look 或 motion，经 realize 发回一个带 `claimed` 的
  *       attention 事件 → MoodHost.event 记下来源 'inner'；开发者测试命令（forceAttention）→ 'test'。
  *     两种来源走同一个挑法，只是"为什么"里写的时机不同。问模型的频率不变（内心循环自己的节流）。
  *     MoodHost 在每次生成视图时 present()，把挑中的样子放进 MoodView.idleGesture，把表情交给 BehaviorMotionController；
- *     发给窗口之后 settle() 才记进"最近挑过"。被内心循环认领、窗口看不到的时机由 hide() 撤掉（electron/inner-loop/claim.ts），
+ *     发给窗口之后 settle() 才记进"最近挑过"。被内心循环认领、窗口看不到的时机由 hide() 撤掉（electron/initiative/inner-loop/claim.ts），
  *     不记进"最近挑过"，"为什么"里也不会出现没演出来的东西。
- *  2. 舞台（src/stage/mood-feedback.ts 的 MoodFeedback）是唯一调用"演"的一方（IdleGestureStage，真实现 perform.ts）：
+ *  2. 舞台（src/mood/mood-feedback.ts 的 MoodFeedback）是唯一调用"演"的一方（IdleGestureStage，真实现 perform.ts）：
  *     每帧把 MoodView.idleGesture 交给它（只在时机还亮着时），拿回头和眼睛的小偏移、嘴角笑的倍数。
- *  3. 开发者面板（src/ui/MoodPanel.ts）只读 MoodView.idleGestureWhy：最近几次挑了什么、为什么（只在内存，只有标签和分钟数）。
+ *  3. 开发者面板（src/mood/MoodPanel.ts）只读 MoodView.idleGestureWhy：最近几次挑了什么、为什么（只在内存，只有标签和分钟数）。
  *
  * 假实现在 fake.ts，守约测试在 tests/idle-gesture.test.ts：换一种实现，先过那组测试。
  */
-import type { MoodCue, MoodLabel, MoodTendency } from '../../mood';
-import type { BehaviorFaceBindingId } from '../../behavior-motion';
+import type { MoodCue, MoodLabel, MoodTendency } from '../../foundation/mood';
+import type { BehaviorFaceBindingId } from '../../actions';
 import type { IdleFaceId, IdleMoment, IdleShapeId } from './knobs';
 
 export type IdleGestureKind = 'look' | 'motion';

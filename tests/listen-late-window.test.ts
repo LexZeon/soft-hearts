@@ -11,17 +11,19 @@ import { readFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import ts from 'typescript';
-import type { ChatMessage } from '../shared/contracts';
-import type { ListenNote, ListenSegment } from '../shared/listen-together';
-import { CompanionService } from '../electron/companion';
-import type { CompanionClaudeTask } from '../electron/claude-session';
-import { buildCodexChatPrompt } from '../electron/conversation-context';
-import { ListenTogether } from '../electron/listen-together/host';
-import { ListenTogetherCore, type ListenFile } from '../electron/listen-together/core';
-import { UserProfileStore } from '../electron/user-profile';
-import { UserProfileContext } from '../electron/user-profile-context';
-import { validateProvider } from '../electron/validation';
+import type { ChatMessage } from '../shared/foundation/chat';
+import type { ListenNote, ListenSegment } from '../shared/senses/listen-together';
+import { CompanionService } from '../electron/brain/companion';
+import type { CompanionClaudeTask } from '../electron/brain/claude-session';
+import { buildCodexChatPrompt } from '../electron/brain/conversation-context';
+import { ListenTogether } from '../electron/senses/listen-together/host';
+import { ListenTogetherCore, type ListenFile } from '../electron/senses/listen-together/core';
+import { UserProfileStore } from '../electron/memory/user-profile';
+import { UserProfileContext } from '../electron/memory/user-profile-context';
+import { validateProvider } from '../electron/settings/validation';
 import { gatedChat, sentText } from './helpers/gated-claude';
+// Reads as text (test-affected selects this test when they change): 'electron/main.ts' (wiring rewrite step 4c: with electron/wiring/*.ts).
+import { wiringSource } from './helpers/wiring-source';
 
 const MIN = 60_000;
 const CHARACTER = 'synthetic-listen-late';
@@ -250,7 +252,7 @@ test('画像: a profile entry deleted in the same window is not sent (the turn i
 
 // electron/main.ts (syntax tree, no eval): the turn takes its block through askTurn, and both getters read it through the check.
 test('electron/main.ts: the 一起听 block comes from askTurn and the prompt and session persona go through listenAsk.current', () => {
-  const source = readFileSync(new URL('../electron/main.ts', import.meta.url), 'utf8');
+  const source = wiringSource();
   const main = ts.createSourceFile('main.ts', source, ts.ScriptTarget.Latest, true);
   const getters: Record<string, string[]> = { prompt: [], persona: [] };
   const visit = (node: ts.Node): void => {

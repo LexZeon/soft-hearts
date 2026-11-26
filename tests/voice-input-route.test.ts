@@ -3,19 +3,19 @@
 // fixed lines in her words for both windows.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateSettings, validateVoiceInput, voiceInputEngine } from '../electron/validation';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { MediaRuntime } from '../electron/runtime';
-import { VoiceRoute, engineOf, voiceFailureOf } from '../electron/asr/voice-route';
-import { LocalAsrError } from '../electron/asr/host';
-import { AsrError, transcribeWav } from '../electron/asr';
-import { voiceFaultEvent } from '../electron/voice-chat-host';
-import { NOTICE_ACTIONS, voiceFailureAction, voiceRefusalAction } from '../src/notice-policy';
-import { buildJournalEntry, type JournalInput } from '../shared/journal';
-import { VOICE_INPUT_FAILURES } from '../shared/speech-failure';
-import { encodeWav } from '../src/ui/MediaInput';
-import type { VoiceInputConfig } from '../shared/contracts';
-import { localAsrDetailsText, localAsrPromptText, localAsrStatusText } from '../src/ui/LocalAsrPanel';
+import { validateSettings, validateVoiceInput, voiceInputEngine } from '../electron/settings/validation';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { MediaRuntime } from '../electron/senses/media-runtime';
+import { VoiceRoute, engineOf, voiceFailureOf } from '../electron/senses/asr/voice-route';
+import { LocalAsrError } from '../electron/senses/asr/host';
+import { AsrError, transcribeWav } from '../electron/senses/asr';
+import { voiceFaultEvent } from '../electron/voice/voice-chat-host';
+import { NOTICE_ACTIONS, voiceFailureAction, voiceRefusalAction } from '../src/settings/notice-policy';
+import { buildJournalEntry, type JournalInput } from '../shared/memory/journal';
+import { VOICE_INPUT_FAILURES } from '../shared/voice/speech-failure';
+import { encodeWav } from '../src/senses/MediaInput';
+import type { VoiceInputConfig } from '../shared/foundation/settings';
+import { localAsrDetailsText, localAsrPromptText, localAsrStatusText } from '../src/senses/LocalAsrPanel';
 
 test('识别方式 migration: the untouched default address moves to the local recognizer, a changed address stays compatible', () => {
   assert.equal(DEFAULT_SETTINGS.voiceInput!.engine, 'local');

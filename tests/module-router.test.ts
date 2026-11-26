@@ -1,5 +1,5 @@
 /**
- * I-023 haiku 调度台 (shared/module-router/, electron/module-router/) and 猜拳 on it (electron/rps/host.ts), with a fake haiku
+ * I-023 haiku 调度台 (shared/brain/module-router/, electron/brain/module-router/) and 猜拳 on it (electron/initiative/rps/host.ts), with a fake haiku
  * on a fake clock: the module list comes from the registry; haiku runs beside Opus and never holds up her first character;
  * a newer message voids the older verdict; errors, timeouts and bad JSON change nothing; the local fast path never waits;
  * haiku's yes opens the game after her reply (by her character); a local refusal wins; the panel keeps no words.
@@ -11,20 +11,20 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { parseKnobFile, REPO_ROOT } from '../scripts/list-knobs.mjs';
 import os from 'node:os';
 import path from 'node:path';
-import { ModuleRouter, type ModuleRouterOptions } from '../electron/module-router/router';
-import { createModuleRouter } from '../electron/module-router/wiring';
-import { RpsHost, type RpsCharacterState } from '../electron/rps/host';
-import { RpsStore } from '../electron/rps/store';
-import { createRps } from '../electron/rps/wiring';
-import { MoodHost } from '../electron/mood';
-import { ROUTER_SYSTEM_PROMPT, parseRouterAnswer, routerModuleList, routerPlan, routerPrompt, routerRegistryProblems } from '../shared/module-router/choose';
-import { routerMessageOf, scriptedRouterAsk, noRouterAsk, type RouterAsk, type ScriptedAnswer } from '../shared/module-router/fake';
-import type { ModuleRouterWhy, RoutedModule, RouterVerdict } from '../shared/module-router/interface';
-import { MODULE_ROUTER_KNOBS } from '../shared/module-router/knobs';
-import { ROUTED_MODULES } from '../shared/module-router/modules';
-import { RPS_ROUTE, scanRpsRefusal, scanRpsRequest } from '../shared/rps-personality';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
-import { formatModuleRouterLines } from '../src/ui/MoodPanel';
+import { ModuleRouter, type ModuleRouterOptions } from '../electron/brain/module-router/router';
+import { createModuleRouter } from '../electron/brain/module-router/wiring';
+import { RpsHost, type RpsCharacterState } from '../electron/initiative/rps/host';
+import { RpsStore } from '../electron/initiative/rps/store';
+import { createRps } from '../electron/initiative/rps/wiring';
+import { MoodHost } from '../electron/mood/mood';
+import { ROUTER_SYSTEM_PROMPT, parseRouterAnswer, routerModuleList, routerPlan, routerPrompt, routerRegistryProblems } from '../shared/brain/module-router/choose';
+import { routerMessageOf, scriptedRouterAsk, noRouterAsk, type RouterAsk, type ScriptedAnswer } from '../shared/brain/module-router/fake';
+import type { ModuleRouterWhy, RoutedModule, RouterVerdict } from '../shared/brain/module-router/interface';
+import { MODULE_ROUTER_KNOBS } from '../shared/brain/module-router/knobs';
+import { ROUTED_MODULES } from '../shared/brain/module-router/modules';
+import { RPS_ROUTE, scanRpsRefusal, scanRpsRequest } from '../shared/initiative/rps-personality';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
+import { formatModuleRouterLines } from '../src/mood/MoodPanel';
 import { seeded } from './helpers/seeded';
 
 class Clock {
@@ -88,7 +88,7 @@ test('the module list haiku gets is built from the registry: a fake module regis
 });
 
 test('the router\'s knobs are in the "想改什么 → 改哪里" table ("她没反应" and "额度用得太多了" lead to the prefilter)', async () => {
-  const text = await readFile(path.join(REPO_ROOT, 'shared', 'module-router', 'knobs.ts'), 'utf8');
+  const text = await readFile(path.join(REPO_ROOT, 'shared/brain/module-router/knobs.ts'), 'utf8');
   const { feature, knobs } = parseKnobFile(text) as { feature: string; knobs: { path: string; say: string }[] };
   assert.match(feature, /I-023/u);
   for (const name of Object.keys(MODULE_ROUTER_KNOBS)) assert.ok(knobs.some(knob => knob.path === `MODULE_ROUTER_KNOBS.${name}`), `${name} is in the table`);
@@ -126,7 +126,7 @@ test('who is asked: the local words first (a request or a refusal needs no haiku
     assert.ok(scanRpsRefusal(text), text);
   for (const text of ['要不要玩猜拳', '你来不来玩石头剪刀布，输了请吃饭', '别玩手机了，来石头剪刀布', '石头剪刀布！不许耍赖'])
     assert.equal(scanRpsRefusal(text), false, text);
-  assert.ok(scanRpsRequest('来玩一把猜拳来'), 'the 11-04 phrase stays on the fast path');
+  assert.ok(scanRpsRequest('来玩一局猜拳来'), 'a spoken request to play stays on the fast path');
 });
 
 // ------------------------------------------------------------------ the router on its own
@@ -330,7 +330,7 @@ test('猜拳 slow path answers by her character: drowsy she puts it off (no game
 
 test('猜拳 fast path: the local words recognise the request, haiku is not asked, the game opens 700 ms after her reply', async () => {
   const h = await harness(() => ({ raw: yes(), after: 60_000 }));
-  const turn = chat(h, 'r1', '来玩一把猜拳来', 3_000);
+  const turn = chat(h, 'r1', '来玩一局猜拳来', 3_000);
   assert.match(turn.context!, /^【猜拳】用户想和你玩猜拳，你正好也想玩/u, 'Opus hears it in this turn\'s private context');
   await run(h.clock, 3_700);
   assert.equal(h.host.active, true);

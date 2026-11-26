@@ -1,8 +1,8 @@
 import test from 'node:test';import assert from 'node:assert/strict';import { randomUUID } from 'node:crypto';
 import { mkdtemp,rm,readFile } from 'node:fs/promises';import os from 'node:os';import path from 'node:path';
-import { PersonalizeLanguageControls } from '../src/ui/PersonalizeLanguageControls';
-import { PersonalizeLanguageStore } from '../electron/personalize-language';import { PersonalizeAuthoring } from '../electron/personalize-authoring';
-import { emptyLanguageRules } from '../shared/personalize-language';import { atomicWriteFile } from '../electron/atomic-file';
+import { PersonalizeLanguageControls } from '../src/cards/PersonalizeLanguageControls';
+import { PersonalizeLanguageStore } from '../electron/cards/personalize-language';import { PersonalizeAuthoring } from '../electron/cards/personalize-authoring';
+import { emptyLanguageRules } from '../shared/cards/personalize-language';import { atomicWriteFile } from '../electron/foundation/atomic-file';
 class Element {
  children:Element[]=[];textContent='';value='';disabled=false;dataset:Record<string,string>={};open=true;
  onclick:(()=>void)|null=null;oninput:(()=>void)|null=null;ontoggle:(()=>void)|null=null;

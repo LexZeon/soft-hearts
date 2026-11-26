@@ -1,10 +1,12 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import ts from 'typescript';
-import {R20ProactiveOffers} from '../electron/r20-proactive-offer';import {ProactiveSpeechGate} from '../electron/proactive-speech-gate';import {buildR20OfferPrompt} from '../electron/r20-offer-dialogue';
-import {bodyPoseBinding} from '../shared/personalize-body-bindings';import {selectBodyPosePresentation} from '../shared/personalize-body-presentation';import {VISUAL_GENE_SHA} from '../shared/personalize-visual';
-import {SingleEmojiCues} from '../electron/single-emoji-cues';import {DEFAULT_EMOJI_SETTINGS,readEmojiSettings} from '../shared/single-emoji';
-import {claimedView} from '../electron/inner-loop/claim';import {OpeningHost} from '../electron/inner-loop/opening-host';
-const raw=readFileSync(new URL('../electron/main.ts',import.meta.url),'utf8'),ast=ts.createSourceFile('main.ts',raw,ts.ScriptTarget.Latest,true);
-function declaration(name:string){const nodes=ast.statements.filter((n):n is ts.FunctionDeclaration=>ts.isFunctionDeclaration(n)&&n.name?.text===name);assert.equal(nodes.length,1);return nodes[0].getText(ast);}
+import {R20ProactiveOffers} from '../electron/initiative/r20-proactive-offer';import {ProactiveSpeechGate} from '../electron/initiative/proactive-speech-gate';import {buildR20OfferPrompt} from '../electron/initiative/r20-offer-dialogue';
+import {bodyPoseBinding} from '../shared/stage/personalize-body-bindings';import {selectBodyPosePresentation} from '../shared/stage/personalize-body-presentation';import {VISUAL_GENE_SHA} from '../shared/stage/personalize-visual';
+import {SingleEmojiCues} from '../electron/stage/single-emoji-cues';import {DEFAULT_EMOJI_SETTINGS,readEmojiSettings} from '../shared/stage/single-emoji';
+import {claimedView} from '../electron/initiative/inner-loop/claim';import {OpeningHost} from '../electron/brain/opening-host';
+// Reads as text (test-affected selects this test when they change): 'electron/main.ts' (wiring rewrite step 4c: with electron/wiring/*.ts).
+import { WIRING_PRELUDE, cueChainSource, moodPublishSource, wiringFunction, wiringSource } from './helpers/wiring-source';
+const raw=wiringSource(),ast=ts.createSourceFile('main.ts',raw,ts.ScriptTarget.Latest,true);
+function declaration(name:string){return wiringFunction(name);} // wiring rewrite step 4c: exactly one, at any depth of the wiring
 const js=(source:string)=>ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None}}).outputText;
 test('actual host initializer and actual mood caller use the existing text-only adapter only after an accepted opportunity',async()=>{
  let callback:ts.Node|undefined;function visit(n:ts.Node){if(ts.isNewExpression(n)&&n.expression.getText(ast)==='CompanionService')callback=n.arguments?.[1];ts.forEachChild(n,visit);}visit(ast);assert.ok(callback);
@@ -34,7 +36,7 @@ test('actual host initializer and actual mood caller use the existing text-only 
  // I-027 心情调整员: the mood callback hands every view to it (it only watches; tests/i027-mood-judge.test.ts covers it).
  moodJudge:{watch:()=>{}},
  };
- const create=new Function(...Object.keys(env),js('let r20ProactiveOffers=null;let observedEmojiContext="";let moodCueOwner=null;\n'
+ const create=new Function(...Object.keys(env),js(WIRING_PRELUDE+'\nlet r20ProactiveOffers=null;let observedEmojiContext="";let moodCueOwner=null;\n'+cueChainSource()+'\n'+moodPublishSource()/* step 4f: the publish is a step list */+'\n'
   +declaration('singleEmojiContext')+'\n'+declaration('refreshSingleEmojiContext')+'\n'
   +'const singleEmojiCues=new SingleEmojiCues({context:singleEmojiContext,settings:()=>emojiSettings,...emojiWindowPorts});\n'
   +declaration('withBodyPose')+'\n'+declaration('r20OfferPresentable')+'\n'+declaration('initR20ProactiveOffers')

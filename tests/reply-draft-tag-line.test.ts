@@ -1,9 +1,9 @@
-// 2026-11-08 (stable build, the user: "又把思考链发出来了"): a reply began with a bare tag line, then a blank line, then her reply;
+// 2026-11-08 (stable build): a reply began with a bare tag line, then a blank line, then her reply;
 // the tag was not in WRAPPER_TAGS, so it was shown and read aloud. A first line of bare tags is now cut. Synthetic texts only.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ReplyDraftGuard } from '../electron/reply-draft-guard';
-import { MoodReplyProtocol } from '../electron/mood-chat';
+import { ReplyDraftGuard } from '../electron/brain/reply-draft-guard';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
 
 function chunkings(text: string): string[][] {
   const pieces = (sizes: (i: number) => number) => { const out: string[] = []; for (let i = 0, n = 0; i < text.length; n++) { const size = Math.max(1, sizes(n)); out.push(text.slice(i, i + size)); i += size; } return out; };

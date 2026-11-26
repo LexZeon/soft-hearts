@@ -1,19 +1,20 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
-import { CompanionCommandHost } from '../electron/companion-command-host';
-import { classifyCompanionCommand, formatCompanionCommandReceipt } from '../electron/companion-command-intent';
-import { createCommandDialogueTurn } from '../electron/companion-command-dialogue';
-import { applyPetTopmost } from '../electron/pet-topmost';
+import { CompanionCommandHost } from '../electron/settings/companion-command-host';
+import { classifyCompanionCommand, formatCompanionCommandReceipt } from '../electron/settings/companion-command-intent';
+import { createCommandDialogueTurn } from '../electron/settings/companion-command-dialogue';
+import { applyPetTopmost } from '../electron/stage/pet-topmost';
+import { WIRING_PRELUDE, registeredInRegisterIpc, wiringFunction, wiringRegistration } from './helpers/wiring-source';
 
-const filename = new URL('../electron/main.ts', import.meta.url);
-const source = ts.createSourceFile('main.ts', fs.readFileSync(filename, 'utf8'), ts.ScriptTarget.Latest, true);
-const names = ['noteCompanionTopmostWrite', 'commitCompanionTopmost'];
-const functions = source.statements.filter(s => ts.isFunctionDeclaration(s) && s.name && names.includes(s.name.text));
+// Wiring rewrite step 4: the companion commands are in electron/wiring/settings-wiring.ts; each is read across main.ts and
+// electron/wiring/*.ts (wiringFunction: exactly one each), and what it reads from the settings part's needs comes from the sandbox's
+// names (WIRING_PRELUDE).
+const names =['noteCompanionTopmostWrite', 'commitCompanionTopmost'];
+const functions = names.map(name => wiringFunction(name));
 assert.equal(functions.length, names.length);
-const js = ts.transpileModule(functions.map(s => s.getText(source)).join('\n'),
+const js = ts.transpileModule([WIRING_PRELUDE, ...functions].join('\n'),
   { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
 
 function adapter(nativeFails = false, persistFails = false) {
@@ -78,19 +79,18 @@ test('actual newConversation synchronously revokes completed clarification befor
     host: async () => { view = await host.run(ticket); return view!; },
     turn: { push: () => {}, finish: async () => { finished++; pending.delete(input.requestId); } } });
   assert.equal(await dialogue.handle(input), 'handled'); assert.equal(finished, 1); assert.equal(pending.size, 0);
-  const register = source.statements.find(s => ts.isFunctionDeclaration(s) && s.name?.text === 'registerIPC');
-  assert.ok(register && ts.isFunctionDeclaration(register) && register.body);
-  const entry = register.body.statements.find(s => ts.isExpressionStatement(s) && ts.isCallExpression(s.expression)
-    && s.expression.expression.getText(source) === 'host' && ts.isStringLiteral(s.expression.arguments[0])
-    && s.expression.arguments[0].text === 'newConversation');
-  assert.ok(entry);
-  const entryJs = ts.transpileModule(entry.getText(source), { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
+  // Wiring rewrite step 4h: newConversation is 大脑's (electron/wiring/brain-wiring.ts register), still registered inside registerIPC's
+  // recorder; what it reads from its needs comes from this context's own names (needs is the context itself).
+  assert.ok(registeredInRegisterIpc('newConversation'));
+  const entryJs = ts.transpileModule(wiringRegistration('newConversation'), { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
   let newConversation!: () => Promise<void>, release!: () => void;
   const gate = new Promise<void>(resolve => { release = resolve; });
-  vm.runInNewContext(entryJs, { host: (_name: string, handler: typeof newConversation) => { newConversation = handler; },
+  const context: Record<string, unknown> = { host: (_name: string, handler: typeof newConversation) => { newConversation = handler; },
     companionCommands: host, pending, userProfileManagement: { cancelPending() {} }, voiceHost: { history: null },
     revokeVoice() {}, stopSystemAudio() {}, proactiveSpeechGate: { cancel() {} }, clearVisionContext() {},
-    speechRuntime: { stop() {} }, clearReplySpeech() {}, companion: { newConversation: () => gate }, refreshVisionContext() {} });
+    speechRuntime: { stop() {} }, clearReplySpeech() {}, companion: { newConversation: () => gate }, refreshVisionContext() {} };
+  context.needs = context;
+  vm.runInNewContext(entryJs, context);
   const clearing = newConversation();
   try {
     const stale = await host.choose(7, { requestId: input.requestId, choiceId: view!.choices[0].choiceId });

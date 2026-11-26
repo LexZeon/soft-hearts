@@ -10,7 +10,7 @@
  *  1. electron/main.ts 的聊天入口：每条普通的用户消息调一次 PauseTalkHost.userTurn(请求号, 原文, 窗口报来的"上一条说到哪", 角色号)。
  *     它马上返回（返回这一轮要带的背景，或者 null），haiku 在后台起（knobs.startDelayMs 以后），从不挡第一个字。
  *  2. 聊天回调里每段放行的字（和窗口收到的同一段）调 delta(请求号, 字)：只在开关开着时记在内存里，给"没说完的话"用。
- *  3. 窗口（src/ui/reply-presentation.ts）收到 desk:pause-talk 的计划，只对还没放出去的句子生效。
+ *  3. 窗口（src/brain/reply-presentation.ts）收到 desk:pause-talk 的计划，只对还没放出去的句子生效。
  *  4. 你在她停着（或者气泡还没放完）时发新消息：窗口先停住，把"上一条说到第几个字"随请求报给 host（只是一个数）；
  *     host 用自己记下的原文算出没说出口的那段，截到 knobs.backgroundMaxChars，只放进下一轮的私有上下文一次。
  *
@@ -18,14 +18,14 @@
  *  - 第一句永远不等 haiku：计划最早只能作用在"第 1 句说完以后"。
  *  - 一条回复最多问一次 haiku；新消息来了，旧的调用中止、旧答案作废；取消、出错、换了角色的答案丢掉，从不补用。
  *  - 交给 haiku 的只有：她的性格摘要（角色卡自己的文字）、四个倾向、此刻的心情标签和五个数、困不困、脸红没有、时间，
- *    以及你这条消息（和发给 Opus 的同一条，截短）。不给记忆、画像、屏幕、听到的东西，也不给她的回复。
+ *    以及你这条消息（和发给 Opus 的同一条，截短）；I-205 起还有最近几句聊天（和内心循环同一块：最近 6 句、600 字、24 小时内、只看当前角色）。不给记忆、画像、屏幕、听到的东西，也不给她正在写的这条回复。
  *  - 没说出口的话只进下一轮的私有上下文（不进记忆、日记、画像、体验记录、开发者面板），只用一次；她这条回复照旧只归档一次，
  *    这段话不会作为"她说过的话"再写一遍。
  *  - 开关关着：不问 haiku、不发计划、不带背景，气泡和朗读的时间和原来一模一样（tests/f7-pause-talk.test.ts 钉住）。
  *
  * 假实现在 fake.ts，守约测试在 tests/f7-pause-talk.test.ts。
  */
-import type { MoodValues } from '../../mood';
+import type { MoodValues } from '../../foundation/mood';
 
 /** 一处想一想的小停顿：第 after 句说完以后，多停 ms 毫秒再出下一句（从 1 数）。 */
 export interface PauseTalkPause { readonly after: number; readonly ms: number }
@@ -59,7 +59,7 @@ export interface PauseTalkNow {
   readonly at: number;
 }
 
-/** 和 electron/inner-loop/model.ts quickLineWithClaude 的文字结果同样的形状：提示词、系统提示词、中止信号 → haiku 的原文。 */
+/** 和 electron/initiative/inner-loop/model.ts quickLineWithClaude 的文字结果同样的形状：提示词、系统提示词、中止信号 → haiku 的原文。 */
 export type PauseTalkAsk = (prompt: string, systemPrompt: string, signal: AbortSignal) => Promise<string>;
 
 /** 这条消息没问 haiku 时为什么。'budget'：互动余额（I-010）这次没给余地（安静的角色不是每条都问）。 */

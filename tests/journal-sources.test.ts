@@ -1,23 +1,23 @@
-// 体验记录 (E2): the existing hosts' moments become journal inputs (electron/journal/sources.ts and the small hooks in
-// electron/mood.ts, companion.ts, her-life, her-needs, relationship, user-state, inner-loop and rps). The end-to-end test runs a
+// 体验记录 (E2): the existing hosts' moments become journal inputs (electron/memory/journal/sources.ts and the small hooks in
+// electron/mood/mood.ts, companion.ts, her-life, her-needs, relationship, user-state, inner-loop and rps). The end-to-end test runs a
 // chat turn of the real shape and checks that nothing the user or she said reaches the journal file.
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test, { type TestContext } from 'node:test';
-import { CompanionService } from '../electron/companion';
-import { MoodHost } from '../electron/mood';
-import { CharacterJournal, LABEL_STABLE_MS, MoodJournal, TOUCH_GAP_MS, boredomLevel, longingLevel, type MoodJournalEvent } from '../electron/journal/sources';
-import { JournalWriter } from '../electron/journal/writer';
-import { InnerLoop } from '../electron/inner-loop/inner-loop';
-import { ProactiveSpeechGate } from '../electron/proactive-speech-gate';
-import { RpsHost } from '../electron/rps/host';
-import { RpsStore } from '../electron/rps/store';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
-import type { JournalInput } from '../shared/journal';
-import type { MoodView } from '../shared/mood-runtime';
-import type { ProviderConfig } from '../shared/contracts';
+import { CompanionService } from '../electron/brain/companion';
+import { MoodHost } from '../electron/mood/mood';
+import { CharacterJournal, LABEL_STABLE_MS, MoodJournal, TOUCH_GAP_MS, boredomLevel, longingLevel, type MoodJournalEvent } from '../electron/memory/journal/sources';
+import { JournalWriter } from '../electron/memory/journal/writer';
+import { InnerLoop } from '../electron/initiative/inner-loop/inner-loop';
+import { ProactiveSpeechGate } from '../electron/initiative/proactive-speech-gate';
+import { RpsHost } from '../electron/initiative/rps/host';
+import { RpsStore } from '../electron/initiative/rps/store';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
+import type { JournalInput } from '../shared/memory/journal';
+import type { MoodView } from '../shared/mood/mood-runtime';
+import type { ProviderConfig } from '../shared/foundation/settings';
 
 const provider: ProviderConfig = { kind: 'claude', baseUrl: 'https://synthetic.example/v1', model: 'fixture' };
 const values = (n = 50) => ({ D: n, O: n, E: n, N: n, C: n });
@@ -102,7 +102,9 @@ test('MoodHost tells the journal each applied change with before and after; a re
   host.event({ type: 'appraisal', id: 'appraisal-x', responseTo: 'not-the-last-turn', delta: { O: 5 } });
   host.event({ type: 'appraisal', id: 'appraisal-1', responseTo: 'turn-1', delta: { O: 5, D: 3 }, context: 'support', reason: '模型自己写的原因' });
   host.lift({ id: 'lift-1', delta: { O: 4 }, reason: '被用户哄好了' });
-  assert.deepEqual(events.map(event => [event.type, event.reason ?? null]), [['food', null], ['chat', '收到用户聊天'], ['appraisal', '模型自己写的原因'], ['lift', '被用户哄好了']]);
+  assert.deepEqual(events.map(event => [event.type, event.reason ?? null]), [['food', null], ['chat', '收到用户聊天'], ['appraisal', '模型自己写的原因'],
+    ['lift', '害羞了一下'], // 心情第二批: the warm words raised a blush; the blush lifts E a little
+    ['lift', '被用户哄好了']]);
   const food = events[0];
   assert.ok(food.after.D > food.before.D && food.after.E > food.before.E, 'a snack raises D and E');
   assert.ok(events[2].after.O - events[2].before.O > 3);
@@ -147,8 +149,11 @@ test('end to end: a chat turn of the real shape, a pat, a snack, a small need an
   const types = text.split('\n').filter(Boolean).map(line => JSON.parse(line)).map(entry => entry.type + (entry.source ? `:${entry.source}` : entry.event ? `:${entry.event}` : ''));
   for (const expected of ['mood-event:chat', 'mood-event:appraisal', 'user-state', 'mood-event:touch', 'mood-event:food', 'her-need:started', 'her-need:soothed', 'mood-event:soothed', 'her-life'])
     assert.ok(types.includes(expected), `${expected} in ${types.join(', ')}`);
-  for (const words of [userText, reply, tailReason, '老板', '4471', '门禁', '抱抱你', '工作', 'Gene', '被老板骂', opening])
+  for (const words of [userText, reply, tailReason, '老板', '门禁', '抱抱你', '工作', 'Gene', '被老板骂', opening])
     assert.ok(!text.includes(words), `the journal must not contain ${words}`);
+  // The secret number as a number of its own: a 13-digit timestamp that happens to hold the same four digits is not a leak
+  // (the 2026-11-12 build failed on exactly that).
+  assert.ok(!/(?<![0-9])4471(?![0-9])/u.test(text), 'the journal must not contain the number 4471');
   assert.match(text, /"reason":"你说的话让她担心你"/);
 });
 

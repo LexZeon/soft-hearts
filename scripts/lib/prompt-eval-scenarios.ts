@@ -1,9 +1,9 @@
 // R28 prompt evaluation: original, synthetic scenarios only. No real chat
 // records, no private character cards: the persona is the bundled Gene preset
-// (shared/presets/gene-balanced-card.json), the same one a fresh install gets.
-import type { ChatMessage } from '../../shared/contracts';
-import type { MoodContext } from '../../shared/mood';
-import type { ChatGestureIntent } from '../../shared/chat-gesture';
+// (shared/cards/presets/gene-balanced-card.json), the same one a fresh install gets.
+import type { ChatMessage } from '../../shared/foundation/chat';
+import type { MoodContext } from '../../shared/foundation/mood';
+import type { ChatGestureIntent } from '../../shared/actions/chat-gesture';
 
 export interface TurnExpectation {
   /** Appraisal contexts that fit this message (anything else counts as a miss). */

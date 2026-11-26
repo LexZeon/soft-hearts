@@ -1,13 +1,13 @@
 // I-024 模型体检 in the host: the per-model record file, haiku asked at most once (names only), the page's checked matches,
-// the user's on/off, and 试一下 relayed to the pet. Temporary directories and a fake haiku only; no Electron, no real Claude.
+// the user's on/off, and 试一下 relayed to the companion. Temporary directories and a fake haiku only; no Electron, no real Claude.
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import os from 'node:os';
 import path from 'node:path';
 import { mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
-import { ModelCapabilityStore, MODEL_CAPABILITIES_FILE } from '../electron/model-capability-store';
-import { CapabilityPreviewRelay, ModelCapabilityHost } from '../electron/model-capability-host';
-import { MODEL_CHECK_SYSTEM_PROMPT, type ModelCapabilityUpdate, type ModelCheckRequest } from '../shared/model-capability-check';
+import { ModelCapabilityStore, MODEL_CAPABILITIES_FILE } from '../electron/stage/model-capability-store';
+import { CapabilityPreviewRelay, ModelCapabilityHost } from '../electron/stage/model-capability-host';
+import { MODEL_CHECK_SYSTEM_PROMPT, type ModelCapabilityUpdate, type ModelCheckRequest } from '../shared/stage/model-capability-check';
 
 const KEY = 'a'.repeat(64), OTHER = 'b'.repeat(64);
 async function folder() { return mkdtemp(path.join(os.tmpdir(), 'soft-i024-')); }

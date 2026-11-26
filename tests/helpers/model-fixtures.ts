@@ -8,7 +8,7 @@
  * chin ~16.8, eyes ~17.95, mouth ~17.13, brows ~18.32, crown (hair) ~19.65.
  */
 import { Bone, BufferGeometry, Float32BufferAttribute, MeshBasicMaterial, Skeleton, SkinnedMesh, Uint16BufferAttribute } from 'three';
-import type { ModelProfileInput } from '../../shared/model-profile';
+import type { ModelProfileInput } from '../../shared/stage/model-profile';
 import type { PmxLiteModel } from './pmx-lite';
 
 export type ToyRegion = 'mouth' | 'eyes' | 'eyeLeft' | 'eyeRight' | 'brows' | 'cheeks' | 'body';

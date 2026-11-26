@@ -12,19 +12,19 @@ import path from 'node:path';
 import {
   HER_LIFE_TABLE, herLifeChatLine, herLifeSwitchOffer, herLifeWeights, pickHerLifeActivity, stepHerLife, type HerLifeActivity, type HerLifeRecord,
   type HerLifeStepInput, type HerLifeView,
-} from '../shared/her-life';
-import { HerLifeHost, type HerLifeTickInput } from '../electron/her-life/host';
-import { DEFAULT_MOOD_PARAMETERS, type MoodParameters } from '../shared/mood';
+} from '../shared/stage/her-life';
+import { HerLifeHost, type HerLifeTickInput } from '../electron/stage/her-life/host';
+import { DEFAULT_MOOD_PARAMETERS, type MoodParameters } from '../shared/foundation/mood';
 import { watchKindOf } from '../shared/behaviors/watch-along/kind';
 import { watchDirection, watchGaze } from '../shared/behaviors/watch-along/direction';
 import { BrowserVideoGate, browserVideoQuota } from '../shared/behaviors/watch-along/gate';
 import { WATCH_ALONG_KNOBS } from '../shared/behaviors/watch-along/knobs';
 import { HerLifeStage, readScreenPlace } from '../src/stage/her-life-stage';
-import { GLANCE_GAP_MS, PROBE_STALE_MS, ScreenGlance } from '../electron/screen-glance';
-import type { ForegroundProbe, ForegroundReading } from '../electron/foreground-app';
-import { SCREEN_ACTIVITIES, parseGlanceAnswer, type ScreenActivity } from '../shared/screen-activity';
-import { createWatchAlong } from '../electron/watch-along';
-import { createUserActivity } from '../electron/user-activity';
+import { GLANCE_GAP_MS, PROBE_STALE_MS, ScreenGlance } from '../electron/senses/screen-glance';
+import type { ForegroundProbe, ForegroundReading } from '../electron/senses/foreground-app';
+import { SCREEN_ACTIVITIES, parseGlanceAnswer, type ScreenActivity } from '../shared/senses/screen-activity';
+import { createWatchAlong } from '../electron/senses/watch-along';
+import { createUserActivity } from '../electron/senses/user-activity';
 
 const MINUTE = 60_000;
 const card = (motionMinutes = 5, weights: Partial<MoodParameters['weights']> = {}): MoodParameters => ({

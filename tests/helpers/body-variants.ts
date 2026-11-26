@@ -3,7 +3,7 @@
  * PMX bytes written). Each edit moves bone rest positions in place, on a copy of Gene's parsed bones or the stage's rest
  * bones (tests/helpers/gene-stage-harness.ts restEdit). The hands keep Gene's size and shape: only where they hang changes.
  */
-import type { Vec3 } from '../../shared/universal-skeleton';
+import type { Vec3 } from '../../shared/foundation/universal-skeleton';
 import { descendants, type EditableBone } from './hand-variants';
 
 const SIDES = [['左', 1], ['右', -1]] as const;

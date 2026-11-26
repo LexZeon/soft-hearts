@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, realpath, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { AmbientAudioStore, type AmbientAudioStoreOptions } from '../electron/ambient-audio-store';
-import { atomicWriteFile } from '../electron/atomic-file';
-import { AMBIENT_AUDIO_LIMITS, validateAmbientLanguage, type AmbientScope, type AmbientTranscriptInput } from '../shared/ambient-audio';
+import { AmbientAudioStore, type AmbientAudioStoreOptions } from '../electron/senses/ambient-audio-store';
+import { atomicWriteFile } from '../electron/foundation/atomic-file';
+import { AMBIENT_AUDIO_LIMITS, validateAmbientLanguage, type AmbientScope, type AmbientTranscriptInput } from '../shared/senses/ambient-audio';
 
 const now = 1_800_000_000_000;
 const scope: AmbientScope = { characterId: 'gene', providerScope: 'local:model-a' };

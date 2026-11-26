@@ -5,40 +5,34 @@ import { createHash } from 'node:crypto';
 import vm from 'node:vm';
 import ts from 'typescript';
 import { transformSync } from 'esbuild';
-import { SpeechPlaybackActivity } from '../electron/speech-playback-activity';
-import { FatigueActivityBridge } from '../electron/fatigue-activity';
-import { SpeechRuntime } from '../electron/speech-runtime';
-import { CompletedReplySpeech } from '../electron/completed-reply-speech';
-import { VisualSelfRuntime } from '../electron/visual-self-runtime';
-import { prepareCharacterSpeechPreview } from '../electron/speech-preview';
-import { ReplySpeechStyles } from '../electron/speech-emotion';
-import { DEFAULT_TTS_CONFIG, effectiveTtsConfig } from '../shared/tts';
-import { VoiceOutput } from '../src/ui/VoiceOutput';
+import { SpeechPlaybackActivity } from '../electron/voice/speech-playback-activity';
+import { FatigueActivityBridge } from '../electron/mood/fatigue-activity';
+import { SpeechRuntime } from '../electron/voice/speech-runtime';
+import { CompletedReplySpeech } from '../electron/voice/completed-reply-speech';
+import { VisualSelfRuntime } from '../electron/senses/visual-self-runtime';
+import { prepareCharacterSpeechPreview } from '../electron/voice/speech-preview';
+import { ReplySpeechStyles } from '../electron/mood/speech-emotion';
+import { DEFAULT_TTS_CONFIG, effectiveTtsConfig } from '../shared/voice/tts';
+import { characterTtsConfig } from '../shared/voice/character-voice-resolver';
+import { VoiceOutput } from '../src/voice/VoiceOutput';
+import { WIRING_PRELUDE, wiringDeclaration, wiringFunction, wiringHandler } from './helpers/wiring-source';
+import { ownLineYields } from '../shared/behaviors/interrupt/own-line';
+import { readingScope } from '../electron/voice/stage-voices';
+// Reads as text (test-affected selects this test when they change): 'electron/main.ts', 'electron/wiring/voice-wiring.ts'.
 
-const hostSource = await readFile(new URL('../electron/main.ts', import.meta.url), 'utf8');
-const ast = ts.createSourceFile('main.ts', hostSource, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-function declaration(name: string): string {
-  const nodes = ast.statements.filter(n => ts.isFunctionDeclaration(n) && n.name?.text === name);
-  assert.equal(nodes.length, 1, `actual host declaration ${name}`);
-  return nodes[0].getText(ast);
-}
-function callback(name: string): string {
-  const nodes: ts.Node[] = [];
-  const visit = (n: ts.Node): void => {
-    if (ts.isCallExpression(n) && n.expression.getText(ast) === 'scopedHost'
-      && ts.isStringLiteral(n.arguments[0]) && n.arguments[0].text === name) nodes.push(n.arguments[1]);
-    ts.forEachChild(n, visit);
-  };
-  visit(ast); assert.equal(nodes.length, 1, `actual scoped callback ${name}`);
-  return nodes[0].getText(ast);
-}
-const scopeDeclarations = ast.statements.flatMap(n => ts.isVariableStatement(n) ? [...n.declarationList.declarations] : [])
-  .filter(n => n.name.getText(ast) === 'speechScope');
-assert.equal(scopeDeclarations.length, 1);
+// Wiring rewrite step 4: speechScope, replySpeechBusy, the playback lease's checks and the speech handlers are 声音's
+// (electron/wiring/voice-wiring.ts); each is still exactly one in the wiring (main.ts and electron/wiring/*.ts), and what the moved lines
+// read through the part's needs comes from the context's own names (WIRING_PRELUDE).
+const declaration = (name: string): string => wiringFunction(name);
+const callback = (name: string): string => wiringHandler(name);
+const scopeDeclaration = wiringDeclaration('speechScope');
+assert.match(scopeDeclaration, /^const speechScope = /);
 const extracted = [
-  `var speechScope = ${scopeDeclarations[0].initializer!.getText(ast)};`,
+  WIRING_PRELUDE,
+  wiringDeclaration('ownerScope').replace(/^const /, 'var '), // I-209 stage voice: speechScope(replyId) reads the reading's owner
+  scopeDeclaration.replace(/^const /, 'var '),
   ...['replySpeechBusy', 'syncFatigueActivity', 'noteVisionUserActivity', 'cancelProactiveVision',
-    'cancelAmbientPlayback', 'suspendAmbientSpeech', 'updateReadingPause', 'canBeginSpeechPlaybackActivity'].map(declaration),
+    'cancelAmbientPlayback', 'suspendAmbientSpeech', 'updateReadingPause', 'canBeginSpeechPlaybackActivity', 'replySurface', 'herOnScreen', 'heldLineSpeakable'].map(declaration),
   `var begin = ${callback('beginSpeechPlaybackActivity')};`,
   `var end = ${callback('endSpeechPlaybackActivity')};`,
   `var prepare = ${callback('prepareCharacterSpeechPreview')};`,
@@ -66,7 +60,8 @@ function harness() {
   // No active visual/audio initiative exists. These are closed native-service ports,
   // while the real host cancellation declarations and style/runtime objects execute.
   const context: Record<string, any> = {
-    r20ProactiveOffers:null, createHash, structuredClone, Date, prepareCharacterSpeechPreview, effectiveTtsConfig, DEFAULT_TTS_CONFIG,
+    ownLineYields, readingScope, // I-174 item 3: the rule noteVisionUserActivity asks; I-209 stage voice: whose reading scope
+    r20ProactiveOffers:null, unbound: null, pet: null, createHash, structuredClone, Date, prepareCharacterSpeechPreview, effectiveTtsConfig, characterTtsConfig, DEFAULT_TTS_CONFIG,
     companion: { currentSpeechScope: () => { if (!available) throw Error('context unavailable'); return currentCard.id; },
       mood: { get: () => ({ snapshot: { primary: 'calm', context: 'neutral' } }) } },
     store: { current: { tts: config, model: { path: modelPath } } },

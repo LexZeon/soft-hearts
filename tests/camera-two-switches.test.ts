@@ -1,26 +1,32 @@
 // I-036：摄像头共享展开后是两个独立开关——「发图片」（不用下载；每条消息带一张约 320×240 的小图，
 // 叫她"看看我"或点「拍一张给她看」时发清楚的一张）和「姿势识别」（本机 RTMPose，第一次要下载组件）。两个都开时，姿势有明显变化
 // 或十分钟没发过才带小图。发送时不现拍：小图是窗口事先交给宿主、宿主只留最新一张的那张。"别看"之后什么都不拍，直到叫她看。
-// 这里用真实的媒体开关（electron/runtime.ts）、真实的宿主附图（electron/look-attachments.ts + electron/camera-glance.ts）、真实的
+// 这里用真实的媒体开关（electron/senses/media-runtime.ts）、真实的宿主附图（electron/senses/look-attachments.ts + electron/senses/camera-glance.ts）、真实的
 // 聊天请求校验和这一轮的感知行，按 electron/main.ts 的接法走；取图口和 Claude 是假的，不开窗口、不碰摄像头。
+// I-085 第 3 步 之后，平常的消息不再带小图（每带一次图就要换常驻进程，第一个字慢约 0.9 秒）。
+// 下面讲"每条带小图"的三个测试把 textFirst 关掉（shared/behaviors/text-first/knobs.ts enabled: false，就是撤回的那条路），
+// 测的是撤回后小图那一路仍然对；选 B 之后的行为在 tests/i085-text-first.test.ts。
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import type { Attachment, RuntimeState } from '../shared/contracts';
-import { MediaRuntime, cameraImagesRevoked, type CameraPolicy } from '../electron/runtime';
-import { LookTurns } from '../electron/look-turns';
-import { LookAttachments } from '../electron/look-attachments';
-import { CameraGlance, gistChanged, movementBand, poseGist } from '../electron/camera-glance';
-import { validateChatRequest } from '../electron/validation';
-import { lookHint, turnAttachments } from '../src/look-send';
-import { GLANCE_LINE, PERCEPTION_LINE_MAX, perceptionTurnLine, perceptionTurnState } from '../shared/perception-rule';
-import { ACTIVITY_PHRASES, type ScreenActivity } from '../shared/screen-activity';
-import { GLANCE_BLIND_MS, GLANCE_MAX_AGE_MS, GLANCE_MAX_CHARS, glanceSize } from '../shared/camera-glance';
-import { CameraTrayEye, TRAY_TIPS } from '../electron/pose/tray';
-import type { PoseSignal } from '../shared/pose-signals';
+import type { Attachment } from '../shared/foundation/chat';
+import type { RuntimeState } from '../shared/foundation/runtime-state';
+import { MediaRuntime, cameraImagesRevoked, type CameraPolicy } from '../electron/senses/media-runtime';
+import { LookTurns } from '../electron/senses/look-turns';
+import { LookAttachments } from '../electron/senses/look-attachments';
+import { CameraGlance, gistChanged, movementBand, poseGist } from '../electron/senses/camera-glance';
+import { validateChatRequest } from '../electron/settings/validation';
+import { lookHint, turnAttachments } from '../src/senses/look-send';
+import { GLANCE_LINE, PERCEPTION_LINE_MAX, perceptionTurnLine, perceptionTurnState } from '../shared/brain/perception-rule';
+import { ACTIVITY_PHRASES, type ScreenActivity } from '../shared/senses/screen-activity';
+import { GLANCE_BLIND_MS, GLANCE_MAX_AGE_MS, GLANCE_MAX_CHARS, glanceSize } from '../shared/senses/camera-glance';
+import { CameraTrayEye, TRAY_TIPS } from '../electron/senses/pose/tray';
+import type { PoseSignal } from '../shared/senses/pose-signals';
 import { installPetWindow } from './helpers/pet-window-dom';
-import { PetUI, renderPet } from '../src/ui/PetUI';
-import { CAMERA_BOTH_HINT, CAMERA_GROUP_HINT, CAMERA_GROUP_TITLE, CAMERA_IMAGES_HINT, CAMERA_IMAGES_TITLE, CAMERA_POSE_HINT, CAMERA_POSE_TITLE } from '../src/ui/CameraSharingPanel';
+import { PetUI, renderPet } from '../src/stage/PetUI';
+import { CAMERA_BOTH_HINT, CAMERA_GROUP_HINT, CAMERA_GROUP_TITLE, CAMERA_IMAGES_HINT, CAMERA_IMAGES_TITLE, CAMERA_POSE_HINT, CAMERA_POSE_TITLE } from '../src/senses/CameraSharingPanel';
+// Reads as text (test-affected selects this test when they change): 'electron/main.ts' (wiring rewrite step 4c: with electron/wiring/*.ts).
+import { wiringSource } from './helpers/wiring-source';
 
 const small = (n: number) => `data:image/jpeg;base64,/9j/small${n}AA==`;
 const clear = 'data:image/jpeg;base64,/9j/clearAAAA';
@@ -32,11 +38,11 @@ function policy(mode: 'local' | 'blocked' | 'share') {
   return { value, asked };
 }
 
-const signal = (over: Partial<PoseSignal> = {}): PoseSignal => ({ present: true, confidence: 0.9, facing: 'toward', posture: 'sitting', energy: 0.1,
-  rhythm: false, tempo: null, events: [], hand: null, capability: 'full', ...over });
+const signal = (over: Partial<PoseSignal> = {}): PoseSignal => ({ present: true, confidence: 0.9, facing: 'toward', facingConfidence: 0.9, posture: 'sitting', postureConfidence: 0.9, energy: 0.1,
+  rhythm: false, tempo: null, events: [], eventConfidence: {}, hand: null, capability: 'full', face: null, points: [], head: null, people: 1, ...over });
 
 /** The host as electron/main.ts wires it, with a fake camera window and a fake pose signal. */
-function host(mode: 'local' | 'blocked' | 'share' = 'local') {
+function host(mode: 'local' | 'blocked' | 'share' = 'local', textFirst = true) {
   const pose = policy(mode);
   let now = 1_000_000, generation = 0, poseNow: PoseSignal | null = null;
   const media = new MediaRuntime(undefined, pose.value, undefined, () => now);
@@ -53,6 +59,7 @@ function host(mode: 'local' | 'blocked' | 'share' = 'local') {
     captureCamera: async () => { captures.push('clear'); return media.sharesCameraFrames() ? { source: 'camera', dataUrl: clear } : null; },
     glance: () => glance.take(), seenCamera: () => glance.seen(),
     holdCamera: held => { media.holdCamera(held); },
+    textFirst: () => textFirst,
   });
   const claude: { images: string[]; sight: string; asked: number }[] = [];
   let id = 0;
@@ -64,7 +71,7 @@ function host(mode: 'local' | 'blocked' | 'share' = 'local') {
     claude.push({ images: frames.current().map(a => a.dataUrl), sight, asked: frames.asked().length });
     return claude.at(-1)!;
   }
-  /** The owner window hands over a small frame (src/ui/camera-glance-sampler.ts → publishCameraFrame). */
+  /** The owner window hands over a small frame (src/senses/camera-glance-sampler.ts → publishCameraFrame). */
   const keep = (n: number, owner: 'pet' | 'controls' = 'pet') => media.publishCamera(owner, small(n));
   return { media, pose, look, glance, send, keep, captures, claude,
     advance: (ms: number) => { now += ms; }, setPose: (value: PoseSignal | null) => { poseNow = value; } };
@@ -134,8 +141,8 @@ test('迁移：旧的单个摄像头开关（老窗口、内部通道的 camera�
 
 // ---------------------------------------------------------------- what each message carries
 
-test('只开发图片：每条消息带一张事先备好的小图，发送时不现拍；感知行说是小图', async () => {
-  const h = host('local');
+test('只开发图片（文字为主关掉时）：每条消息带一张事先备好的小图，发送时不现拍；感知行说是小图', async () => {
+  const h = host('local', false);
   h.media.update({ cameraImages: true }, 'pet');
   h.keep(1);
   const first = await h.send('今天好累啊');
@@ -158,7 +165,7 @@ test('第一个字不变慢：普通消息不等摄像头（取清楚画面的�
   let waited = false;
   const look = new LookAttachments(new LookTurns(), { noteActivity() {}, state: () => ({ screen: false, camera: true, scope: 's' }),
     sharesCameraFrames: () => media.sharesCameraFrames(), revision: () => media.revision, generation: () => 0, opening: s => media.openings[s],
-    captureScreen: async () => null, captureCamera: () => { waited = true; return new Promise(() => {}); }, glance: () => glance.take() });
+    captureScreen: async () => null, captureCamera: () => { waited = true; return new Promise(() => {}); }, glance: () => glance.take(), textFirst: () => false });
   const started = performance.now();
   const frames = await look.request({ text: '晚上吃什么' });
   assert.equal(frames.length, 1);
@@ -184,8 +191,8 @@ test('叫她看（"你看看我"等）发清楚的一张；按「拍一张给她
   assert.deepEqual(turnAttachments([snapshot], [{ source: 'camera', dataUrl: small(9), shareTicket: 'x' }]), [snapshot]);
 });
 
-test('两个都开：姿势有明显变化或十分钟没发过才带小图；没有变化时不带，只有本机识别的姿势', async () => {
-  const h = host('local');
+test('两个都开（文字为主关掉时）：姿势有明显变化或十分钟没发过才带小图；没有变化时不带，只有本机识别的姿势', async () => {
+  const h = host('local', false);
   h.media.update({ cameraImages: true, cameraLocal: true }, 'pet');
   h.setPose(signal());
   h.keep(1);
@@ -193,7 +200,7 @@ test('两个都开：姿势有明显变化或十分钟没发过才带小图；�
   h.keep(2); h.advance(3_000);
   const same = await h.send('嗯');
   assert.deepEqual(same.images, [], '姿势没变：不带');
-  assert.match(same.sight, /摄像头开着，但这一轮你没看画面/);
+  assert.match(same.sight, /摄像头开着，这一轮没有用户的画面/); // I-084 wording
   h.setPose(signal({ posture: 'standing' })); h.keep(3); h.advance(3_000);
   assert.deepEqual((await h.send('我站起来了')).images, [small(3)], '坐→站：带');
   h.setPose(signal({ posture: 'standing', energy: 0.7 })); h.keep(4); h.advance(3_000);
@@ -223,8 +230,8 @@ test('变化规则本身：在不在、朝向、姿势、动作档位', () => {
 
 // ---------------------------------------------------------------- nothing when off or told not to look
 
-test('关着或说了"别看"：什么都不拍、不收、不发；叫她看才恢复', async () => {
-  const h = host('local');
+test('关着或说了"别看"（文字为主关掉时）：什么都不拍、不收、不发；叫她看才恢复', async () => {
+  const h = host('local', false);
   assert.throws(() => h.keep(1), '没开：交不进来');
   assert.deepEqual((await h.send('今天好累')).images, []);
   h.media.update({ cameraLocal: true }, 'pet');
@@ -304,7 +311,7 @@ test('托盘的小眼睛：任一开关开着就显示', () => {
   assert.deepEqual(shown, [[true, TRAY_TIPS.images], [true, TRAY_TIPS.both], [true, TRAY_TIPS.pose], [false, TRAY_TIPS.off]]);
 });
 
-// ---------------------------------------------------------------- the pet's camera button
+// ---------------------------------------------------------------- the companion's camera button
 
 test('桌宠的摄像头按钮：点一下只展开两个开关，不直接开摄像头；两个开关各发各的；被拒的弹回并说明原因', async t => {
   const dom = installPetWindow(t, { openControls: async () => {}, updatePetReply: async () => undefined, setPetWindowOperation: async () => undefined });
@@ -342,7 +349,7 @@ test('桌宠的摄像头按钮：点一下只展开两个开关，不直接开�
 });
 
 test('控制窗口隐私页的两行和桌宠面板用同样的话', () => {
-  const layout = readFileSync(new URL('../src/ui/layout.ts', import.meta.url), 'utf8');
+  const layout = readFileSync(new URL('../src/settings/layout.ts', import.meta.url), 'utf8');
   for (const words of [CAMERA_GROUP_TITLE, CAMERA_GROUP_HINT, CAMERA_BOTH_HINT, CAMERA_IMAGES_TITLE, CAMERA_IMAGES_HINT, CAMERA_POSE_TITLE, CAMERA_POSE_HINT])
     assert.ok(layout.includes(`'${words}'`), words);
   assert.match(layout, /toggle\('runtime-camera-images','发图片'/);
@@ -352,8 +359,8 @@ test('控制窗口隐私页的两行和桌宠面板用同样的话', () => {
 // ---------------------------------------------------------------- wiring in the hot files (text checks only where there is no other way)
 
 test('electron/main.ts 接线：小图走 CameraGlance、"别看"走 holdCamera、托盘眼睛跟两个开关；小图不进任何小模型调用', () => {
-  const main = readFileSync(new URL('../electron/main.ts', import.meta.url), 'utf8');
-  assert.match(main, /glance: \(\) => cameraGlance\.take\(\), seenCamera: \(\) => cameraGlance\.seen\(\)/);
+  const main = wiringSource();
+  assert.match(main, /glance: everyTurn => cameraGlance\.take\(everyTurn\), seenCamera: \(\) => cameraGlance\.seen\(\)/); // I-166: every turn takes it, also with 「姿势识别」 on
   assert.match(main, /holdCamera: held => \{ const previous = \{ \.\.\.media\.state \}; if \(media\.holdCamera\(held\)\) mediaChanged\(previous\); \}/);
   assert.match(main, /new CameraGlance\(\{ frame: \(\) => media\.cameraAttachment\(\)/);
   assert.match(main, /cameraEye\.images\(media\.sharesCameraFrames\(\)\);/);
@@ -361,7 +368,7 @@ test('electron/main.ts 接线：小图走 CameraGlance、"别看"走 holdCamera�
   assert.match(main, /cameraImagesRevoked\(previous, next\)/);
   assert.match(main, /const readoutControl = turnFrames\.asked\(\)\.length === 0/);
   // Every clear camera capture (a look, her proactive topic) stops while the user's "别看" holds.
-  assert.match(main, /async function captureSharedCamera[^\n]*\n\s*if \(!media\.sharesCameraFrames\(\)\) return null;[^\n]*\n\s*if \(media\.state\.cameraHeld\) return null;/);
+  assert.match(main, /async function captureSharedCamera[^\n]*\n\s*if \(!media\.sharesCameraFrames\(\)\) return null;[^\n]*\n\s*if \(media\.state\.cameraHeld\) (?:\{ miss\?\.\('off'\); )?return null;/); // 2026-11-21: the held case also says why ('off')
   // The only small-model call with a picture is the screen's rough reading (its own thumbnail), never a chat attachment.
   for (const call of main.match(/quickLineWithClaude\([^)]*\)/g) ?? []) assert.doesNotMatch(call, /attachments|cameraAttachment|cameraGlance|turnFrames/, call);
   assert.doesNotMatch(main, /moduleRouter\.userTurn\([^)]*attachments/);

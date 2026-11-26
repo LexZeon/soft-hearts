@@ -5,14 +5,17 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
-import { UserProfileStore, type UserProfileView } from '../electron/user-profile';
-import { UserProfileManagement } from '../electron/user-profile-management';
-import { ProfileViewGate } from '../src/ui/ProfileViewGate';
+import { UserProfileStore, type UserProfileView } from '../electron/memory/user-profile';
+import { UserProfileManagement } from '../electron/memory/user-profile-management';
+import { ProfileViewGate } from '../src/memory/ProfileViewGate';
+// Reads as text (test-affected selects this test when they change): 'electron/main.ts' (wiring rewrite step 4d: with electron/wiring/*.ts).
+import { wiringSource } from './helpers/wiring-source';
 
 const expected = (view: UserProfileView) => ({ scopeId: view.scopeId, generation: view.generation, revision: view.revision });
 
 test('actual scoped host callbacks and renderer gate use current profile identity through manage and switch', async () => {
-  const source = await readFile(new URL('../electron/main.ts', import.meta.url), 'utf8');
+  // Wiring rewrite step 4d: the handlers are read across electron/main.ts and electron/wiring/*.ts (记忆's are in memory-wiring.ts).
+  const source = wiringSource();
   const tree = ts.createSourceFile('main.ts', source, ts.ScriptTarget.ES2022, true);
   const names = ['getUserProfile', 'setUserProfileEnabled', 'editUserProfile', 'deleteUserProfile'];
   const handlers = new Map<string, ts.Expression>();
@@ -33,7 +36,12 @@ test('actual scoped host callbacks and renderer gate use current profile identit
   const profiles = new UserProfileStore(directory);
   const gate = new ProfileViewGate();
   const management = new UserProfileManagement(profiles, view => { gate.event(view); });
-  const environment: { userProfileManagement: UserProfileManagement | undefined } = { userProfileManagement: management };
+  // I-144b: deleteUserProfile now goes into the recycle bin first (main.ts recycleSingle; covered by tests/i144b-recycle-items.test.ts). Here the
+  // bin passes straight through, so this test keeps checking only which profile the handlers act on.
+  // Step 7: 「允许记录」 off first asks whether a part that owns her data is off (privacyRefusal: tests/privacy-part-off.test.ts); none here.
+  const environment: { userProfileManagement: UserProfileManagement | undefined; recycleSingle: (take: unknown, remove: () => unknown) => unknown; privacyRefusal: () => Error | null; field: (value: unknown, name: string) => unknown } =
+    { userProfileManagement: management, recycleSingle: (_take, remove) => remove(), privacyRefusal: () => null,
+      field: (value, name) => value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>)[name] : undefined };
   const callbacks = new Map<string, (...args: unknown[]) => unknown>();
   for (const [name, handler] of handlers) {
     const expression = ts.transpileModule(`(${handler.getText(tree)})`, { compilerOptions: {

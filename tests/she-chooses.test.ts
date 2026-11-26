@@ -1,10 +1,10 @@
 /**
- * 她来挑（shared/she-chooses.ts，I-020 最小版）：分量 = 基础 × 此刻理由的倍数 × 最近挑过的调整；最近挑过的降低但不排除；
+ * 她来挑（shared/foundation/she-chooses.ts，I-020 最小版）：分量 = 基础 × 此刻理由的倍数 × 最近挑过的调整；最近挑过的降低但不排除；
  * "为什么"只写真正抬高挑中那个的此刻理由和最近的调整；每次正好取一个随机数。
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { sheChooses, SHE_CHOOSES_NO_LEAN, type SheChoosesCandidate } from '../shared/she-chooses';
+import { sheChooses, SHE_CHOOSES_NO_LEAN, type SheChoosesCandidate } from '../shared/foundation/she-chooses';
 
 interface Now { happy: boolean }
 const candidates: SheChoosesCandidate<'a' | 'b' | 'c', Now>[] = [

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ForegroundAsr } from '../electron/foreground-asr';
+import { ForegroundAsr } from '../electron/senses/foreground-asr';
 function deferred<T>() { let resolve!: (value: T) => void; const promise = new Promise<T>(done => { resolve = done; }); return { promise, resolve }; }
 const tick = () => new Promise<void>(resolve => setImmediate(resolve));
 test('aborted legacy request holds the real recognizer until settlement before grouped successor can enter', async () => {

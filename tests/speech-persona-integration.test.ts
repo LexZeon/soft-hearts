@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { characterSpeechPersona } from '../electron/speech-persona';
-import { composeSpeechConfig, ReplySpeechStyles, SPEECH_EMOTION_INSTRUCTIONS, selectSpeechEmotion, TURN_SPEECH_INSTRUCTION_LIMIT, type SpeechMood } from '../electron/speech-emotion';
-import { SpeechRuntime } from '../electron/speech-runtime';
-import { synthesizeBailianSpeech, validateTtsConfig } from '../electron/tts';
-import { DEFAULT_TTS_CONFIG, effectiveTtsConfig, type TtsConfig } from '../shared/tts';
+import { characterSpeechPersona } from '../electron/voice/speech-persona';
+import { composeSpeechConfig, ReplySpeechStyles, SPEECH_EMOTION_INSTRUCTIONS, selectSpeechEmotion, TURN_SPEECH_INSTRUCTION_LIMIT, type SpeechMood } from '../electron/mood/speech-emotion';
+import { SpeechRuntime } from '../electron/voice/speech-runtime';
+import { synthesizeBailianSpeech, validateTtsConfig } from '../electron/voice/tts';
+import { DEFAULT_TTS_CONFIG, effectiveTtsConfig, type TtsConfig } from '../shared/voice/tts';
 
 const quiet = { personality: '性格内敛含蓄，不大声欢呼。', description: '', systemPrompt: '说话方式：措辞简洁，喜悦也轻声表达。' };
 const lively = { personality: '性格外向开朗，表达热情自然。', description: '', systemPrompt: '说话方式：乐于表达喜悦，语调富有变化。' };

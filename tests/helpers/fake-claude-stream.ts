@@ -16,7 +16,7 @@ import path from 'node:path';
  *   an interrupt that arrives while a message is queued but not started stops
  *   that turn right after its init.
  *
- * The reply is "收到，<current user text>" plus a mood tail that uses the nonce
+ * The reply is "好哒，<current user text>" plus a mood tail that uses the nonce
  * in this turn's prompt (it was "回应：…" until 2026-11-04: in a Chinese chat a
  * label and a colon at the very start are now held until the line shows it is
  * not a plan, docs/claude/2026-11-04-draft-leak-plan-block.md). Markers in the current user text steer timing so tests
@@ -28,7 +28,8 @@ import path from 'node:path';
  *   #first:<name>  hold; an interrupt finds the turn already finished (its
  *                  result comes first, the control_response after it);
  *   #deaf:<name>   hold; an interrupt is answered "success" but the turn never ends;
- *   #draft         the body is a synthetic internal note (X-237's sentence) instead of "收到，…", so the
+ *   #bare          the body is the user text alone, without "好哒，" (a reply that is only a look marker);
+ *   #draft         the body is a synthetic internal note (X-237's sentence) instead of "好哒，…", so the
  *                  draft filter empties the whole reply (docs/claude/2026-11-03-draft-first-char.md).
  * It runs as `node <script> <claude args>` (binaryArgs), like the other fakes.
  */
@@ -69,7 +70,7 @@ function handle(message) {
   }
   if (message.type !== "user") return;
   const parsed = userText(message);
-  log({ user: parsed.text, prompt: parsed.prompt });
+  log({ user: parsed.text, prompt: parsed.prompt, images: message.message.content.filter(block => block.type === "image").map(block => block.source.data) });
   queue.push(parsed);
   if (!current) setImmediate(next);
 }
@@ -84,7 +85,7 @@ function next() {
     out({ type: "result", subtype: "error_during_execution", is_error: true, result: "" });
     setImmediate(next); return;
   }
-  const body = item.text.includes("#draft") ? "这一轮回复短些，语气带点傲娇。" : "收到，" + item.text;
+  const body = item.text.includes("#draft") ? "这一轮回复短些，语气带点傲娇。" : item.text.includes("#bare") ? item.text.replace("#bare", "") : "好哒，" + item.text;
   const tail = item.nonce ? "\n<sh-state-" + item.nonce + ">{\"context\":\"support\",\"delta\":{\"O\":1},\"reason\":\"合成\",\"confidence\":0.9}</sh-state-" + item.nonce + ">" : "";
   const mark = /#(hold|wait|tail|first|deaf):([A-Za-z0-9_-]+)/.exec(item.text);
   current = { item, body, tail, sent: "", mode: mark ? mark[1] : "plain", name: mark ? mark[2] : "", late: item.text.includes("#late"), timer: null };
@@ -116,7 +117,8 @@ function stopTurn(turn) {
 }
 `;
 
-export interface FakeClaudeInput { pid: number; user?: string; prompt?: string; control?: string; id?: string }
+/** `images`: the base64 data of each picture block in that message (I-161 A tests check which process saw which frame). */
+export interface FakeClaudeInput { pid: number; user?: string; prompt?: string; images?: string[]; control?: string; id?: string }
 
 export async function fakeClaudeStream() {
   const root = await mkdtemp(path.join(os.tmpdir(), 'soft-r33-claude-'));

@@ -20,7 +20,7 @@ test('every repository file the unit tests read is in the frozen validation copy
 
 test('the frozen copy holds the two folders whose absence broke R26', () => {
   for (const file of ['handbook/README.md', 'handbook/ideas.md', 'tools/bridge/scorer.html']) assert.ok(frozenCovers(file, runtimeInputs), file);
-  for (const file of ['docs/claude/x.md', 'tools/other.mts', 'README.md', 'CLAUDE.md']) assert.equal(frozenCovers(file, runtimeInputs), false, file);
+  for (const file of ['docs/claude/x.md', 'tools/other.mts', 'CLAUDE.md']) assert.equal(frozenCovers(file, runtimeInputs), false, file);
   assert.ok(frozenCovers('assets', runtimeInputs), 'a folder above a frozen folder counts as present');
 });
 

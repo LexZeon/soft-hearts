@@ -1,14 +1,16 @@
-import * as uiCopy from '../src/ui/ui-language';
+import * as uiCopy from '../src/foundation/ui-language';
 const { uiText, uiHtml, uiMarkup, uiTemplate } = uiCopy;
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
-import { normalizeModelPhysicsSettings, type ModelPhysicsSettings, type ModelPhysicsState } from '../shared/model-physics';
+import { normalizeModelPhysicsSettings, type ModelPhysicsSettings, type ModelPhysicsState } from '../shared/stage/model-physics';
+import { ipcGuardSource, registeredInRegisterIpc, wiringRegistration } from './helpers/wiring-source';
+import { rendererSource as readRendererSource } from './helpers/renderer-source'; // overhaul step 5: src/main.ts and src/wiring/*.ts
 
 const hostSource = readFileSync(new URL('../electron/main.ts', import.meta.url), 'utf8');
-const rendererSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
+const rendererSource = readRendererSource();
 const sourceFile = (source: string) => ts.createSourceFile('physics-wiring.ts', source, ts.ScriptTarget.ES2022, true);
 const plain = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 const off = () => normalizeModelPhysicsSettings(undefined);
@@ -27,22 +29,17 @@ function execute(source: string, functions: readonly string[], sandbox: Record<s
   const file = sourceFile(source);
   const selected = functions.map(name => {
     const node = file.statements.find(statement => ts.isFunctionDeclaration(statement) && statement.name?.text === name);
+    if (!node && (name === 'host' || name === 'scopedHost')) return name === 'host' ? ipcGuardSource() : ''; // wiring rewrite step 3: electron/wiring/ipc-wiring.ts
     assert.ok(node, `production function ${name}`);
     return node.getText(file);
   });
-  if (handlers.length) {
-    const registration = file.statements.find(statement => ts.isFunctionDeclaration(statement) && statement.name?.text === 'registerIPC');
-    assert.ok(registration && ts.isFunctionDeclaration(registration) && registration.body);
-    for (const name of handlers) {
-      const statement = registration.body.statements.find(candidate => {
-        if (!ts.isExpressionStatement(candidate) || !ts.isCallExpression(candidate.expression)) return false;
-        const call = candidate.expression;
-        return ts.isIdentifier(call.expression) && call.expression.text === 'host'
-          && !!call.arguments[0] && ts.isStringLiteral(call.arguments[0]) && call.arguments[0].text === name;
-      });
-      assert.ok(statement, `production handler ${name}`);
-      selected.push(statement.getText(file));
-    }
+  // Wiring rewrite step 4g: the physics handlers are 舞台's ('electron/wiring/stage-wiring.ts'), registered by its register inside registerIPC;
+  // read across main.ts and electron/wiring/*.ts, still exactly one each, still host(...) and still inside registerIPC (the recorder).
+  for (const name of handlers) {
+    assert.ok(registeredInRegisterIpc(name), `production handler ${name} is registered inside registerIPC`);
+    const statement = wiringRegistration(name);
+    assert.match(statement, /^host\(/, `production handler ${name} is a host(...) registration`);
+    selected.push(statement);
   }
   const compiled = ts.transpileModule(selected.join('\n'), {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None },
@@ -61,6 +58,10 @@ function hostHarness(persist: (input: unknown) => Promise<ModelPhysicsSettings>)
     ipcMain: { handle: (channel: string, callback: (event: EventStub, ...args: unknown[]) => unknown) => handlers.set(channel, callback) },
     modelPhysicsSettings: { get current() { return off(); }, persist },
     broadcast(channel: string, value: ModelPhysicsSettings) { broadcasts.push({ channel, value: plain(value) }); },
+    // R01: the windows get the switches plus this model's lab tuning; with none saved that is the switches as they are
+    // (tests/physics-tuning-host.test.ts covers the tuning itself).
+    physicsWithTuning: (settings: ModelPhysicsSettings) => settings,
+    registerPhysicsLabHandlers: () => {},
   };
   execute(hostSource, ['host', 'scopedHost'], sandbox, ['getModelPhysicsSettings', 'setModelPhysicsSettings']);
   const invoke = (method: string, id = 1, mainFrame = true, ...args: unknown[]) => {

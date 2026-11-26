@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <title>soft hearts</title>
+    <link rel="stylesheet" href="../brain/chat-setting-card.css" />
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; font-family: "Microsoft YaHei UI", "PingFang SC", system-ui, sans-serif; }
+      #cards { position: absolute; inset: 8px; display: flex; flex-direction: column; justify-content: flex-start; }
+      #cards .chat-setting-card { margin: 0; box-shadow: 0 4px 18px rgba(30, 20, 50, 0.35); font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <div id="cards"></div>
+    <script type="module" src="./card.ts"></script>
+  </body>
+</html>

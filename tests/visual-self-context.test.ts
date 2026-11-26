@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { VisualSelfContext, type VisualSelfSnapshot, type VisualSelfFrameProof, type VisualSelfSource } from '../electron/visual-self-context';
+import { VisualSelfContext, type VisualSelfSnapshot, type VisualSelfFrameProof, type VisualSelfSource } from '../electron/senses/visual-self-context';
 
 function context(revision = 1): VisualSelfSnapshot {
   return { revision, character: { key: 'internal-card-A', publicName: '当前角色 A' }, model: { key: 'internal-actual-avatar-B' },

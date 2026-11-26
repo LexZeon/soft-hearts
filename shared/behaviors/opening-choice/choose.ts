@@ -2,10 +2,10 @@
  * #10 主机这一侧的真实现：她想找你说话时，从此刻真有的几件事里挑一件（接口见 interface.ts，旋钮见 knobs.ts）。
  * 纯本地、零额度：不截图、不录音、不调模型，不碰任何提示词；只在内存里记最近几次。
  */
-import { sheChooses, type SheChoosesCandidate, type SheChose } from '../../she-chooses';
-import { MOOD_LABELS } from '../../mood-runtime';
-import { tendencyNow } from '../../mood-tendency';
-import type { MoodLabel, MoodSnapshot, MoodTendency } from '../../mood';
+import { sheChooses, type SheChoosesCandidate, type SheChose } from '../../foundation/she-chooses';
+import { MOOD_LABELS } from '../../mood';
+import { tendencyNow } from '../../foundation/mood-tendency';
+import type { MoodLabel, MoodSnapshot, MoodTendency } from '../../foundation/mood';
 import { OPENING_CANDIDATE_IDS, OPENING_CHOICE_KNOBS, type OpeningCandidateId, type OpeningCandidateKnob, type OpeningChoiceKnobs, type OpeningMoment } from './knobs';
 import type { OpeningChoice, OpeningChoiceHost, OpeningNow, OpeningWhy } from './interface';
 
@@ -18,7 +18,7 @@ const PERSONALITY_WORDS: Readonly<Record<MoodTendency, readonly [string, string]
   comfortable: ['性格：随和', '性格：不太随和'], cautious: ['性格：谨慎', '性格：大胆'],
 };
 /** "说话"的几件（"这次不说"以外的）。 */
-const SPEAKING = new Set<OpeningCandidateId>(['listen', 'screen', 'mood', 'play']);
+const SPEAKING = new Set<OpeningCandidateId>(['listen', 'screen', 'mood', 'play', 'give']);
 const KEEP_WHY = 8;
 
 const finite = (value: unknown, fallback: number): number => typeof value === 'number' && Number.isFinite(value) ? value : fallback;
@@ -37,6 +37,10 @@ export interface OpeningNowInput {
   readonly last: { readonly id: OpeningCandidateId; readonly at: number } | null;
   /** I-006: the user is absorbed in something right now (shared/behaviors/user-activity); absent = no. Only leans toward "这次不要". */
   readonly busy?: boolean;
+  /** I-050: she holds something she left in her folder and has not told the user yet (shared/memory/keepsake.ts); absent = no. */
+  readonly gift?: boolean;
+  /** I-086: reasons for one candidate read from the hormones and mood values (OpeningNow.leans). */
+  readonly leans?: OpeningNow['leans'];
 }
 
 /** 把主机手里的东西整理成"此刻"。 */
@@ -50,18 +54,36 @@ export function openingNow(input: OpeningNowInput, knobs: OpeningChoiceKnobs = O
   if (input.quiet?.night === true) moments.push('night');
   if (input.quiet?.drowsy === true) moments.push('drowsy');
   if (input.busy === true) moments.push('busy');
+  if (input.gift === true) moments.push('gift');
   // She chose to speak last time, and the user has not come since (a chat, pat or feeding after that choice).
   const last = input.last, seen = s.lastInteractionAt;
   if (last && SPEAKING.has(last.id) && Number.isFinite(last.at) && !(typeof seen === 'number' && Number.isFinite(seen) && seen >= last.at)) moments.push('unanswered');
   const available = {
     listen: input.available?.listen === true, screen: input.available?.screen === true,
     mood: input.available?.mood === true, play: input.available?.play === true,
+    ...(input.available?.keepsake === true ? { keepsake: true } : {}),
+    ...(input.available?.give === true ? { give: true } : {}),
   };
-  return { available, mood, tendency: tendencyNow(s), personality, moments };
+  const leans = cleanLeans(input.leans);
+  return { available, mood, tendency: tendencyNow(s), personality, moments, ...(leans ? { leans } : {}) };
+}
+
+/** Only finite factors in a sane range, and plain short texts (I-086). */
+function cleanLeans(leans: OpeningNow['leans'] | undefined): OpeningNow['leans'] | undefined {
+  if (!leans || typeof leans !== 'object') return undefined;
+  const out: Partial<Record<OpeningCandidateId, { text: string; factor: number }[]>> = {};
+  for (const id of OPENING_CANDIDATE_IDS) {
+    const list = (leans as Record<string, unknown>)[id];
+    if (!Array.isArray(list)) continue;
+    const clean = list.filter(r => r && typeof r.text === 'string' && typeof r.factor === 'number' && Number.isFinite(r.factor))
+      .slice(0, 6).map(r => ({ text: String(r.text).slice(0, 24), factor: Math.min(4, Math.max(0.05, r.factor)) }));
+    if (clean.length) out[id] = clean;
+  }
+  return Object.keys(out).length ? out : undefined;
 }
 
 /** 一个候选此刻的理由：心情、这会儿的倾向、角色卡性格、此刻的事。 */
-function reasonsFor(knob: OpeningCandidateKnob, now: Readonly<OpeningNow>, knobs: OpeningChoiceKnobs) {
+function reasonsFor(knob: OpeningCandidateKnob, now: Readonly<OpeningNow>, knobs: OpeningChoiceKnobs, id?: OpeningCandidateId) {
   const reasons: { text: string; factor: number }[] = [];
   const mood = knob.mood?.[now.mood];
   if (mood !== undefined) reasons.push({ text: `心情：${MOOD_LABELS[now.mood]}`, factor: mood });
@@ -76,13 +98,14 @@ function reasonsFor(knob: OpeningCandidateKnob, now: Readonly<OpeningNow>, knobs
     const factor = knob.moments?.[moment];
     if (factor !== undefined) reasons.push({ text: knobs.moments[moment].label, factor });
   }
+  for (const lean of id ? now.leans?.[id] ?? [] : []) reasons.push({ text: lean.text, factor: lean.factor });
   return reasons;
 }
 
 function candidates(now: Readonly<OpeningNow>, without: readonly OpeningCandidateId[], knobs: OpeningChoiceKnobs): SheChoosesCandidate<OpeningCandidateId, OpeningNow>[] {
   return OPENING_CANDIDATE_IDS
-    .filter(id => !without.includes(id) && (id === 'quiet' || now.available[id] === true))
-    .map(id => ({ id, label: knobs.candidates[id].label, weigh: moment => ({ base: knobs.candidates[id].base, reasons: reasonsFor(knobs.candidates[id], moment, knobs) }) }));
+    .filter(id => !without.includes(id) && (id === 'quiet' || (now.available as Readonly<Record<string, boolean | undefined>>)[id] === true))
+    .map(id => ({ id, label: knobs.candidates[id].label, weigh: moment => ({ base: knobs.candidates[id].base, reasons: reasonsFor(knobs.candidates[id], moment, knobs, id) }) }));
 }
 
 const weightLine = (chose: SheChose<string>) => chose.weights.map(w => `${w.label} ${w.weight}`).join(' · ');

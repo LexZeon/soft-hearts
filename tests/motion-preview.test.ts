@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { AppSettings, AssetRef } from "../shared/contracts";
-import { DEFAULT_SETTINGS } from "../shared/defaults";
-import type { CatalogMotion, MotionPackId } from "../shared/motion-library";
-import { getMotionLayerAssets, withMotionLayer } from "../shared/motion-layers";
-import { MotionPreviewSession, type MotionPreviewState } from "../src/ui/motion-preview";
+import type { AppSettings, AssetRef } from "../shared/foundation/settings";
+import { DEFAULT_SETTINGS } from "../shared/foundation/defaults";
+import type { CatalogMotion, MotionPackId } from "../shared/actions/motion-library";
+import { getMotionLayerAssets, withMotionLayer } from "../shared/actions/motion-layers";
+import { MotionPreviewSession, type MotionPreviewState } from "../src/actions/motion-preview";
 
 function deferred<T>() {
   let resolve!: (value: T) => void;

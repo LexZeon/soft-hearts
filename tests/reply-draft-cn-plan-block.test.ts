@@ -7,10 +7,10 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { MoodReplyProtocol } from '../electron/mood-chat';
-import { CompanionService } from '../electron/companion';
-import { DRAFT_FILL_LINES } from '../electron/draft-fill';
-import { noteUnitBounds, withoutQuotes } from '../electron/reply-self-note';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
+import { CompanionService } from '../electron/brain/companion';
+import { DRAFT_FILL_LINES } from '../electron/brain/draft-fill';
+import { noteUnitBounds, withoutQuotes } from '../electron/brain/reply-self-note';
 
 const FIRST = '拿到一些信息：用户想看图里的菜单。';
 const NOTES = '屏幕上被一个窗口挡住了大部分，后面是网页"【测评】这家店的招牌为何翻车"，底下能看到一行字"骗你们的我才不吃香菜呢。片尾音乐@某某"。所以只能看到标题和那行字。不能提别人的聊天（另一个窗口里的对话）用户没问。回答：挡住了，只看到标题和一行。可以简单评价那两句。不要问昵称？用户在说正事吗——是在聊菜单，算正事轻度，可以问也可以不问。规则：在说正事就不要问。保守不问。 评价：标题"【测评】这家店的招牌为何翻车"——带悬念。底部那句——像结尾反转梗。请用户把窗口挪开。 Personality: 不客气、熟。保持简短。';

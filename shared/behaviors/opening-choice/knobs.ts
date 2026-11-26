@@ -15,11 +15,11 @@
  *  - moments：此刻的事（见下面 moments 的名字）× 多少。
  * 这些都只是试用值，没在真机上看过。
  */
-import type { MoodLabel, MoodTendency } from '../../mood';
+import type { MoodLabel, MoodTendency } from '../../foundation/mood';
 
-export const OPENING_CANDIDATE_IDS = ['listen', 'screen', 'mood', 'play', 'quiet'] as const;
+export const OPENING_CANDIDATE_IDS = ['listen', 'screen', 'mood', 'play', 'keepsake', 'give', 'quiet'] as const;
 export type OpeningCandidateId = typeof OPENING_CANDIDATE_IDS[number];
-export const OPENING_MOMENTS = ['need', 'bored', 'night', 'drowsy', 'unanswered', 'busy'] as const;
+export const OPENING_MOMENTS = ['need', 'bored', 'night', 'drowsy', 'unanswered', 'busy', 'gift'] as const;
 export type OpeningMoment = typeof OPENING_MOMENTS[number];
 
 export interface OpeningCandidateKnob {
@@ -41,6 +41,7 @@ export interface OpeningChoiceKnobs {
     readonly drowsy: { readonly label: string };
     readonly unanswered: { readonly label: string };
     readonly busy: { readonly label: string };
+    readonly gift: { readonly label: string };
   };
 }
 
@@ -53,28 +54,39 @@ export const OPENING_CHOICE_KNOBS: OpeningChoiceKnobs = Object.freeze<OpeningCho
     // 用户可能怎么说：她太爱聊歌了／一起听的时候她都不聊歌
     // 怎么调：太多/太少 → base（0 = 一起听时从不聊歌）；深夜、困的时候 → moments 里的 night、drowsy（现在约三分之一）
     listen: { label: '聊刚听完的', base: 1.4,
-      mood: { happy: 1.3, excited: 1.4, content: 1.2, close: 1.2, relieved: 1.1, longing: 0.9, concerned: 0.8, disappointed: 0.7, sad: 0.7, upset: 0.5, 'tense-expectation': 0.8 },
-      now: { playful: 1.2, close: 1.2, comfortable: 1.1 }, personality: { playful: 0.3, close: 0.2 }, moments: { night: 0.33, drowsy: 0.33, busy: 0.4 } },
+      mood: { happy: 1.3, excited: 1.4, content: 1.2, close: 1.2, relieved: 1.1, longing: 0.9, concerned: 0.8, afraid: 0.8, disappointed: 0.7, sad: 0.7, upset: 0.5, 'tense-expectation': 0.8 },
+      now: { playful: 1.2, close: 1.2, comfortable: 1.1 }, personality: { playful: 0.3, close: 0.2 }, moments: { night: 0.33, drowsy: 0.33, busy: 0.8 } },
     // 用户可能怎么说：她太爱说屏幕了／开着屏幕主动聊天她也很少说屏幕
     // 怎么调：太多/太少 → base（0 = 开着也从不说屏幕）；深夜、困的时候 → moments 里的 night、drowsy（现在约三分之一）
     screen: { label: '说说你屏幕上的', base: 1.4,
-      mood: { happy: 1.2, excited: 1.3, content: 1.1, calm: 1.1, longing: 0.8, concerned: 0.9, disappointed: 0.7, sad: 0.6, upset: 0.5, 'tense-expectation': 0.8 },
-      now: { playful: 1.3, comfortable: 1.1, cautious: 0.8 }, personality: { playful: 0.4 }, moments: { night: 0.33, drowsy: 0.33, busy: 0.3 } },
+      mood: { happy: 1.2, excited: 1.3, content: 1.1, calm: 1.1, longing: 0.8, concerned: 0.9, afraid: 0.9, disappointed: 0.7, sad: 0.6, upset: 0.5, 'tense-expectation': 0.8 },
+      now: { playful: 1.3, comfortable: 1.1, cautious: 0.8 }, personality: { playful: 0.4 }, moments: { night: 0.33, drowsy: 0.33, busy: 0.75 } },
     // 用户可能怎么说：她老说自己的小情绪、撒娇太多了／她从来不说自己的事
     // 怎么调：太多/太少 → base；她正好有一件小需要时更想说多少 → moments.need
     mood: { label: '说说她的小情绪', base: 1,
-      mood: { longing: 1.6, close: 1.3, sad: 1.2, disappointed: 1.1, relieved: 1.1, concerned: 1.1 },
-      now: { close: 1.4, wistful: 1.5 }, personality: { close: 0.5 }, moments: { need: 1.8, bored: 1.2, busy: 0.75 } },
+      mood: { longing: 1.6, close: 1.3, sad: 1.2, disappointed: 1.1, relieved: 1.1, concerned: 1.1, afraid: 1.1 },
+      now: { close: 1.4, wistful: 1.5 }, personality: { close: 0.5 }, moments: { need: 1.8, bored: 1.2, busy: 0.9 } },
     // 用户可能怎么说：她老邀我玩猜拳／她都不邀我玩
     // 怎么调：太多/太少 → base（0 = 从不在这里邀你玩）；什么时候能邀（每天几次、刚玩过不邀）是猜拳自己的规则，不在这里
     play: { label: '邀你玩猜拳', base: 0.7,
-      mood: { happy: 1.4, excited: 1.5, content: 1.1, longing: 0.7, concerned: 0.5, 'tense-expectation': 0.6, disappointed: 0.4, sad: 0.3, upset: 0.2 },
-      now: { playful: 1.5, cautious: 0.7 }, personality: { playful: 0.8 }, moments: { bored: 1.3, busy: 0.2 } },
+      mood: { happy: 1.4, excited: 1.5, content: 1.1, longing: 0.7, concerned: 0.5, afraid: 0.5, 'tense-expectation': 0.6, disappointed: 0.4, sad: 0.3, upset: 0.2 },
+      now: { playful: 1.5, cautious: 0.7 }, personality: { playful: 0.8 }, moments: { bored: 1.3, busy: 0.7 } },
+    // 用户可能怎么说：她老往文件夹里放东西／她从来不给我留东西（I-050 她的文件夹，只在文件夹开着时才有这一项）
+    // 怎么调：太多/太少 → base（0 = 从不挑它）；她手里正有一件留好的东西想告诉你（特别的日子，或她自己想提一句）→ moments.gift；
+    //   两次之间至少隔多久在 shared/behaviors/keepsake/knobs.ts
+    keepsake: { label: '给你留点东西', base: 0.5,
+      mood: { happy: 1.2, content: 1.2, close: 1.4, longing: 1.5, excited: 1.1, relieved: 1.1, sad: 0.7, concerned: 0.8, afraid: 0.8, disappointed: 0.6, 'tense-expectation': 0.7, upset: 0.4 },
+      now: { close: 1.4, wistful: 1.5, playful: 1.1, cautious: 0.8 }, personality: { close: 0.5, playful: 0.2 }, moments: { gift: 6, busy: 0.75 } },
+    // 用户可能怎么说：她老递东西给我／她从来不递点心、不推靠垫（I-086，只在今天还能递、她不困不睡、你没让她安静时才有这一项）
+    // 怎么调：太多/太少 → base（0 = 从不挑它）；一天最多几次、两次隔多久在 shared/behaviors/give/knobs.ts；激素和心情数值让它多还是少
+    //   （O、M 高更想递，N、C 高少递）也在那里（lean），这里不再按心情名字重复算一遍
+    give: { label: '递给你点东西', base: 0.55,
+      now: { close: 1.2, playful: 1.1, cautious: 0.8 }, personality: { close: 0.4 }, moments: { busy: 1.1, bored: 1.1 } },
     // 用户可能怎么说：她太安静了，到了想说话的时候老是不说／她太吵了，该多安静一点
     // 怎么调：太多/太少 → base；谨慎的卡更常不说 → personality.cautious；深夜、困了、上次想说话你没来 → moments
     quiet: { label: '这次不说', base: 0.45,
-      mood: { upset: 1.8, sad: 1.5, disappointed: 1.5, concerned: 1.3, 'tense-expectation': 1.3, happy: 0.8, excited: 0.7 },
-      now: { cautious: 1.5, comfortable: 1.2 }, personality: { cautious: 1 }, moments: { night: 2, drowsy: 2, unanswered: 1.4, busy: 3 } },
+      mood: { upset: 1.8, sad: 1.5, disappointed: 1.5, concerned: 1.3, afraid: 1.3, 'tense-expectation': 1.3, happy: 0.8, excited: 0.7 },
+      now: { cautious: 1.5, comfortable: 1.2 }, personality: { cautious: 1 }, moments: { night: 2, drowsy: 2, unanswered: 1.4, busy: 1.7 } },
   },
 
   moments: {
@@ -87,6 +99,8 @@ export const OPENING_CHOICE_KNOBS: OpeningChoiceKnobs = Object.freeze<OpeningCho
     unanswered: { label: '上次想找你说话以后，你还没来过' },
     // 用户可能怎么说：我在专心做事的时候她还是来找我说话／我专心的时候她一句都不说了
     // 怎么调：各候选里的 moments.busy 倍数：想找你说话的几件 <1，"这次不要" >1；小情绪的倍数最大、再加上心情倍数，所以她很想你、有小情绪时仍然能开口
+    // （I-066，各倍数往 1 挪了同样的比例，和 USER_ACTIVITY_KNOBS.quiet.base 0.45 → 0.8 一样；在忙只是稍微收着）
     busy: { label: '你在专心做事' },
+    gift: { label: '她手里有一件留给你的东西，还没说' },
   },
 });

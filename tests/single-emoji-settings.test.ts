@@ -3,9 +3,9 @@ import test, { type TestContext } from 'node:test';
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { EmojiSettingsStore } from '../electron/single-emoji-settings';
-import { atomicWriteFile } from '../electron/atomic-file';
-import { DEFAULT_EMOJI_SETTINGS, EMOJI_CATALOG, getEmoji, readEmojiSettings } from '../shared/single-emoji';
+import { EmojiSettingsStore } from '../electron/stage/single-emoji-settings';
+import { atomicWriteFile } from '../electron/foundation/atomic-file';
+import { DEFAULT_EMOJI_SETTINGS, EMOJI_CATALOG, getEmoji, readEmojiSettings } from '../shared/stage/single-emoji';
 
 async function fixture(t: TestContext) {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'soft-hearts-emoji-settings-'));

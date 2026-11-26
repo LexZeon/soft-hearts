@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
 import test from 'node:test';
-import { bodyVisualResearchPrompt, parseBodyVisualStudy } from '../shared/personalize-body';
+import { bodyVisualResearchPrompt, parseBodyVisualStudy } from '../shared/stage/personalize-body';
 
 test('body observation keeps occlusion distinct and does not manufacture a pose', () => {
   const output = { observations: [

@@ -355,7 +355,7 @@ try {
   baselineSourceHash = await fingerprint(); baselineAsarHash = await hash(asar); assert.equal(baselineSourceHash, proof.sourceHash); assert.equal(baselineAsarHash, proof.asarSha256);
   manifestIdentity = { sourceHash: proof.sourceHash, asarSha256: baselineAsarHash, harnessSha256: await hash(harnessFile) };
   modelIdentity = { sha256: requiredModelHash, exactRequiredContentVerified: true, modelFallbackAllowed: false };
-  const catalog = JSON.parse(await readFile(path.join(source, 'shared/motion-catalog.json'), 'utf8'));
+  const catalog = JSON.parse(await readFile(path.join(source, 'shared/actions/motion-catalog.json'), 'utf8'));
   const stand = await publicMotion(catalog, 'gene', 'stand');
   for (const fixture of Object.values(fixtures)) assert.equal((await publicMotion(catalog, fixture.packId, fixture.motionId)).motion.sha256, fixture.sha256);
   await publicMotion(catalog, '100style-idles', 'neutral-idle'); await publicMotion(catalog, '100style-idles', 'arms-folded-idle'); await publicMotion(catalog, 'mpi-embm-gestures', 'conversation-neutral');
@@ -413,7 +413,7 @@ try {
   }
   await app.evaluate(({ BrowserWindow }) => { globalThis.__chatRepairQA.petId = BrowserWindow.getAllWindows().find(win => new URL(win.webContents.getURL()).searchParams.has('pet')).webContents.id; });
   await controls.evaluate(async () => { await window.desktop.setMoodDeveloperMode(true); await window.desktop.setMoodExpressions(true); await window.desktop.recoverPet(); });
-  // Arrange only this owned test pet away from the real pointer. Native input
+  // Arrange only this owned test companion away from the real pointer. Native input
   // remains enabled and the existing per-frame interference guards stay strict.
   await app.evaluate(({ BrowserWindow, screen }) => {
     const win = BrowserWindow.getAllWindows().find(win => new URL(win.webContents.getURL()).searchParams.has('pet'));

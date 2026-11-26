@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { CameraConfig } from "../shared/contracts";
+import type { CameraConfig } from "../shared/foundation/settings";
 import { CameraController, cameraBasis, moveCamera, normalizeCamera, panCamera, rotateCamera } from "../src/stage/CameraController";
 
 const initial: CameraConfig = { yaw: 0, pitch: 0, distance: 20, targetX: 0, targetY: 10, fov: 32 };

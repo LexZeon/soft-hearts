@@ -1,18 +1,18 @@
-// 2026-11-03, stable build: "摄像头共享无法打开" — the pet's camera button seemed to do nothing. In the packaged app
+// 2026-11-03, stable build: the companion's camera button seemed to do nothing. In the packaged app
 // the pose host was up; the refusal (component not downloaded) only showed in the control window, only the first
-// time, and the pet said nothing. These keep every refused click visible where it happened, and keep the privacy rule:
+// time, and the companion said nothing. These keep every refused click visible where it happened, and keep the privacy rule:
 // no pose host never means "send camera pictures with each message" again.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MediaRuntime } from '../electron/runtime';
-import { buildPoseSensing, poseCameraPolicy, type CameraGateHost } from '../electron/pose/camera-gate';
-import { PoseSensingHost } from '../electron/pose/host';
-import type { PoseComponentStore } from '../electron/pose/component-store';
-import { parsePoseView, samePoseView, type PoseSensingView } from '../shared/pose-signals';
-import type { RuntimeState } from '../shared/contracts';
-import { cameraRefusalAction, NOTICE_ACTIONS, type NoticeAction } from '../src/notice-policy';
-import { PoseSensingPanel, type PoseSensingPorts } from '../src/ui/PoseSensingPanel';
-import { setUiLanguage, uiText } from '../src/ui/ui-language';
+import { MediaRuntime } from '../electron/senses/media-runtime';
+import { buildPoseSensing, poseCameraPolicy, type CameraGateHost } from '../electron/senses/pose/camera-gate';
+import { PoseSensingHost } from '../electron/senses/pose/host';
+import type { PoseComponentStore } from '../electron/senses/pose/component-store';
+import { parsePoseView, samePoseView, type PoseSensingView } from '../shared/senses/pose-signals';
+import type { RuntimeState } from '../shared/foundation/runtime-state';
+import { cameraRefusalAction, NOTICE_ACTIONS, type NoticeAction } from '../src/settings/notice-policy';
+import { PoseSensingPanel, type PoseSensingPorts } from '../src/senses/PoseSensingPanel';
+import { setUiLanguage, uiText } from '../src/foundation/ui-language';
 
 function hostWith(store: { installed: boolean; working: boolean } | null) {
   const prompts: string[] = [], published: PoseSensingView[] = [];
@@ -76,7 +76,7 @@ test('component missing: every refused click raises the question again and says 
   const first = r.published.at(-1)!;
   assert.equal(first.prompt, true);
   assert.equal(first.asked, 1);
-  // Second click from the pet (the control window is already on another page): published again, raised again.
+  // Second click from the companion (the control window is already on another page): published again, raised again.
   assert.equal(media.update({ cameraSharing: true }, 'pet').cameraRefused, 'needs-component');
   assert.equal(r.published.at(-1)!.asked, 2);
   assert.equal(samePoseView(first, r.published.at(-1)!), false);
@@ -149,7 +149,7 @@ test('control panel: a new refused request brings the question into view again, 
   assert.equal(reveals, 1);
   push({ ...base, prompt: true, asked: 1 }); // the same view again (e.g. another window's broadcast)
   assert.equal(reveals, 1);
-  push({ ...base, prompt: true, asked: 2 }); // second click from the pet while the control window shows the chat page
+  push({ ...base, prompt: true, asked: 2 }); // second click from the companion while the control window shows the chat page
   assert.equal(reveals, 2, 'the second refused click shows the question again');
   push({ ...base, phase: 'downloading', progress: 0.3, prompt: true, asked: 3 });
   assert.equal(reveals, 3, 'while downloading, a refused click shows the progress line');

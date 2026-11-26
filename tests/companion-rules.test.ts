@@ -2,19 +2,22 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import type { ChatMessage } from '../shared/contracts';
-import { COMPANION_RULES } from '../shared/companion-rules';
-import { PERCEPTION_RULE } from '../shared/perception-rule';
-import { CLAUDE_CHAT_SYSTEM_PROMPT, CLAUDE_SYSTEM_PROMPT, claudeArguments, type ClaudeTask } from '../electron/claude';
-import { CLAUDE_FOLLOW_UP_HEADER, CLAUDE_SESSION_SYSTEM_PROMPT, claudeSessionSystemPrompt, composeSessionPrompt } from '../electron/claude-session-prompt';
-import { chatSettingsSystemText } from '../electron/chat-settings';
-import { PersistentClaudeChat, type CompanionClaudeTask } from '../electron/claude-session';
-import { buildCompanionPersona, conversationReplyInstruction } from '../electron/conversation-context';
-import { MoodReplyProtocol } from '../electron/mood-chat';
-import { buildInnerLoopPrompt, type InnerLoopPromptInput } from '../shared/inner-loop';
-import { buildDiaryPrompt, DIARY_WRITING_RULES } from '../electron/diary/diary-prompt';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
+import type { ChatMessage } from '../shared/foundation/chat';
+import { COMPANION_RULES } from '../shared/brain/companion-rules';
+import { PERCEPTION_RULE } from '../shared/brain/perception-rule';
+import { CLAUDE_CHAT_SYSTEM_PROMPT, CLAUDE_SYSTEM_PROMPT, claudeArguments, type ClaudeTask } from '../electron/brain/claude';
+import { CLAUDE_FOLLOW_UP_HEADER, CLAUDE_SESSION_SYSTEM_PROMPT, claudeSessionSystemPrompt, composeSessionPrompt } from '../electron/brain/claude-session-prompt';
+import { chatSettingsSystemText } from '../electron/brain/chat-settings';
+import { PersistentClaudeChat, type CompanionClaudeTask } from '../electron/brain/claude-session';
+import { buildCompanionPersona, conversationReplyInstruction } from '../electron/brain/conversation-context';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
+import { buildInnerLoopPrompt, INNER_LOOP_QUIET_FINE, INNER_LOOP_SPEAK_FIRST, type InnerLoopPromptInput } from '../shared/initiative/inner-loop';
+import { buildDiaryPrompt, DIARY_WRITING_RULES } from '../electron/memory/diary/diary-prompt';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
 import { checkHardRules } from '../scripts/lib/fidelity-rules';
+import { APP_REPLY_OPENING, OPENING_SYSTEM_SENTENCE } from '../electron/brain/reply-opening';
+// I-080: with the opening marker on (the app's fixed marker), its one sentence follows the base sentences of both fixed prompts.
+const OPEN = APP_REPLY_OPENING === 'fixed' ? OPENING_SYSTEM_SENTENCE : '';
 
 // Principles 1, 6 and 7 as a fixed block of the chat's system prompt (docs/claude/2026-11-02-fidelity-test.md).
 const u = (content: string): ChatMessage => ({ role: 'user', content });
@@ -32,14 +35,16 @@ test('the companion rules carry principles 1, 6 and 7 in the handbook\'s own wor
     assert.ok(COMPANION_RULES.includes(part), part);
   // Principle 6, every clause of the user's paragraph.
   for (const part of [
-    '希望用户过得好', '催用户睡觉、吃饭', '和朋友出去玩，你替用户高兴',
-    // 关于愧疚 (the user's correction 2026-11-03, handbook/README.md): a little guilt is care; the big line; she makes up first.
-    '可以撒娇、小小闹个别扭', '那是在乎', '不拿愧疚控制或惩罚用户', '不让用户不敢离开、觉得离不开你', '不越闹越大，不翻旧账',
-    '用户本来就难过、受委屈时，不再让用户内疚', '闹完由你先给台阶、先和好',
-    '你的在乎体现在此刻的陪伴里，而不是指点用户的人生', '不说教、不讲道理', '不主动劝用户去找别人、多社交、想开点', '换个角度想',
-    '也许你也有问题', '不把自己当成需要被替代的东西', '用户受了委屈（包括被朋友背叛）', '先站在用户这边、陪着用户', '用户主动问你怎么看，你才按自己的性格认真说',
+    '希望用户过得好',
+    // I-206: no reminder about guilt, pressure or leaving; one safety net, only for extreme distress.
+    '用户非常难过、接近想轻生的程度时，你先陪着，不加码',
+    '你的在乎体现在此刻的陪伴里，而不是指点用户的人生',
+    '用户受了委屈（包括被朋友背叛）', '先站在用户这边、陪着用户', '用户主动问你怎么看，你才按自己的性格认真说',
     '你可以有态度、会吐槽，但那是回应用户，不是教育用户', '只有伤害自己这类真正危险的信号，才一边陪着用户，一边温柔地提到现实中的帮助',
+    // I-117 decision 5: she may ask once, in her own voice; no fixed question in the rules.
+    '几个让人担心的迹象一起出现时，你可以用自己的口吻、温和地直接问一次',
   ]) assert.ok(COMPANION_RULES.includes(part), part);
+  assert.ok(!/[？?]/u.test(COMPANION_RULES), 'no question sentence for her to copy');
   // Principle 7.
   for (const part of ['偏爱', '记得用户在意的细节', '不编造', '用户的小事在你这里是大事', '偏心用户，先站用户这边', '好奇用户这个人', '有只属于你们的东西'])
     assert.ok(COMPANION_RULES.includes(part), part);
@@ -48,15 +53,13 @@ test('the companion rules carry principles 1, 6 and 7 in the handbook\'s own wor
 
 const HANDBOOK = path.join(import.meta.dirname, '..', 'handbook', 'README.md');
 // The handbook is development-repository only; the public snapshot does not ship it and skips this one check.
-test('the rules stay tied to the handbook: the clauses of principle 6 that the handbook states are all still in the rules', { skip: !existsSync(HANDBOOK) }, () => {
+test('the rules stay tied to the handbook: principle 6 is "how she cares is written in her card"; the one safety net is in both', { skip: !existsSync(HANDBOOK) }, () => {
   const handbook = readFileSync(HANDBOOK, 'utf8');
-  const six = /\n6\. \*\*希望你过得好\*\*[^\n]*/u.exec(handbook)?.[0] ?? '';
+  const six = /\n6\. \*\*她怎么在乎你，写在她的卡里\*\*[^\n]*/u.exec(handbook)?.[0] ?? '';
   const seven = /\n7\. \*\*偏爱\*\*[^\n]*/u.exec(handbook)?.[0] ?? '';
   assert.ok(six.length > 100 && seven.length > 20, 'principles 6 and 7 are in handbook/README.md');
-  // Words in both, regardless of pronoun (handbook: 你/她; rules: 用户/你).
-  for (const part of ['催', '睡觉', '吃饭', '朋友出去', '替', '高兴', '撒娇', '内疚', '在乎体现在此刻的陪伴里', '指点', '人生', '不说教', '多社交', '想开点', '也许你也有问题', '需要被替代的东西',
-    '被朋友背叛', '站在', '陪着', '主动问', '认真说', '有态度', '会吐槽', '回应', '不是教育', '真正危险的信号', '温柔地提到现实中的帮助'].filter(part => six.includes(part)))
-    assert.ok(COMPANION_RULES.includes(part), `principle 6 clause lost: ${part}`);
+  // Rules removal 2026-11-25: the handbook no longer lists urging, preaching or socialising; it keeps the safety net, and so do the rules.
+  for (const part of ['接近想轻生', '现实']) assert.ok(six.includes(part) && COMPANION_RULES.includes(part), `principle 6 safety net lost: ${part}`);
   for (const part of ['记得', '在意的细节', '小事', '大事', '偏心', '先站', '好奇', '只属于你们的东西'])
     assert.ok(seven.includes(part) && COMPANION_RULES.includes(part), `principle 7 clause: ${part}`);
 });
@@ -65,11 +68,11 @@ test('the rules are in the persistent process\'s fixed system prompt, on the com
   assert.ok(CLAUDE_SESSION_SYSTEM_PROMPT.includes(COMPANION_RULES));
   assert.ok(CLAUDE_SESSION_SYSTEM_PROMPT.startsWith(OLD_BASE), 'the original sentences are untouched and first');
   assert.ok(CLAUDE_SESSION_SYSTEM_PROMPT.endsWith(chatSettingsSystemText()), 'the settings catalog stays last');
-  // Pretrial issue 8: the perception fact (shared/perception-rule.ts) after the rules, before the settings catalog.
-  assert.equal(CLAUDE_SESSION_SYSTEM_PROMPT, OLD_BASE + '\n' + COMPANION_RULES + '\n' + PERCEPTION_RULE + '\n' + chatSettingsSystemText());
+  // Pretrial issue 8: the perception fact (shared/brain/perception-rule.ts) after the rules, before the settings catalog.
+  assert.equal(CLAUDE_SESSION_SYSTEM_PROMPT, OLD_BASE + OPEN + '\n' + COMPANION_RULES + '\n' + PERCEPTION_RULE + '\n' + chatSettingsSystemText());
   // The evaluation baseline: exactly the wording from before the rules (and before the perception fact).
-  assert.equal(claudeSessionSystemPrompt({ companionRules: false, perception: false }), OLD_BASE + '\n' + chatSettingsSystemText());
-  assert.equal(claudeSessionSystemPrompt({ companionRules: false }), OLD_BASE + '\n' + PERCEPTION_RULE + '\n' + chatSettingsSystemText());
+  assert.equal(claudeSessionSystemPrompt({ companionRules: false, perception: false }), OLD_BASE + OPEN + '\n' + chatSettingsSystemText());
+  assert.equal(claudeSessionSystemPrompt({ companionRules: false }), OLD_BASE + OPEN + '\n' + PERCEPTION_RULE + '\n' + chatSettingsSystemText());
   assert.equal(claudeSessionSystemPrompt({ companionRules: true }), CLAUDE_SESSION_SYSTEM_PROMPT);
   assert.ok(!claudeSessionSystemPrompt({ companionRules: false }).includes('陪伴规则'));
   const args = claudeArguments({ model: 'haiku' }, CLAUDE_SESSION_SYSTEM_PROMPT);
@@ -130,27 +133,34 @@ const innerInput = (): InnerLoopPromptInput => ({
   localMinute: 15 * 60 + 20, minutesSinceInteraction: 47, cue: 'speech', allowSpeech: true, quiet: { asleep: false, drowsy: false, night: false, quiet: false },
 });
 
-/** The principle 6 paragraph of shared/inner-loop.ts exactly as it was on main ae15f91: it may be extended, never shortened. */
+/** The principle 6 paragraph of shared/initiative/inner-loop.ts as it was on main ae15f91, minus what I-206 removed on purpose (the glad-for-friends line; the missing line is now the safety net). */
 const INNER_LOOP_PRINCIPLE_6 = [
-  '- 忠于你自己的角色性格，而不是一味顺从或讨好；可以傲娇、逗人、闹点小脾气，只要那是你会做的。什么都不做也完全可以，安静陪着本身就是陪伴。',
+  '- 忠于你自己的角色性格，而不是一味顺从或讨好；可以傲娇、逗人、闹点小脾气，只要那是你会做的。' + INNER_LOOP_QUIET_FINE,
   // Pretrial issue 8 read as if she saw the user at work; she only knows the user is still talking to her.
-  '- 你希望用户过得好：留意用户的作息、吃饭和休息；如果很晚了用户还在和你互动，用你自己的方式提醒用户休息、记得吃饭。',
-  '- 用户去做别的事、和朋友出去玩时，真心替用户高兴。',
+  '- 你希望用户过得好。',
   // Rewritten by the user's correction "关于愧疚" (2026-11-03); everything it said before that still holds is still in it (不施压, 不劝用户少和别人来往, 不暗示用户离不开你).
-  '- 想用户的时候可以撒娇、小小闹个别扭，嘀咕一句"你都不理我"也行，那是在乎；但不施压：不拿愧疚控制或惩罚用户，不让用户不敢离开（不说"你走了我会难过死""你要是在乎我就别去"），不越闹越大，不翻旧账，不劝用户少和别人来往，也不暗示用户离不开你；用户本来就难过、受了委屈时，不让用户内疚。闹完由你先给台阶、先和好。',
-  '- 你的在乎体现在此刻的陪伴里，而不是指点用户的人生：不说教、不讲道理，不主动劝用户去找别人、多社交或想开点，不分析"也许你也有问题"，也不把自己当成需要被替代的东西。用户受了委屈，你先站在用户这边、陪着用户；用户主动问你怎么看、要不要做某件事时，你才按自己的性格认真说。你可以有态度、会吐槽，但那是回应用户，不是教育用户。',
-  '- 这次是你自己主动开口，尤其要做到：只说陪伴、你此刻的小心情或对用户作息的关心（提醒休息、吃饭可以），不说教、不劝用户去社交或找别人、不讲道理。',
+  // I-206: the missing-the-user line became the one safety net (shared/initiative/inner-loop.ts INNER_LOOP_MISSING_RULE).
+  '- 用户非常难过、接近想轻生的程度时，你先陪着，不加码。',
+  '- 你的在乎体现在此刻的陪伴里，而不是指点用户的人生。用户受了委屈，你先站在用户这边、陪着用户；用户主动问你怎么看、要不要做某件事时，你才按自己的性格认真说。你可以有态度、会吐槽，但那是回应用户，不是教育用户。',
   '- 只有从已有资料里看出伤害自己这类真正危险的信号时，才温柔地提到现实中的帮助。',
 ];
 
 test('inner loop: every sentence of the principle 6 paragraph is still there, in order, and principle 7 is added', () => {
-  const prompt = buildInnerLoopPrompt(innerInput());
-  let from = 0;
-  for (const line of INNER_LOOP_PRINCIPLE_6) {
-    const at = prompt.indexOf(line, from);
-    assert.ok(at >= from, line.slice(0, 24));
-    from = at + line.length;
+  // 松绑 (user-approved plan 2026-11-11, docs/claude/2026-11-11-loosen-plan.md): where she may really speak on her own, the first line's
+  // last sentence ("什么都不做也完全可以…", principle 1, not 6) becomes the speak-first sentence; everywhere else the paragraph is exactly as it was.
+  const speakFirst = INNER_LOOP_PRINCIPLE_6.map((line, i) => i === 0 ? line.replace(INNER_LOOP_QUIET_FINE, INNER_LOOP_SPEAK_FIRST) : line);
+  assert.notDeepEqual(speakFirst, INNER_LOOP_PRINCIPLE_6);
+  for (const [input, paragraph] of [[innerInput(), speakFirst], [{ ...innerInput(), allowSpeech: false }, INNER_LOOP_PRINCIPLE_6],
+    [{ ...innerInput(), quiet: { asleep: false, drowsy: false, night: true, quiet: true } }, INNER_LOOP_PRINCIPLE_6]] as const) {
+    const prompt = buildInnerLoopPrompt(input);
+    let from = 0;
+    for (const line of paragraph) {
+      const at = prompt.indexOf(line, from);
+      assert.ok(at >= from, line.slice(0, 24));
+      from = at + line.length;
+    }
   }
+  const prompt = buildInnerLoopPrompt(innerInput());
   for (const part of ['偏爱用户', '记得用户在意的细节', '只用上面资料里真有的，不编造', '用户的小事在你这里是大事', '偏心用户，先站用户这边', '好奇用户这个人', '只属于你们的东西'])
     assert.ok(prompt.includes(part), part);
   assert.doesNotMatch(prompt, /严重的困扰|专业帮助|联系身边/);
@@ -159,9 +169,7 @@ test('inner loop: every sentence of the principle 6 paragraph is still there, in
 /** The diary writing rules of principle 1 and 6 on main ae15f91. */
 const DIARY_PRINCIPLE_1_AND_6 = [
   '用这个角色本人的语气、性格和说话习惯来写，不必一味温顺：她可以吐槽、傲娇、逗用户、闹点小脾气，只要那是这个角色会有的样子。',
-  // Rewritten by the user's correction "关于愧疚" (2026-11-03).
-  '用户和朋友出去玩、去忙别的事时，替用户高兴；写到想念时是撒娇，可以小小抱怨一句被晾着（那是在乎），但不写成数落、惩罚或让用户不敢离开的话，不翻旧账，也不劝用户少和别人来往；用户那天本来就难过、受了委屈时，不写让用户内疚的话。',
-  '你的在乎体现在陪伴里，而不是指点用户的人生：不说教，不写劝用户去找别人、多社交、想开点的话，不分析"也许你也有问题"，也不把自己写成需要被替代的。用户受了委屈时，你先站在用户这边。你可以有态度、会吐槽，但那是回应用户，不是教育用户。',
+  '你的在乎体现在陪伴里，而不是指点用户的人生。用户受了委屈时，你先站在用户这边。你可以有态度、会吐槽，但那是回应用户，不是教育用户。',
   '只有出现伤害自己这类真正危险的信号时，才温柔地写到希望用户寻求现实中的帮助；不夸大，不做诊断，不下结论。',
 ];
 

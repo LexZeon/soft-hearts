@@ -1,0 +1,9 @@
+Mumi (model.pmx and tex/), author: the soft hearts project's author.
+
+The PMX was converted by soft hearts' own VRM to PMX converter from the author's VRoid model Mumi.vrm. Licence as declared in the source VRM's metadata:
+- Redistribution: allowed.
+- Modification: allowed.
+- Commercial use: allowed.
+- Credit: not required (a credit to the soft hearts author is still welcome).
+
+soft hearts' MIT licence for source code does not replace this asset licence.

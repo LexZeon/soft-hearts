@@ -7,22 +7,23 @@ import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promis
 import os from 'node:os';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { atomicWriteFile } from '../electron/atomic-file';
-import { forgetCharacterMemories, forgettableProviderScopes } from '../electron/character-forget';
-import { CompanionService, memoryProviderScope } from '../electron/companion';
-import { localDateKey } from '../electron/diary/diary-dates';
-import { MemoryStore } from '../electron/memory';
-import { MemoryNotesCore, PARKED_DAYS } from '../electron/memory-notes/core';
-import { MemoryNotes } from '../electron/memory-notes/host';
-import { MEMORY_NOTES_FILE, MemoryNotesStore, type MemoryNotesFile } from '../electron/memory-notes/store';
-import { MemoryRecycleBin, RECYCLE_DIRECTORY, RECYCLE_MAX_DAYS } from '../electron/memory-recycle-bin';
-import { forgetRecoverably, restoreRecoverably, type RecoverableForgetPorts } from '../electron/recoverable-forget';
-import { UserProfileStore } from '../electron/user-profile';
-import { validateProvider } from '../electron/validation';
-import type { MemoryScope } from '../shared/memory';
-import type { MemoryNoteBody } from '../shared/memory-notes/interface';
-import { MEMORY_NOTES_KNOBS } from '../shared/memory-notes/knobs';
-import { FakeNoteArchive, FakeNoteWriter, fakeNoteBody } from '../shared/memory-notes/fake';
+import { atomicWriteFile } from '../electron/foundation/atomic-file';
+import { forgetCharacterMemories, forgettableProviderScopes } from '../electron/cards/character-forget';
+import { characterForgetRegistry } from '../electron/memory/privacy-wiring';
+import { CompanionService, memoryProviderScope } from '../electron/brain/companion';
+import { localDateKey } from '../electron/memory/diary/diary-dates';
+import { MemoryStore } from '../electron/memory/memory';
+import { MemoryNotesCore, PARKED_DAYS } from '../electron/memory/memory-notes/core';
+import { MemoryNotes } from '../electron/memory/memory-notes/host';
+import { MEMORY_NOTES_FILE, MemoryNotesStore, type MemoryNotesFile } from '../electron/memory/memory-notes/store';
+import { MemoryRecycleBin, RECYCLE_DIRECTORY, RECYCLE_MAX_DAYS } from '../electron/memory/memory-recycle-bin';
+import { forgetRecoverably, restoreRecoverably, type RecoverableForgetPorts } from '../electron/memory/recoverable-forget';
+import { UserProfileStore } from '../electron/memory/user-profile';
+import { validateProvider } from '../electron/settings/validation';
+import type { MemoryScope } from '../shared/memory/memory';
+import type { MemoryNoteBody } from '../shared/memory/memory-notes/interface';
+import { MEMORY_NOTES_KNOBS } from '../shared/memory/memory-notes/knobs';
+import { FakeNoteArchive, FakeNoteWriter, fakeNoteBody } from '../shared/memory/memory-notes/fake';
 
 const T0 = Date.UTC(2026, 10, 4, 4);
 const HOUR = 3_600_000;
@@ -159,7 +160,9 @@ test('2 · recycle bin and "delete the character with her memories" both cover a
       await profiles.activate(oldScope); profiles.setEnabled(true);
       assert.equal(await profiles.saveDiary(profiles.diaryTicket()!, localDateKey(Date.now() - 86_400_000), '旧模型下写的一篇日记'), true);
       const forgotten = await forgetCharacterMemories(CHARACTER, { providerScopes: () => forgettableProviderScopes(provider('sonnet'), memoryProviderScope),
-        memory: store, profiles, relationship: { forget: async () => {} }, rps: { forget: () => true } });
+        providerScopesOf: id => store.providerScopesOf(id),
+        clears: characterForgetRegistry({ memory: store, profiles, relationship: { forget: async () => {} }, rps: { forget: () => true }, feeding: { forget: () => false },
+          herNote: null, movingMemory: null, songMemory: null, semantic: null, listenTogether: null, watchTogether: null, upcoming: null, hands: null }) });
       assert.deepEqual(forgotten.failed, []);
       assert.equal(forgotten.records, 2);
       assert.equal(forgotten.profiles, 1, 'the profile under the old model went too');

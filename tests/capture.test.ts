@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test, { type TestContext } from 'node:test';
-import { cameraSnapshot } from '../src/ui/capture';
+import { cameraSnapshot } from '../src/senses/capture';
 
 function deferred<T>() {
   let resolve!: (value: T | PromiseLike<T>) => void;

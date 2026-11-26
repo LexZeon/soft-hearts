@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PoseFeatureTracker, periodicity, type PoseSample } from '../electron/pose/features';
-import { POSE_SIGNAL_KEYS, parsePoseSignal } from '../shared/pose-signals';
+import { PoseFeatureTracker, periodicity, type PoseSample } from '../electron/senses/pose/features';
+import { POSE_SIGNAL_KEYS, parsePoseSignal } from '../shared/senses/pose-signals';
 
 // Synthetic COCO-17 bodies in a 320×240 frame (no person, no camera): a seated user facing the screen,
 // shoulders 80 px apart. Each test changes only what it is about.
@@ -14,7 +14,7 @@ const SEATED: Point[] = [
 function sample(t: number, points: Point[] = SEATED, shift: [number, number] = [0, 0]): PoseSample {
   const kpts = new Float32Array(34), scores = new Float32Array(17);
   points.forEach(([x, y, s = 0.9], i) => { kpts[i * 2] = x + shift[0]; kpts[i * 2 + 1] = y + shift[1]; scores[i] = s; });
-  return { t, detected: true, detScore: 0.9, kpts, scores };
+  return { t, detected: true, detScore: 0.9, kpts, scores, width: 320, height: 240 };
 }
 const edit = (changes: Record<number, Point>) => SEATED.map((p, i) => changes[i] ?? p);
 const run = (tracker: PoseFeatureTracker, frames: number, fps: number, make: (t: number, i: number) => PoseSample, start = 1000) => {
@@ -96,15 +96,48 @@ test('rhythm and tempo from bobbing; stillness has none; energy follows movement
   assert.ok(periodicity([0, 1, 0, -1, 0, 1, 0, -1, 0, 1, 0, -1], 2, 6).lag > 3.5);
 });
 
-test('the signal never carries coordinates: exact keys, passes the host validator', () => {
+test('I-081: the signal carries the face and the 17 body points normalised to the frame (0..1, two decimals), never pixels; exact keys, passes the host validator', () => {
   const tracker = new PoseFeatureTracker();
   run(tracker, 20, 10, (t, i) => sample(t, edit({ 10: [215 + 25 * Math.sin(2 * Math.PI * 2 * i / 10), 100] })));
   for (const capability of ['full', 'presence-only'] as const) {
     const signal = tracker.signal(capability);
     assert.deepEqual(Object.keys(signal).sort(), [...POSE_SIGNAL_KEYS].sort());
     assert.deepEqual(parsePoseSignal(JSON.parse(JSON.stringify(signal))), signal);
-    assert.ok(!JSON.stringify(signal).match(/\d{3}\./), 'no pixel-sized numbers');
+    assert.ok(!JSON.stringify(signal).match(/\d{2,}\./), 'no pixel-sized numbers');
+    assert.ok(!JSON.stringify(signal).match(/\.\d{3}/), 'two decimals at most');
   }
-  assert.deepEqual(tracker.signal('presence-only'), { present: true, confidence: tracker.signal('presence-only').confidence, facing: 'unknown', posture: 'unknown',
-    energy: 0, rhythm: false, tempo: null, events: [], hand: null, capability: 'presence-only' });
+  const full = tracker.signal('full');
+  // Face (I-167): between the eyes of SEATED, (160, 82) in a 320×240 frame.
+  assert.deepEqual(full.face, { x: 0.5, y: 0.34 });
+  assert.equal(full.points.length, 17);
+  assert.deepEqual(full.points[5], { x: 0.38, y: 0.63 }, 'left shoulder 120/320, 150/240');
+  assert.equal(full.points[11], null, 'a point not seen (the hips, score 0.05) is null');
+  assert.deepEqual(tracker.signal('presence-only'), { present: true, confidence: tracker.signal('presence-only').confidence, facing: 'unknown', facingConfidence: 0, posture: 'unknown', postureConfidence: 0,
+    energy: 0, rhythm: false, tempo: null, events: [], eventConfidence: {}, hand: null, capability: 'presence-only', face: null, points: [], head: null, people: 0 });
+});
+
+test('I-081: the face position is smoothed (no jump to a sudden new place) and is forgotten with the user', () => {
+  const tracker = new PoseFeatureTracker();
+  let t = run(tracker, 10, 10, t => sample(t));
+  assert.equal(tracker.signal().face!.x, 0.5);
+  // The user moves 64 px right at once: one frame later the face has moved only part of the way (I-167: One-Euro, so a fast move passes most of the way).
+  tracker.push(sample(t, SEATED, [64, 0]));
+  const once = tracker.signal().face!.x;
+  assert.ok(once > 0.5 && once < 0.7, `smoothed: ${once}`);
+  t = run(tracker, 30, 10, t => sample(t, SEATED, [64, 0]), t + 100);
+  assert.equal(tracker.signal().face!.x, 0.7, 'settles where the user is');
+  // Shoulders only (the face hidden): the shoulders' middle, raised to about head height.
+  const headless = new PoseFeatureTracker();
+  run(headless, 10, 10, t => sample(t, SEATED.map((p, i) => i < 5 ? [p[0], p[1], 0.05] as Point : p)));
+  const face = headless.signal().face!;
+  assert.equal(face.x, 0.5);
+  assert.ok(face.y < 150 / 240 - 0.2, `raised above the shoulders: ${face.y}`);
+  // Nobody: no position at all.
+  const nobody = (t: number): PoseSample => ({ t, detected: false, detScore: 0, kpts: null, scores: null });
+  run(tracker, 20, 5, nobody, t + 200);
+  assert.deepEqual([tracker.signal().face, tracker.signal().points], [null, []]);
+  // Without the frame size nothing is given.
+  const sizeless = new PoseFeatureTracker();
+  run(sizeless, 10, 10, t => ({ ...sample(t), width: undefined, height: undefined }));
+  assert.deepEqual([sizeless.signal().present, sizeless.signal().face], [true, null]);
 });

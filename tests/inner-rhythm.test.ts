@@ -11,10 +11,10 @@ import { BoredomTimingDirector } from '../shared/behaviors/boredom-timing/choose
 import { OpeningChoiceDirector } from '../shared/behaviors/opening-choice/choose';
 import { innerRhythmDraw, innerRhythmStretch } from '../shared/behaviors/inner-rhythm/choose';
 import { INNER_RHYTHM_KNOBS } from '../shared/behaviors/inner-rhythm/knobs';
-import { ProactiveSpeechGate } from '../electron/proactive-speech-gate';
-import { InnerLoop, type InnerLoopDependencies } from '../electron/inner-loop/inner-loop';
-import { DEFAULT_MOOD_PARAMETERS, type MoodCue } from '../shared/mood';
-import type { InnerLoopQuiet } from '../shared/inner-loop';
+import { ProactiveSpeechGate } from '../electron/initiative/proactive-speech-gate';
+import { InnerLoop, type InnerLoopDependencies } from '../electron/initiative/inner-loop/inner-loop';
+import { DEFAULT_MOOD_PARAMETERS, type MoodCue } from '../shared/foundation/mood';
+import type { InnerLoopQuiet } from '../shared/initiative/inner-loop';
 import { seeded } from './helpers/seeded';
 
 const MINUTE = 60_000;
@@ -27,7 +27,7 @@ const sleep = [{ startMinute: 23 * 60, idleMinutes: 480 }];
 const run = (blocks: typeof daytime, seed: number, rhythm: boolean, card = GENE_DAY_CARD, userAway?: (wall: number) => boolean) =>
   runInnerLoopDay({ card, blocks, decide: none, midnight,
     boredomTiming: new BoredomTimingDirector({ random: seeded(seed) }),
-    // The app's opening choice decides who takes a speech cue (electron/inner-loop/opening-host.ts), as in the real usage.
+    // The app's opening choice decides who takes a speech cue (electron/brain/opening-host.ts), as in the real usage.
     opening: { chooser: new OpeningChoiceDirector({ random: seeded(seed * 31 + 5) }) },
     ...(rhythm ? { rhythm: { random: seeded(seed + 100), ...(userAway ? { userAway } : {}) } } : {}) });
 const calledAt = (r: DayResult) => r.diagnostics.filter(d => d.called);

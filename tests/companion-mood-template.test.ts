@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CompanionService } from '../electron/companion';
-import { CharacterCardStore } from '../electron/character-cards';
-import { effectiveCharacterMood, type CharacterDraft } from '../shared/character-cards';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
-import type { ProviderConfig } from '../shared/contracts';
+import { CompanionService } from '../electron/brain/companion';
+import { CharacterCardStore } from '../electron/cards/character-cards';
+import { effectiveCharacterMood, type CharacterDraft } from '../shared/cards/character-cards';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
+import type { ProviderConfig } from '../shared/foundation/settings';
 
 const provider: ProviderConfig = { kind: 'claude', baseUrl: 'http://fixture.invalid/v1', model: 'fixture' };
 test('portable templates reach the actual simulation without importing experience or resetting an active conversation', async () => {
@@ -33,7 +33,8 @@ test('portable templates reach the actual simulation without importing experienc
     assert.equal(output.join(''), '已显示仍继续');
     assert.equal(service.mood.get().token, before.token);
     assert.equal(service.mood.get().snapshot.lastInteractionAt, before.snapshot.lastInteractionAt);
-    assert.ok(Math.abs(service.mood.get().snapshot.values.O - before.snapshot.values.O) < 0.01);
+    // Not reset to the new card; 心情第二批: the reply had no tail, so only the tiny label fallback (calm: O +1 × sensitivity) moved it.
+    assert.ok(Math.abs(service.mood.get().snapshot.values.O - before.snapshot.values.O) < 1.01);
     const exported = cards.export(card.id); await cards.import(exported); const copy = cards.publicState().cards.at(-1)!;
     await service.context(copy.id, provider, 'Warm', effectiveCharacterMood(copy));
     assert.equal(service.mood.get().snapshot.values.O, 44);

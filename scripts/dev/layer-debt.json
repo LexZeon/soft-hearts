@@ -1,0 +1,45 @@
+{
+ "note": "Layer debt baseline (scripts/dev/structure-inventory.mjs --check-layers). Counts may only go down: tests/layer-check.test.mjs fails when they grow. Lower it with --update-baseline after a move that clears violations.",
+ "rules": {
+  "foundation-imports-part": {
+   "total": 0,
+   "byPart": {}
+  },
+  "part-imports-part-internal": {
+   "total": 94,
+   "byPart": {
+    "unbound": 25,
+    "initiative": 11,
+    "settings": 11,
+    "brain": 10,
+    "mood": 9,
+    "voice": 9,
+    "senses": 6,
+    "stage": 6,
+    "memory": 3,
+    "safety": 2,
+    "actions": 1,
+    "cards": 1
+   }
+  },
+  "imports-wiring": {
+   "total": 1,
+   "byPart": {
+    "senses": 1
+   }
+  },
+  "wiring-imports-other-internal": {
+   "total": 0,
+   "byPart": {}
+  },
+  "imports-contract": {
+   "total": 4,
+   "byPart": {
+    "brain": 1,
+    "cards": 1,
+    "safety": 1,
+    "voice": 1
+   }
+  }
+ }
+}

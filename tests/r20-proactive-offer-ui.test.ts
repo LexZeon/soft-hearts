@@ -1,11 +1,13 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';import ts from 'typescript';
-import {ProactiveAgentOffer,type ProactiveAgentOfferAPI} from '../src/ui/ProactiveAgentOffer';
-import {CodexTasks,type CodexTaskBridge} from '../src/ui/CodexTasks';
-import {R20ProactiveOffers} from '../electron/r20-proactive-offer';import {ProactiveSpeechGate} from '../electron/proactive-speech-gate';
-import {R20_OFFER_CAPABILITIES,type R20ProactiveOfferEvent,type R20ProactiveOfferView,type R20ProactiveOfferState,type R20ProactiveOfferResponse} from '../shared/r20-proactive-offer';
-import {validateCodexTaskPrompt} from '../shared/codex-tasks';import {DEFAULT_SETTINGS} from '../shared/defaults';
-import {registerUiMessages,setUiLanguage} from '../shared/ui-language';import {ENGLISH_TASKS_UI_COPY} from '../shared/ui-copy.tasks.en';
+import {ProactiveAgentOffer,type ProactiveAgentOfferAPI} from '../src/initiative/ProactiveAgentOffer';
+import {CodexTasks,type CodexTaskBridge} from '../src/safety/CodexTasks';
+import {R20ProactiveOffers} from '../electron/initiative/r20-proactive-offer';import {ProactiveSpeechGate} from '../electron/initiative/proactive-speech-gate';
+import {R20_OFFER_CAPABILITIES,type R20ProactiveOfferEvent,type R20ProactiveOfferView,type R20ProactiveOfferState,type R20ProactiveOfferResponse} from '../shared/initiative/r20-proactive-offer';
+import {validateCodexTaskPrompt} from '../shared/safety/codex-tasks';import {DEFAULT_SETTINGS} from '../shared/foundation/defaults';
+import {registerUiMessages,setUiLanguage} from '../shared/foundation/ui-language';import {ENGLISH_TASKS_UI_COPY} from '../shared/foundation/ui-copy.tasks.en';
+import {WIRING_PRELUDE,wiringFunction} from './helpers/wiring-source';
+import { rendererSource as readRendererSource } from './helpers/renderer-source'; // overhaul step 5: src/main.ts and src/wiring/*.ts
 
 class Element {
  children:Element[]=[];className='';textContent='';value='';hidden=false;disabled=false;type='';id='';maxLength=0;scrollTop=0;scrollHeight=0;
@@ -64,14 +66,15 @@ test('actual host ticket and under-chat form reach actual original confirmation 
  const settings=structuredClone(DEFAULT_SETTINGS);settings.agent.workingDirectory='';
  const bridge:CodexTaskBridge={listCodexTasks:async()=>[],readCodexTask:denied,startCodexTask:denied,continueCodexTask:denied,interruptCodexTask:denied,respondCodexApproval:denied,onCodexTaskEvent:()=>()=>{},codexTaskCapabilities:denied,selectDirectory:async()=>null};
  const panel=new CodexTasks(taskRoot as unknown as HTMLElement,{api:bridge,getSettings:()=>settings,beforeStart:async()=>false,onDirectorySelected:()=>{},onError:m=>errors.push(m),onOpen:()=>{opened++;}});
- const renderer=readFileSync(new URL('../src/main.ts',import.meta.url),'utf8'),rendererAst=ts.createSourceFile('renderer.ts',renderer,ts.ScriptTarget.Latest,true);
+ const renderer=readRendererSource(),rendererAst=ts.createSourceFile('renderer.ts',renderer,ts.ScriptTarget.Latest,true);
  let proposal:ts.Node|undefined;function scan(n:ts.Node){if(ts.isCallExpression(n)&&ts.isPropertyAccessExpression(n.expression)&&n.expression.name.text==='onCodexTaskProposal')proposal=n.arguments[0];ts.forEachChild(n,scan);}scan(rendererAst);assert.ok(proposal);
  const js=(s:string)=>ts.transpileModule(s,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None}}).outputText;
  const receive=new Function('codexTasks','openCodexTaskPanel',js('return ('+proposal.getText(rendererAst)+');'))(panel,()=>{opened++;}) as (prompt:string)=>void;
- const main=readFileSync(new URL('../electron/main.ts',import.meta.url),'utf8'),ast=ts.createSourceFile('main.ts',main,ts.ScriptTarget.Latest,true);
- const helper=ast.statements.find((n):n is ts.FunctionDeclaration=>ts.isFunctionDeclaration(n)&&n.name?.text==='openCodexTaskConfirmation');assert.ok(helper);
+ // Wiring rewrite step 4: the task proposal entry is the safety part's (electron/wiring/safety-wiring.ts), read there (exactly one); the
+ // control window it reads from the part's needs is this test's `controls` (WIRING_PRELUDE).
+ const helper=wiringFunction('openCodexTaskConfirmation');assert.ok(helper);
  const controls={isDestroyed:()=>false,webContents:{send:(channel:string,prompt:string)=>{assert.equal(channel,'desk:codex-task-proposal');receive(prompt);}}};
- const open=new Function('validateCodexTaskPrompt','showControls','controls',js(helper.getText(ast)+'\nreturn openCodexTaskConfirmation;'))(validateCodexTaskPrompt,()=>{},controls) as (prompt:string,current:()=>boolean)=>void;
+ const open=new Function('validateCodexTaskPrompt','showControls','controls',js(WIRING_PRELUDE+'\n'+helper+'\nreturn openCodexTaskConfirmation;'))(validateCodexTaskPrompt,()=>{},controls) as (prompt:string,current:()=>boolean)=>void;
  const gate=new ProactiveSpeechGate(()=>10000);gate.setScope('scope');
  const surface={waitForPresentation:async(text:string)=>text===shown,isPresentationCurrent:(text:string)=>text===shown};
  const host=new R20ProactiveOffers({gate,context:()=>({identity:'identity',gateScope:'scope',persona:'温和',mood:'平静'}),eligible:()=>true,presentable:()=>true,owner:()=>7,humanSender:s=>s===7,surface:()=>surface,generate:async()=>JSON.stringify({question:'需要先看看整理计划吗？',goal:'整理项目',plan:'先列步骤。',scopeHint:'请自己填写范围'}),event:e=>emit(e),archive:async(_o,_at,current)=>{if(current())archiveCount++;},openTaskConfirmation:open,now:()=>10000,createId:()=> 'actual'});

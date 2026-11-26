@@ -1,23 +1,23 @@
-import * as uiCopy from '../src/ui/ui-language';
+import * as uiCopy from '../src/foundation/ui-language';
 const { uiText, uiHtml, uiMarkup, uiTemplate } = uiCopy;
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import ts from 'typescript';
-import { AudioDanceFusion } from '../src/ui/audio-dance-fusion';
-import { parseAudioDanceFrame } from '../shared/audio-dance';
-import { audioReadingSources, audioReadingPurposes } from '../shared/audio-reading-toggles';
-import { AmbientAudioSegments } from '../src/ui/ambient-audio-segments';
-import { AudioCaptureHost } from '../electron/audio-capture-host';
+import { AudioDanceFusion } from '../src/senses/audio-dance-fusion';
+import { parseAudioDanceFrame } from '../shared/senses/audio-dance';
+import { audioReadingSources, audioReadingPurposes } from '../shared/voice/audio-reading-toggles';
+import { AmbientAudioSegments } from '../src/senses/ambient-audio-segments';
+import { AudioCaptureHost } from '../electron/senses/audio-capture-host';
 
 // Entire actual client class and constructor; only physical capture and IPC/RAF
 // boundaries are synthetic. No CSS loader, DOM, App, device or provider starts.
-const source = readFileSync(new URL('../src/ui/AudioReadingClient.ts', import.meta.url), 'utf8');
+const source = readFileSync(new URL('../src/voice/AudioReadingClient.ts', import.meta.url), 'utf8');
 const ast = ts.createSourceFile('AudioReadingClient.ts', source, ts.ScriptTarget.Latest, true);
 const klass = ast.statements.find((n): n is ts.ClassDeclaration => ts.isClassDeclaration(n) && n.name?.text === 'AudioReadingClient')!;
 const create = new Function('uiText','uiHtml','uiMarkup','uiTemplate','deps', `const {AudioDanceFusion,parseAudioDanceFrame,audioReadingSources,audioReadingPurposes,AmbientAudioSegments,MicrophoneInput,performance,requestAnimationFrame,cancelAnimationFrame}=deps;
 ${ts.transpile(klass.getText(ast).replace(/^export /, ''), { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None })};return AudioReadingClient;`).bind(null, uiText, uiHtml, uiMarkup, uiTemplate);
-function fixture() {
+function fixture(keepDialogue?: () => boolean) {
   let now = 100, serial = 0, captureEvent: Function = () => {}, frameEvent: Function = () => {};
   const frames = new Map<number, Function>(), active: boolean[] = [], samples: any[] = [], intents: any[] = [], errors: string[] = [], pcm: any[] = [], readings: any[] = [];
   class CapturePort { async apply(_descriptor: unknown) {} async dispose() {} }
@@ -36,7 +36,7 @@ function fixture() {
   };
   const system = { active: true, async setEnabled() {}, async releaseOwned() {}, setPcmListener(listener: unknown) { pcm.push(listener); } };
   const client = new Client(null, { api, owner: 'pet', system, media: {},
-    onMusicEnabled: (value: boolean) => active.push(value), onMusicSample: (sample: any) => samples.push(sample), onError: (error: string) => errors.push(error) });
+    onMusicEnabled: (value: boolean) => active.push(value), onMusicSample: (sample: any) => samples.push(sample), onError: (error: string) => errors.push(error), keepDialogue });
   captureEvent(host.getState());
   const receive = (source: 'system-audio' | 'microphone', rms = 0.4) => {
     const d = host.getState().slots[source]!;
@@ -72,5 +72,16 @@ test('actual one switch asks for the computer\'s sound only; off clears both of 
     { source: 'system-audio', purpose: 'music', enabled: false }, { source: 'system-audio', purpose: 'movie', enabled: false }]);
   assert.deepEqual(f.intents, [], 'the client sends no dance source intent');
   assert.ok(f.readings.every(r => r.source !== 'microphone'));
+  f.client.dispose();
+});
+
+test('I-187: 「和她一起听」 off while 和她一起看 is on turns off only its music; 一起看 keeps hearing the dialogue', async () => {
+  let watching = true;
+  const f = fixture(() => watching);
+  await f.client.setListen(false);
+  assert.deepEqual(f.readings, [{ source: 'system-audio', purpose: 'music', enabled: false }]);
+  watching = false;
+  await f.client.setListen(false);
+  assert.deepEqual(f.readings.slice(1), [{ source: 'system-audio', purpose: 'music', enabled: false }, { source: 'system-audio', purpose: 'movie', enabled: false }]);
   f.client.dispose();
 });

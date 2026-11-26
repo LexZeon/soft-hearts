@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { selectChatGesture, type ChatGestureAppraisal } from '../shared/chat-gesture';
-import { createMoodState, getMoodSnapshot, type MoodSnapshot } from '../shared/mood';
+import { selectChatGesture, type ChatGestureAppraisal } from '../shared/actions/chat-gesture';
+import { createMoodState, getMoodSnapshot, type MoodSnapshot } from '../shared/foundation/mood';
 
 const snapshot = (): MoodSnapshot => getMoodSnapshot(createMoodState(1_000), 1_000);
 const appraisal = (gesture: ChatGestureAppraisal['gesture'] = 'explain'): ChatGestureAppraisal => ({

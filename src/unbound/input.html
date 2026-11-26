@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <title>soft hearts</title>
+    <style>
+      :root { --box: rgba(255, 255, 255, 0.97); --text: #2b2633; --muted: #9a93a6; --soft: #a9a2b4; --warn: #b3566f; --chip: #efe8f6; --chip-hover: #e3d6f0; --chip-text: #6b4a8a;
+        --line: rgba(60, 40, 90, 0.12); --on: #2f7d5b; --focus: #8a63b8; }
+      @media (prefers-color-scheme: dark) {
+        :root { --box: rgba(32, 28, 40, 0.97); --text: #ece6f3; --muted: #9d95ab; --soft: #8e879b; --warn: #f19ab0; --chip: #3b3249; --chip-hover: #4a3f5c; --chip-text: #e2d3f4;
+          --line: rgba(230, 220, 245, 0.14); --on: #8fd8b3; --focus: #c6a6ec; }
+      }
+      html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; }
+      .box { position: absolute; inset: 8px; box-sizing: border-box; padding: 9px 12px 7px; border-radius: 16px; background: var(--box);
+        box-shadow: 0 4px 18px rgba(30, 20, 50, 0.28); font: 14px/1.5 "Microsoft YaHei UI", "PingFang SC", system-ui, sans-serif; color: var(--text);
+        display: flex; flex-direction: column; justify-content: center; gap: 2px; }
+      .box:has(.panel:not([hidden])) { justify-content: flex-start; }
+      .row { display: flex; align-items: center; gap: 8px; }
+      .call, .senses { flex: none; border: 0; border-radius: 12px; padding: 2px 10px; font-size: 12px; font-family: inherit; line-height: 1.5; color: var(--chip-text); background: var(--chip); cursor: pointer; }
+      .senses { padding: 2px 7px; }
+      .call:hover, .senses:hover { background: var(--chip-hover); }
+      .call.on { color: #fff; background: #c9506e; }
+      .senses[aria-expanded="true"] { box-shadow: inset 0 0 0 1.5px var(--focus); }
+      button:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+      input { width: 100%; box-sizing: border-box; border: 0; outline: 0; background: transparent; font: inherit; color: inherit; padding: 2px 0; }
+      input::placeholder { color: var(--muted); }
+      .hint { min-height: 15px; font-size: 12px; line-height: 15px; color: var(--warn); }
+      .hint:empty::before { content: attr(data-default); color: var(--soft); }
+      /* I-190: the senses panel (src/unbound/input-senses.ts) and the shared source list (src/foundation/source-menu.ts). */
+      .panel { flex: 1; min-height: 0; overflow: auto; margin-top: 4px; padding-top: 6px; border-top: 1px solid var(--line); font-size: 12.5px; }
+      .panel[hidden] { display: none; }
+      .senses-title { font-weight: 600; margin-bottom: 4px; }
+      .senses-row { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 8px; padding: 3px 0; }
+      .senses-state.on { color: var(--on); }
+      .senses-state.off { color: var(--muted); }
+      .senses-pick { border: 0; border-radius: 10px; padding: 1px 8px; font: inherit; font-size: 12px; color: var(--chip-text); background: var(--chip); cursor: pointer; }
+      .senses-pick[aria-expanded="true"] { background: var(--chip-hover); }
+      .senses-list { padding: 2px 0 6px 10px; }
+      .senses-list[hidden] { display: none; }
+      .senses-note { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
+      .senses-watch { margin-top: 4px; padding-top: 6px; border-top: 1px solid var(--line); }
+      .senses-mark { display: inline-block; width: 7px; height: 7px; margin-left: 6px; border-radius: 50%; background: #f0b27a; vertical-align: middle; }
+      .senses-reason { margin: 0 0 2px; color: var(--muted); font-size: 11.5px; }
+      .senses-reason.not-heard { color: var(--warn); }
+      .source-list-title { display: none; }
+      .source-list-items { display: flex; flex-direction: column; gap: 1px; }
+      .source-list-item { text-align: left; border: 0; border-radius: 8px; padding: 3px 8px 3px 22px; font: inherit; color: inherit; background: transparent; cursor: pointer; position: relative;
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .source-list-item:hover { background: var(--chip); }
+      .source-list-item[aria-checked="true"]::before { content: "✓"; position: absolute; left: 7px; color: var(--on); }
+      .source-list-note { margin: 3px 0 0 8px; color: var(--muted); font-size: 11.5px; }
+    </style>
+  </head>
+  <body>
+    <div class="box">
+      <div class="row">
+        <input id="line" type="text" maxlength="2000" autocomplete="off" spellcheck="false" />
+        <button id="senses" class="senses" type="button" aria-haspopup="true">◉</button>
+        <button id="call" class="call" type="button" tabindex="-1"></button>
+      </div>
+      <div id="hint" class="hint"></div>
+      <section id="panel" class="panel" hidden></section>
+    </div>
+    <script type="module" src="./input.ts"></script>
+  </body>
+</html>

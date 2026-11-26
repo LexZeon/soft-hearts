@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { recordedMotionTrackRelations } from '../electron/motion-track-relations';
-import { MotionTrackCoverageHost } from '../electron/motion-track-coverage';
-import type { MotionTrackCoverage, MotionTrackProperty } from '../shared/motion-track-coverage';
-import type { MotionCatalog } from '../shared/motion-library';
-import { stripDefaultVmdTracks, type VmdTrackData } from '../src/stage/vmd-tracks';
-import gene from '../shared/motion-track-gene-structure.json';
+import { recordedMotionTrackRelations } from '../electron/actions/motion-track-relations';
+import { MotionTrackCoverageHost } from '../electron/actions/motion-track-coverage';
+import type { MotionTrackCoverage, MotionTrackProperty } from '../shared/actions/motion-track-coverage';
+import type { MotionCatalog } from '../shared/actions/motion-library';
+import { stripDefaultVmdTracks, type VmdTrackData } from '../src/foundation/vmd-tracks';
+import gene from '../shared/actions/motion-track-gene-structure.json';
 
 function coverage(indices: number[], id = 'a'): MotionTrackCoverage {
   return { asset: { packId: 'gene', motionId: id }, sha256: 'f'.repeat(64),

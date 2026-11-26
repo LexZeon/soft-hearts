@@ -5,13 +5,13 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { setUiLanguage } from '../shared/ui-language';
-import { ExpressionPreviewButtons, supportText } from '../src/ui/ExpressionPreviewButtons';
-import { relayExpressionPreview } from '../electron/expression-preview-host';
+import { setUiLanguage } from '../shared/foundation/ui-language';
+import { ExpressionPreviewButtons, supportText } from '../src/stage/ExpressionPreviewButtons';
+import { relayExpressionPreview } from '../electron/stage/expression-preview-host';
 import { showSupport, type ShowCapabilities } from '../src/stage/expression-show';
-import type { ExpressionPreviewResult, ExpressionRecipe } from '../shared/expression-preview';
-import { buildTestEntries } from '../electron/test-commands/entries';
-import { matchTestEntry } from '../electron/test-commands/match';
+import type { ExpressionPreviewResult, ExpressionRecipe } from '../shared/stage/expression-preview';
+import { buildTestEntries } from '../electron/safety/test-commands/entries';
+import { matchTestEntry } from '../electron/safety/test-commands/match';
 import { fakeTestDeps } from './helpers/test-command-fixtures';
 
 class Element {
@@ -55,7 +55,7 @@ test('buttons: both recipes, on any model they play; the line names what shows a
   assert.match(status(root).textContent!, /没法预览/);
   button(root, 'shy').onclick!(); await flush();
   assert.deepEqual(played, ['surprise']);
-  // The pet hidden: it is said.
+  // The companion hidden: it is said.
   capabilities = all1;
   const hidden = new ExpressionPreviewButtons({ support: recipe => showSupport(recipe, capabilities), play: async () => ({ sent: true, petVisible: false }) });
   button(hidden.root as unknown as Element, 'shy').onclick!(); await flush();

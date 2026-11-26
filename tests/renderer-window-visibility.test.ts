@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { PetVisibilityIntent, WindowVisibilityTracker } from '../src/ui/window-visibility';
+import { PetVisibilityIntent, WindowVisibilityTracker } from '../src/stage/window-visibility';
 
 test('window revisions protect native and desired state from old query and conflicting same revision', () => {
   const state = new WindowVisibilityTracker(); assert.equal(state.visible,false); assert.equal(state.petVisible,null);

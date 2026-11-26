@@ -1,12 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { DEFAULT_SETTINGS } from "../shared/defaults";
+import { DEFAULT_SETTINGS } from "../shared/foundation/defaults";
 import {
   clampPetBounds,
   petViewSettings,
   scaledPetBounds,
   sizedPetBounds,
-} from "../electron/pet-view";
+} from "../electron/stage/pet-view";
 
 test("pet view edits preserve every unrelated setting and native file grant", () => {
   const current = structuredClone(DEFAULT_SETTINGS);

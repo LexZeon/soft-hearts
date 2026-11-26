@@ -1,7 +1,7 @@
 /**
  * Test-only PMX 2.0/2.1 writer for synthetic models (no private or third-party
  * data), so the model lab (scripts/model-lab/) and the UTF-8 text transcoder
- * (shared/pmx-text-encoding.ts) can be exercised from bytes through three's
+ * (shared/foundation/pmx-text-encoding.ts) can be exercised from bytes through three's
  * MMDParser. Coordinates (vertex and bone positions, vertex morph deltas) are
  * given in MMDLoader model space and written left-handed (z negated), so
  * parsing with leftToRight gives them back; every other number is written as

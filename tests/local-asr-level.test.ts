@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { activeLevel, normalizeLevel, TARGET_ACTIVE_RMS, MAX_GAIN } from '../electron/asr/level';
-import { SenseVoiceEngine, type AsrOrtLike } from '../electron/asr/engine';
+import { activeLevel, normalizeLevel, TARGET_ACTIVE_RMS, MAX_GAIN } from '../electron/senses/asr/level';
+import { SenseVoiceEngine, type AsrOrtLike } from '../electron/senses/asr/engine';
 
 // A talking-like clip: 2 s of low hiss around a 1.5 s burst of a 200 Hz tone at the given RMS.
 function clip(speechRms: number, hiss = 0.0005): Float32Array {

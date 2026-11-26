@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ChatAvailability, failureText } from '../electron/chat-availability';
-import { ClaudeFailureError } from '../electron/claude';
-import { ClaudeTurnError } from '../electron/claude-process';
-import type { ChatAvailabilityView, OutageLineKind } from '../shared/chat-availability';
+import { ChatAvailability, failureText } from '../electron/brain/chat-availability';
+import { ClaudeFailureError } from '../electron/brain/claude';
+import { ClaudeTurnError } from '../electron/brain/claude-process';
+import type { ChatAvailabilityView, OutageLineKind } from '../shared/brain/chat-availability';
 
 const NOW = Date.UTC(2026, 10, 2, 18, 0, 0); // 10:00 in Los Angeles
 const QUOTA = new ClaudeFailureError('Claude 暂时不可用', "You've hit your session limit · resets 1:20pm (America/Los_Angeles)");

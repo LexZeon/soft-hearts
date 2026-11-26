@@ -1,6 +1,6 @@
-import * as uiCopy from '../src/ui/ui-language';
+import * as uiCopy from '../src/foundation/ui-language';
 const { uiText, uiHtml, uiMarkup, uiTemplate } = uiCopy;
-import { MotionTrackCoverageControls } from '../src/ui/MotionTrackCoverage';
+import { MotionTrackCoverageControls } from '../src/actions/MotionTrackCoverage';
 import test, { type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
@@ -9,13 +9,13 @@ import os from 'node:os';
 import path from 'node:path';
 import vm from 'node:vm';
 import ts from 'typescript';
-import { MotionLibrary } from '../electron/motion-library';
-import { MotionWeightStore } from '../electron/motion-weights';
-import { MotionWeightControls } from '../src/ui/MotionWeights';
-import * as filters from '../src/ui/motion-filters';
-import * as layers from '../shared/motion-layers';
-import type { MotionCatalog, MotionDownloadFile } from '../shared/motion-library';
-import type { MotionWeightView } from '../shared/motion-weights';
+import { MotionLibrary } from '../electron/actions/motion-library';
+import { MotionWeightStore } from '../electron/actions/motion-weights';
+import { MotionWeightControls } from '../src/actions/MotionWeights';
+import * as filters from '../src/actions/motion-filters';
+import * as layers from '../shared/actions/motion-layers';
+import type { MotionCatalog, MotionDownloadFile } from '../shared/actions/motion-library';
+import type { MotionWeightView } from '../shared/actions/motion-weights';
 
 // Text/action-only DOM, following the existing character-card UI fixture pattern.
 class Element {
@@ -93,10 +93,10 @@ test('actual library UI annotates two installed assets, saves/reloads and opts i
     readMotionWeights: (pack: string, motion: string) => track(store.read(7, pack, motion)),
     invalidateMotionWeightSelection: (pack: string) => { store.invalidateSelection(7, pack); return Promise.resolve(); },
     saveMotionWeights: (request: unknown) => track(store.save(7, request)), searchMotionWeights: (query: unknown) => track(store.search(query)) });
-  const source = await readFile(new URL('../src/ui/MotionLibrary.ts', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../src/actions/MotionLibrary.ts', import.meta.url), 'utf8');
   const exports = {}, context = { exports, document: (globalThis as any).document, window: (globalThis as any).window, Option: OptionElement,
     require: (name: string) => {
-      if (name === './ui-language') return uiCopy;
+      if (name === '../foundation/ui-language') return uiCopy;
       if (name.endsWith('.css')) return {};
       if (name.endsWith('motion-catalog.json')) return fixture.catalog;
       if (name === './MotionWeights') return { MotionWeightControls };

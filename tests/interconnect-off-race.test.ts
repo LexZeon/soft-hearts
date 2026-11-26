@@ -8,11 +8,11 @@ import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
 import net from 'node:net';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { AgentChannelHost } from '../electron/agent-channel/host';
-import { InterconnectStore, type InterconnectState } from '../electron/agent-channel/interconnect';
-import { AGENT_CREDENTIALS_FILE } from '../electron/agent-channel/credentials';
-import { type AgentConfirmRequest, type AgentToolDefinition } from '../electron/agent-channel/registry';
-import { noArgs } from '../electron/agent-channel/validate';
+import { AgentChannelHost } from '../electron/safety/agent-channel/host';
+import { InterconnectStore, type InterconnectState } from '../electron/safety/agent-channel/interconnect';
+import { AGENT_CREDENTIALS_FILE } from '../electron/safety/agent-channel/credentials';
+import { type AgentConfirmRequest, type AgentToolDefinition } from '../electron/safety/agent-channel/registry';
+import { noArgs } from '../electron/safety/agent-channel/validate';
 import { FrameReader, clientProof, encodeFrame, nonce } from '../scripts/agent-channel-wire.mjs';
 
 function deferred<T = void>() {

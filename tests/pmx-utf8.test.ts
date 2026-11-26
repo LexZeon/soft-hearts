@@ -2,9 +2,9 @@
  * UTF-8 PMX text (docs/claude/2026-11-02-pmx-utf8.md).
  * three's MMDParser decodes every PMX text field as UTF-16LE whatever the
  * header says, so a UTF-8 PMX loads with garbled bone/morph/material names and
- * the model profile cannot map it. shared/pmx-text-encoding.ts rewrites the
+ * the model profile cannot map it. shared/foundation/pmx-text-encoding.ts rewrites the
  * text fields (and the encoding byte) of an in-memory copy; the mmd-asset
- * protocol (electron/asset-protocol.ts) and the model lab use it. Files on disk
+ * protocol (electron/foundation/asset-protocol.ts) and the model lab use it. Files on disk
  * are never changed.
  * - Conversion: synthetic models written as UTF-8 become, byte for byte, the
  *   same model written as UTF-16LE (every PMX 2.0/2.1 section, every index
@@ -40,14 +40,14 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { MMDParser } from 'three/examples/jsm/libs/mmdparser.module.js';
 import { Texture, type SkinnedMesh } from 'three';
 import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
-import bundled from '../shared/bundled-assets.json';
-import { CORE_BONES, MORPH_SLOTS } from '../shared/model-profile';
+import bundled from '../shared/actions/bundled-assets.json';
+import { CORE_BONES, MORPH_SLOTS } from '../shared/stage/model-profile';
 import {
   PMX_HEADER_SNIFF_BYTES, describePmxPreparation, preparePmxForMmdParser, readPmxHeader, transcodePmxUtf8ToUtf16, type PmxDowngrade,
-} from '../shared/pmx-text-encoding';
-import { createAssetProtocolHandler, type AssetProtocolPorts } from '../electron/asset-protocol';
-import { AssetRegistry } from '../electron/assets';
-import { BlushCalibrationStore } from '../electron/blush-calibration';
+} from '../shared/foundation/pmx-text-encoding';
+import { createAssetProtocolHandler, type AssetProtocolPorts } from '../electron/foundation/asset-protocol';
+import { AssetRegistry } from '../electron/foundation/assets';
+import { BlushCalibrationStore } from '../electron/mood/blush-calibration';
 import { StageModelProfile } from '../src/stage/model-profile';
 import { analyzeModel, type ModelReport } from '../scripts/model-lab/analyze';
 import { loadBundledMotions } from '../scripts/model-lab/cli';

@@ -1,13 +1,13 @@
-/** G1 猜拳: whether she says something at a moment, what she is asked, and what of her answer may reach the bubble (shared/rps-voice.ts, electron/rps/voice.ts). */
+/** G1 猜拳: whether she says something at a moment, what she is asked, and what of her answer may reach the bubble (shared/initiative/rps-voice.ts, electron/initiative/rps/voice.ts). */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { DEFAULT_MOOD_PARAMETERS, type MoodParameters } from '../shared/mood';
-import { RPS_VOICE_SAFETY, parseRpsVoice, rpsMomentClass, rpsReusableLine, rpsSayHoldMs, rpsVoiceChance, rpsVoicePrompt, type RpsMoment, type RpsVoiceInput } from '../shared/rps-voice';
-import { RpsStore, RPS_REMEMBERED } from '../electron/rps/store';
-import { RpsVoice, rpsVoiceCardKey } from '../electron/rps/voice';
+import { DEFAULT_MOOD_PARAMETERS, type MoodParameters } from '../shared/foundation/mood';
+import { RPS_VOICE_SAFETY, parseRpsVoice, rpsMomentClass, rpsReusableLine, rpsSayHoldMs, rpsVoiceChance, rpsVoicePrompt, type RpsMoment, type RpsVoiceInput } from '../shared/initiative/rps-voice';
+import { RpsStore, RPS_REMEMBERED } from '../electron/initiative/rps/store';
+import { RpsVoice, rpsVoiceCardKey } from '../electron/initiative/rps/voice';
 import { seeded } from './helpers/seeded';
 
 const card = (weights: Partial<MoodParameters['weights']> = {}, text = 50): MoodParameters => ({ ...DEFAULT_MOOD_PARAMETERS,
@@ -82,8 +82,12 @@ test('what she is asked: who she is, how she feels, what just happened in plain 
   assert.match(tease, /其实出的是剪刀/u);
   assert.match(tease, /\{"text":"你要说的话"\}/u); assert.match(tease, /\{"text":""\}/u);
   assert.doesNotMatch(tease.replace('角色：小葵，傲娇。', ''), /[他她]/u);
-  const soft = rpsVoicePrompt({ persona: 'p', mood: 'calm', fatigue: null, moment: moment('round', { round: round('user', { intent: 'soft', reaction: 'soft-lose' }) }) });
-  assert.match(soft, /故意让着用户的，你不打算说破/u);
+  // Rules audit item 13 (2026-11-25): she is told only the facts; nothing says she let the user win on purpose (zh and en, every kind of round).
+  for (const speechLanguage of ['zh-CN', 'en'] as const) for (const outcome of ['her', 'user', 'draw'] as const) for (const reaction of ['win-round', 'lose-round', 'draw', 'win-game', 'lose-game', 'tease', 'habit'] as const) {
+    const text = rpsVoicePrompt({ persona: 'p', mood: 'calm', fatigue: null, speechLanguage, moment: moment('round', { round: round(outcome, { reaction }), habit: 'rock' }) });
+    assert.doesNotMatch(text, /让着|故意让|不打算说破|偷偷让|let (?:her|him|them|the user) win|on purpose|went easy/iu, `${speechLanguage} ${outcome} ${reaction}`);
+    assert.match(text, /刚刚揭晓：第一次你出石头、用户出/u);
+  }
   const final = rpsVoicePrompt({ persona: 'p', mood: 'calm', fatigue: null, moment: moment('final', { round: round('user', { reaction: 'lose-game' }), result: 'user', score: { her: 1, user: 2 } }) });
   assert.match(final, /这一场用户赢了（2 比 1）/u);
   assert.match(rpsVoicePrompt({ persona: 'p', mood: 'calm', fatigue: null, moment: moment('decline') }), /用户说下次吧/u);
@@ -103,7 +107,7 @@ test('what of her answer reaches the bubble: exactly the asked JSON with one pla
 
 test('which kind of moment a line belongs to, and which lines are worth keeping for the days without the model', () => {
   assert.equal(rpsMomentClass(moment('round', { round: round('draw') })), 'round-draw');
-  assert.equal(rpsMomentClass(moment('round', { round: round('user', { intent: 'soft', reaction: 'soft-lose' }) })), 'round-user');
+  assert.equal(rpsMomentClass(moment('round', { round: round('user') })), 'round-user');
   assert.equal(rpsMomentClass(moment('final', { result: 'user' })), 'final-user');
   assert.equal(rpsMomentClass(moment('final', { result: 'none' })), null);
   assert.equal(rpsMomentClass(moment('round', { round: round('user', { reaction: 'tease', tease: 'paper' }) })), null, 'a pretend cheat names a hand on screen');

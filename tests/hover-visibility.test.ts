@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { HoverVisibility } from '../src/ui/HoverVisibility';
+import { HoverVisibility } from '../src/stage/HoverVisibility';
 
 function fixture() {
   let now = 0, serial = 0, visible = false;

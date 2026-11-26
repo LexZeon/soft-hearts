@@ -1,20 +1,22 @@
-import * as uiCopy from '../src/ui/ui-language';
+import * as uiCopy from '../src/foundation/ui-language';
 const { uiText, uiHtml, uiMarkup, uiTemplate } = uiCopy;
 import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';import ts from 'typescript';
-import {SurprisePreviewHost} from '../electron/surprise-preview-host';import {MotionPreviewSession} from '../src/ui/motion-preview';import {DEFAULT_SETTINGS} from '../shared/defaults';
-import {bindPreviewCardButtons} from '../src/ui/ExpressionPreviewButtons';import {showSupport,type ShowCapabilities} from '../src/stage/expression-show';
+import {SurprisePreviewHost} from '../electron/initiative/surprise-preview-host';import {MotionPreviewSession} from '../src/actions/motion-preview';import {DEFAULT_SETTINGS} from '../shared/foundation/defaults';
+import {bindPreviewCardButtons} from '../src/stage/ExpressionPreviewButtons';import {showSupport,type ShowCapabilities} from '../src/stage/expression-show';
+import { ipcGuardSource } from './helpers/wiring-source';
 
 const parse=(name:string,text:string)=>ts.createSourceFile(name,text,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
 const evaluate=<T>(code:string,env:Record<string,unknown>):T=>new Function('uiText','uiHtml','uiMarkup','uiTemplate',...Object.keys(env), ts.transpileModule(code,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None}}).outputText).bind(null, uiText, uiHtml, uiMarkup, uiTemplate)(...Object.values(env));
 const fn=(tree:ts.SourceFile,name:string)=>{const x=tree.statements.find((n):n is ts.FunctionDeclaration=>ts.isFunctionDeclaration(n)&&n.name?.text===name);assert.ok(x);return x;};
 
 test('actual scoped host registrations accept only the fixed controls request and deny pet or foreign frame',async()=>{
- const tree=parse('main.ts',await readFile(new URL('../electron/main.ts',import.meta.url),'utf8'));
- const register=fn(tree,'registerIPC'),methods=['beginSurprisePreview','resolveSurprisePreview','stopSurprisePreview'];
+ // Wiring rewrite step 5: the three registrations moved, unchanged, from electron/main.ts registerIPC to electron/wiring/initiative-handlers-wiring.ts.
+ const tree=parse('initiative-handlers-wiring.ts',await readFile(new URL('../electron/wiring/initiative-handlers-wiring.ts',import.meta.url),'utf8'));
+ const register=fn(tree,'registerSurprisePreview'),methods=['beginSurprisePreview','resolveSurprisePreview','stopSurprisePreview'];
  const rows=register.body!.statements.filter(n=>ts.isExpressionStatement(n)&&ts.isCallExpression(n.expression)&&n.expression.expression.getText(tree)==='scopedHost'&&ts.isStringLiteral(n.expression.arguments[0])&&methods.includes(n.expression.arguments[0].text));assert.equal(rows.length,3);
  const handlers=new Map<string,(event:any,...args:any[])=>any>(),frame={},controls={webContents:{id:1,mainFrame:frame}},pet={webContents:{id:2,mainFrame:{}}};
  const host=new SurprisePreviewHost({context:owner=>owner===1?{modelKey:'synthetic',modelUrl:'asset://gene',visible:true}:null,verifyTarget:async()=>true});
- evaluate(`${fn(tree,'scopedHost').getText(tree)}\n${rows.map(x=>x.getText(tree)).join('\n')}`,{ipcMain:{handle:(key:string,value:any)=>handlers.set(key,value)},windows:()=>[controls,pet],controls,surprisePreviewHost:host});
+ evaluate(`${ipcGuardSource() /* wiring rewrite step 3: electron/wiring/ipc-wiring.ts */}\n${rows.map(x=>x.getText(tree)).join('\n')}`,{ipcMain:{handle:(key:string,value:any)=>handlers.set(key,value)},windows:()=>[controls,pet],controls,surprisePreviewHost:host});
  const event={sender:controls.webContents,senderFrame:frame},foreign={sender:controls.webContents,senderFrame:{}},petEvent={sender:pet.webContents,senderFrame:pet.webContents.mainFrame};
  const begin=handlers.get('desk:beginSurprisePreview')!,resolve=handlers.get('desk:resolveSurprisePreview')!,stop=handlers.get('desk:stopSurprisePreview')!;
  assert.throws(()=>begin(petEvent));assert.throws(()=>begin(foreign));assert.throws(()=>begin(event,'renderer-path'));
@@ -25,7 +27,7 @@ test('actual scoped host registrations accept only the fixed controls request an
 });
 
 test('actual preload exposes only fixed surprise routes and removes its exact cancellation listener',async()=>{
- const tree=parse('preload.ts',await readFile(new URL('../electron/preload.ts',import.meta.url),'utf8'));
+ const tree=parse('preload.ts',await readFile(new URL('../electron/safety/preload.ts',import.meta.url),'utf8'));
  const variable=(name:string)=>{const row=tree.statements.find((n):n is ts.VariableStatement=>ts.isVariableStatement(n)&&n.declarationList.declarations.some(d=>d.name.getText(tree)===name));assert.ok(row);return row.getText(tree);};
  const calls:any[][]=[],listeners=new Map<string,Function>();const ipcRenderer={invoke:(...a:any[])=>{calls.push(a);return Promise.resolve(null);},on:(key:string,f:Function)=>listeners.set(key,f),removeListener:(key:string,f:Function)=>{assert.equal(listeners.get(key),f);listeners.delete(key);}};
  const api=evaluate<any>(`${variable('invoke')}\n${fn(tree,'subscribe').getText(tree)}\n${variable('api')}\nreturn api;`,{ipcRenderer});
@@ -52,7 +54,7 @@ test('E1: the preview card buttons play the model-agnostic show on any model, na
 });
 
 test('actual controls layout exposes distinct surprise and shy buttons and one stop',async()=>{
- const tree=parse('layout.ts',await readFile(new URL('../src/ui/layout.ts',import.meta.url),'utf8'));
+ const tree=parse('layout.ts',await readFile(new URL('../src/settings/layout.ts',import.meta.url),'utf8'));
  const definitions=['button','toggle','number','range','renderControls'].map(name=>fn(tree,name).getText(tree).replace(/^export\s+/,''));
  const render=evaluate<(app:{innerHTML:string})=>void>(`${definitions.join('\n')}\nreturn renderControls;`,{icon:()=>'',renderControlNavigation:()=>''});
  const app={innerHTML:''};render(app);

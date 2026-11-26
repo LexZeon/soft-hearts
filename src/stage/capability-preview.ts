@@ -1,7 +1,7 @@
-import { MODEL_CAPABILITY_IDS, type ModelCapabilityId } from '../../shared/model-capability';
+import { MODEL_CAPABILITY_IDS, type ModelCapabilityId } from '../../shared/stage/model-capability';
 
 /**
- * I-024 "试一下" (docs/claude/2026-11-04-i024-stage.md): the character page asks the pet to show one capability
+ * I-024 "试一下" (docs/claude/2026-11-04-i024-stage.md): the character page asks the companion to show one capability
  * once. Pure timing: each preview has a smooth envelope on the stage's own clock (seconds), and the stage reads
  * the amounts per frame through its existing writers (eyelid compositor, mouth, blush, sleep-pose layer, the
  * pose-reaction wave, the drowsy face, the tears surface). Several previews may overlap; asking again for one still showing does not restart it,

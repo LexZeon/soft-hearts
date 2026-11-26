@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { voiceContinuationNote, voiceMergedNote } from '../electron/voice-chat-host';
+import { voiceContinuationNote, voiceMergedNote } from '../electron/voice/voice-chat-host';
 
 /**
  * R33.

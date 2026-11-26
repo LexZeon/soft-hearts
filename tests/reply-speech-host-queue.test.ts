@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CompletedReplySpeech } from '../electron/completed-reply-speech';
-import { CompletedReplySpeechQueue } from '../src/ui/completed-reply-speech-queue';
+import { CompletedReplySpeech } from '../electron/voice/completed-reply-speech';
+import { CompletedReplySpeechQueue } from '../src/voice/completed-reply-speech-queue';
 
 const tick=()=>new Promise<void>(resolve=>setImmediate(resolve));
 test('next bubble/segment waits for the previous playback promise, then completes three text replies',async()=>{

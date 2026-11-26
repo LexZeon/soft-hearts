@@ -1,34 +1,34 @@
 /**
  * #32 "喂点心时的语气词和吃法"的接口（I-020：一个功能一个文件夹，接口写清楚，换实现只换一块）。
  *
- * 原来：shared/feed-cue.ts 的 FEED_CUE_TEXT 固定两条（"啊～""嗯～"）；src/stage/mood-feedback.ts 的 FEED_OPEN、CHEW_OPEN、
+ * 原来：shared/initiative/feed-cue.ts 的 FEED_CUE_TEXT 固定两条（"啊～""嗯～"）；src/mood/mood-feedback.ts 的 FEED_OPEN、CHEW_OPEN、
  * CHEW_RATE 固定张多大、嚼多快。零食到嘴边就张嘴、同一声"啊～"，吃到同一声"嗯～"，嚼法一样；第十块和第一块一样。
  * 现在：每一份点心她来挑这两声（各五种声音，或者不出声）和吃法（不腻照旧；吃腻了张嘴、嚼都慢一点，偶尔轻轻摇头）。
  *
  * 谁调用它、怎么调用：
- *  1. 主机（electron/mood.ts 的 MoodHost）是唯一的调用方（FeedCueHost，真实现 choose.ts 的 FeedCueDirector）：
+ *  1. 主机（electron/mood/mood.ts 的 MoodHost）是唯一的调用方（FeedCueHost，真实现 choose.ts 的 FeedCueDirector）：
  *     - 一份新点心开始（桌宠报来这一次的 'food-wait'，点心刚拖进来）时 open()：挑张嘴前那一声、张嘴的快慢大小、要不要摇头。
  *     - 这一口咬下去（'food' 事件交给心情模型以后，#21 已经挑了这一块受用不受用）时 bite()：挑吃到后那一声和嚼法。
  *     - 视图里 MoodView.feedCue = view()（只在自动表现开着时有），开发者模式多一行 MoodView.feedCueWhy = recent()。
  *     "此刻"（FeedCueNow）在 open() 时读一次：心情、倾向、角色卡性格、累不累、吃腻了多少（#21 的新鲜感，跟着卡上"腻得快慢"）、
  *     不久前认图认出的口味、这一口之后认图会不会说一句。
- *  2. 舞台（src/stage/mood-feedback.ts，通过 MmdStage 交来的 state.feed）用 perform.ts 的 FeedEatPerformer 照着做：张嘴、嚼、摇头。
+ *  2. 舞台（src/mood/mood-feedback.ts，通过 MmdStage 交来的 state.feed）用 perform.ts 的 FeedEatPerformer 照着做：张嘴、嚼、摇头。
  *     没有 feedCue（自动表现关着、旧主机、假实现给的照常）时逐位和原来一样。
- *  3. 桌宠窗口的声音（src/ui/feed-cue-choice.ts 的 ChosenFeedCues，包在 FeedCuePlayer 外面）：到嘴边那一刻放 open.sound，
+ *  3. 桌宠窗口的声音（src/initiative/feed-cue-choice.ts 的 ChosenFeedCues，包在 FeedCuePlayer 外面）：到嘴边那一刻放 open.sound，
  *     咬下去那一刻放 eat.sound；还没合成好就先放已缓存的原来那一声，再没有就只演动作，后台合成好了下次用。
  *
  * 和别的功能的关系（都不互相调用）：
  *  - #21（shared/behaviors/touch-feed-effect/）：bite() 收到它这一块挑的受用不受用（TouchFeedEffectHost.landing），
  *    吃腻了多少用它的"腻"的算法和卡上的腻得快慢（choose.ts feedSatiety）。
- *  - 喂食认图（I-019，electron/feed-recognition/）：认图认出口味后给心情的那一下（MoodHost.lift，id 以 feed-taste- 开头）
+ *  - 喂食认图（I-019，electron/senses/feed-recognition/）：认图认出口味后给心情的那一下（MoodHost.lift，id 以 feed-taste- 开头）
  *    让主机记下"不久前认出的口味"，影响下一块；认图开着、这一口之后她会说一句时，吃到后那一声只出声、不说话（不抢话）。
  *    认图本身发生在咬下去以后，所以这一块是什么，这两声都不知道。
  *
  * 假实现在 fake.ts（每次都是原来的"啊～""嗯～"、照常的吃法），守约测试在 tests/feed-cue.test.ts：换一种实现，先过那组测试。
  */
-import type { MoodLabel, MoodTendency } from '../../mood';
-import type { FeedEatSoundId, FeedOpenSoundId } from '../../feed-cue';
-import type { TouchFeedLandingId } from '../touch-feed-effect/knobs';
+import type { MoodLabel, MoodTendency } from '../../foundation/mood';
+import type { FeedEatSoundId, FeedOpenSoundId } from '../../initiative/feed-cue';
+import type { TouchFeedLandingId } from '../../mood';
 import type { FeedCueMoment, FeedTaste } from './knobs';
 
 /** "此刻"：挑的时候只看这些。都是标签和数，不含任何对话内容、图片或吃的名字。 */
@@ -110,7 +110,7 @@ export interface FeedEatFrame {
   /** 加到头的左右转动目标上（弧度），不摇时正好是 0。 */
   readonly yaw: number;
 }
-/** 这一帧喂食到哪一步（src/stage/mood-feedback.ts 算好的）。 */
+/** 这一帧喂食到哪一步（src/mood/mood-feedback.ts 算好的）。 */
 export interface FeedEatMoment {
   /** 正在喂（点心在窗口里）。 */
   readonly feeding: boolean;

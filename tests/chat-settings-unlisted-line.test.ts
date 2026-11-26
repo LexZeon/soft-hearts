@@ -3,9 +3,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  CHAT_SETTINGS_UNLISTED_TEXT, CHAT_SETTINGS_UNLISTED_TEXT_BEFORE, chatSettingsSystemText,
-} from '../electron/chat-settings';
-import { CLAUDE_SESSION_SYSTEM_PROMPT } from '../electron/claude-session-prompt';
+  CHAT_SETTINGS_UNLISTED_TEXT, CHAT_SETTINGS_UNLISTED_TEXT_1106, CHAT_SETTINGS_UNLISTED_TEXT_BEFORE, chatSettingsSystemText,
+} from '../electron/brain/chat-settings';
+import { CLAUDE_SESSION_SYSTEM_PROMPT } from '../electron/brain/claude-session-prompt';
 
 /** The part of a sentence list that tells the user to go to the control window. */
 const controlWindowClauses = (text: string) => text.split(/[。；]/u).filter(clause => /控制窗口/u.test(clause));
@@ -15,7 +15,8 @@ test('the sentence is in her fixed prompt, last, and not much longer than before
   assert.ok(text.endsWith(CHAT_SETTINGS_UNLISTED_TEXT));
   assert.ok(CLAUDE_SESSION_SYSTEM_PROMPT.endsWith(CHAT_SETTINGS_UNLISTED_TEXT));
   assert.ok(!text.includes(CHAT_SETTINGS_UNLISTED_TEXT_BEFORE), 'the old sentence is gone');
-  assert.ok(CHAT_SETTINGS_UNLISTED_TEXT.length <= CHAT_SETTINGS_UNLISTED_TEXT_BEFORE.length + 60, 'the fixed prompt does not grow much');
+  // I-137 added one sentence (bounded against the 11-06 sentence in the last test).
+  assert.ok(CHAT_SETTINGS_UNLISTED_TEXT.length <= CHAT_SETTINGS_UNLISTED_TEXT_BEFORE.length + 120, 'the fixed prompt does not grow much');
 });
 
 test('the old sentence is what the test would have caught: it sent screen, camera and microphone to the control window', () => {
@@ -42,7 +43,13 @@ test('the senses are no longer sent to the control window; the pet\'s own switch
 
 test('she is told to follow the turn\'s format when it is given, and not to coax senses on', () => {
   assert.match(CHAT_SETTINGS_UNLISTED_TEXT, /私有上下文给了该项的格式，才按格式提议/u);
-  assert.match(CHAT_SETTINGS_UNLISTED_TEXT, /不要主动劝用户打开/u);
+  // I-137 (option A): the card when the user asks; never on her own; nothing is on before the tap.
+  assert.match(CHAT_SETTINGS_UNLISTED_TEXT, /用户自己开口要开关感知时那一轮会给格式/u);
+  assert.match(CHAT_SETTINGS_UNLISTED_TEXT, /你不主动提议打开感知/u);
+  assert.match(CHAT_SETTINGS_UNLISTED_TEXT, /用户点卡片之前别说已经开了/u);
+  assert.match(CHAT_SETTINGS_UNLISTED_TEXT_1106, /不要主动劝用户打开/u, 'the 11-06 sentence is kept for the A/B');
+  assert.ok(!chatSettingsSystemText().includes(CHAT_SETTINGS_UNLISTED_TEXT_1106), 'and is no longer in her prompt');
+  assert.ok(CHAT_SETTINGS_UNLISTED_TEXT.length <= CHAT_SETTINGS_UNLISTED_TEXT_1106.length + 60, 'the fixed prompt grows by one short sentence');
 });
 
 test('the key and the run command are never offered as something she can propose', () => {

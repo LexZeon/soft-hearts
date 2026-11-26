@@ -1,18 +1,18 @@
 // Codex T-205 第五轮（X-260，2026-11-04，固定 de4f312）：开着屏幕共享，控制窗口发「同事跟你说，你看看这个报错。」，取了一帧、
 // 模拟常驻进程收到一张合成屏幕图，感知行写着"用户叫你看屏幕"。第四轮把"我跟你说"当成用户自己说话（不算转述），但规则只看
 // 分句末尾的"跟你说"，不看是谁在说：「同事跟你说」「老板对你说」「同事让我跟你说」也被当成用户自己的话，后面的原话就成了请求。
-// 修法（shared/look-request.ts）：分句以"跟你说／对你说／和你说……"结尾时，只有说话的是用户自己（前面没人，或者是"我""我们"
+// 修法（shared/senses/look-request.ts）：分句以"跟你说／对你说／和你说……"结尾时，只有说话的是用户自己（前面没人，或者是"我""我们"
 // "让我""听我"加上"想、先、老实"这类副词）才算用户的话；前面是别人（同事、老板、他、小王）或者"别人让我跟你说"，后面就是转述，
 // 不算请求。正对照「我跟你说，你看看这个报错」照旧取图。docs/claude/2026-11-04-v1-refusal-grab.md「Codex 第五轮反例和修复」。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { Attachment } from '../shared/contracts';
-import { scanLookRequest, withheldLook } from '../shared/look-request';
-import { LookTurns } from '../electron/look-turns';
-import { LookAttachments } from '../electron/look-attachments';
-import { validateChatRequest } from '../electron/validation';
-import { lookHint, turnAttachments } from '../src/look-send';
-import { perceptionTurnLine, perceptionTurnState, SCREEN_LOOK_LINE, SHARING_LINE } from '../shared/perception-rule';
+import type { Attachment } from '../shared/foundation/chat';
+import { scanLookRequest, withheldLook } from '../shared/senses/look-request';
+import { LookTurns } from '../electron/senses/look-turns';
+import { LookAttachments } from '../electron/senses/look-attachments';
+import { validateChatRequest } from '../electron/settings/validation';
+import { lookHint, turnAttachments } from '../src/senses/look-send';
+import { perceptionTurnLine, perceptionTurnState, SCREEN_LOOK_LINE, SHARING_LINE } from '../shared/brain/perception-rule';
 
 const T205_ROUND5 = '同事跟你说，你看看这个报错。';
 /** 同类：别人跟你说／对你说／和你说，别人让我跟你说。 */
@@ -64,11 +64,18 @@ test('a long run of the words a no may carry never freezes the decision (up to t
     '不' + '帮忙着'.repeat(1333), '不' + '着急着'.repeat(1333), '不帮忙着'.repeat(1000), '我' + '早就'.repeat(1990) + '跟你说，你看看这个报错',
     '同事' + '跟你'.repeat(1990) + '说，你看看这个报错', '你' + '老是'.repeat(1999) + '看',
   ];
+  // What "never freezes" means is no runaway work: the old bug took 1.3 s at 53 characters and four times longer with each two more, so at 4,000
+  // characters it never came back. A wall-clock bar of 200 ms measured the machine's load as much as the code (229 ms under the full suite, 31 ms alone),
+  // so: the best of three runs (one scheduling stall cannot fail it) against a ceiling a freeze overshoots by orders of magnitude, and growth checked
+  // by shape (about 4x the input must not cost anywhere near the 16x of a quadratic, let alone the exponential).
+  const best = (text: string) => { let min = Infinity; for (let i = 0; i < 3; i++) { const started = performance.now(); scanLookRequest(text); min = Math.min(min, performance.now() - started); } return min; };
   for (const line of worst) {
-    const started = performance.now();
-    scanLookRequest(line);
-    const ms = performance.now() - started;
-    assert.ok(ms < 200, `${line.slice(0, 12)}… took ${ms.toFixed(1)} ms`);
+    const ms = best(line);
+    assert.ok(ms < 3000, `${line.slice(0, 12)}… took ${ms.toFixed(1)} ms`);
+  }
+  for (const [head, unit] of [['不', '需要'], ['别', '偷偷'], ['你', '老是']] as const) {
+    const small = best(head + unit.repeat(500)), large = best(head + unit.repeat(1999));
+    assert.ok(large < Math.max(small * 12, 250), `${head}${unit}: 500 repeats ${small.toFixed(1)} ms, 1999 repeats ${large.toFixed(1)} ms (not linear-ish)`);
   }
 });
 

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
-import { createAtomicFileWriter, type AtomicFileDependencies } from '../electron/atomic-file';
+import { createAtomicFileWriter, type AtomicFileDependencies } from '../electron/foundation/atomic-file';
 
 const failure = (code: string) => Object.assign(new Error(`Original synthetic ${code}`), { code });
 const target = path.resolve('synthetic-atomic-directory', 'settings.json');

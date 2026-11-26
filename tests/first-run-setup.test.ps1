@@ -11,6 +11,13 @@ $finder = $ast.Find({
     $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq 'Find-ClaudeExecutable'
 }, $true)
 if (-not $finder) { throw 'Claude Code discovery function is missing' }
+# 2026-11-25: the finder refuses the Claude desktop app's own copy through this helper (tests/claude-env-launch.test.ts covers that case).
+$bundled = $ast.Find({
+    param($node)
+    $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq 'Test-DesktopBundledClaude'
+}, $true)
+if (-not $bundled) { throw 'The desktop-app copy check is missing' }
+. ([scriptblock]::Create($bundled.Extent.Text))
 . ([scriptblock]::Create($finder.Extent.Text))
 
 $owned = Join-Path $PSScriptRoot ('synthetic-' + [guid]::NewGuid().ToString('N'))

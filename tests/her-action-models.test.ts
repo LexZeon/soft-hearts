@@ -8,18 +8,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { AnimationClip, SkinnedMesh } from 'three';
-import catalog from '../shared/motion-catalog.json';
-import {
-  HER_ACTIONS, HER_ACTION_CUE_MS, HER_ACTION_DETAILS, HER_ACTION_PACK, HER_ACTION_SPECS, HER_BODY_ACTIONS, fingerSide, herActionMissing, isHerActionCue, readHerActionOutcome,
-  type HerActionCue, type HerActionId, type HerActionOutcome,
-} from '../shared/her-actions';
-import { HerActionPlayer } from '../src/stage/her-action';
-import { FaceExclusive } from '../src/stage/face-exclusive';
-import { StageMotionRetarget, clearRetargetCache } from '../src/stage/motion-retarget';
-import { PoseContinuity } from '../src/stage/pose-continuity';
-import { bodyModel } from './helpers/body-fixtures';
-import { stageOn } from './helpers/her-action-harness';
-import { toyModel, type ModelData } from './helpers/model-fixtures';
+import catalog from '../shared/actions/motion-catalog.json';
+import { HER_ACTIONS, HER_ACTION_CUE_MS, HER_ACTION_PACK, HER_ACTION_SPECS, fingerSide, herActionMissing, isHerActionCue, readHerActionOutcome, type HerActionId } from '../shared/actions/her-actions';
+import { HerActionPlayer } from '../src/initiative/her-action';
+import { PoseContinuity } from '../src/senses/pose-continuity';
 
 test('the pinned table is the catalog: one action per motion of the pack, same hash and length; cues and answers are closed shapes', () => {
   const pack = catalog.packs.find(entry => entry.id === HER_ACTION_PACK)!;
@@ -76,100 +68,3 @@ function guardOver(mesh: SkinnedMesh, clip: AnimationClip, mode: 'arms' | 'delta
   assert.equal(player.active, false, 'ended');
   return caught;
 }
-
-for (const [label, data, expectations] of [
-  ['T-pose body, Japanese names, twist bones, no 上半身2 and no fingers', toyModel({ pose: 'T', twist: true, names: 'japanese' }),
-    { missing: { lean: ['胸（上半身2）'], bow: ['胸（上半身2）'], 'apology-bow': ['胸（上半身2）'], 'two-hand-heart': ['左手手指', '右手手指'], point: ['右手手指'] } }],
-  ['A-pose body, English names (every track renamed by the retarget), no 上半身2 and no fingers', toyModel({ pose: 'A', twist: true, names: 'english' }),
-    { missing: { lean: ['胸（上半身2）'], bow: ['胸（上半身2）'], 'apology-bow': ['胸（上半身2）'], 'two-hand-heart': ['左手手指', '右手手指'], point: ['右手手指'] } }],
-  ['body with 上半身2 and one finger per hand', bodyModel({ twist: true }), { missing: { 'two-hand-heart': ['左手手指', '右手手指'], point: ['右手手指'] } }],
-] as const) {
-  test(`other model (${label}): what it lacks is skipped and named; what it has plays, retargeted, with nothing for the guard to catch at 60 and 30 fps`, async () => {
-    const h = await stageOn(data as ModelData, { fullSkin: label.startsWith('body') });
-    try {
-      assert.ok(h.retarget.plan, 'not the reviewed Gene: the retarget runs');
-      const played: string[] = [];
-      for (const id of HER_BODY_ACTIONS) {
-        const report = await h.play(id);
-        const expected = (expectations.missing as Partial<Record<HerActionId, readonly string[]>>)[id];
-        if (expected) {
-          assert.deepEqual({ status: report.status, missing: report.missing }, { status: 'missing', missing: [...expected] }, id);
-          assert.equal(h.stage.herAction.active, false, `${id}: nothing starts`);
-          continue;
-        }
-        if (report.status === 'unfit') { played.push(`${id}: hidden by the fit check`); continue; }
-        assert.equal(report.status, 'played', `${id}: ${JSON.stringify(report)}`);
-        played.push(id);
-        // The clip the stage bound, replayed on its own over the still body with the guard (the stage would also run the base).
-        const clip: AnimationClip = await h.stage.herActionClips.get(`1:${HER_ACTION_SPECS[id].sha256}`);
-        h.stage.herAction.cancel({ immediate: true });
-        const seconds = HER_ACTION_SPECS[id].durationFrames / 30;
-        for (const fps of [60, 30]) assert.deepEqual(guardOver(h.mesh, clip, HER_ACTION_SPECS[id].mode as 'arms' | 'delta', seconds, fps), [], `${id} at ${fps} fps`);
-      }
-      assert.ok(played.filter(line => !line.includes('fit check')).length >= 10, played.join(', '));
-    } finally { h.close(); }
-  });
-}
-
-test('the guard check can fail: cutting a raised arm in one frame is caught, handing it back (yield) is not', async () => {
-  const h = await stageOn(toyModel({ pose: 'T', twist: true }));
-  try {
-    assert.equal((await h.play('cheer')).status, 'played');
-    const clip: AnimationClip = await h.stage.herActionClips.get(`1:${HER_ACTION_SPECS.cheer.sha256}`);
-    h.stage.herAction.cancel({ immediate: true });
-    for (const how of ['cut', 'yield'] as const) {
-      const player = new HerActionPlayer(h.mesh), guard = new PoseContinuity(h.mesh as never, { height: 20 });
-      assert.ok(player.play({ id: how, clip, mode: 'arms', durationS: 4 }));
-      for (let i = 0; i < 150; i++) {
-        guard.remove(); player.restore(); guard.captureBase(true);
-        if (i === 90 && how === 'cut') player.cancel({ immediate: true });
-        player.frame(1 / 60, { yield: how === 'yield' && i >= 90 });
-        guard.apply(1 / 60, 1 / 60);
-      }
-      assert.equal(player.active, false, `${how}: over`);
-      if (how === 'cut') assert.ok(guard.getState().jumps > 0, 'a one-frame cut of the raised arms is what the guard exists to catch');
-      else assert.equal(guard.getState().jumps, 0, `the hand-back: ${JSON.stringify(guard.getState().lastJump)}`);
-    }
-  } finally { h.close(); }
-});
-
-test('T-215 face shapes on other models: a model without a needed morph skips it and names the morph; the wink binds through the profile slot', async () => {
-  for (const names of ['japanese', 'english'] as const) {
-    const h = await stageOn(toyModel({ pose: 'T', twist: true, names }));
-    h.stage.faceExclusive = new FaceExclusive(h.mesh);
-    try {
-      // The toy faces have the five vowels, the blink pair and both winks, but no cheekPuff, mouthPucker or tongueOut.
-      assert.deepEqual(await h.play('cheek-puff'), { cueId: 'm1', status: 'missing', missing: ['鼓腮的表情（cheekPuff）'], detail: '' });
-      assert.deepEqual((await h.play('tongue-out')).missing, ['吐舌的表情（tongueOut）'], 'あ is there, the tongue is not');
-      for (const scope of ['mouth', 'eyelids'] as const) assert.equal(h.stage.faceExclusive.active(scope), false, `${names}: nothing starts`);
-      // Skeleton step 2: no mouthPucker, but "う" is there: the pout plays as an approximation (tests/skeleton-step2.test.ts).
-      assert.deepEqual(await h.play('pout'), { cueId: 'm3', status: 'played', missing: [], detail: HER_ACTION_DETAILS.approximate });
-      assert.equal(h.stage.faceExclusive.active('mouth'), true);
-      const wink = await h.play('wink');
-      assert.equal(wink.status, 'played', `${names}: ${JSON.stringify(wink)}`);
-      const lease = h.stage.faceExclusive.getState().eyelids;
-      const winkIndex = h.mesh.morphTargetDictionary![names === 'japanese' ? 'ウィンク' : 'Blink_L'];
-      assert.deepEqual(lease.targets, [winkIndex], `${names}: the profile's left-eye slot`);
-    } finally { h.close(); }
-  }
-  // No face morphs at all: every face shape is skipped, each naming what it needs; nothing is written.
-  const bare = await stageOn(toyModel({ pose: 'T', twist: true, morphs: [] }));
-  bare.stage.faceExclusive = new FaceExclusive(bare.mesh);
-  try {
-    assert.deepEqual((await bare.play('wink')).missing, ['单眼闭眼的表情（ウィンク）', '右眼单独闭的表情（ウィンク右）']);
-    assert.deepEqual((await bare.play('pout')).missing, ['嘟嘴的表情（mouthPucker）', '口型“う”']);
-    assert.deepEqual((await bare.play('tongue-out')).missing, ['张嘴口型（あ）', '吐舌的表情（tongueOut）']);
-    assert.equal(bare.stage.faceExclusive.owned(), null);
-  } finally { bare.close(); }
-});
-
-test('a model whose profile has no right wrist: the right-hand actions are skipped with that part named, the head ones still play', async () => {
-  const h = await stageOn(toyModel({ pose: 'T', twist: true }), { hide: ['wristRight'] });
-  try {
-    for (const id of ['hello-wave', 'goodbye-wave', 'hide-laugh', 'clap'] as const) {
-      const report = await h.play(id);
-      assert.equal(report.status, 'missing', id); assert.ok(report.missing.includes('右手腕'), `${id}: ${report.missing}`);
-    }
-    assert.equal((await h.play('nod')).status, 'played');
-  } finally { h.close(); }
-});

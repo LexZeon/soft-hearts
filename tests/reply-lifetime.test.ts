@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ReplyLifetime } from '../electron/reply-lifetime';
+import { ReplyLifetime } from '../electron/brain/reply-lifetime';
 import { REPLY_LINGER_KNOBS } from '../shared/behaviors/reply-linger/knobs';
 
 function fixture() {

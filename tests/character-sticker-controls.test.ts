@@ -1,10 +1,10 @@
-import { registerUiMessages, setUiLanguage } from '../shared/ui-language';
-import { ENGLISH_SETTINGS_UI_COPY } from '../shared/ui-copy.settings.en';
+import { registerUiMessages, setUiLanguage } from '../shared/foundation/ui-language';
+import { ENGLISH_SETTINGS_UI_COPY } from '../shared/foundation/ui-copy.settings.en';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CharacterStickerControls } from '../src/ui/CharacterStickerControls';
-import type { CharacterStickerPorts, CharacterStickerView } from '../shared/character-sticker';
-import type { EmojiId } from '../shared/single-emoji';
+import { CharacterStickerControls } from '../src/cards/CharacterStickerControls';
+import type { CharacterStickerPorts, CharacterStickerView } from '../shared/cards/character-sticker';
+import type { EmojiId } from '../shared/stage/single-emoji';
 
 class Element {
   children: Element[] = []; parent: Element | null = null;

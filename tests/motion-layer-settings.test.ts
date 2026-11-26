@@ -3,12 +3,12 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { AssetRegistry } from "../electron/assets";
-import { SettingsStore } from "../electron/settings";
-import { preserveStaleAssetClears, validateAssetBaseline, validateSettings } from "../electron/validation";
-import type { AssetRef } from "../shared/contracts";
-import { DEFAULT_SETTINGS } from "../shared/defaults";
-import { getMotionLayerAssets, isMotionLayer, motionAssetBaseline, withMotionLayer } from "../shared/motion-layers";
+import { AssetRegistry } from "../electron/foundation/assets";
+import { SettingsStore } from "../electron/settings/settings";
+import { preserveStaleAssetClears, validateAssetBaseline, validateSettings } from "../electron/settings/validation";
+import type { AssetRef } from "../shared/foundation/settings";
+import { DEFAULT_SETTINGS } from "../shared/foundation/defaults";
+import { getMotionLayerAssets, isMotionLayer, motionAssetBaseline, withMotionLayer } from "../shared/actions/motion-layers";
 
 const asset = (name: string): AssetRef => ({ path: `/granted/${name}.vmd`, name, url: `mmd-asset://granted/${name}.vmd` });
 

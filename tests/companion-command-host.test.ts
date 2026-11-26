@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CompanionCommandHost, validCompanionAction, type CommandCommitResult } from '../electron/companion-command-host';
-import type { CompanionCommandCandidate, CompanionCommandView } from '../shared/companion-commands';
+import { CompanionCommandHost, validCompanionAction, type CommandCommitResult } from '../electron/settings/companion-command-host';
+import type { CompanionCommandCandidate, CompanionCommandView } from '../shared/settings/companion-commands';
 
 test('volume actions admit only the fixed absolute integer-percent field without boolean or generic settings authority', () => {
   for (const value of [0, 40, 100]) assert.equal(validCompanionAction({ actionId: 'voice.set-volume', parameters: { value } }), true);

@@ -1,4 +1,4 @@
-// Codex T-207 (2026-11-04) counterexamples for the "UTF-8 read as GBK" filter (shared/mojibake.ts, electron/mood-chat.ts;
+// Codex T-207 (2026-11-04) counterexamples for the "UTF-8 read as GBK" filter (shared/foundation/mojibake.ts, electron/mood/mood-chat.ts;
 // docs/claude/2026-11-03-mojibake-guard.md, section "Codex T-207 反例和修复"). Each minimal case is Codex's, rewritten here;
 // all failed on dae249b. The rule they hold: ordinary text is never changed (a garbled run may pass instead), not even the
 // first garbled character reaches the bubble, the state tail does not depend on how the stream was cut, and what is archived
@@ -8,9 +8,9 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { canStartMojibake, cleanMojibake, gbkCode, MojibakeGuard } from '../shared/mojibake';
-import { MoodReplyProtocol } from '../electron/mood-chat';
-import { CompanionService } from '../electron/companion';
+import { canStartMojibake, cleanMojibake, gbkCode, MojibakeGuard } from '../shared/foundation/mojibake';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
+import { CompanionService } from '../electron/brain/companion';
 
 const garble = (text: string): string => new TextDecoder('gbk').decode(Buffer.from(text, 'utf8'));
 const tail = (protocol: MoodReplyProtocol, reason = '测试') =>

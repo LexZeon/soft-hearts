@@ -298,7 +298,7 @@ try {
         ?.textContent === "REPLY:",
   );
   await replyBoth("FROM_PET");
-  // The pet keeps only shared text state; a separate lightweight native window
+  // The companion keeps only shared text state; a separate lightweight native window
   // displays the reply beyond the model viewport instead of covering its face.
   await waitFor(() => instance.windows().some(page => page.url().endsWith('#soft-hearts-reply')), 'native reply window');
   const replyWindow = instance.windows().find(page => page.url().endsWith('#soft-hearts-reply'));

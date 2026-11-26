@@ -2,11 +2,11 @@
 // network / auth / quota / service / timeout / other — and nothing else: no system-voice fallback, no retry, never the reply text.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SpeechRuntime, type SpeechSynthesizer } from '../electron/speech-runtime';
-import { synthesizeBailianSpeech, TtsError } from '../electron/tts';
-import { DEFAULT_TTS_CONFIG, type SpeechWireEvent, type TtsConfig } from '../shared/tts';
-import { bailianCodeFailure, httpFailure, type SpeechFailure } from '../shared/speech-failure';
-import { buildJournalEntry, describeJournalEntry } from '../shared/journal';
+import { SpeechRuntime, type SpeechSynthesizer } from '../electron/voice/speech-runtime';
+import { synthesizeBailianSpeech, TtsError } from '../electron/voice/tts';
+import { DEFAULT_TTS_CONFIG, type SpeechWireEvent, type TtsConfig } from '../shared/voice/tts';
+import { bailianCodeFailure, httpFailure, type SpeechFailure } from '../shared/voice/speech-failure';
+import { buildJournalEntry, describeJournalEntry } from '../shared/memory/journal';
 
 const config = (patch: Partial<TtsConfig> = {}): TtsConfig => ({ ...DEFAULT_TTS_CONFIG, provider: 'bailian', apiHost: 'https://real-console-host.example',
   region: 'user-region', apiKey: 'fixture-key', ...patch });

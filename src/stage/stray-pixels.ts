@@ -105,6 +105,8 @@ export interface StrayDeps {
   now?(): number;
   /** I-031 色块诊断日志 (color-block-log.ts): told more about hits; whatever it does or throws, the watch behaves the same. */
   diagnostics?(): StrayDiagnostics | null | undefined;
+  /** P1 舞台少画 (stage-pace.ts): whether to write the canvas `data-stray-pixels` readout this frame (absent: always). */
+  dataset?(): boolean;
 }
 
 /** A strip and how many of its pixels were drawn. */
@@ -155,7 +157,7 @@ export class StrayPixelWatch {
     } catch {
       this.drop();
     } finally {
-      if (canvas.dataset) canvas.dataset.strayPixels = JSON.stringify(this.stats);
+      if (canvas.dataset && (this.deps.dataset?.() ?? true)) canvas.dataset.strayPixels = JSON.stringify(this.stats);
     }
   }
 
@@ -229,6 +231,8 @@ export class StrayPixelWatch {
   }
 
   dispose(): void { this.reset(); this.dropBuffer(); this.gl = null; }
+  /** The context was lost and came back (src/stage/context-recovery.ts): its buffer and fence belonged to the old one; the next sample starts over. */
+  forgetContext(): void { this.flight = null; this.gl = null; this.buffer = null; this.capacity = 0; }
 
   private start(gl: StrayGl, canvas: StrayCanvas, now: number): void {
     if (this.stats.stopped) return;

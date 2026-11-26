@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { scanPetVisibilityRequest as scan, type PetVisibilityTextHint } from '../electron/scan-pet-visibility-request';
+import { scanPetVisibilityRequest as scan, type PetVisibilityTextHint } from '../electron/settings/scan-pet-visibility-request';
 
 function examples(expected: PetVisibilityTextHint, inputs: string[]): void {
   for (const input of inputs) assert.equal(scan(input), expected, JSON.stringify(input));

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { CapabilityPreviews, NO_CAPABILITY_PREVIEW, capabilityPreviewSeconds, isModelCapabilityId, previewEnvelope } from '../src/stage/capability-preview';
-import { MODEL_CAPABILITY_IDS } from '../shared/model-capability';
+import { MODEL_CAPABILITY_IDS } from '../shared/stage/model-capability';
 
 test('every preview envelope starts and ends at exactly 0 and never jumps', () => {
   for (const id of MODEL_CAPABILITY_IDS) {

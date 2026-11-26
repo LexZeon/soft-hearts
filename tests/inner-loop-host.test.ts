@@ -1,15 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ProactiveSpeechGate } from '../electron/proactive-speech-gate';
-import { createInnerLoopHost, type InnerLoopHostOptions } from '../electron/inner-loop/host';
-import { DEFAULT_MOOD_PARAMETERS, createMoodState, getMoodSnapshot } from '../shared/mood';
-import type { FatiguePhase } from '../shared/fatigue';
+import { ProactiveSpeechGate } from '../electron/initiative/proactive-speech-gate';
+import { createInnerLoopHost, type InnerLoopHostOptions } from '../electron/initiative/inner-loop/host';
+import { DEFAULT_MOOD_PARAMETERS, createMoodState, getMoodSnapshot } from '../shared/foundation/mood';
+import type { FatiguePhase } from '../shared/mood/fatigue';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { UserProfileStore, type UserProfileScope } from '../electron/user-profile';
-import { localDayRange, shiftDate } from '../electron/diary/diary-dates';
-import { ChatAvailability } from '../electron/chat-availability';
+import { UserProfileStore, type UserProfileScope } from '../electron/memory/user-profile';
+import { localDayRange, shiftDate } from '../electron/memory/diary/diary-dates';
+import { ChatAvailability } from '../electron/brain/chat-availability';
 
 const flush = async () => { for (let i = 0; i < 20; i++) await Promise.resolve(); };
 
@@ -173,7 +173,8 @@ test('late at night, a recent interaction allows one gentle rest reminder, and o
   n.interactedAgo(12);
   assert.equal(await n.say('night-1'), true, 'awake and busy at 23:40: she may say it');
   assert.match(n.prompts.at(-1)!, /本来该安静，但用户约 12 分钟前还和你互动过/);
-  assert.match(n.prompts.at(-1)!, /只能是一句很短的、温柔地提醒用户休息的话.*傲娇的可以嘴硬.*不施压、不说教、不让用户内疚/);
+  assert.match(n.prompts.at(-1)!, /只能是一句很短的、温柔地提醒用户休息的话.*傲娇的可以嘴硬/);
+  assert.doesNotMatch(n.prompts.at(-1)!, /不施压|不让用户内疚|不要用户来陪你/);
   n.state.now += 31 * 60_000; n.interactedAgo(5);
   assert.equal(await n.say('night-2'), false, 'the second chance the same night stays quiet');
   assert.match(n.prompts.at(-1)!, /这次不能说话/);

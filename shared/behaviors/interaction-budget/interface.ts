@@ -7,24 +7,24 @@
  * 没余地，不能凭空让她做什么。每个功能照旧按自己的理由（心情、性格、此刻的事）决定想不想做，再问这里"这会儿有没有余地"。
  *
  * 谁调用它、怎么调用：
- *  1. 记分（credit）：主要一处。electron/mood.ts 的 MoodHost 收下一件你真的做了的事（一条消息、一次摸头或捏脸、喂一次点心、
- *     一局猜拳玩完的那个心情事件）时，告诉 electron/companion.ts，由它记一次。另一处：你在她的猜拳邀请上点"来！/下次吧"
- *     （点按钮不经过心情，electron/rps/host.ts respond() 记一次"接住她的话"）。同一件事（同一个编号；摸头按一次接触算）只记一次，
+ *  1. 记分（credit）：主要一处。electron/mood/mood.ts 的 MoodHost 收下一件你真的做了的事（一条消息、一次摸头或捏脸、喂一次点心、
+ *     一局猜拳玩完的那个心情事件）时，告诉 electron/brain/companion.ts，由它记一次。另一处：你在她的猜拳邀请上点"来！/下次吧"
+ *     （点按钮不经过心情，electron/initiative/rps/host.ts respond() 记一次"接住她的话"）。同一件事（同一个编号；摸头按一次接触算）只记一次，
  *     晚到的事按它真正发生的时间衰减后再记，所以永远不会比准时到多。
  *  2. 问余地（room）、花（spend）、退回（refund）：
- *     - 主动开口（electron/inner-loop/opening-host.ts）：一次说话时机来了，先按余额掷一次；没余地就这次不说（次数退回）。
+ *     - 主动开口（electron/brain/opening-host.ts）：一次说话时机来了，先按余额掷一次；没余地就这次不说（次数退回）。
  *       挑中说话的那件（她的小情绪、邀你玩、看一看屏幕、聊刚听完的）花一次；后来没说出口（内心循环选了不说、出错、做不成），退回。
- *     - 她也会需要你（shared/her-needs.ts 的软压低）：余地代替原来"今天已经有过几次"那一项；开始一件小需要时花。
- *     - 猜拳（electron/rps/）：邀请按"上次邀请/玩完以后你们又互动了几次"（againAfter + interactionsSince）代替原来的隔 2 小时、
+ *     - 她也会需要你（shared/mood/her-needs.ts 的软压低）：余地代替原来"今天已经有过几次"那一项；开始一件小需要时花。
+ *     - 猜拳（electron/initiative/rps/）：邀请按"上次邀请/玩完以后你们又互动了几次"（againAfter + interactionsSince）代替原来的隔 2 小时、
  *       玩完 1 小时、每天 2 次；她在局里说一句话的机会按余地代替原来"今天说过几句"，说出来时花。
- *     - 一起听（electron/listen-together/）：停顿点那一句由主动开口那一处管，原来"最近 3 小时说过几次"那一项不再压。
- *     - 停停说说 F7（electron/pause-talk/host.ts，开着时）：每条消息问不问 haiku（安静的角色问得少一点）、等你没接时接着说不说。
- *  3. 开发者面板（src/ui/MoodPanel.ts）只读 view()：现在的余额、性格倍数、最近加了什么花了什么。只在开发者模式，只在内存。
+ *     - 一起听（electron/senses/listen-together/）：停顿点那一句由主动开口那一处管，原来"最近 3 小时说过几次"那一项不再压。
+ *     - 停停说说 F7（electron/brain/pause-talk/host.ts，开着时）：每条消息问不问 haiku（安静的角色问得少一点）、等你没接时接着说不说。
+ *  3. 开发者面板（src/mood/MoodPanel.ts）只读 view()：现在的余额、性格倍数、最近加了什么花了什么。只在开发者模式，只在内存。
  *
  * 只在内存里（不存文件）：重开应用时从"只有保底"开始，和你很久没来时一样安静。
  * 假实现在 fake.ts（永远有余地 = 原来的做法），守约测试在 tests/interaction-budget.test.ts。
  */
-import type { MoodTendency } from '../../mood';
+import type { MoodTendency } from '../../foundation/mood';
 import type { BudgetCreditKind, BudgetSpendKind } from './knobs';
 
 export type { BudgetCreditKind, BudgetSpendKind } from './knobs';
@@ -74,7 +74,7 @@ export interface InteractionBudgetView {
   readonly recent: readonly BudgetLogEntry[];
 }
 
-/** 主机这一侧（真实现：electron/interaction-budget/host.ts；假实现：fake.ts）。 */
+/** 主机这一侧（真实现：electron/initiative/interaction-budget/host.ts；假实现：fake.ts）。 */
 export interface InteractionBudget {
   /** 你真的做了一件事：记一次。同一个编号只记一次；`at` 比现在早时按衰减记。返回这次有没有记。 */
   credit(characterId: string, kind: BudgetCreditKind, id: string, at?: number): boolean;

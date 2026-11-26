@@ -12,7 +12,7 @@ import { pathToFileURL } from 'node:url';
 test('after "stop" the speech worker process ends itself at once, not through a normal exit', async t => {
   const dir = mkdtempSync(path.join(tmpdir(), 'soft-hearts-asr-end-'));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
-  const worker = pathToFileURL(path.resolve('electron/asr/worker.ts')).href;
+  const worker = pathToFileURL(path.resolve('electron/senses/asr/worker.ts')).href;
   const script = path.join(dir, 'child.mts');
   // No session was ever loaded; the stop path is the same one that runs after a released session.
   writeFileSync(script, `import { startAsrWorker } from ${JSON.stringify(worker)};

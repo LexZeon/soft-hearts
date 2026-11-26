@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import ts from 'typescript';
 import { transformSync } from 'esbuild';
-const source=readFileSync(new URL('../src/main.ts',import.meta.url),'utf8');
+import { rendererSource as readRendererSource } from './helpers/renderer-source'; // overhaul step 5: src/main.ts and src/wiring/*.ts
+const source=readRendererSource();
 const ast=ts.createSourceFile('main.ts',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
 const found=ast.statements.filter(n=>ts.isFunctionDeclaration(n)&&n.name?.text==='projectPetVisibility');
 assert.equal(found.length,1);

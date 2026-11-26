@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
-import { platformTarget, pinnedPnpm, checkNode, findOnPath, setupPlan, applicationEnvironment, packagingArguments } from '../scripts/setup-platform.mjs';
+import { platformTarget, pinnedPnpm, checkNode, findOnPath, setupPlan, applicationEnvironment, packagingArguments, findUnixClaude, claudeVersion, claudeNextStep, findOtherAgents, otherAgentHint, OTHER_AGENTS } from '../scripts/setup-platform.mjs';
 
 test('release architecture matrix includes native Windows x64 and both macOS architectures', () => {
   for (const [os, arch] of [['win32','x64'],['win32','arm64'],['darwin','arm64'],['darwin','x64'],['linux','x64']]) assert.equal(platformTarget(os,arch).arch,arch);
@@ -16,9 +16,9 @@ test('runtime and package manager versions are bounded', () => {
 test('PATH lookup skips empty entries, preserves order, and asks executable predicate', async () => {
   const checked=[];
   const env={PATH:['','/first','/second',''].join(path.delimiter)};
-  const found=await findOnPath('codex',env,async f=>{checked.push(f);return f===path.resolve('/second/codex');});
-  assert.equal(found,path.resolve('/second/codex'));
-  assert.deepEqual(checked,[path.resolve('/first/codex'),path.resolve('/second/codex')]);
+  const found=await findOnPath('claude',env,async f=>{checked.push(f);return f===path.resolve('/second/claude');});
+  assert.equal(found,path.resolve('/second/claude'));
+  assert.deepEqual(checked,[path.resolve('/first/claude'),path.resolve('/second/claude')]);
 });
 test('check-only has no commands, no-launch preserves preparation, Windows refuses the Unix entry', () => {
   const input={platform:'darwin',arch:'arm64',nodeVersion:'22.12.0',packageManager:'pnpm@11.25.0',args:['--check-only']};
@@ -31,10 +31,10 @@ test('check-only has no commands, no-launch preserves preparation, Windows refus
   assert.throws(()=>setupPlan({...input,args:['--force']}),/Usage/);
 });
 test('app child environment preserves own login location and clears inherited mode/policy flags', () => {
-  const original={CODEX_HOME:'/own/home',PATH:'/tools',ELECTRON_RUN_AS_NODE:'1',PSExecutionPolicyPreference:'test',OTHER:'keep'};
-  const child=applicationEnvironment(original,path.resolve('/node/bin/node'),'/tools/codex');
-  assert.equal(child.CODEX_HOME,original.CODEX_HOME);
-  assert.equal(child.CODEX_PATH,'/tools/codex');
+  const original={CLAUDE_CONFIG_DIR:'/own/home',PATH:'/tools',ELECTRON_RUN_AS_NODE:'1',PSExecutionPolicyPreference:'test',OTHER:'keep'};
+  const child=applicationEnvironment(original,path.resolve('/node/bin/node'),'/tools/claude');
+  assert.equal(child.CLAUDE_CONFIG_DIR,original.CLAUDE_CONFIG_DIR);
+  assert.equal(child.CLAUDE_PATH,'/tools/claude');
   assert.equal(child.OTHER,'keep');
   assert.equal(child.ELECTRON_RUN_AS_NODE,undefined);
   assert.equal(child.PSExecutionPolicyPreference,undefined);
@@ -46,4 +46,46 @@ test('packaging is native, closed and never implicitly publishes', () => {
   }
   assert.deepEqual(packagingArguments('linux','x64',['--dir']),['--dir','--x64','--publish','never']);
   for(const args of [['--mac','zip','--x64'],['--linux','AppImage','--x64'],['--linux','tar.gz','--arm64'],['--linux','tar.gz','--x64','--publish','always']]) assert.throws(()=>packagingArguments('linux','x64',args));
+});
+// Fake file system and fake PATH only: no real claude is ever run.
+const fakeIo = executables => ({
+  stat: async f => { if (!executables.includes(f)) throw new Error('ENOENT'); return { isFile: () => true }; },
+  access: async () => undefined,
+});
+test('Claude Code on PATH is found; PATH wins over install folders; CLAUDE_PATH wins over PATH', async () => {
+  const onPath = path.posix.resolve('/opt/tools/claude');
+  const local = '/home/u/.local/bin/claude';
+  const io = fakeIo([onPath, local, '/explicit/claude']);
+  const base = { platform: 'linux', home: '/home/u', io };
+  assert.deepEqual(await findUnixClaude({ PATH: '/nope:/opt/tools' }, base), { status: 'found', path: onPath });
+  assert.deepEqual(await findUnixClaude({ PATH: '/nope' }, base), { status: 'found', path: local });
+  assert.equal((await findUnixClaude({ PATH: '/opt/tools', CLAUDE_PATH: '/explicit/claude' }, base)).path, path.posix.resolve('/explicit/claude'));
+});
+test('Claude Code missing gives a clear next step for the adapting agent', async () => {
+  const result = await findUnixClaude({ PATH: '/nope' }, { platform: 'darwin', home: '/home/u', io: fakeIo([]) });
+  assert.deepEqual(result, { status: 'missing', path: null });
+  const hint = claudeNextStep(result.status);
+  assert.match(hint, /CLAUDE_PATH/);
+  assert.match(hint, /docs\/PORTING\.md section 5/);
+});
+test('an invalid CLAUDE_PATH stops with no fallback even when PATH has claude', async () => {
+  const io = fakeIo([path.posix.resolve('/opt/tools/claude')]);
+  const result = await findUnixClaude({ PATH: '/opt/tools', CLAUDE_PATH: '/typo/claude' }, { platform: 'linux', home: '/home/u', io });
+  assert.deepEqual(result, { status: 'invalid-override', path: null });
+  assert.match(claudeNextStep(result.status), /not an executable/);
+});
+test('version check reads only a version string and never throws', async () => {
+  assert.equal(await claudeVersion('/x/claude', async () => '2.1.316 (Claude Code)\n'), '2.1.316');
+  assert.equal(await claudeVersion('/x/claude', async () => 'garbage'), 'unknown');
+  assert.equal(await claudeVersion('/x/claude', async () => { throw new Error('boom'); }), 'unknown');
+});
+
+test('other agents are recognised on PATH from a small table, only as a hint', async () => {
+  const dsh = path.resolve('/bin2/dsh');
+  const found = await findOtherAgents({ PATH: [path.resolve('/bin1'), path.resolve('/bin2')].join(path.delimiter) }, async f => f === dsh);
+  assert.deepEqual(found.map(a => a.id), ['deepseek-harness']);
+  assert.match(otherAgentHint(found), /Found DeepSeek Harness.*PORTING.*continues/);
+  assert.match(otherAgentHint([]), /Install Claude Code.*PORTING/);
+  const extra = await findOtherAgents({ PATH: path.resolve('/b') }, async f => f === path.resolve('/b/foo'), [...OTHER_AGENTS, { id: 'x', command: 'foo', label: 'Foo' }]);
+  assert.deepEqual(extra.map(a => a.label), ['Foo']);
 });

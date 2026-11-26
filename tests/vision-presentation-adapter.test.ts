@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { confirmVisionPresentation, VisionPresentationGuard, type VisionPresentationSurface } from '../electron/vision-presentation-adapter';
-import { formatVisionPresentation, isVisualAttentionCue, type VisionInitiative } from '../shared/vision-runtime';
+import { confirmVisionPresentation, VisionPresentationGuard, type VisionPresentationSurface } from '../electron/senses/vision-presentation-adapter';
+import { formatVisionPresentation, isVisualAttentionCue, type VisionInitiative } from '../shared/senses/vision-runtime';
 
 const message = (): VisionInitiative => ({ id: 'visual-id', text: '看起来是一片蓝色。',
   origin: { kind: 'proactive', id: 'visual-id', at: 1000, sources: ['screen'], labels: ['屏幕'] } });

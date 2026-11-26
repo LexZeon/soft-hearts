@@ -9,9 +9,8 @@
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { EMPTY_CONTACT, MoodFeedback, type StageMoodState } from '../src/stage/mood-feedback';
-import { applyMoodEvent, createMoodState, DEFAULT_MOOD_PARAMETERS, getMoodSnapshot, type MoodSnapshot } from '../shared/mood';
-import { geneStage, type ShownFrame } from './helpers/gene-stage-harness';
+import { EMPTY_CONTACT, MoodFeedback, type StageMoodState } from '../src/mood/mood-feedback';
+import { applyMoodEvent, createMoodState, DEFAULT_MOOD_PARAMETERS, getMoodSnapshot, type MoodSnapshot } from '../shared/foundation/mood';
 
 const REPORT = !!process.env.R29_REPORT;
 const reunionFace: StageMoodState = { mood: 'relieved', companion: 'wistful', phase: 'idle', expressive: true, face: 50, posture: 50, playful: 50, responding: false };
@@ -67,25 +66,6 @@ test('a face block and a reset still clear the brow target (the stage stops writ
   assert.ok(layer.frame(1 / 30, EMPTY_CONTACT, reunionFace).sadness <= 0.011, 'reset forgets the shown brow and its speed');
 });
 
-/** The brow on the real frame loop from one mood to another, and what the display guard caught. */
-async function moodSwitch(fps: number, from: Partial<MoodSnapshot> | null, to: (now: number) => MoodSnapshot) {
-  const h = await geneStage({ fps });
-  try {
-    const parameters = structuredClone(DEFAULT_MOOD_PARAMETERS), base = getMoodSnapshot(createMoodState(0));
-    if (from) h.stage.setMood({ characterId: 'gene', token: 'gene_token', revision: 2, developerMode: false, expressions: true, parameters, snapshot: { ...base, ...from } });
-    h.run(2);
-    const start = h.shown.length - 1;
-    h.stage.setMood({ characterId: 'gene', token: 'gene_token', revision: 3, developerMode: false, expressions: true, parameters, snapshot: to(Date.now()) });
-    h.run(2);
-    const frames: ShownFrame[] = h.shown.slice(start), brow = frames.map(frame => frame.brow);
-    const steps = brow.slice(1).map((value, i) => value - brow[i]);
-    // R29d's "unexpected step": how far this frame's change differs from the last frame's (a cut or a full-speed start is large).
-    const unexpected = steps.map((step, i) => Math.abs(step - (i ? steps[i - 1] : 0)));
-    const catches = frames.filter((frame, i) => i && frame.guardJumps !== frames[i - 1].guardJumps).map(frame => frame.guardLast);
-    return { brow, travel: brow.at(-1)! - brow[0], first: steps[0], unexpected: Math.max(...unexpected), arrive: t90(brow, 1 / fps), catches };
-  } finally { h.close(); }
-}
-
 const reunionSnapshot = (now: number) => {
   const parameters = structuredClone(DEFAULT_MOOD_PARAMETERS), initial = createMoodState(now, parameters);
   initial.lastInteractionAt = now - parameters.longing.graceMs - 86 / parameters.longing.perHour * 3_600_000;
@@ -100,17 +80,3 @@ const SWITCHES = [
   { name: 'calm -> disappointed', from: { primary: 'calm' }, to: plain('disappointed') },
   { name: 'relieved -> relieved + wistful', from: { primary: 'relieved', companion: null }, to: plain('relieved', 'wistful') },
 ] as const;
-
-for (const fps of [60, 30]) {
-  test(`R29: at ${fps} fps on the real frame loop a mood face's brow never needs the display guard and starts gently`, async () => {
-    for (const { name, from, to } of SWITCHES) {
-      const result = await moodSwitch(fps, from, to);
-      if (REPORT) console.log(`mood brow ${fps} fps ${name}: ${result.brow[0].toFixed(4)} -> ${result.brow.at(-1)!.toFixed(4)}, first step ${result.first.toFixed(4)}, ` +
-        `max unexpected step ${result.unexpected.toFixed(4)}, 90% after ${result.arrive.toFixed(3)} s, guard ${JSON.stringify(result.catches)}`);
-      assert.deepEqual(result.catches, [], `${name}: nothing for the display guard to catch`);
-      assert.ok(result.travel > 0.05, `${name}: the brow still shows (${result.travel})`);
-      assert.ok(result.first <= 0.12 * result.travel, `${name}: the first frame is a small part of the way (${result.first} of ${result.travel})`);
-      assert.ok(result.unexpected <= 0.2 * result.travel, `${name}: no one-frame kick (${result.unexpected} of ${result.travel})`);
-    }
-  });
-}

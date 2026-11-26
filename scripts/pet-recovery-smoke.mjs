@@ -167,7 +167,7 @@ async function launch() {
   // The preload can be ready before the original loadFile promise settles.
   // Reloading earlier aborts startup and opens Electron's native error dialog.
   // A fresh profile gets the preinstalled public Gene, so this is an ordinary immersive
-  // start: only the pet is shown and the controls stay closed (electron/initial-controls.ts,
+  // start: only the companion is shown and the controls stay closed (electron/foundation/initial-controls.ts,
   // tests/initial-controls.test.ts, R37). The old check waited for a visible controls window.
   const loadedBy = Date.now() + 30000;
   let startup = null;
@@ -186,7 +186,7 @@ async function launch() {
   assert.equal(startup.controlsVisible, false, "an ordinary start with a ready model and visible pet keeps the controls closed");
   await Promise.all([controls.reload(), pet.reload()]);
   await controls.waitForSelector("#recover-pet");
-  // Open the controls the way a user does: the pet toolbar's settings button.
+  // Open the controls the way a user does: the companion toolbar's settings button.
   // A hidden controls window does not render its stage, so its status is read after this.
   await pet.waitForSelector("#open-controls", { state: "attached" });
   await pet.evaluate(() => document.getElementById("open-controls").click());

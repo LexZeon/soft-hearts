@@ -2,15 +2,15 @@
 // 问歌/视频但听不到看不到时说一次、讲题不用代码块的规则。只用合成数据，不调用模型。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createTurnAwareness } from '../electron/turn-awareness-host';
-import { LastReplyReading } from '../electron/last-reply-reading';
-import { JournalExtras } from '../electron/journal/extras';
-import { COMPANION_RULES } from '../shared/companion-rules';
-import { CLAUDE_SESSION_SYSTEM_PROMPT } from '../electron/claude-session-prompt';
-import { CLAUDE_CHAT_SYSTEM_PROMPT } from '../electron/claude';
-import { perceptionTurnLine, type PerceptionTurn } from '../shared/perception-rule';
-import { CANNOT_PERCEIVE_MEDIA_LINE, FATIGUE_WORDS, MEDIA_EXPLAIN_GAP_MS, asksAboutSongOrVideo, fatigueTurnLine } from '../shared/turn-awareness';
-import type { FatiguePhase } from '../shared/fatigue';
+import { createTurnAwareness } from '../electron/brain/turn-awareness-host';
+import { LastReplyReading } from '../electron/voice/last-reply-reading';
+import { JournalExtras } from '../electron/memory/journal/extras';
+import { COMPANION_RULES } from '../shared/brain/companion-rules';
+import { CLAUDE_SESSION_SYSTEM_PROMPT } from '../electron/brain/claude-session-prompt';
+import { CLAUDE_CHAT_SYSTEM_PROMPT } from '../electron/brain/claude';
+import { perceptionTurnLine, type PerceptionTurn } from '../shared/brain/perception-rule';
+import { CANNOT_PERCEIVE_MEDIA_LINE, FATIGUE_WORDS, MEDIA_EXPLAIN_GAP_MS, asksAboutSongOrVideo, fatigueTurnLine } from '../shared/brain/turn-awareness';
+import type { FatiguePhase } from '../shared/mood/fatigue';
 
 const PHASES = Object.keys(FATIGUE_WORDS) as FatiguePhase[];
 const sight: PerceptionTurn = { screen: false, camera: 'off', attached: { screen: false, camera: false }, asked: null };
@@ -70,7 +70,7 @@ test('7 上一句没读出来：出错或窗口没显示时下一轮说一次；
   // The user stopped it: not a failure.
   extras.speechRecord(record(0, 'cancelled', false));
   assert.ok(!unread(aware.line(turn())));
-  // Reading on but the pet window not shown.
+  // Reading on but the companion window not shown.
   extras.reading.unread('hidden');
   assert.match(aware.line(turn()), /桌宠窗口没显示/u);
   // Voice off: the user's own choice, nothing to say.
@@ -115,10 +115,11 @@ test('10 判断用户是不是在问歌或视频：问的算，聊别的不算',
   for (const no of ['今天好累', '我想听你唱歌', '我看了一天的视频好困', '这个题怎么做', '你喜欢吃什么', '', undefined, 42]) assert.ok(!asksAboutSongOrVideo(no), String(no));
 });
 
-test('9 陪伴规则里有"讲题用短句、不用代码块和 Markdown"，两条提示词路径都带，长度仍在预算内', () => {
-  assert.match(COMPANION_RULES, /讲题或解释步骤时，用几句短话一步步说/u);
-  assert.match(COMPANION_RULES, /不用代码块、表格和 Markdown 列表，公式用文字写/u);
-  assert.ok(CLAUDE_SESSION_SYSTEM_PROMPT.includes('不用代码块、表格和 Markdown 列表'));
-  assert.ok(CLAUDE_CHAT_SYSTEM_PROMPT.includes('不用代码块、表格和 Markdown 列表'));
+test('9 陪伴规则里有"气泡显示纯文本，不渲染 Markdown"这条事实，两条提示词路径都带，长度仍在预算内', () => {
+  // Rules removal 2026-11-25: the rule ("用几句短话一步步说，不用代码块、表格") became the bare fact.
+  assert.match(COMPANION_RULES, /你的气泡显示的是纯文本，不会渲染 Markdown/u);
+  assert.doesNotMatch(COMPANION_RULES, /不用代码块/u);
+  assert.ok(CLAUDE_SESSION_SYSTEM_PROMPT.includes('不会渲染 Markdown'));
+  assert.ok(CLAUDE_CHAT_SYSTEM_PROMPT.includes('不会渲染 Markdown'));
   assert.ok(COMPANION_RULES.length < 900);
 });

@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CharacterResponseControls, type CharacterResponseBridge } from '../src/ui/CharacterResponseControls';
+import { CharacterResponseControls, type CharacterResponseBridge } from '../src/cards/CharacterResponseControls';
 import {
   CHARACTER_RESPONSE_MOODS, defaultCharacterResponseProfile, defaultCharacterResponseRule, type CharacterResponseProfile, type CharacterResponseState,
-} from '../shared/character-response';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
+} from '../shared/cards/character-response';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
 
 class Element {
   children: Element[] = [];
@@ -186,11 +186,11 @@ test('a failed initial read has an explicit retry and re-reading never overwrite
 });
 
 test('the UI exposes only implemented fixed conditions and cannot exceed the 24-rule template limit', async () => {
-  const rules = CHARACTER_RESPONSE_MOODS.flatMap(mood => [defaultCharacterResponseRule({ mood, phase: 'idle' }), defaultCharacterResponseRule({ mood, phase: 'rua' })]);
+  const rules = CHARACTER_RESPONSE_MOODS.slice(0, 12).flatMap(mood => [defaultCharacterResponseRule({ mood, phase: 'idle' }), defaultCharacterResponseRule({ mood, phase: 'rua' })]);
   const f = fixture({ version: 1, rules });
   try {
     f.select(); await flush();
-    assert.equal(get(f.root, 'response-mood').children.length, 12);
+    assert.equal(get(f.root, 'response-mood').children.length, 13);
     assert.deepEqual(get(f.root, 'response-phase').children.map(node => node.value), ['', 'idle', 'rua', 'food-wait', 'food-ready', 'food-eating', 'cheek']);
     assert.equal(get(f.root, 'response-context').children.length, 7);
     assert.equal(get(f.root, 'response-add-rule').disabled, true);

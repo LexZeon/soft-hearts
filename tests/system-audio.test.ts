@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { MediaRuntime } from "../electron/runtime";
-import { SystemAudioRuntime } from "../electron/system-audio";
+import { MediaRuntime } from "../electron/senses/media-runtime";
+import { SystemAudioRuntime } from "../electron/senses/system-audio";
 
 test("system audio starts off and requires explicit Windows consent for a loopback audio grant", () => {
   const runtime = new SystemAudioRuntime("win32");

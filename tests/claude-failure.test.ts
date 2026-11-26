@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { classifyClaudeFailure, parseResetTime, parseRetryAfterMs } from '../shared/claude-failure';
+import { classifyClaudeFailure, parseResetTime, parseRetryAfterMs } from '../shared/brain/claude-failure';
 
 // Samples. REAL = the text the user saw on this machine on 2026-11-02 (given in the task).
 // RECALLED = formats Claude Code / Node / the Anthropic SDK are known to print, written from memory and

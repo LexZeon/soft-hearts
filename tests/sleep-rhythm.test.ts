@@ -1,4 +1,4 @@
-// I-022 她不该一直困 (shared/behaviors/sleep-rhythm/, shared/fatigue.ts, electron/fatigue-host.ts): time off screen is rest, the night's
+// I-022 她不该一直困 (shared/behaviors/sleep-rhythm/, shared/mood/fatigue.ts, electron/mood/fatigue-host.ts): time off screen is rest, the night's
 // sleep comes easier and goes deeper, and the day is exactly as before. The day is checked step by step against a frozen copy of the
 // model as it was (tests/helpers/fatigue-before-i022.ts), so any change to the day's numbers fails here.
 import assert from 'node:assert/strict';
@@ -7,14 +7,14 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { acceptWakeEvent, advanceFatigue, createFatigue, DEFAULT_FATIGUE_PARAMETERS as P, fatigueSnapshot, fatigueTerms,
-  type FatigueParameters, type FatiguePhase, type FatigueState, type SleepEntryBlockers } from '../shared/fatigue';
+  type FatigueParameters, type FatiguePhase, type FatigueState, type SleepEntryBlockers } from '../shared/mood/fatigue';
 import * as OLD from './helpers/fatigue-before-i022';
 import { SLEEP_RHYTHM_KNOBS } from '../shared/behaviors/sleep-rhythm/knobs';
 import { nightAt, nightWindow, prepareSleepRhythm, sleepRhythmParameters } from '../shared/behaviors/sleep-rhythm/rhythm';
 import { originalFatigueParameters } from '../shared/behaviors/sleep-rhythm/fake';
-import { INNER_LOOP_REST_RECENT_MAX_MS, innerLoopNightWindow, innerLoopQuiet } from '../shared/inner-loop';
-import { FatigueHost, type FatigueHostClock } from '../electron/fatigue-host';
-import { MoodHost } from '../electron/mood';
+import { INNER_LOOP_REST_RECENT_MAX_MS, innerLoopNightWindow, innerLoopQuiet } from '../shared/initiative/inner-loop';
+import { FatigueHost, type FatigueHostClock } from '../electron/mood/fatigue-host';
+import { MoodHost } from '../electron/mood/mood';
 
 const MINUTE = 60_000, HOUR = 60 * MINUTE, DAY = 24 * HOUR;
 const neutral = { D: 50, O: 50, E: 50, N: 50, C: 50 };
@@ -36,7 +36,8 @@ const NEW: Model = { create: createFatigue, advance: advanceFatigue, accept: acc
 const FROZEN: Model = { create: OLD.createFatigue, advance: OLD.advanceFatigue, accept: OLD.acceptWakeEvent };
 const START_MONO = DAY;
 /** I-022 alone (I-043 off): the clock still adds its own sleepiness and A builds at the same pace at every hour. */
-const I022 = Object.freeze({ ...P, wakeRateDay: 1, wakeRateNight: 1, clockSleepWeight: P.clockWeight });
+const I022 = Object.freeze({ ...P, wakeRateDay: 1, wakeRateNight: 1, clockSleepWeight: P.clockWeight,
+  conversationHoldMaxMs: 0 }); // I-078 第 2 步 (talking holds a micro-wake) is a later, separate change: off here, as I-043 is
 
 /** Runs the steps from `startMinute` (her local clock) and returns the state after every step. */
 function run(model: Model, p: unknown, initial: { A?: number; F?: number; W?: number; phase?: FatiguePhase }, startMinute: number, steps: readonly Step[]) {
@@ -134,7 +135,7 @@ test('a night with nobody around: she really falls asleep, sleeps through, and w
   assert.ok(morning.A <= 0.05 && morning.F <= 0.2, `rested: A ${morning.A.toFixed(3)}, F ${morning.F.toFixed(3)}`);
   assert.ok(before[at(7, 50)].A > 4 * morning.A, // I-043: she falls asleep later, so a little more is left than with I-022 alone (it was 5×)
     `the old model was left with much more: A ${before[at(7, 50)].A.toFixed(3)}`);
-  // Asleep, nobody speaks (electron/inner-loop/claim.ts reads exactly this; tests/quiet-when-asleep.test.ts covers the claim).
+  // Asleep, nobody speaks (electron/initiative/inner-loop/claim.ts reads exactly this; tests/quiet-when-asleep.test.ts covers the claim).
   assert.equal(innerLoopQuiet({ phase: now[at(2)].phase, localMinute: 120 }).asleep, true);
 
   // A touch at 02:00 still stirs her, chats wake her, "叫醒" wakes her: the wake rules are as they were.

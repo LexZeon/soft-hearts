@@ -4,8 +4,8 @@ import { lstat, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test, { type TestContext } from "node:test";
-import { MotionLibrary } from "../electron/motion-library";
-import type { MotionCatalog, MotionDownloadFile, MotionPack } from "../shared/motion-library";
+import { MotionLibrary } from "../electron/actions/motion-library";
+import type { MotionCatalog, MotionDownloadFile, MotionPack } from "../shared/actions/motion-library";
 
 async function fixture(t: TestContext, kind: "gene" | "additional" = "additional") {
   const directory = await mkdtemp(path.join(tmpdir(), "soft-hearts-motion-preview-"));

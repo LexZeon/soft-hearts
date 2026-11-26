@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { classifyCompanionCommand, formatCompanionCommandReceipt } from '../electron/companion-command-intent';
-import { suggestCodexTask } from '../shared/codex-tasks';
-import { registerUiMessages, setUiLanguage } from '../shared/ui-language';
-import { ENGLISH_TASKS_UI_COPY } from '../shared/ui-copy.tasks.en';
-import type { CompanionCommandCandidate, CompanionCommandIntentInput, CompanionCommandReceipt } from '../shared/companion-commands';
+import { classifyCompanionCommand, formatCompanionCommandReceipt } from '../electron/settings/companion-command-intent';
+import { suggestCodexTask } from '../shared/safety/codex-tasks';
+import { registerUiMessages, setUiLanguage } from '../shared/foundation/ui-language';
+import { ENGLISH_TASKS_UI_COPY } from '../shared/foundation/ui-copy.tasks.en';
+import type { CompanionCommandCandidate, CompanionCommandIntentInput, CompanionCommandReceipt } from '../shared/settings/companion-commands';
 
 const input=(text:string):CompanionCommandIntentInput=>({requestId:'language-request',contextId:'language-context',text,
  currentValue:false,currentVisible:true,currentFollowMouse:false,currentBreath:0.4,currentReadoutVolume:0.4});

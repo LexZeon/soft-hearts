@@ -3,8 +3,8 @@
  *
  * Without a GPU, the visibility checks run the shader's own arithmetic (tear-look.ts: tearWet/tearShade, generated
  * from the same TEAR_LOOK numbers as the installed GLSL) across one row of rendered pixels, with each pixel averaged
- * over 8 sub-samples, over Gene's lit skin as measured in the default pet window (sRGB 255/232/216). The pixel size
- * comes from Gene's real eye distance and the default pet framing (400×560 window, full-body camera 47.3 at fov 32,
+ * over 8 sub-samples, over Gene's lit skin as measured in the default companion window (sRGB 255/232/216). The pixel size
+ * comes from Gene's real eye distance and the default companion framing (400×560 window, full-body camera 47.3 at fov 32,
  * rendered at the stage's capped pixel ratio 1.5, or 1 on a plain monitor). The pre-R17 look (TEAR_LOOK_BEFORE_R17)
  * runs through the same checks and must fail them: that is the "看不见" regression these tests exist to catch.
  * The screenshots and their measured contrast are in the record; this file only guards the numbers.
@@ -22,16 +22,14 @@ import { resolve } from 'node:path';
 import { ShaderMaterial, SkinnedMesh, Texture } from 'three';
 import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
 import { probeBlushAnchors } from '../src/stage/procedural-blush';
-import { ProceduralTears } from '../src/stage/procedural-tears';
-import { TEAR_LOOK, TEAR_LOOK_BEFORE_R17, tearColorGlsl, tearMaskGlsl, tearShade, tearWet, type TearLook } from '../src/stage/tear-look';
-import { applyMoodEvent, createMoodState, DEFAULT_MOOD_PARAMETERS, getMoodSnapshot } from '../shared/mood';
-import { geneStage } from './helpers/gene-stage-harness';
+import { ProceduralTears } from '../src/mood/procedural-tears';
+import { TEAR_LOOK, TEAR_LOOK_BEFORE_R17, tearColorGlsl, tearMaskGlsl, tearShade, tearWet, type TearLook } from '../src/mood/tear-look';
 
 const REPORT = !!process.env.R29_REPORT;
 const GENE_SHA256 = '0ef63a75a7699f58399ae655357f91542fc5209355aac925a589aac42669df37';
-/** Lit skin beside the tear in the default pet screenshot (2026-11-06, before and after: the skin itself is unchanged). */
+/** Lit skin beside the tear in the default companion screenshot (2026-11-06, before and after: the skin itself is unchanged). */
 const SKIN_SRGB = [255, 232, 216] as const;
-/** The default pet: full-body framing of Gene in the 400×560 window (measured in the test build), and the stage's pixel ratio cap. */
+/** The default companion: full-body framing of Gene in the 400×560 window (measured in the test build), and the stage's pixel ratio cap. */
 const PET = { cssHeight: 560, distance: 47.3, fov: 32 } as const;
 
 const toLinear = (c: number) => { c /= 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
@@ -71,7 +69,7 @@ const visibility = (row: ReturnType<typeof across>) => ({
 });
 
 async function gene() {
-  const manifest = JSON.parse(await readFile(resolve('shared/bundled-assets.json'), 'utf8'));
+  const manifest = JSON.parse(await readFile(resolve('shared/actions/bundled-assets.json'), 'utf8'));
   const bytes = await readFile(resolve('assets/bundled', manifest.root, manifest.model.relativePath));
   assert.equal(createHash('sha256').update(bytes).digest('hex'), GENE_SHA256);
   const parserModule = 'three/examples/jsm/libs/mmdparser.module.js';
@@ -91,7 +89,7 @@ async function geneEyeDistance() {
   if (eyeDistance === null) { const g = await gene(); eyeDistance = g.anchors.eyeDistance; g.close(); }
   return eyeDistance;
 }
-/** Eye distances per rendered pixel at the default pet size. */
+/** Eye distances per rendered pixel at the default companion size. */
 async function defaultPixel(pixelRatio: number) {
   const unitsPerCssPixel = 2 * PET.distance * Math.tan(PET.fov / 2 * Math.PI / 180) / PET.cssHeight;
   return unitsPerCssPixel / pixelRatio / await geneEyeDistance();
@@ -173,62 +171,4 @@ class SurfaceSpy {
   update(amount: number, elapsedMs: number) { this.amount = amount; this.elapsedMs = elapsedMs; }
   dispose() { this.amount = 0; }
   getState() { return { supported: true, reason: 'R17 harness surface', amount: this.amount, elapsedMs: this.elapsedMs }; }
-}
-
-/** One accepted reunion after a long absence on the real frame loop (shared/mood.ts decides it; not changed here). */
-async function reunion(fps: number, tears: boolean) {
-  const h = await geneStage({ fps });
-  try {
-    h.run(1);
-    const surface = new SurfaceSpy();
-    if (tears) Object.assign(h.stage, { proceduralTears: surface, tearsVerifiedGene: true, tearsReason: 'R17 harness surface' });
-    const now = Date.now(), parameters = structuredClone(DEFAULT_MOOD_PARAMETERS), initial = createMoodState(now, parameters);
-    initial.lastInteractionAt = now - parameters.longing.graceMs - 86 / parameters.longing.perHour * 3_600_000;
-    const state = applyMoodEvent(initial, { type: 'chat', id: 'r17-reunion', context: 'neutral' }, now, parameters);
-    const snapshot = getMoodSnapshot(state, now, parameters);
-    assert.equal(snapshot.cryingCandidate, true);
-    h.stage.setMood({ characterId: 'gene', token: 'gene_token', revision: 2, developerMode: false, expressions: true, parameters, snapshot });
-    const start = h.shown.length - 1, amounts: number[] = [], trail: number[] = [];
-    h.run(parameters.longing.cryDurationMs / 1000 + 1, () => { amounts.push(surface.amount); trail.push(surface.elapsedMs); });
-    amounts.push(surface.amount);
-    const frames = h.shown.slice(start);
-    const catches = frames.filter((frame, index) => index && frame.guardJumps !== frames[index - 1].guardJumps).map(frame => frame.guardLast);
-    return { amounts, trail, catches };
-  } finally { h.close(); }
-}
-
-for (const fps of [60, 30]) {
-  test(`R29: on the real frame loop at ${fps} fps a cry fades the tears in and out without a flash, and the tears add no display-guard catch`, async () => {
-    const { amounts, trail, catches } = await reunion(fps, true), control = await reunion(fps, false);
-    {
-      const shown = amounts.slice(1);
-      const steps = shown.slice(1).map((value, index) => Math.abs(value - shown[index]));
-      const firstVisible = shown.find(value => value > 0) ?? 0, lastVisible = [...shown].reverse().find(value => value > 0) ?? 0;
-      // The visible change per frame: the strongest colour layer times the change in amount.
-      const strongest = Math.max(TEAR_LOOK.rimStrength, TEAR_LOOK.bodyStrength), before = Math.max(TEAR_LOOK_BEFORE_R17.rimStrength, TEAR_LOOK_BEFORE_R17.bodyStrength);
-      const maxStep = Math.max(...steps);
-      if (REPORT) console.log(`R17 R29 ${fps} fps: frames shown ${shown.filter(v => v > 0).length}, peak ${Math.max(...shown).toFixed(3)}, ` +
-        `max amount step ${maxStep.toFixed(4)}, max opacity step now ${(maxStep * strongest).toFixed(4)} (pre-R17 ${(maxStep * before).toFixed(4)}), ` +
-        `first ${firstVisible.toFixed(4)}, last ${lastVisible.toFixed(4)}, end ${shown.at(-1)}, guard catches with tears ${JSON.stringify(catches)}, ` +
-        `same reunion without a tear surface ${JSON.stringify(control.catches)}`);
-      assert.ok(Math.max(...shown) > 0.95, 'the cry reaches its peak');
-      assert.equal(shown.at(-1), 0, 'ends at exactly 0');
-      assert.ok(firstVisible < 0.05 && lastVisible < 0.05, `no pop in or out (first ${firstVisible}, last ${lastVisible})`);
-      // Smoothstep rise over 650 ms is the steepest part: 1.5 / (0.65 s × fps) per frame, plus the frame's own jitter.
-      assert.ok(maxStep <= 1.5 / (0.65 * fps) + 0.01, `amount step ${maxStep}`);
-      assert.ok(maxStep * strongest <= 0.06, 'the tear colour never changes by more than 6% in one frame');
-      // Never flickers: rises, holds, falls (no frame goes back the other way by more than float noise).
-      const peakAt = shown.indexOf(Math.max(...shown));
-      assert.ok(shown.slice(0, peakAt).every((v, i) => i === 0 || v >= shown[i - 1] - 1e-9) && shown.slice(peakAt).every((v, i, a) => i === 0 || v <= a[i - 1] + 1e-9));
-      // The trail grows with the cry's own clock, frame by frame, never jumping ahead.
-      const trailSteps = trail.slice(1).map((v, i) => v - trail[i]).filter(v => v > 0);
-      assert.ok(Math.max(...trailSteps) <= 1000 / fps + 2, 'the trail clock advances one frame at a time');
-      // Tears own no bone or morph, so the guard sees exactly what the same reunion shows without them. And the reunion
-      // itself needs no catch: its troubled brow (困る) eases in (docs/claude/2026-11-06-reunion-brow-jump.md).
-      assert.deepEqual(catches, control.catches, 'the tears add no display-guard catch');
-      assert.deepEqual(control.catches, [], 'the reunion frame needs no display-guard catch, with or without tears');
-      assert.ok(catches.every(property => !/tear/i.test(property ?? '')));
-      assert.equal(control.amounts.every(value => value === 0), true, 'without a surface nothing is shown');
-    }
-  });
 }

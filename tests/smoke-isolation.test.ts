@@ -35,7 +35,7 @@ test('OS whitelist never even reads excluded values; owned Codex, Claude Code an
 
 test('actual locator pins are mandatory and reject any changed bytes', async () => {
   const source = process.env.SOFT_HEARTS_TEST_SOURCE_ROOT ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-  const bytes = await readFile(path.join(source, 'electron/codex.ts'));
+  const bytes = await readFile(path.join(source, 'electron/safety/codex.ts'));
   const discoveryBytes = await readFile(path.join(source, 'scripts/codex-discovery.mjs'));
   const claudeBytes = await readFile(path.join(source, 'scripts/claude-discovery.mjs'));
   helper.assertLocatorBytes(bytes, discoveryBytes, claudeBytes);
@@ -89,13 +89,17 @@ test('actual serialized main boundary refuses every fetch and requires the seale
   const delegated: any[] = [], handlers = new Map();
   const childProcess: { spawn: (...args: unknown[]) => unknown } = { spawn: () => { throw Error('Unsealed native launch.'); } };
   let check: Function = () => {}, request: Function = () => {};
-  const expected = { ...fixture, marker: 'synthetic-marker', claudePlaceholder: path.join(os.tmpdir(), 'owned', 'claude-placeholder.exe') };
+  const expected = { ...fixture, marker: 'synthetic-marker', taskProbe: 'probe-0123456789abcdef', claudePlaceholder: path.join(os.tmpdir(), 'owned', 'claude-placeholder.exe') };
   const context = createContext({ URL, Buffer, Date, expected,
     fetch: async (...args: any[]) => { delegated.push(args); return 'local-response'; },
     process: { platform: process.platform, getBuiltinModule: (name: string) => name === 'node:child_process' ? childProcess : name === 'node:path' ? path : { syncBuiltinESMExports() {} } },
     electron: { app: {}, desktopCapturer: { getSources() { throw Error('Unsealed native call.'); } }, ipcMain: { removeHandler() {}, handle(name: string, fn: Function) { handlers.set(name, fn); } },
       session: { defaultSession: { webRequest: { onBeforeRequest() {} }, setPermissionCheckHandler(fn: Function) { check = fn; }, setPermissionRequestHandler(fn: Function) { request = fn; } } } } });
+  assert.throws(() => invoke(context, helper.installTaskRefusal, 'electron,expected'), /boundary first/);
   invoke(context, helper.installMainBoundary, 'electron,expected');
+  assert.equal(handlers.size, 0, 'The boundary at the first window replaces no app handler (the app may still be registering them: overhaul step 8).');
+  invoke(context, helper.installTaskRefusal, 'electron,expected');
+  assert.deepEqual([...handlers.keys()], helper.SMOKE_REFUSED_TASK_METHODS.map((method: string) => 'desk:' + method));
   assert.throws(() => invoke(context, helper.inspectMainBoundary, 'electron,expected'), /interposer changed/, 'The fetch boundary alone is not a complete smoke boundary.');
   invoke(context, helper.installClaudeInterposer, 'electron,expected');
   const call = (input: unknown, init?: unknown) => { context.input = input; context.init = init; return runInContext('fetch(input,init)', context); };
@@ -107,9 +111,20 @@ test('actual serialized main boundary refuses every fetch and requires the seale
   assert.throws(() => handlers.get('desk:startCodexTask')());
   assert.throws(() => childProcess.spawn('claude.exe', ['-p']), /refused a Claude Code launch/);
   const result = invoke(context, helper.inspectMainBoundary, 'electron,expected');
-  assert.equal(result.fetchAttempts, 3); assert.equal(result.taskAttempts, 1); assert.equal(result.realtimeAttempts, 1);
-  assert.deepEqual([...result.claude.denied], ['not the owned placeholder']); assert.equal(result.claude.spawned.length, 0);
+  assert.equal(result.fetchAttempts, 3); assert.equal(result.taskAttempts, 1); assert.equal(result.taskRefusal, true); assert.equal(result.taskProbes, 0); assert.equal(result.realtimeAttempts, 1);
+  assert.deepEqual([...result.claude.denied], ['not through the app\'s launch hook']); assert.equal(result.claude.spawned.length, 0);
   assert.equal(result.permissions[0].kind, 'check'); assert.equal(result.permissions[1].kind, 'request'); assert.ok(result.permissions.every((event: any) => event.returnedDenied));
+  // The app's launch hook (electron/brain/claude-launch) must be the sealed interposer too: a main process without it, or with another, is detected.
+  const boundary = runInContext('globalThis.__safeSmokeBoundary', context), claude = runInContext('globalThis.__safeSmokeClaude', context);
+  const without = (hook?: unknown) => {
+    const other = createContext({ expected, electron: {}, process: context.process, __safeSmokeBoundary: boundary, __safeSmokeClaude: claude });
+    Object.defineProperty(other, 'fetch', { value: boundary.wrapper, writable: false, configurable: false });
+    if (hook) Object.defineProperty(other, '__softHeartsClaudeLaunch', { value: hook, writable: false, configurable: false });
+    return other;
+  };
+  assert.throws(() => invoke(without(), helper.inspectMainBoundary, 'electron,expected'), /interposer changed/);
+  assert.throws(() => invoke(without(() => null), helper.inspectMainBoundary, 'electron,expected'), /interposer changed/);
+  assert.equal(invoke(without(claude.interposer), helper.inspectMainBoundary, 'electron,expected').claude.denied.length, 1);
   // A launch function other than the sealed interposer (e.g. a module the app swapped in) is detected.
   context.process = { platform: process.platform, getBuiltinModule: (name: string) => name === 'node:child_process' ? { spawn: () => null } : path };
   assert.throws(() => invoke(context, helper.inspectMainBoundary, 'electron,expected'), /interposer changed/);
@@ -117,7 +132,7 @@ test('actual serialized main boundary refuses every fetch and requires the seale
 
 test('actual sender inspector distinguishes host and UI mismatches and ambiguous controls', async () => {
   let provider: Record<string, string> = { ...fixture, baseUrl: 'http://127.0.0.1:11434/v1' };
-  const nodes: Record<string, any[]> = { 'provider-model': [{ tagName: 'INPUT', type: 'text', value: fixture.model }] };
+  const nodes: Record<string, any[]> = { 'provider-model': [{ tagName: 'SELECT', value: fixture.model }] };
   const context = createContext({ expected: fixture, window: { desktop: { getSettings: async () => ({ provider }) } }, document: { querySelectorAll: (selector: string) => nodes[selector.slice(1)] ?? [] } });
   let result = await invoke(context, helper.inspectSenderProvider, 'expected'); assert.ok(result.hostMatches && result.uiMatches);
   provider = { ...provider, model: 'opus' }; result = await invoke(context, helper.inspectSenderProvider, 'expected'); assert.equal(result.hostMatches, false); assert.equal(result.uiMatches, true);

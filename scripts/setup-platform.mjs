@@ -1,7 +1,8 @@
 import path from 'node:path';
 import { constants } from 'node:fs';
 import { access, stat } from 'node:fs/promises';
-import { discoverCodex } from './codex-discovery.mjs';
+import { execFile } from 'node:child_process';
+import { discoverClaude } from './claude-discovery.mjs';
 
 export function platformTarget(platform, arch) {
   const supported = { win32: ['x64', 'arm64'], darwin: ['x64', 'arm64'], linux: ['x64'] };
@@ -40,8 +41,62 @@ export async function findOnPath(name, env, isExecutable = executableFile) {
   return null;
 }
 
-export async function findUnixCodex(env) {
-  return discoverCodex({ env });
+// Reference for other platforms: same rules as the Windows side (scripts/claude-discovery.mjs):
+// CLAUDE_PATH override (a wrong one stops, no fallback), then PATH, then a finite list of
+// official install locations. Metadata only; nothing is executed here.
+export async function findUnixClaude(env, options = {}) {
+  return discoverClaude({ env, ...options });
+}
+
+// Installed and which version, nothing else: runs `claude --version` only. No login check,
+// no account files, no model call. A failure is reported as 'unknown', never retried.
+export function claudeVersion(file, run = defaultVersionRunner) {
+  return run(file).then(
+    out => (/\d+\.\d+\.\d+\S*/.exec(String(out)) ?? [null])[0] ?? 'unknown',
+    () => 'unknown',
+  );
+}
+function defaultVersionRunner(file) {
+  return new Promise((resolve, reject) => {
+    execFile(file, ['--version'], { timeout: 10000, windowsHide: true, env: { ...process.env, NO_COLOR: '1', DISABLE_AUTOUPDATER: '1' } },
+      (error, stdout) => error ? reject(error) : resolve(stdout));
+  });
+}
+
+// Only the Claude desktop app's own copy of Claude Code is here (scripts/claude-discovery.mjs 'desktop-bundled'). scripts/setup.ps1
+// prints the same sentence (tests/claude-env-launch.test.ts compares them).
+export const CLAUDE_DESKTOP_BUNDLED_NEXT_STEP = "Only the Claude desktop app's own copy of Claude Code was found. soft hearts cannot use it: it is not signed in on its own, and soft hearts never uses the desktop app's connection or sign-in. Install the official Claude Code (https://code.claude.com/docs/en/setup) and sign in once by running \"claude\" in a terminal; then chat will work.";
+
+// What the next agent should do when Claude Code is not usable. Written for an agent that
+// adapts this script to its own platform; safety floor: docs/PORTING.md section 5.
+export function claudeNextStep(status) {
+  if (status === 'invalid-override') return 'CLAUDE_PATH points at something that is not an executable file. Fix or unset it; no fallback was selected.';
+  if (status === 'desktop-bundled') return CLAUDE_DESKTOP_BUNDLED_NEXT_STEP;
+  return 'Claude Code was not found on CLAUDE_PATH, PATH or the usual install folders (~/.local/bin, /opt/homebrew/bin, /usr/local/bin, /usr/bin). Install it from https://code.claude.com/docs/en/setup, or set CLAUDE_PATH to the executable. If you are adapting this script for another platform or model, edit scripts/claude-discovery.mjs and keep the safety floor in docs/PORTING.md section 5. The user logs in themselves by running claude once in a terminal; this script never does.';
+}
+
+// Other agents' command lines the install script can recognise (hint only; the app's chat connects to Claude Code).
+// To recognise another one, add a row: { id, command, label }.
+export const OTHER_AGENTS = Object.freeze([
+  { id: 'codex', command: 'codex', label: 'Codex' },
+  { id: 'deepseek-harness', command: 'dsh', label: 'DeepSeek Harness' },
+]);
+
+// Which of those are on PATH. Only looks up files, never runs them.
+export async function findOtherAgents(env, isExecutable = executableFile, table = OTHER_AGENTS) {
+  const found = [];
+  for (const agent of table) {
+    const file = await findOnPath(agent.command, env, isExecutable);
+    if (file) found.push({ ...agent, path: file });
+  }
+  return found;
+}
+
+// Plain-words hint for when Claude Code is not found. Never an error: setup goes on either way.
+export function otherAgentHint(agents) {
+  if (!agents.length) return 'No agent command line was found. Install Claude Code (https://code.claude.com/docs/en/setup), or read docs/PORTING.md to connect another one.';
+  const names = agents.map(a => a.label).join(', ');
+  return `Found ${names} (${agents.map(a => a.path).join(', ')}). soft hearts chat only connects to Claude Code; to use ${names} instead, follow docs/PORTING.md to swap the interface. Setup continues with the rest.`;
 }
 
 export function setupPlan({ platform, arch, nodeVersion, packageManager, args }) {
@@ -61,11 +116,11 @@ export function setupPlan({ platform, arch, nodeVersion, packageManager, args })
   };
 }
 
-export function applicationEnvironment(env, nodeExecutable, codexPath) {
+export function applicationEnvironment(env, nodeExecutable, claudePath) {
   const child = { ...env, PATH: `${path.dirname(nodeExecutable)}${path.delimiter}${env.PATH ?? ''}` };
   delete child.ELECTRON_RUN_AS_NODE;
   delete child.PSExecutionPolicyPreference;
-  if (codexPath) child.CODEX_PATH = codexPath;
+  if (claudePath) child.CLAUDE_PATH = claudePath;
   return child;
 }
 

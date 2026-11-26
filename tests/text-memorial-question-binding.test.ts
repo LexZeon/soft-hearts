@@ -6,12 +6,14 @@ import os from 'node:os';
 import path from 'node:path';
 import vm from 'node:vm';
 import ts from 'typescript';
-import { TextMemorialHost } from '../electron/text-memorial-host';
-import { ProactiveSpeechGate } from '../electron/proactive-speech-gate';
-import { validateReplyUpdate } from '../electron/reply-input';
+import { TextMemorialHost } from '../electron/memory/text-memorial-host';
+import { ProactiveSpeechGate } from '../electron/initiative/proactive-speech-gate';
+import { validateReplyUpdate } from '../electron/brain/reply-input';
+// Wiring rewrite step 4g: updatePetReply is 舞台's ('electron/wiring/stage-wiring.ts'); read across main.ts and electron/wiring/*.ts (still exactly
+// one), and what it reads from the part's needs comes from the context's names (WIRING_PRELUDE).
+import { WIRING_PRELUDE, wiringHandler } from './helpers/wiring-source';
 
-const raw=fs.readFileSync(new URL('../electron/main.ts',import.meta.url),'utf8'),tree=ts.createSourceFile('main.ts',raw,ts.ScriptTarget.Latest,true);
-let callback='';function visit(n:ts.Node){if(ts.isCallExpression(n)&&n.expression.getText(tree)==='scopedHost'&&ts.isStringLiteral(n.arguments[0])&&n.arguments[0].text==='updatePetReply'){assert.equal(callback,'');callback=n.arguments[1].getText(tree);}ts.forEachChild(n,visit);}visit(tree);assert.ok(callback);
+const callback=wiringHandler('updatePetReply');assert.ok(callback);
 const compiled=ts.transpileModule('('+callback+')',{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText;
 
 test('actual native-update host route revokes A when B replaces it, while an already accepted A consent survives its own reply',async()=>{
@@ -22,7 +24,7 @@ test('actual native-update host route revokes A when B replaces it, while an alr
   const surface={waitForPresentation:async(text:string)=>text===shown,isPresentationCurrent:(text:string)=>text===shown,
    update(value:unknown){const patch=validateReplyUpdate(value);if(patch.state==='waiting'||patch.state==='hidden')shown='';else if(patch.text!==undefined)shown=patch.text;}};
   const host=new TextMemorialHost({directory:path.join(directory,'memorials'),gate,scope:()=>({characterId:'role',providerScope:'provider'}),identity:()=> 'context',gateScope:()=> 'gate',owner:()=>7,surface:()=>surface,eligible:()=>!accepting,event:()=>{},changed:view=>{if(view)ready();},archive:async()=>{},freezeSpeech:()=>{},cancelSpeech:()=>{}});
-  const context={pet:{webContents:{id:7}},petReply:surface,textMemorialHost:host,validateReplyUpdate};vm.createContext(context);const update=vm.runInContext(compiled,context)as(sender:number,value:unknown)=>void;
+  const context={pet:{webContents:{id:7}},petReply:surface,textMemorialHost:host,validateReplyUpdate};vm.createContext(context);vm.runInContext(WIRING_PRELUDE,context);const update=vm.runInContext(compiled,context)as(sender:number,value:unknown)=>void;
   try{
    host.sync();await loaded;const source=host.accept({requestId:'source',messageId:'source',text:quote,acceptedAt:Date.now(),source:'text'},'context');assert.ok(source);await source.result;source.complete(true,JSON.stringify({quote,purpose,invite}));
    assert.equal(host.offerOpportunity({id:'one-opportunity',kind:'speech',until:Date.now()+5000}),true);const state=host.getOffer();assert.ok(state.offer);

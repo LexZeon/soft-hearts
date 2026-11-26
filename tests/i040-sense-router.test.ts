@@ -6,29 +6,29 @@
  * line comes only after her first reply ended and only once she is free; a newer message, a stopped reply, another conversation or
  * a "别看" drops or holds everything; a needed sense that is off gives "it is off" at most once per conversation and never turns
  * anything on; when the reaction call is not made, the router's own small call starts only after her first character; frames,
- * transcripts and facts never reach the log or the disk; the pet window reads only the sense line's exact shape.
+ * transcripts and facts never reach the log or the disk; the companion window reads only the sense line's exact shape.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { ReactionHost, type ReactionHostOptions, type ReactionNowSource } from '../electron/reactions/host';
-import { createReactions, type ReactionMoodPort } from '../electron/reactions/wiring';
-import { SenseRouterHost, type SenseRouterLogEntry, type SenseRouterPorts } from '../electron/sense-router/host';
-import { coveredByFrames, createSenseRouter } from '../electron/sense-router/wiring';
+import { ReactionHost, type ReactionHostOptions, type ReactionNowSource } from '../electron/mood/reactions/host';
+import { createReactions, type ReactionMoodPort } from '../electron/mood/reactions/wiring';
+import { SenseRouterHost, type SenseRouterLogEntry, type SenseRouterPorts } from '../electron/senses/sense-router/host';
+import { coveredByFrames, createSenseRouter } from '../electron/senses/sense-router/wiring';
 import { FakeReactionJudge } from '../shared/behaviors/reactions/fake';
 import { parseReactionAnswer, reactionSystemPrompt } from '../shared/behaviors/reactions/choose';
 import {
   SENSE_FIRST_LINE_HINT, SENSE_ROUTER_KNOBS, parseSenseField, parseSenseJudge, parseSenseLine, parseSenseSummary, readSenseLineMessage, senseBlock, senseLineOrigin,
   type SenseLineMessage, type SenseOn,
-} from '../shared/sense-router';
-import { readFeedLineMessage } from '../shared/feed-recognition';
-import { FeedLinePresenter } from '../src/ui/feed-line';
+} from '../shared/senses/sense-router';
+import { readFeedLineMessage } from '../shared/senses/feed-recognition';
+import { FeedLinePresenter } from '../src/initiative/feed-line';
 import type { Dispositions } from '../shared/behaviors/reactions/dispositions';
 import type { ReactionPerformer } from '../shared/behaviors/reactions/interface';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
-import type { MoodView } from '../shared/mood-runtime';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
+import type { MoodView } from '../shared/mood/mood-runtime';
 
 const SIX: Dispositions = Object.freeze({ shy: 62, clingy: 45, lively: 55, soothable: 50, volatile: 40, restrained: 48 });
 const FRAME = 'data:image/jpeg;base64,RkFLRS1GUkFNRS1NQVJLRVI='; // "FAKE-FRAME-MARKER"
@@ -462,7 +462,7 @@ test('frames, heard words and facts never reach the log, the journal or the prof
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
 
-// ---------------------------------------------------------------- the pet window
+// ---------------------------------------------------------------- the companion window
 
 test('the pet window shows the sense line through the ordinary presenter and reports it', async () => {
   const reports: { id: string; shown: boolean }[] = [];

@@ -6,7 +6,7 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { transformSync } from 'esbuild';
-import type { PetReplyUpdate } from '../shared/contracts';
+import type { PetReplyUpdate } from '../shared/foundation/pet-reply';
 
 /**
  * B06. A head pat fades the
@@ -50,7 +50,7 @@ function hostFixture(t: TestContext) {
     hide() { const changed = this.visible; this.visible = false; if (changed) this.emit('hide'); }
     destroy() { this.destroyed = true; this.emit('closed'); }
   }
-  const filename = new URL('../electron/reply-window.ts', import.meta.url), localRequire = createRequire(filename), module = { exports: {} };
+  const filename = new URL('../electron/brain/reply-window.ts', import.meta.url), localRequire = createRequire(filename), module = { exports: {} };
   const code = transformSync(readFileSync(filename, 'utf8'), { loader: 'ts', format: 'cjs', target: 'es2022' }).code;
   const requireFixture = (name: string) => name === 'electron' ? { BrowserWindow: WindowFixture, ipcMain,
     screen: { getDisplayNearestPoint: () => ({ workArea: { x: 0, y: 0, width: 1920, height: 1040 } }) } } : localRequire(name);

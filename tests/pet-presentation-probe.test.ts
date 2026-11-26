@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { checkPetPresentation, probePetPresentation, type ProbeDocument } from '../src/pet-presentation-probe';
-import { readPetPresentationSample } from '../electron/pet-restore';
+import { checkPetPresentation, probePetPresentation, type ProbeDocument } from '../src/stage/pet-presentation-probe';
+import { readPetPresentationSample } from '../electron/stage/pet-restore';
 
 function page(options: { lost?: boolean | 'none'; visibility?: string; canvas?: boolean } = {}) {
   const canvas = options.canvas === false ? null : {

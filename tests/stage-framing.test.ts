@@ -1,22 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Bone, MathUtils, PerspectiveCamera, Vector3 } from 'three';
-import type { CameraConfig } from '../shared/contracts';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
+import type { CameraConfig } from '../shared/foundation/settings';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
 import { cameraBasis } from '../src/stage/CameraController';
 import { projectHeadContact, type HeadContactProfile } from '../src/stage/head-contact';
 import { FRAMING_TOP_BAND, framingCamera, framingTopBand, isUnframedCamera, type FramingModel } from '../src/stage/stage-framing';
-import { isPetControlPoint } from '../src/ui/MoodCompanion';
-import { HOVER_REVEAL_MARGIN, nearHoverZone } from '../src/ui/HoverVisibility';
+import { isPetControlPoint } from '../src/mood/MoodCompanion';
+import { HOVER_REVEAL_MARGIN, nearHoverZone } from '../src/stage/HoverVisibility';
 
-// The bundled Gene as the real pet measured it (scripts/crown-reach-probe.mjs, 2026-11-02): the old recovered camera
+// The bundled Gene as the real companion measured it (scripts/crown-reach-probe.mjs, 2026-11-02): the old recovered camera
 // (width-limited: her bind pose is 16.2 wide) and a band-framed one give her bounds; the fresh and recovered
 // cameras give the crown centre (19.29, z 0.43) and its half size.
 const GENE: FramingModel = { height: 19.9603, width: 16.2018, baseY: -0.0026, centerX: 0 };
 const CROWN = { center: new Vector3(0, 19.29, 0.43), halfWidth: 1.23, halfHeight: 0.6 };
 const PET = { width: 400, height: 560 };
 // The expanded toolbar in the default window: layout 8..392 x 7..97.2; while faded it is lifted 4 px (3..93.2).
-// It reveals itself 24 px outside its box (HoverVisibility), so the pet reports a reach of 121.2 px.
+// It reveals itself 24 px outside its box (HoverVisibility), so the companion reports a reach of 121.2 px.
 const TOOLBAR = { left: 8, right: 392, top: 7, bottom: 97.2, fadedTop: 3, fadedBottom: 93.2, reach: 97.2 + HOVER_REVEAL_MARGIN };
 
 function camera(config: CameraConfig, width = PET.width, height = PET.height) {

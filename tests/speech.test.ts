@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { CANCEL_SETTLE_MS, SpeechOutput } from "../src/ui/speech";
-import { DEFAULT_SETTINGS } from "../shared/defaults";
+import { CANCEL_SETTLE_MS, SpeechOutput } from "../src/voice/speech";
+import { DEFAULT_SETTINGS } from "../shared/foundation/defaults";
 
 class Utterance {
   voice: SpeechSynthesisVoice | null = null;

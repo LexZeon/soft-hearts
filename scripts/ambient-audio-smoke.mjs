@@ -308,7 +308,7 @@ async function automaticCommentPlayback(session, baseline) {
     playbackMilliseconds: sources[0].endedAt - sources[0].at, suspensionThroughFinalPcm: true, noEchoAsrRequest: true };
 }
 async function deriveVerifiedLyricsInExistingPet() {
-  // This optional branch reuses the already-authorized QA pet. It never launches
+  // This optional branch reuses the already-authorized QA companion. It never launches
   // another app, fetches a source, opens a device, or creates a speaker context.
   const directory = path.resolve(workspace, '../../../.local/ambient-audio-development/fixtures/lyrics-fixture');
   const sourceName = 'twinkle-little-star-dcoetzee-original.ogg';

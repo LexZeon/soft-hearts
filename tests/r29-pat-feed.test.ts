@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { EMPTY_CONTACT, FEED_OPEN, MoodFeedback, PAT_HOLD, type MoodContact, type StageMoodState } from '../src/stage/mood-feedback';
+import { EMPTY_CONTACT, FEED_OPEN, MoodFeedback, PAT_HOLD, type MoodContact, type StageMoodState } from '../src/mood/mood-feedback';
 import { EyelidCompositor, composeMouth } from '../src/stage/channel-compositors';
 
 // B05/B06 through the same chain the stage runs per frame:
@@ -60,7 +60,7 @@ test('B06: the mouth anticipates the approaching snack, opens clearly when prepa
   const shown: { t: number; value: number; feed: number }[] = [];
   for (let frame = 0; frame < 5 * 30; frame++) {
     const t = frame * dt;
-    // The pet is reading a reply aloud the whole time (read-aloud is on by default).
+    // The companion is reading a reply aloud the whole time (read-aloud is on by default).
     lipSync += ((0.23 + Math.abs(Math.sin(t * 12)) * 0.45) - lipSync) * (1 - Math.exp(-16 * dt));
     const near = Math.min(1, Math.max(0, (t - 0.5) / 1)); // snack dragged toward the mouth over 1 s
     const input: MoodContact = t < 3.2 ? { ...EMPTY_CONTACT, feeding: true, prepared: t > 2.15, near, x: 0, y: 0.3 }

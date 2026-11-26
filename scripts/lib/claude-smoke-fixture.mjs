@@ -15,7 +15,7 @@ import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { FOLLOW_UP_MARKER } from './fake-claude.mjs';
+import { isFollowUpTurn } from './fake-claude.mjs';
 import { FAKE_CLAUDE_RELAY_MARKER, RELAY_FILE } from './fake-claude-relay.mjs';
 import { CLAUDE_PLACEHOLDER_TEXT, installClaudeInterposer } from './smoke-isolation.mjs';
 
@@ -40,10 +40,12 @@ export function isolatedClaudeEnvironment(base, owned) {
     if (value === undefined || upper.startsWith('CLAUDE') || upper.startsWith('CODEX_') || upper === 'ELECTRON_RUN_AS_NODE') continue;
     env[key] = value;
   }
-  return { ...env, CODEX_HOME: owned.codexHome, CODEX_PATH: owned.sentinel, CLAUDE_PATH: owned.claudePlaceholder, CLAUDE_CONFIG_DIR: owned.claudeHome };
+  // P1 舞台少画: the stage writes its per-frame canvas readouts (which these smokes read) only when asked (src/stage/stage-pace.ts).
+  return { ...env, CODEX_HOME: owned.codexHome, CODEX_PATH: owned.sentinel, CLAUDE_PATH: owned.claudePlaceholder, CLAUDE_CONFIG_DIR: owned.claudeHome,
+    SOFT_HEARTS_STAGE_DIAGNOSTICS: '1' };
 }
 
-/** The app's `<conversation-data>` block (electron/conversation-context.ts buildCodexChatPrompt), with the history, or null. */
+/** The app's `<conversation-data>` block (electron/brain/conversation-context.ts buildCodexChatPrompt), with the history, or null. */
 export function readConversation(text) {
   if (typeof text !== 'string') return null;
   const start = text.lastIndexOf('<conversation-data>\n'), end = text.lastIndexOf('\n</conversation-data>');
@@ -51,7 +53,7 @@ export function readConversation(text) {
   try {
     const data = JSON.parse(text.slice(start + '<conversation-data>\n'.length, end));
     if (!data || typeof data.currentUser !== 'string' || !Array.isArray(data.history)) return null;
-    return { opening: !text.startsWith(FOLLOW_UP_MARKER), currentUser: data.currentUser, history: data.history };
+    return { opening: !isFollowUpTurn(text), currentUser: data.currentUser, history: data.history };
   } catch { return null; }
 }
 

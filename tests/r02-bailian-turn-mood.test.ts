@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { composeSpeechConfig, freezeTurnSpeechStyle, ReplySpeechStyles, SPEECH_EMOTION_INSTRUCTIONS, supportsTurnSpeechEmotion } from '../electron/speech-emotion';
-import { characterSpeechPersona } from '../electron/speech-persona';
-import { SpeechRuntime } from '../electron/speech-runtime';
-import { synthesizeBailianSpeech } from '../electron/tts';
-import { DEFAULT_TTS_CONFIG, effectiveTtsConfig, type TtsConfig } from '../shared/tts';
+import { composeSpeechConfig, freezeTurnSpeechStyle, ReplySpeechStyles, SPEECH_EMOTION_INSTRUCTIONS, supportsTurnSpeechEmotion } from '../electron/mood/speech-emotion';
+import { characterSpeechPersona } from '../electron/voice/speech-persona';
+import { SpeechRuntime } from '../electron/voice/speech-runtime';
+import { synthesizeBailianSpeech } from '../electron/voice/tts';
+import { DEFAULT_TTS_CONFIG, effectiveTtsConfig, type TtsConfig } from '../shared/voice/tts';
 
 /**
  * R02. A fake

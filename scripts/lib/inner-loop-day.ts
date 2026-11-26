@@ -4,18 +4,20 @@
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { MoodHost } from '../../electron/mood';
-import { ProactiveSpeechGate } from '../../electron/proactive-speech-gate';
-import { InnerLoop, type InnerLoopUsage } from '../../electron/inner-loop/inner-loop';
-import { claimMoodCue } from '../../electron/inner-loop/claim';
-import { OpeningHost } from '../../electron/inner-loop/opening-host';
+import { MoodHost } from '../../electron/mood/mood';
+import { ProactiveSpeechGate } from '../../electron/initiative/proactive-speech-gate';
+import { InnerLoop, type InnerLoopUsage } from '../../electron/initiative/inner-loop/inner-loop';
+import { claimMoodCue } from '../../electron/initiative/inner-loop/claim';
+import { OpeningHost } from '../../electron/brain/opening-host';
 import type { OpeningChoiceHost } from '../../shared/behaviors/opening-choice/interface';
-import { innerLoopPrompt, innerLoopQuietAt } from '../../electron/inner-loop/context';
-import { advanceFatigue, createFatigue, DEFAULT_FATIGUE_PARAMETERS, type FatigueParameters, type FatigueState } from '../../shared/fatigue';
-import type { MoodParameters } from '../../shared/mood';
-import type { ProactiveTalk } from "../../shared/behaviors/inner-rhythm/knobs";
+import { innerLoopPrompt, innerLoopQuietAt } from '../../electron/initiative/inner-loop/context';
+import { advanceFatigue, createFatigue, DEFAULT_FATIGUE_PARAMETERS, type FatigueParameters, type FatigueState } from '../../shared/mood/fatigue';
+import type { MoodParameters, MoodValues } from '../../shared/foundation/mood';
+import { createImpulseHost } from '../../electron/initiative/impulse/wiring';
+import type { InitiativeRow } from '../../shared/behaviors/impulse/interface';
+import type { ProactiveTalk } from "../../shared/foundation/settings";
 import type { BoredomTimingHost } from '../../shared/behaviors/boredom-timing/interface';
-import type { InnerLoopAction, InnerLoopDiagnostic, InnerLoopQuiet } from '../../shared/inner-loop';
+import type { InnerLoopAction, InnerLoopDiagnostic, InnerLoopQuiet } from '../../shared/initiative/inner-loop';
 
 export interface DayCard { id: string; persona: string; parameters: MoodParameters; fatigue?: Readonly<FatigueParameters> }
 /** One idle stretch: the user interacts (a chat) at `startMinute` local time, then leaves her alone. */
@@ -37,7 +39,7 @@ export interface DayOptions {
   /** Optional (#8): when she looks, moves and may speak; default her own timing (random), FixedBoredomTiming = the card's numbers. */
   boredomTiming?: BoredomTimingHost;
   /**
-   * Optional (I-020 #10): route speech cues through the opening choice (electron/inner-loop/opening-host.ts), as the app does now.
+   * Optional (I-020 #10): route speech cues through the opening choice (electron/brain/opening-host.ts), as the app does now.
    * Absent: the old arm (every speech cue goes to the inner loop). The day has no screen, sound or game, so the candidates are her
    * small feeling and "这次不说".
    */
@@ -51,6 +53,13 @@ export interface DayOptions {
   /** Optional (I-039): the 「她主动找你说话」 setting seen by the mood host (default 适中). */
   proactiveTalk?: ProactiveTalk;
   rhythm?: { random: () => number; userAway?: (wallMs: number) => boolean; /** 设置「她主动找你说话」 (default 适中). */ talk?: ProactiveTalk };
+  /**
+   * Optional (松绑, electron/initiative/impulse/): her own urge on the same one-second tick, as the app wires it (needs `opening`). No budget, the
+   * user counts as present (no presence judgment), the expression gate is the shared gate being free. Absent: exactly as before.
+   */
+  impulse?: { random: () => number; rows?: InitiativeRow[] };
+  /** Optional: a lift at the start of every block (a warm chat: closer and happier). */
+  blockLift?: Partial<MoodValues>;
 }
 export interface DayResult {
   card: string;
@@ -97,6 +106,7 @@ export async function runInnerLoopDay(options: DayOptions): Promise<DayResult> {
   let token = '';
   let loop: InnerLoop | null = null;
   let opening: OpeningHost | null = null;
+  let impulseSpoke: ((text: string, id: string) => void) | null = null;
   const host = new MoodHost(directory, view => {
     token = view.token;
     const cue = view.snapshot.cue;
@@ -156,7 +166,7 @@ export async function runInnerLoopDay(options: DayOptions): Promise<DayResult> {
       offer: message => { pendingAck = message.id; },
       present: async () => options.presented !== false,
       presentationCurrent: () => options.presented !== false,
-      archive: async message => { result.spoken.push({ at: message.origin.at, text: message.text }); },
+      archive: async message => { result.spoken.push({ at: message.origin.at, text: message.text }); impulseSpoke?.(message.text, message.id); },
       record: entry => {
         result.diagnostics.push(entry);
         result.results[entry.result] = (result.results[entry.result] ?? 0) + 1;
@@ -166,6 +176,10 @@ export async function runInnerLoopDay(options: DayOptions): Promise<DayResult> {
     });
     if (options.opening) opening = new OpeningHost({ loop, chooser: options.opening.chooser, innerOn: () => !result.stoppedByError,
       releaseSpeech: (cue, characterId) => host.releaseSpeech({ id: cue.id, at: cue.at }, characterId), developerMode: () => false, clock: () => clock.now });
+    const impulse = options.impulse && opening ? createImpulseHost({ mood: () => host, budget: () => null, opening: () => opening!, quiet: () => loop!.quietNow(),
+      presence: () => null, canExpress: () => !gate.busy && !result.stoppedByError, talk: () => 'normal', clock: () => clock.now, random: options.impulse.random,
+      journal: row => { options.impulse!.rows?.push(row); } }) : null;
+    if (impulse) impulseSpoke = (text, id) => impulse.spoke(text, id);
     const step = async () => {
       clock.now += 1000;
       while (messages.length && midnight + messages[0] * MINUTE <= clock.now) host.event({ type: 'chat', id: `user_msg_${messages.shift()}_${clock.now}` }, options.card.id);
@@ -174,6 +188,7 @@ export async function runInnerLoopDay(options: DayOptions): Promise<DayResult> {
       gate.setScope(scope());
       loop!.sweep();
       host.tick(!gate.busy, { fatigueActivity: NO_BLOCKERS });
+      impulse?.tick();
       // The simulated clock waits while the (fake or real) model answers.
       while (loop!.busy) {
         if (pendingAck) { const id = pendingAck; pendingAck = null; await loop!.ack(id); continue; }
@@ -182,7 +197,7 @@ export async function runInnerLoopDay(options: DayOptions): Promise<DayResult> {
     };
     for (const [index, block] of blocks.entries()) {
       const at = midnight + block.startMinute * MINUTE;
-      // Between blocks the user is busy with her (or the pet is hidden): the gap is a quiet relaunch for the
+      // Between blocks the user is busy with her (or the companion is hidden): the gap is a quiet relaunch for the
       // mood clock (boredom starts from 0), while her own fatigue keeps running awake.
       while (clock.now < at - 1_000) {
         clock.now = Math.min(at - 1_000, clock.now + 60_000);
@@ -194,7 +209,8 @@ export async function runInnerLoopDay(options: DayOptions): Promise<DayResult> {
           channels: host.get().snapshot.values, baseline: host.get().parameters.baseline, blockers: NO_BLOCKERS, mode: 'active' }, fatigueParameters);
       }
       await step();
-      host.event({ type: 'chat', id: `user_${index}` });      const end = at + block.idleMinutes * MINUTE;
+      host.event({ type: 'chat', id: `user_${index}` });
+      if (options.blockLift) host.lift({ id: `warm_${index}`, delta: options.blockLift, reason: '聊得开心' });      const end = at + block.idleMinutes * MINUTE;
       while (clock.now < end && !result.stoppedByError) await step();
     }
     return result;

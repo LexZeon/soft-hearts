@@ -1,5 +1,5 @@
 /**
- * I-037: what the control window and the agent channel see of 新的反应方式 (electron/reactions/wiring.ts makes them). Numbers,
+ * I-037: what the control window and the agent channel see of 新的反应方式 (electron/mood/reactions/wiring.ts makes them). Numbers,
  * ids and fixed labels only.
  */
 import type { DispositionId, Dispositions } from './dispositions';

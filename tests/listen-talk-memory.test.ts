@@ -1,4 +1,4 @@
-// 2026-11-07 (docs/claude/2026-11-07-listen-talk-memory.md): a narration video ("这视频的文案怎么样") has voices and no music, so the host
+// 2026-11-07 (docs/claude/2026-11-07-listen-talk-memory.md): a narration video has voices and no music, so the host
 // calls it talk and, until now, kept nothing. Now its words wait in memory for ten minutes (never on disk) and come along only when the
 // user asks about what is playing; her hearing line says someone is talking instead of "没在放东西"; the ask words are wider.
 // Synthetic transcripts only, a fake clock, a fake listen-kind producer; the one disk test uses a temporary folder.
@@ -7,15 +7,15 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { ListenKindHost, type ListenKind } from '../shared/listen-kind';
-import { LISTEN_LIMITS } from '../shared/listen-together';
-import { matchListenAsk } from '../shared/listen-ask';
-import { briefHearingWords, hearingWords, type HearingNow } from '../shared/her-state';
-import { perceptionTurnLine, type PerceptionTurn } from '../shared/perception-rule';
-import { createHerState, StageStateHost } from '../electron/her-state-host';
-import { ListenTogetherCore, NO_LISTEN_ASK, type ListenFile } from '../electron/listen-together/core';
-import { ListenStore } from '../electron/listen-together/store';
-import { TalkMemory } from '../electron/listen-together/talk-memory';
+import { ListenKindHost, type ListenKind } from '../shared/senses/listen-kind';
+import { LISTEN_LIMITS } from '../shared/senses/listen-together';
+import { matchListenAsk } from '../shared/senses/listen-ask';
+import { briefHearingWords, hearingWords, type HearingNow } from '../shared/mood/her-state';
+import { perceptionTurnLine, type PerceptionTurn } from '../shared/brain/perception-rule';
+import { createHerState, StageStateHost } from '../electron/mood/her-state-host';
+import { ListenTogetherCore, NO_LISTEN_ASK, type ListenFile } from '../electron/senses/listen-together/core';
+import { ListenStore } from '../electron/senses/listen-together/store';
+import { TalkMemory } from '../electron/senses/listen-together/talk-memory';
 
 const MIN = 60_000;
 const NARRATION = '合成解说词这一期我们来聊聊雨天为什么会让人想起远方的朋友，先看第一个原因';
@@ -150,13 +150,13 @@ test('it comes only for a question about what is playing, and the earlier refusa
 
 test('the ask words: 文案、说了什么、讲了什么、在说什么、这段话、这个讲解、字幕、台词说的 about the current video match; her own words do not', () => {
   const speech = (text: string) => matchListenAsk(text)?.speech === true;
-  for (const text of ['这视频的文案怎么样', '这个视频文案写得好不好', '这段文案怎么样？视频里的', '视频文案你觉得呢', '讲解在说什么', '他们在说什么', '它在说什么', '主持人讲了什么',
+  for (const text of ['这段视频的文案如何', '这个视频文案写得好不好', '这段文案怎么样？视频里的', '视频文案你觉得呢', '讲解在说什么', '他们在说什么', '它在说什么', '主持人讲了什么',
     '里面说了什么', '视频里说了些什么', '这段话是什么意思', '这个讲解怎么样', '这个解说好不好', '字幕上写了什么', '这个视频的字幕对吗', '台词说的是什么', '刚才那段说了什么',
     '你听听这段话', '旁白在说什么']) assert.ok(speech(text), `should match: ${text}`);
   for (const text of ['你刚才说了什么', '你刚刚说了什么呀', '你在说什么', '你刚才说的这段话是什么意思', '你说的这个讲解我没懂', '我刚才说了什么', '说了什么', '帮我写个视频文案', '帮我改一下这个文案',
     '我们在说什么', '你上面讲了什么', '你刚才那段话再说一遍']) assert.ok(!speech(text), `must not pull audio text: ${text}`);
   // The three nouns ask about the sound's content, so they are a match at all (target show); a song question stays a song question.
-  assert.equal(matchListenAsk('这视频的文案怎么样')?.target, 'show');
+  assert.equal(matchListenAsk('这段视频的文案如何')?.target, 'show');
   assert.equal(matchListenAsk('这首歌怎么样')?.speech, false);
   assert.equal(matchListenAsk('你听到了吗')?.speech, false);
   assert.equal(matchListenAsk('上次那集讲了什么')?.speech, false);

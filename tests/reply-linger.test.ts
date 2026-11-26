@@ -10,9 +10,9 @@ import { chooseReplyLinger, lastBubble, readableChars, ReplyLingerDirector, repl
 import { FakeReplyLingerHost } from '../shared/behaviors/reply-linger/fake';
 import { readReplyLingerAnswer, replyLingerLongestMs, safeLingerMs } from '../shared/behaviors/reply-linger/perform';
 import type { ReplyLingerBubble, ReplyLingerHost, ReplyLingerMood } from '../shared/behaviors/reply-linger/interface';
-import { replyPieces } from '../shared/reply-bubbles';
-import { formatReplyBubbles } from '../shared/reply-segments';
-import { formatReplyLingerLines } from '../src/ui/MoodPanel';
+import { replyPieces } from '../shared/voice/reply-bubbles';
+import { formatReplyBubbles } from '../shared/voice/reply-segments';
+import { formatReplyLingerLines } from '../src/mood/MoodPanel';
 import { seeded } from './helpers/seeded';
 
 const report = !!process.env.REPLY_LINGER_REPORT;
@@ -170,7 +170,7 @@ test('the developer panel line: time, how long, the real reasons', () => {
   assert.match(line, /^气泡：.+ 留 8\.1 秒｜最后一句在问你（多留一会儿）；32 个字（读完约 6\.3 秒）；心情：愉快（收得早一点）$/);
 });
 
-test('a tendency left a hair above baseline is not a reason (shared/mood-tendency.ts), a real one still is', () => {
+test('a tendency left a hair above baseline is not a reason (shared/foundation/mood-tendency.ts), a real one still is', () => {
   const none = { playful: 0, close: 0, comfortable: 0, cautious: 0 };
   const faint = replyLingerMood({ snapshot: { primary: 'calm', companion: 'close', tendencies: { ...none, close: 1e-10 } }, personality: null });
   assert.equal(faint.tendency, null, 'a day after a pat she is not "想黏着你"');

@@ -5,12 +5,12 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { HER_LIFE_LOOK_UP_KINDS, herLifeLookUpStyle, type HerLifeActivity, type HerLifeLookUpKind, type HerLifeView } from '../shared/her-life';
-import { HerLifeHost, type HerLifeTickInput } from '../electron/her-life/host';
+import { HER_LIFE_LOOK_UP_KINDS, herLifeLookUpStyle, type HerLifeActivity, type HerLifeLookUpKind, type HerLifeView } from '../shared/stage/her-life';
+import { HerLifeHost, type HerLifeTickInput } from '../electron/stage/her-life/host';
 import { HerLifeStage } from '../src/stage/her-life-stage';
-import { CompanionService } from '../electron/companion';
-import { DEFAULT_MOOD_PARAMETERS, type MoodParameters } from '../shared/mood';
-import type { ProviderConfig } from '../shared/contracts';
+import { CompanionService } from '../electron/brain/companion';
+import { DEFAULT_MOOD_PARAMETERS, type MoodParameters } from '../shared/foundation/mood';
+import type { ProviderConfig } from '../shared/foundation/settings';
 
 const MINUTE = 60_000;
 const card = (weights: Partial<MoodParameters['weights']> = {}): MoodParameters => ({ ...structuredClone(DEFAULT_MOOD_PARAMETERS),

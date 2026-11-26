@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { prepareCharacterSpeechPreview } from '../electron/speech-preview';
-import { ReplySpeechStyles, SPEECH_EMOTION_INSTRUCTIONS, type SpeechMood } from '../electron/speech-emotion';
-import { SpeechRuntime } from '../electron/speech-runtime';
-import { DEFAULT_TTS_CONFIG, type SpeechWireEvent, type TtsConfig } from '../shared/tts';
+import { prepareCharacterSpeechPreview } from '../electron/voice/speech-preview';
+import { ReplySpeechStyles, SPEECH_EMOTION_INSTRUCTIONS, type SpeechMood } from '../electron/mood/speech-emotion';
+import { SpeechRuntime } from '../electron/voice/speech-runtime';
+import { DEFAULT_TTS_CONFIG, type SpeechWireEvent, type TtsConfig } from '../shared/voice/tts';
 
 const config = (): TtsConfig => ({ ...DEFAULT_TTS_CONFIG, provider: 'bailian', apiHost: 'https://fixture.example', apiKey: 'PRIVATE_FIXTURE_KEY', rate: 0.9 });
 const card = () => ({ personality: '', description: '', systemPrompt: '说话方式：温柔含蓄。开心时不会高声欢呼。' });

@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CompanionService, type CompanionTurn } from '../electron/companion';
-import { UserProfileStore, type UserProfileOptions } from '../electron/user-profile';
-import { literalUserProfileCandidates, UserProfileReplyCollector } from '../electron/user-profile-reply';
+import { CompanionService, type CompanionTurn } from '../electron/brain/companion';
+import { UserProfileStore, type UserProfileOptions } from '../electron/memory/user-profile';
+import { literalUserProfileCandidates, UserProfileReplyCollector } from '../electron/memory/user-profile-reply';
 
 const provider = { kind: 'claude' as const, baseUrl: 'http://127.0.0.1:9', model: 'synthetic-no-provider-call' };
 const metadata = { context: 'neutral', delta: {}, reason: '本轮正常回应', confidence: 0.9, gesture: 'none' };
@@ -23,7 +23,8 @@ async function fixture(run: (x: { service: CompanionService; store: UserProfileS
   } finally {
     store.dispose(); await service.mood.flush();
     assert.equal(path.dirname(path.resolve(directory)), root); assert.ok(path.basename(directory).startsWith('case-'));
-    await rm(directory, { recursive: true, force: true });
+    // Under the full suite's load a late archive write can land while the folder is being removed (ENOTEMPTY on Windows): retry.
+    await rm(directory, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 });
   }
 }
 function collector(store: UserProfileStore, id: string, text: string) {

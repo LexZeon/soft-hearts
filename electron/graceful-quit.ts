@@ -37,9 +37,12 @@ export function secondInstanceAction(input: { argv: readonly string[]; additiona
  * Electron answers the asking process only after this listener returns, and if the app is already shutting down by
  * then it answers "not delivered", so the asking process would take the lock itself and report that nothing was
  * running (seen with a headless Electron 45 instance that quit inside the listener, 2026-11-03).
+ * `quitting` (I-182): once this instance's quit has begun it neither reopens its windows nor quits a second time; the launch that
+ * asked sees the quit marker and waits for this process to be gone (electron/foundation/quit-wait/plan.ts).
  */
-export function onSecondInstance(input: { argv: readonly string[]; additionalData?: unknown; desktopOwner: string;
-  quit: () => void; show: () => void; later?: (run: () => void) => void }): 'quit' | 'show' {
+export function onSecondInstance(input: { argv: readonly string[]; additionalData?: unknown; desktopOwner: string; quitting?: boolean;
+  quit: () => void; show: () => void; later?: (run: () => void) => void }): 'quit' | 'show' | 'ignore' {
+  if (input.quitting) return 'ignore';
   const action = secondInstanceAction(input);
   if (action === 'quit') (input.later ?? (run => { setImmediate(run); }))(input.quit);
   else input.show();

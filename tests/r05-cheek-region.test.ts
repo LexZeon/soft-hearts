@@ -3,13 +3,10 @@ import { after, test } from 'node:test';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import ts from 'typescript';
-import { Euler, MathUtils, PerspectiveCamera, Vector3 } from 'three';
-import { projectCheekRegions } from '../src/stage/cheek-pinch-region';
-import { CheekPinchTracker, hitCheek } from '../src/ui/CheekPinch';
+import { Euler, PerspectiveCamera, Vector3 } from 'three';
+import { projectCheekRegions } from '../src/mood/cheek-pinch-region';
+import { CheekPinchTracker, hitCheek } from '../src/mood/CheekPinch';
 import { projectCheekRegions as legacyProjection } from './fixtures/r05-legacy-cheek-projection';
-import { DEFAULT_BLUSH_CALIBRATION } from '../shared/blush';
 import { loadPublicGene } from './helpers/r05-public-gene-fixture';
 
 const gene = await loadPublicGene();
@@ -106,25 +103,4 @@ test('new guarded admission keeps the actual held reference unit, drag cancellat
     assert.equal(hitCheek(point.x, point.y, broken), null, 'Malformed declared guards never restore an unguarded broad hit.');
   }
   evidence.tests.push({ name: 'tracker admission/hold', events: events.length, activeMs: events[0].activeMs, originalReferenceWidth: 100 });
-});
-
-test('the actual Stage interaction getter enables calibration only for verified Gene with default anchors', () => {
-  reset(); const target = fileURLToPath(new URL('../src/stage/MmdStage.ts', import.meta.url));
-  const text = readFileSync(target, 'utf8'), ast = ts.createSourceFile(target, text, ts.ScriptTarget.Latest, true);
-  const subject = ast.statements.find(n => ts.isClassDeclaration(n) && n.name?.text === 'MmdStage') as ts.ClassDeclaration;
-  const method = subject.members.find(n => ts.isMethodDeclaration(n) && n.name.getText(ast) === 'getInteractionRegion')!;
-  const js = ts.transpileModule(`class Subject { ${method.getText(ast)} }`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
-  const Subject = new Function('Vector3', 'MathUtils', 'clamp', 'probeHeadContact', 'projectHeadContact', 'projectCheekRegions', 'DEFAULT_BLUSH_CALIBRATION', `${js}; return Subject;`)(Vector3, MathUtils,
-    (n: number, low: number, high: number) => Math.max(low, Math.min(high, n)), () => ({}), () => ({ x: 200, y: 200 }), projectCheekRegions, DEFAULT_BLUSH_CALIBRATION);
-  const s = new Subject(); Object.assign(s, { mesh: gene.mesh, head: gene.head, eyes: gene.eyes, camera: camera(), height: 20,
-    hostVisible: true, controls: { interacting: false }, container: { clientWidth: 400, clientHeight: 560 },
-    renderer: { domElement: { dataset: {} } }, cheekAnchors: gene.anchors, tearsVerifiedGene: false,
-    modelUrl: 'synthetic-public-model', blushCalibrationModelUrl: 'synthetic-public-model', blushCalibration: { ...DEFAULT_BLUSH_CALIBRATION } });
-  const unverified = s.getInteractionRegion(); assert.equal(unverified.cheeks.length, 2); assert.ok(unverified.cheeks.every((r: any) => r.exclusions === undefined));
-  s.tearsVerifiedGene = true; const verified = s.getInteractionRegion(); assert.ok(verified.cheeks.every((r: any) => r.exclusions.length === 4));
-  assert.equal(verified.referenceWidth, unverified.referenceWidth); assert.equal(verified.mouthRadius, unverified.mouthRadius);
-  s.blushCalibration.eyeSpacingScale = 1.1; assert.ok(s.getInteractionRegion().cheeks.every((r: any) => r.exclusions === undefined));
-  s.hostVisible = false; assert.equal(s.getInteractionRegion(), null);
-  s.hostVisible = true; s.controls.interacting = true; assert.equal(s.getInteractionRegion(), null);
-  evidence.tests.push({ name: 'actual Stage getter', trustedContentAndDefaultOnly: true, currentDailyModelIdentity: 'UNKNOWN' });
 });

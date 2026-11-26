@@ -1,36 +1,40 @@
-import * as uiCopy from '../src/ui/ui-language';
+import * as uiCopy from '../src/foundation/ui-language';
 const { uiText, uiHtml, uiMarkup, uiTemplate } = uiCopy;
 import test from 'node:test';
-import {conciseFailure} from '../src/notice-policy';
-import { WindowVisibilityTracker } from '../src/ui/window-visibility';
+import {conciseFailure} from '../src/settings/notice-policy';
+import { WindowVisibilityTracker } from '../src/stage/window-visibility';
+import { replyMayRun } from '../shared/foundation/step-away';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import ts from 'typescript';
 import { transformSync } from 'esbuild';
 import type { ChatMessage, StreamEvent } from '../shared/contracts';
-import type { VoiceConversationEvent } from '../shared/voice-conversation';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { ReplyPresentationState } from '../src/ui/reply-presentation';
-import { ImmersiveNotice } from '../src/ui/ImmersiveNotice';
-import { formatReplySegments } from '../src/ui/reply-segments';
-import { appendReplyHistory, trimReplyHistory } from '../src/ui/reply-history';
-import { buildCodexChatPrompt } from '../electron/conversation-context';
-import { validateChatRequest } from '../electron/validation';
-import { MoodReplyProtocol } from '../electron/mood-chat';
+import type { VoiceConversationEvent } from '../shared/voice/voice-conversation';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { ReplyPresentationState } from '../src/brain/reply-presentation';
+import { ImmersiveNotice } from '../src/stage/ImmersiveNotice';
+import { formatReplySegments } from '../src/brain/reply-segments';
+import { appendReplyHistory, trimReplyHistory } from '../src/brain/reply-history';
+import { buildCodexChatPrompt } from '../electron/brain/conversation-context';
+import { validateChatRequest } from '../electron/settings/validation';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
 
-import { PetUI } from '../src/ui/PetUI';
-import { ReplyReader } from '../src/ui/ReplyReader';
-import { ReplySpeechState } from '../src/ui/reply-speech';
-import { VoiceDraftInput } from '../src/ui/VoiceDraftInput';
-import { CompletedReplySpeechQueue } from '../src/ui/completed-reply-speech-queue';
-import { splitReplySegments } from '../shared/reply-segments';
+import { PetUI } from '../src/stage/PetUI';
+import { ReplyReader } from '../src/brain/ReplyReader';
+import { ReplySpeechState } from '../src/voice/reply-speech';
+import { VoiceDraftInput } from '../src/voice/VoiceDraftInput';
+import { CompletedReplySpeechQueue } from '../src/voice/completed-reply-speech-queue';
+import { splitReplySegments } from '../shared/voice/reply-segments';
+import { rendererSource as readRendererSource } from './helpers/renderer-source'; // overhaul step 5: src/main.ts and src/wiring/*.ts
+import { SpeechBeatsView } from '../src/brain/speech-beats-view';
+import { speechBeatShownText } from '../shared/behaviors/speech-beats/history';
 // Execute the actual checked-in handler declarations, not a copied simulation.
 // Only their UI/IPC collaborators are replaced; no app or browser is launched.
-const mainSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
+const mainSource = readRendererSource();
 const mainSha256 = createHash('sha256').update(mainSource).digest('hex');
 const ast = ts.createSourceFile('src/main.ts', mainSource, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-const names = ['renderReadout', 'syncBodyInputGate', 'onStream', 'receiveChat', 'receiveVoiceConversation', 'stopChat', 'hideWaitingPresentation', 'beginChat', 'clearChat', 'endReplySpeech', 'addMessage',
+const names = ['shown', 'renderReadout', 'syncBodyInputGate', 'onStream', 'receiveChat', 'receiveVoiceConversation', 'setHistory', 'setVoiceSpeechReady', 'stopChat', 'hideWaitingPresentation', 'beginChat', 'clearChat', 'endReplySpeech', 'addMessage',
   'replySpeechContext', 'kickCompletedReply', 'startStreamingReplySpeech', 'reportReplySpeechError', 'prepareReplySpeechPresentation', 'finishReplySpeechPresentation', 'acceptWindowVisibility', 'projectPetVisibility', 'displayFailure', 'clearCommandMessageRows', 'receiveReadoutControl'];
 const declarations = names.map(name => {
   const found = ast.statements.filter(statement => ts.isFunctionDeclaration(statement) && statement.name?.text === name);
@@ -61,8 +65,12 @@ const transpiled = transformSync(`function createFlow(deps: any) {
     renderReplyWaiting,renderAttachments,showCharacterGreeting,replyPresentation,
     formatReplySegments,appendReplyHistory,trimReplyHistory,isPet,windowKind,settings,stage,HTMLElement,VoiceDraftInput,characterName,CompletedReplySpeechQueue,splitReplySegments} = deps;
   let {activeChat,activeUser,reply,history,assistantNode,chatOwner,hostVisible,awaitingChatState} = deps.initial;
+  // 边说边演 (src/wiring/speech-beats-wiring.ts): this window's view (it performs nothing here) and the history cleaner.
+  const speechBeatsView = new SpeechBeatsView({ now: () => 0, setTimer: () => 0, clearTimer() {}, pacing: () => 'shown' });
+  const bubbleFollow = () => ({ engage() {}, over() {}, heard() {}, segment() {} }); // I-165: not followed in this legacy flow fixture
+  const speechBeats = () => speechBeatsView, shownReplyText = (content: string) => speechBeatShownText(content).text;
   ${commandRowsDeclaration}
-  const readoutControlTurns = new Map(); let pendingReadoutControl = null;
+  const readoutControlTurns = new Map(); const sendGuard = { release() {} }; // src/brain/send-guard.ts (its own tests: tests/typed-line-drops.test.ts)
   const voiceUiGroups = new Map<string, { epoch: string; seq: number; message: ChatMessage; node: HTMLElement }>();
   const voiceReplyIds = new Set<string>();
   const voiceDraftInput = new VoiceDraftInput();
@@ -78,6 +86,9 @@ const transpiled = transformSync(`function createFlow(deps: any) {
   const textMemorialOffer = null; let activeMemorialSpeechId = null;
   const windowVisibility = new deps.WindowVisibilityTracker();
   windowVisibility.accept({windowId:1,revision:0,visible:true,petVisible:true});
+  // I-171: the document handler asks the host whether a hidden document was a minimize; here the host's last word, answered at once. no-pet-ok: petVisible is the contract's field name
+  let lastHostState: unknown = {windowId:1,revision:0,visible:true,petVisible:true}; const replyMayRun = deps.replyMayRun;
+  if (window?.desktop) window.desktop.getWindowVisibility = () => ({ then: (ok: (state: unknown) => void) => { ok(lastHostState); } });
   let visibilityRevision = 0, pendingPetVisibility = false;
   const characterState = {activeId:'fixture-character'};
   const conciseFailure=deps.conciseFailure;
@@ -106,11 +117,11 @@ const transpiled = transformSync(`function createFlow(deps: any) {
   return {onStream,receiveChat,receiveVoiceConversation,stopChat,hideWaitingPresentation,beginChat,clearChat,
     state: () => ({activeChat,activeUser,reply,history:[...history],assistantNode,chatOwner,hostVisible,awaitingChatState}),
     visible(value: boolean) { hostVisible=value; document.hidden=!value; },
-    hostVisibility(value: boolean) { hostVisibilityCallback({windowId:1,revision:++visibilityRevision,visible:value,petVisible:true}); },
+    hostVisibility(value: boolean) { hostVisibilityCallback(lastHostState = {windowId:1,revision:++visibilityRevision,visible:value,petVisible:true}); },
     documentVisibility(hidden: boolean) { document.hidden=hidden; documentVisibilityCallback(); }
   };
 }`, { loader: 'ts', target: 'es2022' }).code;
-const createFlow = new Function('uiText','uiHtml','uiMarkup','uiTemplate',`${transpiled}\nreturn createFlow;`).bind(null, uiText, uiHtml, uiMarkup, uiTemplate)() as (deps: Record<string, unknown>) => {
+const createFlow = new Function('uiText','uiHtml','uiMarkup','uiTemplate','SpeechBeatsView','speechBeatShownText',`${transpiled}\nreturn createFlow;`).bind(null, uiText, uiHtml, uiMarkup, uiTemplate, SpeechBeatsView, speechBeatShownText)() as (deps: Record<string, unknown>) => {
   onStream(event: StreamEvent): void;
   receiveChat(message: Record<string, unknown>): void;
   receiveVoiceConversation(event: VoiceConversationEvent): void;
@@ -169,7 +180,7 @@ function fixture(options: { developer?: boolean; isPet?: boolean; accepted?: boo
   const settings = structuredClone(DEFAULT_SETTINGS); settings.provider.kind=options.backend??'claude'; settings.voice.enabled = options.voice ?? true;
   const api = createFlow({
     document: { hidden: false, activeElement: null, createElement: () => new StubNode(), getElementById: () => null },
-    WindowVisibilityTracker, conciseFailure, developerMode: options.developer, immersiveNotice: options.notice,
+    WindowVisibilityTracker, replyMayRun, conciseFailure, developerMode: options.developer, immersiveNotice: options.notice,
     HTMLElement: StubNode, stage: { setBodyInputBlocked: (blocked: boolean) => record('body-input', blocked), setVisible: (visible: boolean) => record('stage-visible', visible) },
     window: { desktop: { cancel: async (cancelled: string) => { record('cancel', cancelled); },
       acknowledgeReplySpeechReady:async(replyId:string)=>{record('speech-ready',replyId);return options.ready??true;},cancelReplySpeech:async(replyId:string)=>{record('speech-queue-cancel',replyId);} } },

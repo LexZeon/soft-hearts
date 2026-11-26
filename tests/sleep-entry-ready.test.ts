@@ -5,18 +5,21 @@
 // cannot.
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import ts from 'typescript';
-import { FatigueActivityBridge } from '../electron/fatigue-activity';
-import { FatigueHost } from '../electron/fatigue-host';
-import type { SleepEntryBlockers } from '../shared/fatigue';
+import { FatigueActivityBridge } from '../electron/mood/fatigue-activity';
+import { FatigueHost } from '../electron/mood/fatigue-host';
+import type { SleepEntryBlockers } from '../shared/mood/fatigue';
+import { wiringSource } from './helpers/wiring-source';
 
 const channels = { D: 50, O: 50, E: 50, N: 50, C: 50 };
 
+// Reads as text (test-affected selects this test through the helper): 'electron/main.ts' (wiring rewrite step 4f: with electron/wiring/*.ts,
+// main.ts first, so "before" and "after" keep their meaning while the ready chain and before-quit stay in main.ts).
 test('main.ts opens the sleep-entry activity at startup, before its first sync (and nowhere sets it true later by accident)', async () => {
-  const source = await readFile(path.join(import.meta.dirname, '..', 'electron', 'main.ts'), 'utf8');
+  const source = wiringSource();
   const ast = ts.createSourceFile('main.ts', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   const sets: Array<{ value: string; at: number }> = [];
   let firstSelection = -1;

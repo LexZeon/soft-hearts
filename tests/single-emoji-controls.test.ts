@@ -1,9 +1,9 @@
-import { registerUiMessages, setUiLanguage } from '../shared/ui-language';
-import { ENGLISH_SETTINGS_UI_COPY } from '../shared/ui-copy.settings.en';
+import { registerUiMessages, setUiLanguage } from '../shared/foundation/ui-language';
+import { ENGLISH_SETTINGS_UI_COPY } from '../shared/foundation/ui-copy.settings.en';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SingleEmojiControls, type SingleEmojiControlPorts } from '../src/ui/SingleEmojiControls';
-import { DEFAULT_EMOJI_SETTINGS, readEmojiSettings, type EmojiId, type EmojiSettings } from '../shared/single-emoji';
+import { SingleEmojiControls, type SingleEmojiControlPorts } from '../src/stage/SingleEmojiControls';
+import { DEFAULT_EMOJI_SETTINGS, readEmojiSettings, type EmojiId, type EmojiSettings } from '../shared/stage/single-emoji';
 
 class Element {
   children: Element[] = []; parent: Element | null = null;

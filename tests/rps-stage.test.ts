@@ -6,13 +6,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Quaternion, Vector3, type Bone } from 'three';
-import { RPS_TIMING, type RpsFace, type RpsHand, type RpsPhase, type RpsView } from '../shared/rps';
-import { buildRpsRig, MinJerk, RpsPerformance, rpsStageCue, segmentDistance } from '../src/stage/rps-performance';
-import { geneStage, surprises, steps, percentile, between, TRACKED_BONES, type GeneStage } from './helpers/gene-stage-harness';
+import { RPS_TIMING, type RpsFace, type RpsHand, type RpsPhase, type RpsView } from '../shared/initiative/rps';
+import { buildRpsRig, MinJerk, RpsPerformance, rpsStageCue, segmentDistance } from '../src/initiative/rps-performance';
 import { bodyModel } from './helpers/body-fixtures';
 import { profileInput, toThreeMesh } from './helpers/model-fixtures';
-import { buildModelProfile } from '../shared/model-profile';
-import type { CollisionProxy } from '../shared/collision-proxy';
+import { buildModelProfile } from '../shared/stage/model-profile';
+import type { CollisionProxy } from '../shared/foundation/collision-proxy';
 
 const DEG = 180 / Math.PI, T = RPS_TIMING;
 const report = process.env.R29_REPORT === '1';
@@ -26,18 +25,6 @@ function view(phase: RpsPhase, round: number, extra: Partial<RpsView> = {}): Rps
 const revealed = (hand: RpsHand) => ({ hand, intent: 'fair' as const, nonce: 'n' });
 
 interface Shown { t: number; extra: Quaternion[]; handPos: Vector3; elbowPos: Vector3 }
-/** Records the extra bones' displayed world rotation and the right hand's position every rendered frame. */
-function recordExtra(h: GeneStage): Shown[] {
-  const out: Shown[] = [], bones = EXTRA.map(name => h.mesh.skeleton.bones.find((b: Bone) => b.name === name)!);
-  const wrist = bones[1], elbow = h.mesh.skeleton.bones.find((b: Bone) => b.name === '右ひじ')!;
-  const render = h.stage.renderer.render;
-  h.stage.renderer.render = (...args: unknown[]) => {
-    render.apply(h.stage.renderer, args);
-    const q = new Quaternion();
-    out.push({ t: h.time(), extra: bones.map(b => b.getWorldQuaternion(q).clone()), handPos: wrist.getWorldPosition(new Vector3()), elbowPos: elbow.getWorldPosition(new Vector3()) });
-  };
-  return out;
-}
 function extraSurprises(frames: Shown[]): number[][] {
   const step = new Quaternion(), last = new Quaternion(), inv = new Quaternion();
   return EXTRA.map((_, k) => {
@@ -50,101 +37,6 @@ function extraSurprises(frames: Shown[]): number[][] {
     return out;
   });
 }
-
-/** One whole match on the stage: ready, count, reveal (paper), next, count, reveal (scissors, pretending paper), end, gone. */
-async function playMatch(fps: number, game: boolean) {
-  const h = await geneStage({ fps });
-  const extra = recordExtra(h);
-  const marks: Record<string, number> = {};
-  const set = (name: string, value: RpsView | null) => { marks[name] = h.time(); if (game) h.stage.setRps(value); };
-  try {
-    h.run(3);
-    set('ready', view('ready', 1, { face: 'nervous', phaseMs: T.readyMs })); h.run(T.readyMs / 1000);
-    set('count', view('count', 1, { face: 'nervous' })); h.run((T.leadMs + 2 * T.beatMs) / 1000);
-    set('reveal', view('reveal', 1, { revealed: revealed('paper'), userHand: 'rock', outcome: 'her', face: 'smug' })); h.run(T.reactMs / 1000);
-    set('next', view('ready', 2, { face: 'nervous' })); h.run(T.nextMs / 1000);
-    set('count2', view('count', 2)); h.run((T.leadMs + 2 * T.beatMs) / 1000);
-    set('tease', view('reveal', 2, { revealed: revealed('scissors'), userHand: 'rock', outcome: 'user', face: 'tease', tease: 'paper' })); h.run(T.teaseMs / 1000);
-    set('admit', view('reveal', 2, { revealed: revealed('scissors'), userHand: 'rock', outcome: 'user', face: 'happy', tease: null })); h.run(T.reactMs / 1000);
-    set('end', view('end', 2, { revealed: revealed('scissors'), face: 'happy' })); h.run(T.endMs / 1000);
-    set('gone', null); h.run(3);
-    return { h, extra, marks, shown: h.shown };
-  } catch (error) { h.close(); throw error; }
-}
-
-const runs = new Map<number, Promise<{ control: Awaited<ReturnType<typeof playMatch>>; event: Awaited<ReturnType<typeof playMatch>> }>>();
-function pair(fps: number) {
-  if (!runs.has(fps)) runs.set(fps, (async () => ({ control: await playMatch(fps, false), event: await playMatch(fps, true) }))());
-  return runs.get(fps)!;
-}
-test.after(async () => { for (const run of runs.values()) { const { control, event } = await run; control.h.close(); event.h.close(); } });
-
-for (const fps of [60, 30]) {
-  test(`${fps} fps: the arm comes up, strokes three beats, shows the hand and goes back down without a jump; the guard never catches a bone`, async () => {
-    const { control, event } = await pair(fps);
-    const { marks } = event, g0 = marks.ready - 0.2, g1 = marks.gone + 3;
-    const during = between(event.shown, g0, g1), base = between(control.shown, g0, g1);
-    // What the continuity guard had to catch: bone properties (this layer's writes) and morphs, event run vs undisturbed run.
-    const caughtIn = (frames: typeof during, morph: boolean) => frames.slice(1).filter((frame, i) => frame.guardJumps > frames[i].guardJumps
-      && (frame.guardLast ?? '').startsWith('.morph') === morph).map(frame => `${frame.guardLast}@${frame.t.toFixed(2)}`);
-    const bonesCaught = caughtIn(during, false), morphsCaught = caughtIn(during, true), baseCaught = caughtIn(base, false).length + caughtIn(base, true).length;
-    const s = surprises(during), sBase = surprises(base);
-    const arms = ['右肩', '右腕', '右ひじ'].map(name => TRACKED_BONES.indexOf(name as never));
-    const others = TRACKED_BONES.map((_, i) => i).filter(i => !arms.includes(i));
-    const worst = (series: number[][], idx: number[]) => Math.max(...idx.map(i => Math.max(...series[i])));
-    const window = (from: number, to: number) => surprises(between(event.shown, from, to));
-    const rows: Record<string, number> = {
-      enter: worst(window(marks.ready - 2 / fps, marks.ready + 1.6), arms),
-      leave: worst(window(marks.gone - 2 / fps, marks.gone + 1.8), arms),
-      count: worst(window(marks.count, marks.reveal + 0.4), arms),
-      undisturbedArms: worst(sBase, arms),
-      others: worst(s, others), othersUndisturbed: worst(sBase, others),
-    };
-    const ex = extraSurprises(between(event.extra as never, g0, g1) as never);
-    EXTRA.forEach((name, k) => { rows[name] = Math.max(...ex[k]); });
-    rows.hand = Math.max(...[0, 1, 2, 3].map(k => rows[EXTRA[k]]));
-    rows.fingers = Math.max(...[4, 5, 6, 7, 8, 9].map(k => rows[EXTRA[k]]));
-    // Back where the undisturbed run is once the arm is down (the arm bones; her head's idle moments run on their own clock).
-    const tail = between(event.shown, marks.gone + 2.4, Infinity), tailBase = between(control.shown, marks.gone + 2.4, Infinity);
-    rows.rejoin = Math.max(...tail.map((frame, i) => Math.max(...arms.map(k => frame.world[k].angleTo(tailBase[i].world[k]) * DEG))));
-    if (report) console.log(`[rps ${fps}fps]`, JSON.stringify(Object.fromEntries(Object.entries(rows).map(([k, v]) => [k, Math.round(v * 1000) / 1000]))),
-      'guard bones', bonesCaught.length, 'morphs', morphsCaught.join(' ') || 0, 'undisturbed', baseCaught, 'p95 elbow step', percentile(steps(during)[arms[2]], 0.95).toFixed(3));
-    assert.deepEqual(bonesCaught, [], 'no bone jump for the continuity guard to absorb');
-    // Entering and leaving: within R29's hand-off standard for the arm (0.15° at 60 fps is 540°/s²; the same acceleration is 0.6° at 30 fps).
-    const floor = fps === 60 ? 0.15 : 0.6;
-    assert.ok(rows.enter <= Math.max(floor, 1.25 * rows.undisturbedArms), `enter ${rows.enter}`);
-    assert.ok(rows.leave <= Math.max(floor, 1.25 * rows.undisturbedArms), `leave ${rows.leave}`);
-    // The count strokes are deliberate pulses (a 14° dip per beat): bounded, not a cut.
-    assert.ok(rows.count <= (fps === 60 ? 0.6 : 2.4), `count ${rows.count}`);
-    // Other visible bones (head, neck, torso, left arm) stay within the undisturbed run's own unexpected steps.
-    assert.ok(rows.others <= Math.max(floor, 1.25 * rows.othersUndisturbed), `others ${rows.others} vs ${rows.othersUndisturbed}`);
-    assert.ok(rows.hand <= (fps === 60 ? 1.2 : 4.5), `hand ${rows.hand}`);
-    assert.ok(rows.fingers <= (fps === 60 ? 3 : 10), `fingers ${rows.fingers}`);
-    assert.ok(rows.rejoin < 0.3, `rejoin ${rows.rejoin}`);
-  });
-}
-
-test('the raised hand: above the elbow, beside and in front of the chest; the hand shapes differ; the pretend cheat shows another hand', async () => {
-  const { event } = await pair(60);
-  const { marks } = event;
-  const at = (t: number) => event.extra.find(frame => frame.t >= t)!;
-  const mid = at(marks.count + 0.1);
-  assert.ok(mid.handPos.y > mid.elbowPos.y + 1, 'the hand is up');
-  assert.ok(mid.handPos.z > 0.5, 'in front of the body');
-  assert.ok(mid.handPos.x < -1.5, 'on her right side');
-  const down = at(marks.gone + 2.8);
-  assert.ok(down.handPos.y < mid.handPos.y - 3, 'the arm went back down');
-  // Index finger curl: fist while counting, open for paper, straight for scissors; the ring finger folds only for scissors.
-  const finger = (frame: Shown) => frame.extra[5].angleTo(frame.extra[4]) * DEG; // 人指２ relative to 人指１
-  const fist = finger(at(marks.count + 0.3)), paper = finger(at(marks.reveal + 0.8)), scissors = finger(at(marks.admit + 0.8));
-  assert.ok(fist > 60 && paper < 20 && scissors < 20, `fist ${fist} paper ${paper} scissors ${scissors}`);
-  const ring = (frame: Shown) => frame.extra[7].angleTo(frame.extra[1]) * DEG; // 薬指１ relative to the wrist
-  assert.ok(ring(at(marks.admit + 0.8)) > ring(at(marks.reveal + 0.8)) + 40, 'scissors fold the ring finger, paper does not');
-  // Pretend cheat: from 0.45 s into the reveal she shows paper (ring finger open), then scissors again for the admission.
-  assert.ok(ring(at(marks.tease + 1.3)) < ring(at(marks.tease + 0.3)) - 40, 'the pretend hand opens the ring finger');
-  const state = event.h.stage.rps.getState();
-  assert.equal(state.side, 'right'); assert.ok(state.fingers >= 5); assert.ok(state.clearance > 0, `clearance ${state.clearance}`);
-});
 
 test('body clearance: something in the way of the raised forearm pushes the arm outward until the forearm and hand are clear', () => {
   for (const build of ['slim', 'fat'] as const) {

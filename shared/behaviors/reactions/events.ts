@@ -1,7 +1,7 @@
 /**
  * I-037 能引出反应的事件类别：**唯一登记处**。加一种事件就在这里加一行（名字、给 haiku 的一句白话、走哪条路），
  * haiku 的系统提示词、候选表、答案校验、体验记录的白名单都从这张表生成；然后在反应清单（knobs.ts）里给想由它引出的反应
- * 写上基础分。说的话的类别由 haiku 判定；身体互动由主机直接认出（摸头、捏脸、喂点心）。
+ * 写上基础分。说的话的类别由 haiku 判定；身体互动由主机直接认出（摸头、捏脸、喂点心；I-136 起还有点她、拉她）。
  *
  * - path 'words'：说的话。和 Opus 的回复并行问 haiku 一次：它判断是哪一类、在这一类的候选里选 0–2 个。
  * - path 'body'：身体互动。不等 haiku，直接做清单里分数最高的那一个（和现在一样快）。
@@ -20,10 +20,16 @@ export const REACTION_EVENTS = Object.freeze({
   'good-news': { label: '报喜', describe: '用户告诉她自己的好消息：考过了、成功了、拿到了、终于做完了', path: 'words' },
   coax: { label: '撒娇', describe: '用户对她撒娇、黏她、要她陪、要抱抱、卖萌', path: 'words' },
   care: { label: '被关心', describe: '用户关心她：问她累不累、让她休息、说想她、心疼她', path: 'words' },
+  // I-076 (user chose A): what frightens her; its mood lift carries the context "fright", so N up, C up, E down reads as 害怕.
+  scare: { label: '被吓到', describe: '她自己被吓到：用户突然"哇"地吓她、对她讲鬼故事、说她身边有虫有蛇、让她看恐怖片里吓人的一幕；用户说自己被吓到、开玩笑说"吓死我了"、讲别人或剧情里的害怕，都不是她被吓到', path: 'words' },
   warm: { label: '暖心的话', describe: '她自己的判断说这句话是暖心的（haiku 没答时才用）', path: 'words', fallbackOnly: true },
   pat: { label: '摸头', describe: '用户摸她的头', path: 'body' },
   pinch: { label: '捏脸', describe: '用户捏她的脸', path: 'body' },
   feed: { label: '喂点心', describe: '用户喂她吃点心', path: 'body' },
+  // I-136 (Unbound v1 step 2): a click on her, with the part (shared/mood/touch.ts); the scorer reads the part (ReactionRow.parts).
+  click: { label: '被点了一下', describe: '用户用鼠标点了她一下（身上的某个部位）', path: 'body' },
+  // I-136 step 5 (pulling a part of her): registered now so the brain side can score it; base scores are trial values.
+  pull: { label: '被拉', describe: '用户按住她身上的某个部位往外拉', path: 'body' },
 } satisfies Record<string, ReactionEventSpec>);
 
 export type ReactionEventId = keyof typeof REACTION_EVENTS;

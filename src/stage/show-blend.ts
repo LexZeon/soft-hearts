@@ -13,7 +13,7 @@
  *   (smoothstep, so its speed carries over at the switch), while the new one comes in from 0 — like a cross-fade of two clips.
  */
 import { SHOW_KEYS, SHOW_MS, emptyShow, showSample, type ShowFrame } from './expression-show';
-import type { ExpressionRecipe } from '../../shared/expression-preview';
+import type { ExpressionRecipe } from '../../shared/stage/expression-preview';
 
 /** When each recipe starts to let go (ms): before this a repeat keeps it going, after it a repeat starts it again. */
 export const SHOW_RELEASE_MS: Readonly<Record<ExpressionRecipe, number>> = Object.freeze({ surprise: 650, shy: 2200 });

@@ -19,9 +19,9 @@
  *  - 不久前喂过不是吃的（wary），这一次她张嘴小心：张得小、张得慢（不管腻不腻）。
  * 这些都只是试用值，没在真机上看过。
  */
-import type { MoodLabel, MoodTendency } from '../../mood';
-import type { FeedEatSoundId, FeedOpenSoundId } from '../../feed-cue';
-import type { TouchFeedLandingId } from '../touch-feed-effect/knobs';
+import type { MoodLabel, MoodTendency } from '../../foundation/mood';
+import type { FeedEatSoundId, FeedOpenSoundId } from '../../initiative/feed-cue';
+import type { TouchFeedLandingId } from '../../mood';
 
 /** 此刻发生的事：tired = 有点累（轻微困倦），sleepy = 困了（明显困倦、快睡着、睡着）。 */
 export const FEED_CUE_MOMENTS = ['tired', 'sleepy'] as const;
@@ -83,18 +83,18 @@ export const FEED_CUE_KNOBS: FeedCueKnobs = Object.freeze<FeedCueKnobs>({
     // 用户可能怎么说：她看到吃的不够惊喜／她老是"哇"太夸张了
     // 怎么调：太常 → base 调小或 mood、taste 里的倍数调小；太少 → 反过来
     wa: { text: '哇～', tone: `开心、惊喜的短促语气词，像看到好吃的眼睛一亮时自然发出的声音；${ONE_WORD}`, base: 0.8,
-      mood: { happy: 1.8, excited: 2, content: 1.3, relieved: 1.3, sad: 0.4, upset: 0.4, concerned: 0.5, disappointed: 0.4, 'tense-expectation': 0.7 },
+      mood: { happy: 1.8, excited: 2, content: 1.3, relieved: 1.3, sad: 0.4, upset: 0.4, concerned: 0.5, afraid: 0.5, disappointed: 0.4, 'tense-expectation': 0.7 },
       now: { playful: 1.3 }, taste: { loved: 2.2, disliked: 0.4, notFood: 0.2 }, full: 0.3, moments: { tired: 0.7, sleepy: 0.4 } },
     // 用户可能怎么说：她吃东西太斯文了，不够调皮／"嗷呜"不像她
     // 怎么调：personality.playful 是"爱玩的卡更常这样"；不像她 → base 调小（或改 text）
     aowu: { text: '嗷呜～', tone: `调皮、可爱的一声，像张大嘴假装一口咬下去；${ONE_WORD}`, base: 0.5,
-      mood: { excited: 1.8, happy: 1.4, sad: 0.3, upset: 0.4, concerned: 0.4, disappointed: 0.3, longing: 0.6 },
+      mood: { excited: 1.8, happy: 1.4, sad: 0.3, upset: 0.4, concerned: 0.4, afraid: 0.4, disappointed: 0.3, longing: 0.6 },
       now: { playful: 2, cautious: 0.5 }, personality: { playful: 0.6, cautious: -0.3 }, taste: { loved: 1.5, notFood: 0.2 }, full: 0.2,
       moments: { tired: 0.6, sleepy: 0.3 } },
     // 用户可能怎么说：她吃东西太大声了／她害羞的时候也太放得开了
     // 怎么调：personality.cautious 是"谨慎（容易害羞）的卡更常小声"；太常 → base 调小
     soft: { text: '啊…', tone: `很轻、有点害羞的小声，像小口张嘴；${ONE_WORD}`, base: 0.7,
-      mood: { sad: 1.6, concerned: 1.3, longing: 1.4, disappointed: 1.3, excited: 0.5 }, now: { cautious: 1.6, close: 1.2 },
+      mood: { sad: 1.6, concerned: 1.3, afraid: 1.3, longing: 1.4, disappointed: 1.3, excited: 0.5 }, now: { cautious: 1.6, close: 1.2 },
       personality: { cautious: 0.5 }, moments: { tired: 1.4, sleepy: 1.8 }, full: 1.4 },
     // 用户可能怎么说：上次喂了不是吃的，她这次一点都不怀疑／她老是"嗯？"像不信任我
     // 怎么调：taste.notFood 是"不久前喂过不是吃的"时的倍数；full 是吃腻了时的倍数；太常 → base 调小
@@ -104,7 +104,7 @@ export const FEED_CUE_KNOBS: FeedCueKnobs = Object.freeze<FeedCueKnobs>({
     // 用户可能怎么说：她每次都要出声，太吵了／她张嘴老是不出声
     // 怎么调：太常 → base 调小或 moments、full 里的倍数调小；想更安静 → 调大
     quiet: { label: '不出声', base: 0.45,
-      mood: { upset: 1.8, sad: 1.4, disappointed: 1.5, concerned: 1.2, excited: 0.5 }, now: { cautious: 1.3 }, personality: { cautious: 0.4 },
+      mood: { upset: 1.8, sad: 1.4, disappointed: 1.5, concerned: 1.2, afraid: 1.2, excited: 0.5 }, now: { cautious: 1.3 }, personality: { cautious: 0.4 },
       moments: { sleepy: 2 }, full: 1.6 },
   },
 
@@ -131,7 +131,7 @@ export const FEED_CUE_KNOBS: FeedCueKnobs = Object.freeze<FeedCueKnobs>({
     // 用户可能怎么说：她吃腻了也不表现出来／她老是勉强的样子
     // 怎么调：landing.light 是"这一块没什么胃口"时的倍数，full 是吃腻了时的倍数；太常 → base 调小
     wu: { text: '唔…', tone: `有点勉强、没什么兴致的短短一声，像吃饱了还在嚼；${ONE_WORD}`, base: 0.3,
-      mood: { upset: 1.8, disappointed: 1.6, concerned: 1.4, sad: 1.3, happy: 0.5, excited: 0.4 }, landing: { light: 3, full: 0.3 },
+      mood: { upset: 1.8, disappointed: 1.6, concerned: 1.4, afraid: 1.4, sad: 1.3, happy: 0.5, excited: 0.4 }, landing: { light: 3, full: 0.3 },
       taste: { disliked: 2.5, notFood: 2, loved: 0.3 }, full: 3, moments: { sleepy: 1.3 } },
     // 用户可能怎么说：她吃东西每次都出声，太吵了／她嚼着嚼着不出声了
     // 怎么调：太常 → base 调小或 landing、moments 里的倍数调小

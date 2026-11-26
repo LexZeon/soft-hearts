@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ReplySpeechState } from '../src/ui/reply-speech';
+import { ReplySpeechState } from '../src/voice/reply-speech';
 
 test('a chat is held only after expecting speech and releases on its matching end', () => {
   const state = new ReplySpeechState();

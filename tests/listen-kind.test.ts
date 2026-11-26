@@ -1,7 +1,7 @@
-// I-016's shared contract between "is it music" and "listen together" (shared/listen-kind.ts).
+// I-016's shared contract between "is it music" and "listen together" (shared/senses/listen-kind.ts).
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { isListenKind, ListenKindHost, LISTEN_KINDS } from '../shared/listen-kind';
+import { isListenKind, ListenKindHost, LISTEN_KINDS } from '../shared/senses/listen-kind';
 
 test('only the five kinds are accepted', () => {
   for (const kind of LISTEN_KINDS) assert.equal(isListenKind(kind), true);

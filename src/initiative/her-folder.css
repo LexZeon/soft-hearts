@@ -1,0 +1,7 @@
+/* 她的文件夹 (I-050): the control page's list and the note under her reply (which reuses the take-me-there box and button). */
+.her-folder-path { word-break: break-all; }
+.her-folder-actions { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 6px; }
+.her-folder-actions li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; }
+.her-folder-actions li span { flex: 1 1 220px; min-width: 0; overflow-wrap: anywhere; }
+.her-folder-note { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.her-folder-note__text { font-size: 12px; color: #d8e8df; overflow-wrap: anywhere; }

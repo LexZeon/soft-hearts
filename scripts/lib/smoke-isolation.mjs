@@ -7,13 +7,15 @@ import path from 'node:path';
 import { isOwnExecutable } from './app-identity.mjs';
 import { FAKE_CLAUDE_MARKER, readFakeClaudeLogs } from './fake-claude.mjs';
 
-// Re-pinned after the Claude fork's profile-folder isolation (import only; the missing-path/no-fallback branch is unchanged).
-export const LOCATOR_SHA256 = '47ff0d5a1e70f0c50a5baf1fe3a305efbca3dba24974d77d30c5df0a07c33a08';
+// Re-pinned after the Claude fork's profile-folder isolation, and again when the file moved to electron/safety/codex.ts (overhaul parts 2,
+// 2026-11-16: its three import paths only; the missing-path/no-fallback branch is unchanged).
+export const LOCATOR_SHA256 = '0ffb673f75d7729c57c2f6842909aa33708509fe77db95f0908c7a86e0ecd993';
 export const DISCOVERY_SHA256 = '06d2908b534d1c010bcb82e35fb18c0de224b8172ca00fc64237792e4aaf8a95';
-// scripts/claude-discovery.mjs: with CLAUDE_PATH set it returns exactly that file or 'invalid-override' and never
-// searches PATH or the official install folders. The smoke points CLAUDE_PATH at an owned placeholder, so review
-// that branch before updating this pin.
-export const CLAUDE_DISCOVERY_SHA256 = 'eb824534abe88a81ce02c8f411ed9853d69cd82d02bc9566f123b9c70b68e5cc';
+// scripts/claude-discovery.mjs: with CLAUDE_PATH set it returns exactly that file, 'invalid-override', or (a path inside the
+// Claude desktop app's own copy) 'desktop-bundled', and never searches PATH or the official install folders. The smoke points
+// CLAUDE_PATH at an owned placeholder, so review that branch before updating this pin. Re-pinned 2026-11-25 for 'desktop-bundled'
+// (docs/claude/2026-11-25-claude-env-from-session.md); the exact-file / no-fallback branch is unchanged.
+export const CLAUDE_DISCOVERY_SHA256 = '8bf8c92182018754b0715b002f4a698417f3fd45285290f68d4deb1afc53a9b7';
 /** Smoke-owned files whose bytes must match the trusted updater's own copies (update-desktop.mjs). */
 export const SMOKE_HARNESS_FILES = Object.freeze(['scripts/smoke.mjs', 'scripts/lib/smoke-isolation.mjs', 'scripts/lib/fake-claude.mjs']);
 /** The model the synthetic profile selects; the fake checks it arrives as `--model`. */
@@ -44,11 +46,11 @@ export function childEnvironment(parent, owned) {
   for (const key of ['codexHome', 'sentinel', 'claudeHome', 'claudePlaceholder', 'profile', 'localAppData']) assert.equal(typeof owned?.[key], 'string', 'Owned child path required: ' + key);
   // Codex: a missing sentinel. Claude Code: an inert owned placeholder (only the installed interposer turns it into
   // the fake) and an empty owned config folder, so even a wrongly started real CLI would find no login.
-  // LOCALAPPDATA: the local pose-sensing components live under it (electron/pose/component-store.ts); the smoke
+  // LOCALAPPDATA: the local pose-sensing components live under it (electron/senses/pose/component-store.ts); the smoke
   // gets its own empty one, so it never cleans up or reads the user's downloaded components.
   return { ...operatingSystemEnvironment(parent), LOCALAPPDATA: owned.localAppData, CODEX_HOME: owned.codexHome, CODEX_PATH: owned.sentinel,
     CLAUDE_PATH: owned.claudePlaceholder, CLAUDE_CONFIG_DIR: owned.claudeHome, ...CLAUDE_SESSION_DECOYS, MMD_DESK_USER_DATA: owned.profile,
-    // Away from the user's own companion at the bottom right (electron/pet-placement.ts).
+    // Away from the user's own companion at the bottom right (electron/stage/pet-placement.ts).
     SOFT_HEARTS_TEST_PET_CORNER: 'top-left' };
 }
 export function assertLocatorBytes(bytes, discoveryBytes, claudeDiscoveryBytes) {
@@ -57,7 +59,7 @@ export function assertLocatorBytes(bytes, discoveryBytes, claudeDiscoveryBytes) 
   assert.equal(sha(discoveryBytes), DISCOVERY_SHA256, 'Shared Codex discovery changed: review its explicit missing-path/no-fallback branch before updating this QA pin.');
   assert.equal(sha(claudeDiscoveryBytes), CLAUDE_DISCOVERY_SHA256, 'Claude Code discovery changed: review its CLAUDE_PATH exact-file/no-fallback branch before updating this QA pin.');
 }
-const locatorSources = source => Promise.all(['electron/codex.ts', 'scripts/codex-discovery.mjs', 'scripts/claude-discovery.mjs'].map(file => readFile(path.join(source, file))));
+const locatorSources = source => Promise.all(['electron/safety/codex.ts', 'scripts/codex-discovery.mjs', 'scripts/claude-discovery.mjs'].map(file => readFile(path.join(source, file))));
 export function assertSafeDeploymentProof(proof) {
   assert.ok(proof?.version === 1 && proof.safeSmoke === 1 && proof.smokePending !== true
     && Array.isArray(proof.inputs) && proof.inputs.length > 0
@@ -165,18 +167,19 @@ export function inspectRunning({ app }, expected) {
     profileEnvMatches: process.env.MMD_DESK_USER_DATA === expected.profile, localAppDataMatches: process.env.LOCALAPPDATA === expected.localAppData,
     forbiddenEnvironment: forbidden };
 }
-export function installMainBoundary({ app, session, desktopCapturer, ipcMain }, expected) {
+/** The Claude task channels the smoke replaces with refusals (installTaskRefusal). */
+export const SMOKE_REFUSED_TASK_METHODS = Object.freeze(['startCodexTask', 'continueCodexTask', 'respondCodexApproval']);
+// Installed right after the first window (the app may still be starting its parts then: overhaul step 8). The task refusal is
+// not here: it replaces app handlers, so it waits until the app registered them (installTaskRefusal).
+export function installMainBoundary({ app, session, desktopCapturer }, expected) {
   if (globalThis.__safeSmokeBoundary) throw Error('Smoke boundary already installed.');
   // Claude-only chat runs through a local process, so the main process has no reason to fetch at all.
-  const state = { marker: expected.marker, fetchAttempts: 0, captureAttempts: 0, taskAttempts: 0, browserAttempts: 0, realtimeAttempts: 0, permissions: [], permissionOverflow: false, installedAt: Date.now() };
+  const state = { marker: expected.marker, fetchAttempts: 0, captureAttempts: 0, taskAttempts: 0, taskRefusal: false, taskProbes: 0, browserAttempts: 0, realtimeAttempts: 0, permissions: [], permissionOverflow: false, installedAt: Date.now() };
   const wrapper = async () => { state.fetchAttempts++; throw Error('Smoke blocked a main-process fetch.'); };
   Object.defineProperty(state, 'wrapper', { value: wrapper });
   Object.defineProperty(globalThis, 'fetch', { value: wrapper, writable: false, configurable: false });
   for (const name of ['WebSocket', 'EventSource']) Object.defineProperty(globalThis, name, { value: function () { state.realtimeAttempts++; throw Error('No main realtime connection in default smoke.'); }, writable: false, configurable: false });
   Object.defineProperty(desktopCapturer, 'getSources', { value: async () => { state.captureAttempts++; throw Error('No desktop capture in default smoke.'); }, writable: false, configurable: false });
-  for (const method of ['startCodexTask', 'continueCodexTask', 'respondCodexApproval']) {
-    ipcMain.removeHandler('desk:' + method); ipcMain.handle('desk:' + method, () => { state.taskAttempts++; throw Error('No agent execution in default smoke.'); });
-  }
   session.defaultSession.webRequest.onBeforeRequest({ urls: ['http://*/*', 'https://*/*', 'ws://*/*', 'wss://*/*'] }, (_details, done) => { state.browserAttempts++; done({ cancel: true }); });
   const permission = (kind, value) => { if (state.permissions.length < 64) state.permissions.push({ kind, name: typeof value === 'string' && /^[a-zA-Z-]{1,50}$/.test(value) ? value : 'other', returnedDenied: true }); else state.permissionOverflow = true; };
   session.defaultSession.setPermissionCheckHandler((_contents, value) => { permission('check', value); return false; });
@@ -184,12 +187,37 @@ export function installMainBoundary({ app, session, desktopCapturer, ipcMain }, 
   Object.defineProperty(globalThis, '__safeSmokeBoundary', { value: state });
 }
 /**
- * Turns the app's own Claude Code launch into the fake: `child_process.spawn` of exactly the owned CLAUDE_PATH
- * placeholder with the companion chat argv and shell:false starts `node fake-claude.mjs` instead, with the app's
- * own options (sanitized env, empty turn folder, pipes) untouched. Any other Claude Code launch is refused;
- * everything else passes through. The bundled host (esbuild CJS) reads `child_process.spawn` at call time.
- * Installed only from this harness, after launch, by evaluating in the app's main process: the app itself has
- * no fake transport and no switch that could enable one.
+ * Replaces the Claude task channels with refusals that count every call: no agent execution in the default smoke. Only after the app
+ * registered its own handlers (2026-11-17 candidate smoke: since overhaul step 8 the windows load while the parts still start, and a
+ * desk: method then has an IPC shell, electron/wiring/ipc-wiring.ts openIpcShells, until registerQuit closes them; replacing a channel
+ * then took the shell, the app's own registration threw "second handler" and the start failed behind a modal error box). The caller
+ * (afterAppReady) first waits for a window's call to be answered: that happens only after the whole registration. A call carrying
+ * exactly `expected.taskProbe` answers a receipt without counting: the smoke's proof that its refusal is the live handler.
+ */
+export function installTaskRefusal({ ipcMain }, expected) {
+  const state = globalThis.__safeSmokeBoundary;
+  if (!state || state.marker !== expected.marker) throw Error('Install the smoke boundary first.');
+  if (state.taskRefusal) throw Error('Smoke task refusal already installed.');
+  const probe = expected.taskProbe;
+  if (typeof probe !== 'string' || probe.length < 16) throw Error('A task probe nonce is required.');
+  for (const method of ['startCodexTask', 'continueCodexTask', 'respondCodexApproval']) {
+    ipcMain.removeHandler('desk:' + method);
+    ipcMain.handle('desk:' + method, (_event, first) => {
+      if (first && typeof first === 'object' && first.smokeTaskProbe === probe) { state.taskProbes++; return { smokeTaskRefusal: method }; }
+      state.taskAttempts++; throw Error('No agent execution in default smoke.');
+    });
+  }
+  state.taskRefusal = true;
+}
+/**
+ * Turns the app's own Claude Code launch into the fake. The app starts Claude Code only through its launch hook
+ * (electron/brain/claude-launch: from a worker thread, so the main thread never waits for a process to start), which
+ * asks `globalThis.__softHeartsClaudeLaunch` first: installed here, it starts `node fake-claude.mjs` instead of exactly
+ * the owned CLAUDE_PATH placeholder with the companion chat argv and shell:false, with the app's own options (sanitized
+ * env, empty turn folder, pipes) untouched, through the app's own off-main launch. Any other Claude Code launch through
+ * the hook is refused. The main thread's own `child_process.spawn` (the bundled host, esbuild CJS, reads it at call time)
+ * refuses every Claude Code launch and passes everything else through. Installed only from this harness, after launch,
+ * by evaluating in the app's main process: the app itself has no fake transport and no switch that could enable one.
  */
 export function installClaudeInterposer(_electron, expected) {
   if (globalThis.__safeSmokeClaude) throw Error('Claude Code interposer already installed.');
@@ -202,17 +230,20 @@ export function installClaudeInterposer(_electron, expected) {
   const maxSpawns = Number.isSafeInteger(expected.maxSpawns) && expected.maxSpawns > 0 && expected.maxSpawns <= 256 ? expected.maxSpawns : 8;
   const state = { marker: expected.marker, spawned: [], denied: [], passedThrough: 0 };
   const deny = reason => { if (state.denied.length < 32) state.denied.push(reason); throw Error('Smoke refused a Claude Code launch: ' + reason); };
-  const interposer = function spawn(file, args, options) {
+  const claudeLike = (file, list) => (typeof file === 'string' && file.length > 0 && key(file) === placeholder)
+    || /^claude(?:\.(?:exe|cmd|bat|ps1))?$/.test(typeof file === 'string' ? paths.basename(file).toLowerCase() : '')
+    || list.some(value => typeof value === 'string' && /^--(?:input-format|output-format|strict-mcp-config|safe-mode|mcp-config|permission-prompt-tool)$/.test(value));
+  const guard = function spawn(file, args) {
+    if (!claudeLike(file, Array.isArray(args) ? args : [])) { state.passedThrough++; return Reflect.apply(original, this, arguments); }
+    deny('not through the app\'s launch hook');
+  };
+  const interposer = function claudeLaunch(file, args, options, launch) {
     const list = Array.isArray(args) ? args : [];
-    const target = typeof file === 'string' && file.length > 0 && key(file) === placeholder;
-    const name = typeof file === 'string' ? paths.basename(file).toLowerCase() : '';
-    const claudeLike = target || /^claude(?:\.(?:exe|cmd|bat|ps1))?$/.test(name)
-      || list.some(value => typeof value === 'string' && /^--(?:input-format|output-format|strict-mcp-config|safe-mode|mcp-config|permission-prompt-tool)$/.test(value));
-    if (!claudeLike) { state.passedThrough++; return Reflect.apply(original, this, arguments); }
-    if (!target) deny('not the owned placeholder');
+    if (!(typeof file === 'string' && file.length > 0 && key(file) === placeholder)) deny('not the owned placeholder');
     if (list.length > 64 || !list.every(value => typeof value === 'string') || list[0] !== '-p') deny('not the companion chat argv');
     if (!list.includes('--strict-mcp-config') || list[list.indexOf('--tools') + 1] !== '') deny('tools or MCP servers not disabled');
     if (!options || typeof options !== 'object' || options.shell !== false || !options.env || typeof options.env !== 'object') deny('unsafe launch options');
+    if (typeof launch !== 'function') deny('no launch to route through');
     if (state.spawned.length >= maxSpawns) deny('too many Claude Code processes');
     const env = options.env, names = Object.keys(env).map(value => value.toUpperCase());
     const index = state.spawned.length;
@@ -224,19 +255,24 @@ export function installClaudeInterposer(_electron, expected) {
       ownedTurnFolder: typeof options.cwd === 'string' && /[\\/]claude-chat[\\/](?:session|turn)-[^\\/]+$/.test(options.cwd),
       hidden: options.windowsHide === true,
     } });
-    return Reflect.apply(original, this, [expected.fakeNode, [expected.fakeScript, expected.fakeMarker, paths.join(expected.fakeLog, 'spawn-' + index + '.jsonl'), ...list], options]);
+    return launch(expected.fakeNode, [expected.fakeScript, expected.fakeMarker, paths.join(expected.fakeLog, 'spawn-' + index + '.jsonl'), ...list], options);
   };
   Object.defineProperty(state, 'interposer', { value: interposer });
-  Object.defineProperty(childProcess, 'spawn', { value: interposer, writable: false, configurable: false, enumerable: true });
+  Object.defineProperty(state, 'guard', { value: guard });
+  Object.defineProperty(childProcess, 'spawn', { value: guard, writable: false, configurable: false, enumerable: true });
   process.getBuiltinModule('node:module').syncBuiltinESMExports?.();
+  // The app's launch hook (electron/brain/claude-launch/index.ts CLAUDE_LAUNCH_HOOK; tests/smoke-fake-claude.test.ts checks the name).
+  Object.defineProperty(globalThis, '__softHeartsClaudeLaunch', { value: interposer, writable: false, configurable: false, enumerable: false });
   Object.defineProperty(globalThis, '__safeSmokeClaude', { value: state });
 }
 export function inspectMainBoundary(_electron, expected) {
   const state = globalThis.__safeSmokeBoundary, descriptor = Object.getOwnPropertyDescriptor(globalThis, 'fetch');
   if (!state || state.marker !== expected.marker || descriptor?.value !== state.wrapper || descriptor.writable || descriptor.configurable) throw Error('Smoke fetch boundary changed.');
   const claude = globalThis.__safeSmokeClaude, spawn = Object.getOwnPropertyDescriptor(process.getBuiltinModule('node:child_process'), 'spawn');
-  if (!claude || claude.marker !== expected.marker || spawn?.value !== claude.interposer || spawn.writable || spawn.configurable) throw Error('Smoke Claude Code interposer changed.');
-  return { fetchAttempts: state.fetchAttempts, captureAttempts: state.captureAttempts, taskAttempts: state.taskAttempts,
+  const hook = Object.getOwnPropertyDescriptor(globalThis, '__softHeartsClaudeLaunch');
+  if (!claude || claude.marker !== expected.marker || spawn?.value !== claude.guard || spawn.writable || spawn.configurable
+    || hook?.value !== claude.interposer || hook.writable || hook.configurable) throw Error('Smoke Claude Code interposer changed.');
+  return { fetchAttempts: state.fetchAttempts, captureAttempts: state.captureAttempts, taskAttempts: state.taskAttempts, taskRefusal: state.taskRefusal, taskProbes: state.taskProbes,
     browserAttempts: state.browserAttempts, realtimeAttempts: state.realtimeAttempts, permissions: [...state.permissions], permissionOverflow: state.permissionOverflow, installedAt: state.installedAt,
     claude: { spawned: claude.spawned.map(entry => ({ index: entry.index, model: entry.model, findings: { ...entry.findings } })), denied: [...claude.denied], passedThrough: claude.passedThrough } };
 }
@@ -263,7 +299,7 @@ export function inspectRendererBoundary() {
 export async function inspectSenderProvider(expected) {
   const provider = (await window.desktop.getSettings()).provider;
   const nodes = document.querySelectorAll('#provider-model'), node = nodes[0];
-  if (nodes.length !== 1 || node.tagName !== 'INPUT' || node.type !== 'text') throw Error('Sender controls absent or ambiguous.');
+  if (nodes.length !== 1 || node.tagName !== 'SELECT') throw Error('Sender controls absent or ambiguous.'); // I-222: the chat model is a select of four choices (was a text box)
   return { hostMatches: provider.kind === expected.kind && provider.model === expected.model, uiMatches: node.value === expected.model };
 }
 
@@ -291,7 +327,7 @@ export async function createSmokeIsolation({ source, executable, proofFile, proo
   for (const directory of [owned.profile, owned.codexHome, owned.claudeHome, owned.fakeLog, owned.localAppData]) await mkdir(directory);
   await writeFile(path.join(owned.profile, 'smoke-owner.json'), owned.marker, { flag: 'wx' });
   await writeFile(owned.claudePlaceholder, CLAUDE_PLACEHOLDER_TEXT, { flag: 'wx', mode: 0o700 });
-  const provider = fixtureProvider(), expected = { ...owned, ...provider, fakeNode: process.execPath, fakeScript, fakeMarker: FAKE_CLAUDE_MARKER };
+  const provider = fixtureProvider(), expected = { ...owned, ...provider, fakeNode: process.execPath, fakeScript, fakeMarker: FAKE_CLAUDE_MARKER, taskProbe: randomUUID() };
   let mainPid;
   const gone = pid => { try { process.kill(pid, 0); return false; } catch (error) { return error.code === 'ESRCH'; } };
   const absent = () => !!mainPid && gone(mainPid);
@@ -315,6 +351,24 @@ export async function createSmokeIsolation({ source, executable, proofFile, proo
       await this.running(instance); await instance.evaluate(installMainBoundary, expected); await instance.evaluate(installClaudeInterposer, expected);
       await instance.context().addInitScript(installRendererBoundary); for (const page of instance.windows()) await page.evaluate(installRendererBoundary);
     },
+    /**
+     * The task refusal, once the app registered its handlers: `page` (the control window, its bridge loaded) asks getSettings, which
+     * answers only after the app's one synchronous registration ran to its end, shells closed (an early call waits in its IPC shell until
+     * then; tests/ipc-shells.test.ts checks it on the whole app). Then each refused channel answers the smoke's probe from that window:
+     * the refusal is what a window's call reaches.
+     */
+    async afterAppReady(instance, page) {
+      await page.evaluate(() => window.desktop.getSettings());
+      await instance.evaluate(installTaskRefusal, expected);
+      const answers = await page.evaluate(async ({ methods, probe }) => {
+        const result = [];
+        for (const method of methods) result.push(await window.desktop[method]({ smokeTaskProbe: probe }).then(value => value?.smokeTaskRefusal ?? null, () => null));
+        return result;
+      }, { methods: [...SMOKE_REFUSED_TASK_METHODS], probe: expected.taskProbe });
+      assert.deepEqual(answers, [...SMOKE_REFUSED_TASK_METHODS], 'The smoke\'s task refusal must be what a window\'s call reaches.');
+      const boundary = await instance.evaluate(inspectMainBoundary, expected);
+      assert.ok(boundary.taskRefusal && boundary.taskAttempts === 0 && boundary.taskProbes === SMOKE_REFUSED_TASK_METHODS.length, 'Task refusal not in place.');
+    },
     /** What the fake Claude Code processes received and did (metadata only; see fake-claude.mjs). */
     fakeClaude,
     fakeClaudeGone: gone,
@@ -326,7 +380,7 @@ export async function createSmokeIsolation({ source, executable, proofFile, proo
     },
     async beforeMessage(instance, page) {
       await this.running(instance); const boundary = await instance.evaluate(inspectMainBoundary, expected);
-      assert.equal(boundary.fetchAttempts, 0); assert.deepEqual(boundary.claude.denied, [], 'A Claude Code launch was refused.');
+      assert.equal(boundary.fetchAttempts, 0); assert.equal(boundary.taskRefusal, true, 'The task refusal must be in place before any message.'); assert.deepEqual(boundary.claude.denied, [], 'A Claude Code launch was refused.');
       assert.ok(instance.windows().includes(page) && !page.isClosed());
       const renderer = await page.evaluate(inspectRendererBoundary); assert.equal(renderer.mediaAbsent, false, 'Owned sender index lost its media API.');
       const actual = await page.evaluate(inspectSenderProvider, provider); assert.ok(actual.hostMatches && actual.uiMatches, 'Host and actual sender UI must match the synthetic Claude connection before each message.');

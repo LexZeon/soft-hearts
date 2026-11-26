@@ -5,8 +5,8 @@
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { advanceMood, createMoodState, DEFAULT_MOOD_PARAMETERS, validateMoodParameters, type MoodLabel, type MoodParameters } from '../shared/mood';
-import { applyMoodPresence } from '../shared/mood-presence';
+import { advanceMood, createMoodState, DEFAULT_MOOD_PARAMETERS, validateMoodParameters, type MoodLabel, type MoodParameters } from '../shared/foundation/mood';
+import { applyMoodPresence } from '../shared/foundation/mood-presence';
 import { BoredomTimingDirector, boredomHoldMinutes, boredomMinute, boredomRulesNoEarlier, boredomTimingNow, drawBoredomRound, EMPTY_BOREDOM_HISTORY,
   type BoredomHistory } from '../shared/behaviors/boredom-timing/choose';
 import { FixedBoredomTiming } from '../shared/behaviors/boredom-timing/fake';

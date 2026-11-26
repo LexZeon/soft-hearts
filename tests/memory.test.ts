@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { mkdtemp, readFile, writeFile, appendFile, readdir, rm } from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
-import { MEMORY_SCOPES_FILE, MemoryStore } from "../electron/memory";
-import { DEFAULT_MEMORY_CONFIG, deriveMemoryMetadata, memoryWeightAt, validateMemoryConfig, type MemoryScope } from "../shared/memory";
+import { MEMORY_SCOPES_FILE, MemoryStore } from "../electron/memory/memory";
+import { DEFAULT_MEMORY_CONFIG, deriveMemoryMetadata, memoryWeightAt, validateMemoryConfig, type MemoryScope } from "../shared/memory/memory";
 
 const now = 1_800_000_000_000;
 const scope: MemoryScope = { characterId: "gene", providerScope: "codex:model-a" };

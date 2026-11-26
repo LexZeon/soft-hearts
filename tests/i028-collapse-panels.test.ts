@@ -1,7 +1,7 @@
-// I-028: folding the pet's toolbar closes every floating
+// I-028: folding the companion's toolbar closes every floating
 // panel it opened, unfolding opens none of them again, and only the interface closes (sharing, listening, developer mode,
-// the reply itself go on). The register (src/ui/pet-popups.ts) is kept complete by structure: a toolbar button, a pet panel
-// or a source file making floating pet UI that is not in it fails here. docs/claude/2026-11-04-i028-collapse-panels.md.
+// the reply itself go on). The register (src/stage/pet-popups.ts) is kept complete by structure: a toolbar button, a companion panel
+// or a source file making floating companion UI that is not in it fails here. docs/claude/2026-11-04-i028-collapse-panels.md.
 import test, { type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
@@ -9,21 +9,21 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { registerHooks } from 'node:module';
 import { installPetWindow, type FakeElement } from './helpers/pet-window-dom';
-import { createMoodState, getMoodSnapshot, DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
-import type { MoodView } from '../shared/mood-runtime';
-import { createAudioReadingView, type AudioReadingView } from '../shared/audio-reading-toggles';
-import type { RuntimeState } from '../shared/contracts';
-import { PetUI, renderPet } from '../src/ui/PetUI';
-import { ImmersiveNotice } from '../src/ui/ImmersiveNotice';
-import { MoodCompanion, type MoodCompanionAPI } from '../src/ui/MoodCompanion';
-import { ScreenSharingOptions, DEFAULT_SCREEN_SHARING_OPTIONS, type ScreenSharingOptionsState } from '../src/ui/ScreenSharingOptions';
-import { PET_FLOATING_NOT_POPUPS, PET_POPUP_KEYS, PET_POPUPS, PET_TOOLBAR_PLAIN, NOT_IN_PET_WINDOW, PetPopups, laterPopup, type PetPopupKey } from '../src/ui/pet-popups';
+import { createMoodState, getMoodSnapshot, DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
+import type { MoodView } from '../shared/mood/mood-runtime';
+import { createAudioReadingView, type AudioReadingView } from '../shared/voice/audio-reading-toggles';
+import type { RuntimeState } from '../shared/foundation/runtime-state';
+import { PetUI, renderPet } from '../src/stage/PetUI';
+import { ImmersiveNotice } from '../src/stage/ImmersiveNotice';
+import { MoodCompanion, type MoodCompanionAPI } from '../src/mood/MoodCompanion';
+import { ScreenSharingOptions, DEFAULT_SCREEN_SHARING_OPTIONS, type ScreenSharingOptionsState } from '../src/senses/ScreenSharingOptions';
+import { PET_FLOATING_NOT_POPUPS, PET_POPUP_KEYS, PET_POPUPS, PET_TOOLBAR_PLAIN, NOT_IN_PET_WINDOW, PetPopups, laterPopup, type PetPopupKey } from '../src/stage/pet-popups';
 
 // UserProfilePanel and AudioReadingClient import their stylesheets (Vite bundles them); here a stylesheet is an empty module,
 // so the real panels can run in the test.
 registerHooks({ load: (url, context, next) => url.endsWith('.css') ? { format: 'module', source: '', shortCircuit: true } : next(url, context) });
-const { UserProfilePanel } = await import('../src/ui/UserProfilePanel');
-const { AudioReadingClient } = await import('../src/ui/AudioReadingClient');
+const { UserProfilePanel } = await import('../src/memory/UserProfilePanel');
+const { AudioReadingClient } = await import('../src/voice/AudioReadingClient');
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const flush = async () => { for (let i = 0; i < 8; i++) await Promise.resolve(); };
@@ -35,7 +35,7 @@ function shown(node: FakeElement | null): boolean {
   return true;
 }
 
-/** The pet window as src/main.ts init() wires it, with the host replaced by recording fakes. */
+/** The companion window as src/main.ts init() wires it, with the host replaced by recording fakes. */
 async function petWindow(t: TestContext) {
   t.mock.timers.enable({ apis: ['setTimeout', 'setInterval'] });
   const hostCalls: string[] = [];
@@ -69,7 +69,7 @@ async function petWindow(t: TestContext) {
     getUserProfile: async () => null, onUserProfileChanged: () => () => {},
     setUserProfileEnabled: async () => { hostCalls.push('setUserProfileEnabled'); throw Error('unused'); },
     editUserProfile: async () => { throw Error('unused'); }, deleteUserProfile: async () => { throw Error('unused'); },
-    editUserDiary: async () => { throw Error('unused'); }, deleteUserDiary: async () => { throw Error('unused'); }, clearUserDiary: async () => { throw Error('unused'); },
+    editUserDiary: async () => { throw Error('unused'); }, deleteUserDiary: async () => { throw Error('unused'); }, clearUserDiary: async () => { throw Error('unused'); }, deleteUserUpcoming: async () => { throw Error('unused'); }, clearUserUpcoming: async () => { throw Error('unused'); },
   }, message => { throw Error(message); }, () => { byId('notice-detail-panel').hidden = true; });
   byId('notice-details').addEventListener('click', () => userProfilePanel?.close());
 
@@ -149,6 +149,12 @@ async function petWindow(t: TestContext) {
     'mood-companion': async () => {
       if (mood.developerMode) { byId('pet-developer-mode').click(); await flush(); }
       byId('pet-developer-mode').click(); await flush();
+    },
+    // I-190: the ▾ beside the microphone opens the source list (the lists arrive from the wiring first; already open, the click closes it).
+    'source-menu': async () => {
+      ui.setSources({ menu: async kind => ({ kind, title: '用哪个麦克风', items: [{ id: 'default', label: '跟着系统默认', checked: true }] }), choose: async () => {}, onChange: () => () => {} });
+      if (byId('pet-voice-input-sources').attributes.get('aria-expanded') === 'true') byId('pet-voice-input-sources').click(); // no-pet-ok: an existing element id
+      byId('pet-voice-input-sources').click(); await flush(); // no-pet-ok: an existing element id
     },
   };
   return { ...dom, ui, notice, hostCalls, fold, panel, openers, hostRuntime, broadcastMood, mood,
@@ -241,7 +247,7 @@ test('a closed popup that follows a state comes back only when that state starts
 
 // ---------------------------------------------------------------- the register stays complete
 
-/** Problems with the register against a pet window's markup (empty when every button and panel is accounted for). */
+/** Problems with the register against a companion window's markup (empty when every button and panel is accounted for). */
 function markupProblems(toolbar: FakeElement, all: FakeElement[]): string[] {
   const problems: string[] = [];
   const triggers = new Map<string, PetPopupKey>();
@@ -284,7 +290,7 @@ test('every toolbar button is a popup trigger or a plain button, and every panel
   assert.ok(problems.some(problem => problem.includes('#pet-new-list is in no popup')), problems.join('\n'));
 });
 
-/** Files that make floating pet UI: an input-reserving panel, a dialog, or an expandable control. */
+/** Files that make floating companion UI: an input-reserving panel, a dialog, or an expandable control. */
 const FLOATING_MARKERS = /data-mood-ui|dataset\.moodUi|\.showModal\(|aria-expanded|<dialog\b|createElement\(\s*['"]dialog['"]/;
 function sourceProblems(files: Map<string, string>): string[] {
   const named = new Set<string>([
@@ -293,8 +299,8 @@ function sourceProblems(files: Map<string, string>): string[] {
     ...Object.keys(NOT_IN_PET_WINDOW),
   ]);
   const problems: string[] = [];
-  for (const [file, text] of files) if (file !== 'src/ui/pet-popups.ts' && FLOATING_MARKERS.test(text) && !named.has(file)) problems.push(`${file} makes floating UI but is not in src/ui/pet-popups.ts`);
-  for (const file of named) if (!existsSync(path.join(root, file))) problems.push(`src/ui/pet-popups.ts names ${file}, which does not exist`);
+  for (const [file, text] of files) if (file !== 'src/stage/pet-popups.ts' && FLOATING_MARKERS.test(text) && !named.has(file)) problems.push(`${file} makes floating UI but is not in src/stage/pet-popups.ts`);
+  for (const file of named) if (!existsSync(path.join(root, file))) problems.push(`src/stage/pet-popups.ts names ${file}, which does not exist`);
   return problems;
 }
 
@@ -305,10 +311,10 @@ test('every source file that makes floating UI is in the register, as a popup, a
     const file = `src/${entry.split(path.sep).join('/')}`;
     files.set(file, readFileSync(path.join(root, file), 'utf8'));
   }
-  assert.ok(files.has('src/ui/PetUI.ts') && files.size > 50, 'read the renderer sources');
+  assert.ok(files.has('src/stage/PetUI.ts') && files.size > 50, 'read the renderer sources');
   assert.deepEqual(sourceProblems(files), []);
   files.set('src/ui/NewFloatingPanel.ts', "panel.dataset.moodUi = 'true';");
-  assert.deepEqual(sourceProblems(files), ['src/ui/NewFloatingPanel.ts makes floating UI but is not in src/ui/pet-popups.ts'], 'a new panel file nobody registered is caught');
+  assert.deepEqual(sourceProblems(files), ['src/ui/NewFloatingPanel.ts makes floating UI but is not in src/stage/pet-popups.ts'], 'a new panel file nobody registered is caught');
 });
 
 test('the register closes only what is open, and one panel failing to close does not keep the others open', () => {

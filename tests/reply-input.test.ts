@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateReplyUpdate } from '../electron/reply-input';
+import { validateReplyUpdate } from '../electron/brain/reply-input';
 
 test('reply IPC accepts bounded plain text, lifecycle changes and finite local anchors', () => {
   const update = { text: '<img src=x onerror=alert(1)>', state: 'streaming' as const, anchor: { x: 230.5, y: 160, radius: 95, visible: true } };

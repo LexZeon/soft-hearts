@@ -1,5 +1,5 @@
 /**
- * #21 on the real MoodHost (electron/mood.ts) with an isolated temporary profile: 20 days of "a fresh 5-second pat" and "a snack"
+ * #21 on the real MoodHost (electron/mood/mood.ts) with an isolated temporary profile: 20 days of "a fresh 5-second pat" and "a snack"
  * with the old fixed amounts (FixedTouchFeedEffect = the card, as before) and with hers (TouchFeedEffectDirector). Also: never
  * more than the old amount, I-019's taste shift (#47) on top never more than before, the why developer-only and never saved,
  * the shown and saved parameters the card's. TOUCH_FEED_REPORT=1 prints the 20 days before and after.
@@ -9,15 +9,15 @@ import test from 'node:test';
 import os from 'node:os';
 import path from 'node:path';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
-import { MoodHost } from '../electron/mood';
-import { DEFAULT_MOOD_PARAMETERS, type MoodParameters } from '../shared/mood';
-import type { MoodView } from '../shared/mood-runtime';
+import { MoodHost } from '../electron/mood/mood';
+import { DEFAULT_MOOD_PARAMETERS, type MoodParameters } from '../shared/foundation/mood';
+import type { MoodView } from '../shared/mood/mood-runtime';
 import { FixedBoredomTiming } from '../shared/behaviors/boredom-timing/fake';
 import { TouchFeedEffectDirector } from '../shared/behaviors/touch-feed-effect/choose';
 import { FixedTouchFeedEffect } from '../shared/behaviors/touch-feed-effect/fake';
 import type { TouchFeedEffectHost } from '../shared/behaviors/touch-feed-effect/interface';
-import { feedMoodLift, type FeedVerdict } from '../shared/feed-recognition';
-import { formatTouchFeedLines } from '../src/ui/MoodPanel';
+import { feedMoodLift, type FeedVerdict } from '../shared/senses/feed-recognition';
+import { formatTouchFeedLines } from '../src/mood/MoodPanel';
 import { seeded } from './helpers/seeded';
 
 const DAY = 24 * 60 * 60_000;

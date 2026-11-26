@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { ChatMessage } from '../shared/contracts';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
+import type { ChatMessage } from '../shared/foundation/chat';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
 import {
   buildCodexChatPrompt, buildCompanionPersona, conversationData,
   conversationReplyInstruction, conversationTextMetrics,
-} from '../electron/conversation-context';
+} from '../electron/brain/conversation-context';
 
 function payload(prompt: string) {
   const match = prompt.match(/<conversation-data>\n([\s\S]*)\n<\/conversation-data>$/);

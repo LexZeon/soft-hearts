@@ -1,5 +1,5 @@
 /**
- * P1 第二阶段, stage side (src/stage/pose-reaction-stage.ts): the small stretch, the yawn, the wave back and the arrival glance on the
+ * P1 第二阶段, stage side (src/mood/pose-reaction-stage.ts): the small stretch, the yawn, the wave back and the arrival glance on the
  * real Stage frame loop (gene-stage-harness: bundled Gene, Stand VMD, real procedural life, her own life, the display guard) at 60 and
  * 30 fps, and on synthetic non-Gene bodies (A and T pose, with twist bones) with the display guard on top.
  *
@@ -10,15 +10,15 @@
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { Euler, Quaternion, Vector3, type Bone, type SkinnedMesh } from 'three';
-import { PoseReactionStage, POSE_REACTION_TIMELINES, sampleKeys, type PoseReactionStageInput } from '../src/stage/pose-reaction-stage';
+import { Euler, Quaternion, type Bone, type SkinnedMesh } from 'three';
+import { PoseReactionStage, POSE_REACTION_TIMELINES, sampleKeys, type PoseReactionStageInput } from '../src/mood/pose-reaction-stage';
 import type { HerLifeStageGates } from '../src/stage/her-life-stage';
 import type { LifeActivity } from '../src/stage/procedural-life';
-import { PoseContinuity } from '../src/stage/pose-continuity';
-import type { PoseReactionKind, PoseReactionView } from '../shared/pose-reactions';
-import { between, geneStage, patContact, pointAtScalp, surprises, TRACKED_BONES, type GeneStage } from './helpers/gene-stage-harness';
+import { PoseContinuity } from '../src/senses/pose-continuity';
+import type { PoseReactionKind, PoseReactionView } from '../shared/mood/pose-reactions';
 import { bodyModel } from './helpers/body-fixtures';
 import { toThreeMesh } from './helpers/model-fixtures';
+import { TRACKED_BONES } from './helpers/frame-stats';
 
 const DEG = 180 / Math.PI;
 const report = !!process.env.POSE_STAGE_REPORT;
@@ -127,175 +127,10 @@ test('giving way: something higher comes mid-way, the reaction eases out from wh
 // ---------------------------------------------------------------- the real Stage (Gene)
 
 const START = 2;
-interface Run { h: GeneStage; marks: { start: number; end: number; interrupt?: number } }
-async function play(fps: number, kind: PoseReactionKind | null, interrupt?: 'pat' | 'typing', at = 1.5): Promise<Run> {
-  const h = await geneStage({ fps });
-  const duration = kind === 'wave' ? 4.5 : kind ? POSE_REACTION_TIMELINES[kind].duration : 5.2;
-  const marks: Run['marks'] = { start: START, end: START + duration };
-  try {
-    h.run(START);
-    if (kind) {
-      const moodView = h.stage.moodView;
-      h.stage.setMood({ ...moodView, revision: moodView.revision + 1, pose: { attention: 1, boost: 2.2, cue: { id: `cue-${kind}`, kind, source: 'follow', at: Date.now() - 1, strength: 1 } } });
-    }
-    if (interrupt) {
-      h.run(at);
-      marks.interrupt = h.time();
-      if (interrupt === 'pat') { pointAtScalp(h); h.run(2.5, time => { h.stage.setMoodContact(patContact(time)); }); h.stage.setMoodContact({ ...patContact(0), contact: false, hover: 0 }); }
-      else { h.stage.setBodyInputBlocked(true); h.stage.setTyping(true); h.run(2.5); h.stage.setTyping(false); h.stage.setBodyInputBlocked(false); }
-      h.run(Math.max(0, duration - at - 2.5) + 2);
-    } else h.run(duration + 2);
-    return { h, marks };
-  } catch (error) { h.close(); throw error; }
-}
-
-const bone = (h: GeneStage, name: string) => h.mesh.skeleton.bones.find((b: Bone) => b.name === name)!;
-const guardBones = (frames: GeneStage['shown']) => frames.slice(1).filter((frame, i) => frame.guardJumps > frames[i].guardJumps && !(frame.guardLast ?? '').startsWith('.morph'))
-  .map(frame => `${frame.guardLast}@${frame.t.toFixed(2)}`);
-const guardAll = (frames: GeneStage['shown']) => frames.slice(1).filter((frame, i) => frame.guardJumps > frames[i].guardJumps).map(frame => `${frame.guardLast}@${frame.t.toFixed(2)}`);
 const worst = (series: number[][], idx: readonly number[]) => Math.max(0, ...idx.map(i => Math.max(0, ...series[i])));
-const window = (frames: GeneStage['shown'], from: number, to: number, fps: number) => surprises(between(frames, from - 2 / fps, to));
 const ALL = TRACKED_BONES.map((_, i) => i);
 const ARM = ['右肩', '右腕', '右ひじ'].map(name => TRACKED_BONES.indexOf(name as never));
 const TORSO = ['上半身', '上半身2', '首', '頭', '左肩', '右肩', '左腕', '右腕'].map(name => TRACKED_BONES.indexOf(name as never));
-
-const controls = new Map<number, Promise<Run>>();
-const control = (fps: number) => { if (!controls.has(fps)) controls.set(fps, play(fps, null)); return controls.get(fps)!; };
-test.after(async () => { for (const run of controls.values()) (await run).h.close(); });
-
-for (const fps of [60, 30]) {
-  test(`${fps} fps on Gene: the small stretch, the yawn and the arrival glance enter and leave without a jump; the guard catches nothing`, async () => {
-    const reference = await control(fps);
-    const undisturbed = worst(surprises(between(reference.h.shown, START - 0.2, START + 7.5)), ALL);
-    const rows: string[] = [];
-    for (const kind of ['stretch', 'yawn', 'glance'] as const) {
-      const { h, marks } = await play(fps, kind);
-      try {
-        const during = between(h.shown, marks.start - 0.2, marks.end + 1.5);
-        assert.deepEqual(guardAll(during), [], `${kind}: nothing for the guard (bones or morphs)`);
-        const whole = worst(window(h.shown, marks.start, marks.end + 1.5, fps), ALL);
-        rows.push(`${kind} ${whole.toFixed(3)}°`);
-        assert.ok(whole <= Math.max(floor(fps), 1.25 * undisturbed), `${kind}: largest unexpected step ${whole} (undisturbed ${undisturbed})`);
-        // The pose layer really played and ended.
-        const state = h.stage.poseReaction.getState();
-        assert.equal(state?.played, 1, `${kind} played`); assert.equal(state?.playing, null, `${kind} ended`);
-      } finally { h.close(); }
-    }
-    if (report) console.log(`[pose ${fps}fps] undisturbed ${undisturbed.toFixed(3)}° · ${rows.join(' · ')}`);
-  });
-
-  test(`${fps} fps on Gene: the wave back raises the arm, swings three times outward and lowers it; the guard catches no bone`, async () => {
-    const reference = await control(fps);
-    const { h, marks } = await play(fps, 'wave');
-    try {
-      const during = between(h.shown, marks.start - 0.2, marks.end + 1.5);
-      assert.deepEqual(guardBones(during), [], 'no bone jump for the guard');
-      const base = worst(surprises(between(reference.h.shown, START - 0.2, START + 7.5)), ARM);
-      const enter = worst(window(h.shown, marks.start, marks.start + 0.6, fps), ARM);
-      const swings = worst(window(h.shown, marks.start, marks.end, fps), ARM);
-      const others = worst(window(h.shown, marks.start, marks.end + 1.5, fps), ALL.filter(i => !ARM.includes(i)));
-      const othersBase = worst(surprises(between(reference.h.shown, START - 0.2, START + 7.5)), ALL.filter(i => !ARM.includes(i)));
-      if (report) console.log(`[wave ${fps}fps] enter ${enter.toFixed(3)}° swings ${swings.toFixed(3)}° others ${others.toFixed(3)}° (undisturbed arm ${base.toFixed(3)}°, others ${othersBase.toFixed(3)}°)`);
-      assert.ok(enter <= Math.max(floor(fps), 1.25 * base), `enter ${enter}`);
-      // Deliberate swings, bounded like G1's count strokes.
-      assert.ok(swings <= (fps === 60 ? 0.6 : 2.4), `swings ${swings}`);
-      assert.ok(others <= Math.max(floor(fps), 1.25 * othersBase), `others ${others} vs ${othersBase}`);
-      const state = h.stage.poseReaction.getState();
-      assert.equal(state?.wave?.swings, 3); assert.equal(state?.playing, null, 'ended');
-      // Back with the undisturbed run once the arm is down.
-      const tail = between(h.shown, marks.end + 1, Infinity), tailBase = between(reference.h.shown, marks.end + 1, Infinity);
-      const rejoin = Math.max(...tail.slice(0, tailBase.length).map((frame, i) => Math.max(...ARM.map(k => frame.world[k].angleTo(tailBase[i].world[k]) * DEG))));
-      assert.ok(rejoin < 0.3, `rejoin ${rejoin}`);
-    } finally { h.close(); }
-  });
-
-  test(`${fps} fps on Gene: a pat or typing mid-way makes the stretch and the wave give way smoothly; the guard catches no bone`, async () => {
-    for (const [kind, interrupt] of [['stretch', 'pat'], ['wave', 'typing'], ['yawn', 'typing']] as const) {
-      const { h, marks } = await play(fps, kind, interrupt);
-      try {
-        const during = between(h.shown, marks.start - 0.2, marks.end + 2);
-        assert.deepEqual(guardBones(during), [], `${kind} interrupted by ${interrupt}`);
-        const state = h.stage.poseReaction.getState();
-        assert.equal(state?.playing, null, `${kind} gave way and ended`);
-        const leave = worst(window(h.shown, marks.interrupt!, marks.interrupt! + 1.4, fps), kind === 'wave' ? ARM : TORSO);
-        if (report) console.log(`[interrupt ${fps}fps] ${kind} by ${interrupt}: ${leave.toFixed(3)}°`);
-        assert.ok(leave <= (kind === 'wave' ? (fps === 60 ? 0.6 : 2.4) : Math.max(floor(fps) * 2, 0.3)), `${kind} leave ${leave}`);
-      } finally { h.close(); }
-    }
-  });
-}
-
-/**
- * The real app at 60 fps (2026-11-03, after merging main) caught 4 jumps of 右手捩連 during the wave: the elbow was written as the
- * smallest swing to the swung forearm, so the wrist twist bones had to turn faster than the swing itself. Reproduced here with the
- * stage's own frame clock on a 60 Hz screen, vsync jitter and late frames (30 fps, 40 ms late: 右手捩 2.5°); the forearm now turns
- * with its hinge and the twist bones keep still.
- */
-test('a real frame clock (60 Hz screen, jitter, late frames) at 60, 30 and 24 fps: the wave, the stretch and the yawn leave the guard nothing', async () => {
-  const rows: string[] = [];
-  for (const [fps, jitter, late] of [[60, 8, 100], [30, 4, 40], [30, 8, 100], [24, 8, 80]] as const) for (const kind of ['wave', 'stretch', 'yawn'] as const) {
-    const h = await geneStage({ fps, refreshHz: 60, jitterMs: jitter });
-    try {
-      h.run(2);
-      const v = h.stage.moodView;
-      h.stage.setMood({ ...v, revision: v.revision + 1, pose: { attention: 1, boost: 2.2, cue: { id: `clock-${kind}`, kind, source: 'follow', at: Date.now() - 1, strength: 1 } } });
-      const tick = h.stage.tick;
-      let extra = 0;
-      h.stage.tick = (time: number) => tick(time + extra);
-      const before = h.stage.continuity?.getState().jumps ?? 0, caught: string[] = [];
-      let last = before;
-      for (let i = 0; i < 60 * 6.5; i++) {
-        if (i % 45 === 20) extra += late;
-        h.tick();
-        const state = h.stage.continuity?.getState();
-        if (state && state.jumps > last) { caught.push(`${state.lastJump?.property}@${h.time().toFixed(2)}`); last = state.jumps; }
-      }
-      rows.push(`${kind} ${fps}fps±${jitter}+${late}: ${caught.length}`);
-      assert.deepEqual(caught, [], `${kind} at ${fps} fps, jitter ${jitter} ms, ${late} ms late frames`);
-      assert.equal(h.stage.poseReaction.getState().played, 1);
-    } finally { h.close(); }
-  }
-  if (report) console.log('[frame clock]', rows.join(' · '));
-});
-
-test('on Gene the motions are the ones decided: chest out and shoulders up for the stretch, the mouth opens for the yawn, the hand up and outward for the wave', async () => {
-  const sample = async (kind: PoseReactionKind | null, at: number, read: (h: GeneStage) => number) => {
-    const h = await geneStage({ fps: 60 });
-    try {
-      h.run(START);
-      if (kind) { const v = h.stage.moodView; h.stage.setMood({ ...v, revision: v.revision + 1, pose: { attention: 0, boost: 2.2, cue: { id: `k-${kind}`, kind, source: 'follow', at: Date.now() - 1, strength: 1 } } }); }
-      h.run(at);
-      return read(h);
-    } finally { h.close(); }
-  };
-  const worldY = (name: string) => (h: GeneStage) => bone(h, name).getWorldPosition(new Vector3()).y;
-  const neckZ = (h: GeneStage) => bone(h, '首').getWorldPosition(new Vector3()).z;
-  // Stretch at its top (2 s in): shoulders up, the chest arched back (the neck goes back), against the same moment without it.
-  assert.ok(await sample('stretch', 2, worldY('右腕')) > await sample(null, 2, worldY('右腕')) + 0.05, 'shoulders up');
-  assert.ok(await sample('stretch', 2, neckZ) < await sample(null, 2, neckZ) - 0.05, 'chest out: the neck moves back');
-  // Yawn: the small "o" morph opens (Gene has お, which is not the lip-sync あ).
-  const mouth = (h: GeneStage) => { const index = h.stage.lifeRig?.slots.mouthOpen ?? -1; return index >= 0 ? h.mesh.morphTargetInfluences![index] : -1; };
-  assert.ok(await sample('yawn', 1.8, mouth) > 0.4, 'the mouth opens');
-  assert.ok(await sample(null, 1.8, mouth) < 0.01);
-  // Wave: the right hand is up above the elbow and moves outward during a swing.
-  const hand = (h: GeneStage) => { const w = bone(h, '右手首').getWorldPosition(new Vector3()), e = bone(h, '右ひじ').getWorldPosition(new Vector3()); return w.y - e.y; };
-  assert.ok(await sample('wave', 1.3, hand) > 1, 'the hand is up');
-  const handX = (h: GeneStage) => bone(h, '右手首').getWorldPosition(new Vector3()).x;
-  const rest = await sample('wave', 0.9, handX), out = await sample('wave', 0.9 + 0.38, handX);
-  assert.ok(out < rest - 0.3, `outward (her right is −x): ${rest} → ${out}`);
-});
-
-test('with sensing on but nobody there (attention 0, no cue) the frames are exactly those without sensing: R18 is untouched', async () => {
-  const run = async (pose: PoseReactionView | null) => {
-    const h = await geneStage({ fps: 60 });
-    try {
-      if (pose) { const v = h.stage.moodView; h.stage.setMood({ ...v, revision: v.revision + 1, pose }); }
-      h.run(4);
-      return h.shown.map(frame => frame.world.map(q => q.toArray().join(',')).join(';') + `|${frame.blink}|${frame.smile}|${frame.mouth}`);
-    } finally { h.close(); }
-  };
-  assert.deepEqual(await run({ attention: 0, boost: 2.2, cue: null }), await run(null));
-});
 
 // ---------------------------------------------------------------- non-Gene synthetic bodies
 

@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {classifyCompanionCommand,formatCompanionCommandReceipt} from '../electron/companion-command-intent';
-import {createCommandDialogueTurn} from '../electron/companion-command-dialogue';
-import type {CompanionCommandIntentInput,CompanionCommandReceipt} from '../shared/companion-commands';
+import {classifyCompanionCommand,formatCompanionCommandReceipt} from '../electron/settings/companion-command-intent';
+import {createCommandDialogueTurn} from '../electron/settings/companion-command-dialogue';
+import type {CompanionCommandIntentInput,CompanionCommandReceipt} from '../shared/settings/companion-commands';
 
 const input=(text:string):CompanionCommandIntentInput=>({requestId:'request',contextId:'context',text,currentValue:false,currentVisible:true});
 const receipt=(patch:Partial<CompanionCommandReceipt>={}):CompanionCommandReceipt=>({requestId:'request',revision:1,actionId:'pet.set-visible',status:'saved',persistence:'saved',presentation:'applied',value:false,nativeValue:false,message:'untrusted diagnostics must not appear',...patch});

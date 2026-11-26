@@ -4,12 +4,12 @@ import { randomUUID } from 'node:crypto';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CharacterCardStore } from '../electron/character-cards';
+import { CharacterCardStore } from '../electron/cards/character-cards';
 import {
   BUNDLED_CHARACTER_MODEL,
   defaultCharacterMoodTemplate,
   type CharacterDraft,
-} from '../shared/character-cards';
+} from '../shared/cards/character-cards';
 
 function draft(name: string): CharacterDraft {
   const mood = defaultCharacterMoodTemplate();

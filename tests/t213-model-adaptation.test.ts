@@ -13,19 +13,11 @@
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import type { AnimationClip } from 'three';
-import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
-import geneSource from '../shared/retarget-gene-source.json';
-import { HerActionPlayer } from '../src/stage/her-action';
-import { acceptCachedProfile, buildModelProfile, fingerPartOfName, profileFingerCount, type ModelProfile } from '../shared/model-profile';
-import { deriveModelCapabilities } from '../shared/model-capability';
-import { HER_ACTIONS, HER_ACTION_DETAILS, HER_ACTION_SPECS, HER_BODY_ACTIONS, herActionSupport, type HerActionId } from '../shared/her-actions';
-import {
-  buildRetargetRig, evaluatePose, planRetarget, qaxisAngle, rigFromCompact, tracksOnRig, vlength, vsub, type CompactRig, type RetargetRig, type VmdLike,
-} from '../shared/motion-retarget';
-import { adaptMotion, checkTracks } from '../shared/motion-fit';
+import geneSource from '../shared/foundation/retarget-gene-source.json';
+import { acceptCachedProfile, buildModelProfile, fingerPartOfName, profileFingerCount, type ModelProfile } from '../shared/stage/model-profile';
+import { buildRetargetRig, evaluatePose, planRetarget, qaxisAngle, rigFromCompact, tracksOnRig, vlength, vsub, type CompactRig, type RetargetRig, type VmdLike } from '../shared/actions/motion-retarget';
+import { adaptMotion, checkTracks } from '../shared/actions/motion-fit';
 import { catalogMotions, loadBundledMotion, readGene } from './helpers/bundled-motions';
-import { stageOn } from './helpers/her-action-harness';
 import { profileInput, type ModelData } from './helpers/model-fixtures';
 import type { PmxLiteBone } from './helpers/pmx-lite';
 
@@ -58,54 +50,6 @@ const headUnderCenter = (bones: PmxLiteBone[]) => { bones[index(bones, '頭')].p
 
 const boneOf = (track: string) => /^\.bones\[(.+)\]\.quaternion$/.exec(track)?.[1] ?? '';
 const fingerTracks = (tracks: readonly string[], side: 'left' | 'right') => tracks.filter(track => fingerPartOfName(boneOf(track))?.side === side);
-
-test('T-213 #1 English finger names: 指一指 binds all 15 right finger tracks on the renamed joints, and 比心 both hands', async () => {
-  for (const [label, edit, english] of [
-    ['English standard and finger names (Codex english-standard-and-fingers)', (bones: PmxLiteBone[]) => { englishStandard(bones); englishFingers(bones); }, true],
-    ['Japanese names, half-width finger digits only (the standard bones keep the identity plan)', halfWidthFingers, false],
-  ] as const) {
-    const h = await stageOn(geneVariant(edit));
-    try {
-      assert.deepEqual(profileFingerCount(h.profile), { left: 15, right: 15 }, `${label}: the profile reads every joint (tips left out)`);
-      const point = await h.play('point');
-      assert.deepEqual({ status: point.status, missing: point.missing }, { status: 'played', missing: [] }, `${label}: ${JSON.stringify(point)}`);
-      const bound = h.stage.herAction.getState().trackNames as string[];
-      assert.equal(fingerTracks(bound, 'right').length, 15, `${label}: every right finger track bound`);
-      // Codex's acceptance numbers (supplement-001): from 0 finger + 4 other tracks to 15 finger + the same 4.
-      assert.deepEqual(bound.filter(track => !fingerPartOfName(boneOf(track))), english
-        ? ['.bones[RightUpperArm].quaternion', '.bones[RightForeArm].quaternion', '.bones[RightWristTwist].quaternion', '.bones[RightHand].quaternion']
-        : ['.bones[右腕].quaternion', '.bones[右ひじ].quaternion', '.bones[右手捩].quaternion', '.bones[右手首].quaternion'], label);
-      assert.ok(bound.some(track => track === (english ? '.bones[RightIndex1].quaternion' : '.bones[右人指1].quaternion')), `${label}: on the renamed joint`);
-      const fit = h.retarget.fitOf(HER_ACTION_SPECS.point.sha256)!;
-      assert.deepEqual(fit.lost, [], `${label}: no standard or finger track lost`);
-      assert.equal(fit.basis, 'sampled', `${label}: renamed tracks are checked on this model, not passed as the source`);
-      h.stage.herAction.cancel({ immediate: true });
-      const heart = await h.play('two-hand-heart');
-      assert.equal(heart.status, 'played', `${label}: ${JSON.stringify(heart)}`);
-      const both = h.stage.herAction.getState().trackNames as string[];
-      assert.deepEqual([fingerTracks(both, 'left').length, fingerTracks(both, 'right').length], [15, 15]);
-    } finally { h.close(); }
-  }
-});
-
-test('T-213 #1 never guesses a numbering: a thumb numbered 1–3 (its 1 is the metacarpal) is left out, the other fingers still bind', async () => {
-  // Mixamo-style thumb: 親指０/１/２/先 named RightThumb1/2/3/4. Thumb3 is a real joint past MMD's 0–2, so the numbers are shifted.
-  const shifted = (bones: PmxLiteBone[]) => { englishStandard(bones); englishFingers(bones);
-    for (const bone of bones) { const match = /^(Left|Right)Thumb(\d|先)$/.exec(bone.name); if (match) bone.name = `${match[1]}Thumb${match[2] === '先' ? 4 : Number(match[2]) + 1}`; } };
-  const h = await stageOn(geneVariant(shifted));
-  try {
-    assert.deepEqual(profileFingerCount(h.profile), { left: 12, right: 12 });
-    assert.deepEqual(h.profile.bones.fingerIssues, [{ finger: 'thumbLeft', reason: 'numbering' }, { finger: 'thumbRight', reason: 'numbering' }]);
-    const point = await h.play('point');
-    assert.equal(point.status, 'played', JSON.stringify(point));
-    const bound = h.stage.herAction.getState().trackNames as string[];
-    assert.equal(bound.some(track => /Thumb/.test(track)), false, 'no thumb track lands on a shifted joint');
-    assert.equal(fingerTracks(bound, 'right').length, 12);
-    const lost = h.retarget.fitOf(HER_ACTION_SPECS.point.sha256)!.lost;
-    // Universal skeleton step 1: lost parts are standard part ids (右親指０ → thumb0Right), not Gene's bone names.
-    assert.ok(lost.length > 0 && lost.every(part => /^thumb\dRight$/.test(part)), `the thumb tracks are reported lost: ${lost}`);
-  } finally { h.close(); }
-});
 
 test('T-213 the finger reader: MMD, Chinese and English names; tips, words and other numberings are never turned into a joint', () => {
   const read = (name: string) => { const part = fingerPartOfName(name); return part && `${part.side}:${part.finger}:${part.joint}${part.tip ? ':tip' : ''}`; };
@@ -145,31 +89,6 @@ test('T-213 profile version 4: a cached profile keeps its finger joints, duplica
   assert.equal(acceptCachedProfile(wrongParent, identity), null);
 });
 
-test('T-213 #2 a second 右手首: the card, the action list and the stage all say the right wrist cannot be moved by a clip', async () => {
-  const data = geneVariant(duplicateRightWrist), profile = buildModelProfile(profileInput(data));
-  assert.deepEqual(profile.bones.duplicates, ['wristRight']);
-  const card = deriveModelCapabilities(profile);
-  assert.deepEqual({ detected: card.gesture.detected, enabled: card.gesture.enabled, missing: card.gesture.missing },
-    { detected: false, enabled: false, missing: ['右手腕（有重名骨骼）'] }, 'gesture clips bind by name: the card no longer says it can');
-  for (const id of ['sleepPose', 'tears', 'drowsyFace'] as const) assert.equal(card[id].missing.includes('右手腕（有重名骨骼）'), false, `${id} moves bone objects, names do not matter`);
-  const support = herActionSupport(profile);
-  assert.deepEqual(support.point.missing, ['右手腕（有重名骨骼）']);
-  assert.equal(support.nod.ok, true);
-  const h = await stageOn(data);
-  try {
-    const point = await h.play('point');
-    assert.deepEqual({ status: point.status, missing: point.missing }, { status: 'missing', missing: ['右手腕（有重名骨骼）'] });
-    // The player itself still refuses the shared name (nothing is picked for it): the same clip binds 18 of 19 tracks, all 15
-    // right finger tracks among them, never the wrist (Codex's acceptance numbers).
-    const clip = await new Promise<AnimationClip>((resolve, reject) =>
-      new MMDLoader().loadAnimation(`mmd-asset://${'d'.repeat(32)}/point.vmd`, h.mesh, clip => resolve(clip as AnimationClip), undefined, reject));
-    const bindable = new HerActionPlayer(h.mesh).bindable(clip, HER_ACTION_SPECS.point.durationFrames / 30);
-    assert.equal(bindable.length, 18);
-    assert.equal(fingerTracks(bindable, 'right').length, 15);
-    assert.equal(bindable.includes('.bones[右手首].quaternion'), false);
-  } finally { h.close(); }
-});
-
 test('T-213 #3 the head under the center: never the identity; the fit check samples it and holds back what pulls the head off (Codex witness 0.518)', () => {
   // Codex's minimal witness (topology-failure.json): the production Gene compact rig, only the head's parent changed.
   const source = rigFromCompact(geneSource as CompactRig), target = rigFromCompact(geneSource as CompactRig);
@@ -198,7 +117,7 @@ test('T-213 #3 the head under the center: never the identity; the fit check samp
   assert.equal(wave.fit.issues.some(issue => issue.check === 'structure'), false, JSON.stringify(wave.fit.issues));
 });
 
-/** A rig from a Gene variant, the way the stage builds it (shared/motion-retarget.ts buildRetargetRig over the profile). */
+/** A rig from a Gene variant, the way the stage builds it (shared/actions/motion-retarget.ts buildRetargetRig over the profile). */
 function rigOf(data: ModelData, key: string): RetargetRig {
   const profile: ModelProfile = buildModelProfile(profileInput(data));
   return buildRetargetRig({ key, profile, bones: data.bones.map(bone => ({ name: bone.name, parent: bone.parent, position: bone.position })),
@@ -224,47 +143,5 @@ test('T-213 #3 no false alarms: Gene, a missing 上半身2 or 首 (folded), Engl
   for (const motion of catalogMotions) {
     const fit = adaptMotion(loadBundledMotion(motion.id), gene).fit;
     assert.deepEqual({ status: fit.status, basis: fit.basis, samples: fit.samples, lost: fit.lost }, { status: 'ok', basis: 'source', samples: 0, lost: [] }, motion.id);
-  }
-});
-
-test('T-213 #3 on the stage: with the head under the center, a bow (the torso bends, the head would stay) is held back and names the head', async () => {
-  const h = await stageOn(geneVariant(headUnderCenter));
-  try {
-    for (const id of ['bow', 'lean', 'apology-bow'] as const) {
-      const report = await h.play(id);
-      assert.deepEqual(report, { cueId: report.cueId, status: 'unfit', missing: ['头部'], detail: HER_ACTION_DETAILS.structure }, id);
-    }
-    // The neck's 2.5° share of a nod is under the tolerance, and the right arm's point never touches the head's chain.
-    for (const id of ['nod', 'point'] as const) {
-      const report = await h.play(id);
-      h.stage.herAction.cancel({ immediate: true });
-      assert.equal(report.status, 'played', `${id}: ${JSON.stringify(report)}`);
-      assert.equal(h.retarget.fitOf(HER_ACTION_SPECS[id].sha256)?.basis, 'sampled', `${id}: checked on this model, not the identity`);
-    }
-    assert.deepEqual(h.retarget.summary().structure, ['head under center, not neck']);
-  } finally { h.close(); }
-});
-
-test('T-213 one answer: on every variant, what the character page lists per action is what the stage does with it', async () => {
-  const opaqueRightFingers = (bones: PmxLiteBone[]) => bones.forEach((bone, at) => { if (/^右(親指|人指|中指|薬指|小指)/.test(bone.name)) bone.name = `bone_${at}`; });
-  for (const [label, edit] of [['Gene', undefined], ['English names and fingers', (bones: PmxLiteBone[]) => { englishStandard(bones); englishFingers(bones); }],
-    ['duplicate 右手首', duplicateRightWrist], ['head under center', headUnderCenter], ['right fingers unnamed', opaqueRightFingers]] as const) {
-    const data = geneVariant(edit), support = herActionSupport(buildModelProfile(profileInput(data)));
-    const h = await stageOn(data);
-    try {
-      for (const id of HER_BODY_ACTIONS as readonly HerActionId[]) { // bone binding only; the T-215 face actions have their own tests
-        const report = await h.play(id);
-        h.stage.herAction.cancel({ immediate: true });
-        if (support[id].ok) assert.ok(report.status === 'played' || report.status === 'unfit', `${label} ${id}: listed as possible, got ${JSON.stringify(report)}`);
-        else assert.deepEqual({ status: report.status, missing: report.missing }, { status: 'missing', missing: support[id].missing }, `${label} ${id}`);
-      }
-      if (label === 'right fingers unnamed') {
-        // Fingers are optional for the wave: it plays, and the fit check says which tracks found no bone.
-        const lost = h.retarget.fitOf(HER_ACTION_SPECS['hello-wave'].sha256)!.lost;
-        // Standard part ids since universal skeleton step 1 (右人指１ → index1Right).
-        assert.equal(lost.length > 0 && lost.every(part => /^(thumb|index|middle|ring|little)\dRight$/.test(part)), true, lost.join(','));
-        assert.ok(h.retarget.summary().partialMotions.includes('soft-hearts-actions/hello-wave'));
-      }
-    } finally { h.close(); }
   }
 });

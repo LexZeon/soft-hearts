@@ -6,27 +6,37 @@ import path from 'node:path';
 import {
   MEME_CONTEXT_NOTE, NEUTRAL_TENDENCIES, NICKNAME_ASK_INSTRUCTION, RELATIONSHIP_LIMITS, RELATIONSHIP_STAGES, STAGE_LABELS,
   classifyNicknameReply, cleanNickname, dayNumber, effectiveDays, emptyRelationship, milestoneFor, relationshipOpeningText, relationshipSessionTag,
-  sanitizeRelationshipDiagnostic, stageAtLeast, stageFor, stageProgress, stageThresholds, warmUpPace, withBackfill, withQuality, withRound, withTouch,
+  sanitizeRelationshipDiagnostic, stageAtLeast, stageFor, stageProgress, stageReference, stageThresholds, todayLine, warmUpPace, withBackfill, withQuality, withRound, withTouch,
   type RelationshipData, type RelationshipDiagnostic,
-} from '../shared/relationship';
-import { RelationshipHost, type RelationshipCard } from '../electron/relationship/host';
-import { RelationshipStore, relationshipFileName, validateRelationship } from '../electron/relationship/store';
-import { localDateKey } from '../electron/diary/diary-dates';
-import { MemoryStore } from '../electron/memory';
-import { formatRelationshipLine } from '../src/ui/MoodPanel';
+} from '../shared/memory/relationship';
+import { RelationshipHost, type RelationshipCard } from '../electron/memory/relationship/host';
+import { RelationshipStore, relationshipFileName, validateRelationship } from '../electron/memory/relationship/store';
+import { localDateKey } from '../electron/memory/diary/diary-dates';
+import { MemoryStore } from '../electron/memory/memory';
+import { formatRelationshipLine } from '../src/mood/MoodPanel';
 
 const at = (month: number, day: number, hour = 12) => new Date(2026, month - 1, day, hour).getTime();
 const key = (month: number, day: number) => localDateKey(at(month, day));
 const scope = (characterId = 'gene', providerScope = 'model-a') => ({ characterId, providerScope });
 const nothing = () => ({ first: null, rounds: new Map<string, number>() });
 
+/** Hosts built by the current test. Some calls (opening(), captureNicknameAsk()) queue a store write and return at once, so a
+ * write can still be in flight after the test's last await; the folder is removed only once every host's queue has drained
+ * (the cause of a rare ENOTEMPTY on the temp folder). */
+let liveHosts: RelationshipHost[] = [];
 async function withDirectory(run: (directory: string) => Promise<void>) {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'soft-relationship-'));
   try { await run(directory); }
   finally {
     assert.equal(path.dirname(directory), os.tmpdir());
     assert.ok(path.basename(directory).startsWith('soft-relationship-'));
-    await rm(directory, { recursive: true, force: true });
+    const hosts = liveHosts; liveHosts = [];
+    await Promise.all(hosts.map(host => host.flush()));
+    // Folders a test made next to it (directory + '-suffix') go too.
+    const base = path.basename(directory);
+    for (const name of await readdir(os.tmpdir())) {
+      if (name === base || name.startsWith(base + '-')) await rm(path.join(os.tmpdir(), name), { recursive: true, force: true });
+    }
   }
 }
 interface Harness { host: RelationshipHost; clock: { now: number }; card: { value: RelationshipCard | null }; dev: { on: boolean }; lines: string[] }
@@ -35,6 +45,7 @@ function harness(directory: string, now = at(10, 1)): Harness {
   const host = new RelationshipHost({ directory, now: () => clock.now, developerMode: () => dev.on,
     diagnosticsWrite: async (_file, line) => { lines.push(line); } });
   host.setCardSource(() => card.value);
+  liveHosts.push(host);
   return { host, clock, card, dev, lines };
 }
 const slow = (tendencies = NEUTRAL_TENDENCIES): RelationshipCard => ({ slowWarmUp: true, tendencies: { ...tendencies } });
@@ -48,36 +59,41 @@ async function liveDays(h: Harness, firstDay: number, count: number, month = 10)
 
 // ---- thresholds and stages ----
 
-test('stage thresholds: 3 / 10 / 30 / 90 days for a neutral card, scaled by the card tendencies', () => {
-  assert.deepEqual(stageThresholds(), [3, 10, 30, 90]);
-  assert.deepEqual(stageThresholds(NEUTRAL_TENDENCIES), [3, 10, 30, 90]);
+test('stage thresholds: 1 / 4 / 12 / 36 days for a neutral card (I-210: two fifths of 3/10/30/90), scaled by the card tendencies', () => {
+  assert.deepEqual(stageThresholds(), [1, 4, 12, 36]);
+  assert.deepEqual(stageThresholds(NEUTRAL_TENDENCIES), [1, 4, 12, 36]);
   assert.equal(warmUpPace(NEUTRAL_TENDENCIES), 1);
   const cautious = stageThresholds({ ...NEUTRAL_TENDENCIES, cautious: 1.5 });
   const closer = stageThresholds({ ...NEUTRAL_TENDENCIES, close: 1.5 });
   const playful = stageThresholds({ ...NEUTRAL_TENDENCIES, playful: 2, comfortable: 2 });
-  cautious.forEach((value, index) => assert.ok(value > [3, 10, 30, 90][index], `cautious ${index}`));
-  closer.forEach((value, index) => assert.ok(value < [3, 10, 30, 90][index] || index === 0, `close ${index}`));
-  assert.ok(closer[3] < 90 && playful[3] < 90, 'a close or playful card warms up sooner');
-  assert.ok(cautious[3] > 90, 'a cautious card takes longer');
+  cautious.forEach((value, index) => assert.ok(value > [1, 4, 12, 36][index], `cautious ${index}`));
+  closer.forEach((value, index) => assert.ok(value <= [1, 4, 12, 36][index], `close ${index}`));
+  assert.ok(closer[3] < 36 && playful[3] < 36, 'a close or playful card warms up sooner');
+  assert.ok(cautious[3] > 36, 'a cautious card takes longer');
   // Always whole, increasing, bounded to between half and twice the base.
   for (const tendencies of [{ playful: 0, close: 0, comfortable: 0, cautious: 4 }, { playful: 4, close: 4, comfortable: 4, cautious: 0 },
     { playful: 1, close: 0.1, comfortable: 1, cautious: 3 }, { playful: 0.5, close: 0.5, comfortable: 0.5, cautious: 0.5 }]) {
     const values = stageThresholds(tendencies);
     assert.equal(values.length, 4);
     values.forEach((value, index) => { assert.ok(Number.isInteger(value) && value >= 1); if (index) assert.ok(value > values[index - 1]); });
-    assert.ok(values[3] <= 180 && values[3] >= 45);
+    assert.ok(values[3] <= 72 && values[3] >= 18);
   }
 });
 
 test('the stage follows the effective days and tells how far the next one is', () => {
-  const thresholds = [3, 10, 30, 90];
-  const cases: Array<[number, string]> = [[0, 'new'], [2.5, 'new'], [3, 'warming'], [9.5, 'warming'], [10, 'familiar'], [29, 'familiar'], [30, 'close'], [89, 'close'], [90, 'old'], [400, 'old']];
+  const thresholds = [1, 4, 12, 36];
+  const cases: Array<[number, string]> = [[0, 'new'], [0.5, 'new'], [1, 'warming'], [3.5, 'warming'], [4, 'familiar'], [11, 'familiar'], [12, 'close'], [35, 'close'], [36, 'old'], [400, 'old']];
   for (const [days, stage] of cases) assert.equal(stageFor(days, thresholds), stage, String(days));
-  assert.deepEqual(stageProgress(0, thresholds), { stage: 'new', next: 'warming', daysToNext: 3 });
-  assert.deepEqual(stageProgress(2.5, thresholds), { stage: 'new', next: 'warming', daysToNext: 1 });
-  assert.deepEqual(stageProgress(12, thresholds), { stage: 'familiar', next: 'close', daysToNext: 18 });
+  assert.deepEqual(stageProgress(0, thresholds), { stage: 'new', next: 'warming', daysToNext: 1 });
+  assert.deepEqual(stageProgress(5, thresholds), { stage: 'familiar', next: 'close', daysToNext: 7 });
+  assert.deepEqual(stageProgress(20, thresholds), { stage: 'close', next: 'old', daysToNext: 16 });
   assert.deepEqual(stageProgress(120, thresholds), { stage: 'old', next: null, daysToNext: null });
-  assert.deepEqual(STAGE_LABELS, { new: '初识', warming: '熟起来', familiar: '熟悉', close: '亲近', old: '老朋友' });
+  // I-210: the two reference numbers she reads.
+  assert.deepEqual(stageReference(0, thresholds), { level: 1, daysInLevel: 0, daysToNext: 1 });
+  assert.deepEqual(stageReference(5.5, thresholds), { level: 3, daysInLevel: 1, daysToNext: 7 });
+  assert.deepEqual(stageReference(20, thresholds), { level: 4, daysInLevel: 8, daysToNext: 16 });
+  assert.deepEqual(stageReference(120, thresholds), { level: 5, daysInLevel: 84, daysToNext: null });
+  assert.deepEqual(STAGE_LABELS, { new: '还不太熟', warming: '熟起来了', familiar: '熟悉', close: '很熟', old: '非常熟' });
   assert.ok(stageAtLeast('close', 'familiar') && stageAtLeast('familiar', 'familiar') && !stageAtLeast('warming', 'familiar'));
 });
 
@@ -192,18 +208,44 @@ test('default opening: day number, no stage, familiar from day one; warm-up adds
   const off = relationshipOpeningText({ dayNumber: 1, slowWarmUp: false });
   assert.match(off, /你们认识第 1 天/);
   assert.match(off, /从一开始就和用户很熟，不客气、不装生/);
-  assert.doesNotMatch(off, /现在的关系|初识|熟起来|关系阶段/);
+  assert.doesNotMatch(off, /熟悉度第|关系：|还不太熟|熟起来了|熟悉阶段/);
   // An off card never shows a stage even if one is passed.
-  assert.equal(relationshipOpeningText({ dayNumber: 40, slowWarmUp: false, stage: 'new' }).includes('初识'), false);
-  const stages = RELATIONSHIP_STAGES.map(stage => relationshipOpeningText({ dayNumber: 5, slowWarmUp: true, stage }));
-  assert.equal(new Set(stages).size, 5, 'each stage has its own manner');
+  assert.equal(relationshipOpeningText({ dayNumber: 40, slowWarmUp: false, stage: 'new' }).includes('还不太熟'), false);
+  // I-210: facts only. Level, name, the five names, two reference numbers, no per-level guidance, no instruction words.
+  const GUIDANCE = /请|要|应该|不要|别|必须|至多|自然体现|放开|逗用户|不装熟|闹点小脾气|偏心|默契|熟悉阶段|老朋友|恋人/u;
+  const thresholds = stageThresholds();
+  const stages = RELATIONSHIP_STAGES.map((stage, index) => relationshipOpeningText({ dayNumber: 5, slowWarmUp: true, stage,
+    reference: stageReference([0, 1, 4, 12, 36][index], thresholds) }));
+  assert.equal(new Set(stages).size, 5);
   stages.forEach((text, index) => {
-    assert.ok(text.includes(`现在的关系：${STAGE_LABELS[RELATIONSHIP_STAGES[index]]}`));
-    assert.match(text, /按你自己的性格自然体现/);
+    const label = STAGE_LABELS[RELATIONSHIP_STAGES[index]];
+    assert.ok(text.includes(`你们认识第 5 天`));
+    assert.ok(text.includes(`第 ${index + 1} 级「${label}」（共 5 级：还不太熟、熟起来了、熟悉、很熟、非常熟）`), text);
+    assert.ok(text.includes("这一级到现在有效天数约 0 天"), text);
+    if (index < 4) assert.ok(text.includes(`到下一级大概还差 ${[1, 3, 8, 24][index]} 个有效天数`), text);
+    else { assert.match(text, /已是最高一级/); assert.doesNotMatch(text, /到下一级/); }
+    assert.ok(text.includes('你们是什么关系，以你们在聊天里说过、一起经历过的为准'));
+    assert.doesNotMatch(text, GUIDANCE);
     assert.doesNotMatch(text, /从一开始就和用户很熟/);
   });
-  assert.match(stages[0], /不装熟/);
-  assert.match(stages[2], /逗用户/);
+  // Exact numbers: 6 effective days is 2 days into level 3 (starts at 4), 6 more to level 4 (12).
+  const exact = relationshipOpeningText({ dayNumber: 9, slowWarmUp: true, stage: 'familiar', reference: stageReference(6, thresholds) });
+  assert.ok(exact.includes('这一级到现在有效天数约 2 天') && exact.includes('到下一级大概还差 6 个有效天数'), exact);
+  // Without numbers (a hand-set stage) the line still has the level and name, and no numbers.
+  assert.doesNotMatch(relationshipOpeningText({ dayNumber: 9, slowWarmUp: true, stage: 'close' }), /有效天数/);
+  // English card: the same facts in English.
+  const en = relationshipOpeningText({ dayNumber: 9, slowWarmUp: true, stage: 'familiar', reference: stageReference(6, thresholds), language: 'en' });
+  assert.match(en, /^\[Your relationship\] You have known each other for 9 days\. Familiarity level 3 of 5, "familiar" \(not very familiar yet, warming up, familiar, close, very close\)\./);
+  assert.match(en, /About 2 effective days so far at this level; roughly 6 more effective days to the next level/);
+  assert.doesNotMatch(en, /[一-鿿]/u);
+  const enTop = relationshipOpeningText({ dayNumber: 90, slowWarmUp: true, stage: 'old', reference: stageReference(80, thresholds), language: 'en' });
+  assert.match(enTop, /this is the top level/);
+  assert.doesNotMatch(enTop, /to the next level/);
+  assert.doesNotMatch(en, /\b(must|should|never|do not|don't)\b/i);
+  // The nickname ask keeps what the program parses (ask once, the "nick" field) and no pacing words; the meme note says what the lines are.
+  assert.match(NICKNAME_ASK_INSTRUCTION, /"nick":"你问的那个叫法"/);
+  assert.doesNotMatch(NICKNAME_ASK_INSTRUCTION, /别催|难过|很忙|说正事|别说已经改了/);
+  assert.doesNotMatch(MEME_CONTEXT_NOTE, /至多|不要|每次|背诵|不提/);
   // Nickname and milestone are independent of the switch.
   for (const slowWarmUp of [false, true]) {
     const text = relationshipOpeningText({ dayNumber: 30, slowWarmUp, ...(slowWarmUp ? { stage: 'close' as const } : {}), nickname: '小糖', milestone: milestoneFor('2026-10-01', '2026-10-30') });
@@ -272,7 +314,6 @@ test('a character nobody has chatted with starts counting on the day of the firs
     old.clock.now = at(10, 1);
     await old.host.prepare(scope('old', 'model-b'), nothing);
     assert.equal(old.host.view('old')?.dayNumber, 31);
-    await rm(directory + '-old', { recursive: true, force: true });
   });
 });
 
@@ -331,7 +372,7 @@ test('default (switch off, or an older card without the field): no stage line, f
       await h.host.prepare(scope(), nothing);
       const opening = h.host.opening('gene', { firstTurn: true })!;
       assert.match(opening.text, /你们认识第 1 天/);
-      assert.doesNotMatch(opening.text, /现在的关系|初识|熟起来|熟悉|亲近|老朋友/);
+      assert.doesNotMatch(opening.text, /熟悉度第|还不太熟|熟起来了|熟悉阶段|很熟：|非常熟/);
       assert.equal(h.host.stage('gene'), null);
       assert.equal(h.host.memesAllowed('gene'), true, 'memes from the first day');
       assert.equal(h.host.view('gene')?.stage, undefined);
@@ -341,7 +382,6 @@ test('default (switch off, or an older card without the field): no stage line, f
       await h.host.noteRound('gene'); await h.host.noteRound('gene');
       assert.equal(h.host.nicknameAsk('gene', { conversationId: 'c1', userState: null }), true);
     }
-    await rm(directory + '-a', { recursive: true, force: true }); await rm(directory + '-b', { recursive: true, force: true });
   });
 });
 
@@ -349,17 +389,18 @@ test('switching it on works out the stage from the days already together; switch
   await withDirectory(async directory => {
     const h = harness(directory);
     await h.host.prepare(scope(), nothing);
-    await liveDays(h, 1, 12);
+    await liveDays(h, 1, 5);
     assert.equal(h.host.stage('gene'), null, 'off: no stage');
     h.card.value = slow();
-    assert.equal(h.host.stage('gene'), 'familiar', '12 days is already 熟悉, not 初识');
+    assert.equal(h.host.stage('gene'), 'familiar', '5 days is already 熟悉, not 初识');
     const on = h.host.opening('gene', { firstTurn: false })!;
-    assert.match(on.text, /现在的关系：熟悉/);
+    assert.match(on.text, /熟悉度第 3 级「熟悉」/);
+    assert.ok(on.text.includes('这一级到现在有效天数约 1 天，到下一级大概还差 7 个有效天数'), on.text);
     assert.equal(on.memes, true);
     assert.notEqual(on.tag, 'off|');
     h.card.value = { slowWarmUp: false, tendencies: { ...NEUTRAL_TENDENCIES } };
     const off = h.host.opening('gene', { firstTurn: false })!;
-    assert.doesNotMatch(off.text, /现在的关系|熟悉/);
+    assert.doesNotMatch(off.text, /熟悉度第|熟悉阶段/);
     assert.equal(off.tag, 'off|');
     // A cautious card is still at an earlier stage with the same twelve days.
     h.card.value = slow({ playful: 1, close: 1, comfortable: 1, cautious: 1.8 });
@@ -478,7 +519,6 @@ test('the nickname question: asked at most once; only the very next plain yes sa
     await ask(odd, 'c1');
     odd.host.captureNicknameAsk('gene', 'c1', '<script>');
     assert.equal(await odd.host.resolveNickname('gene', 'c1', '好'), null);
-    for (const suffix of ['yes', 'no', 'topic', 'silent', 'dropped', 'odd']) await rm(`${directory}-${suffix}`, { recursive: true, force: true });
   });
 });
 
@@ -535,7 +575,8 @@ test('developer mode: the stage can be set by hand until restart; outside it, ne
     assert.equal(h.host.memesAllowed('gene'), true);
     assert.equal(h.host.view('gene')?.overridden, true);
     assert.equal(h.host.view('gene')?.stage, 'familiar');
-    assert.match(h.host.opening('gene', { firstTurn: false })!.text, /现在的关系：熟悉/);
+    assert.match(h.host.opening('gene', { firstTurn: false })!.text, /熟悉度第 3 级「熟悉」/);
+    assert.doesNotMatch(h.host.opening('gene', { firstTurn: false })!.text, /有效天数/, 'a hand-set stage gets no reference numbers');
     assert.throws(() => h.host.setStageOverride('legendary'));
     h.dev.on = false;
     assert.equal(h.host.stage('gene'), 'new', 'leaving developer mode drops it');
@@ -555,10 +596,10 @@ test('diagnostics: developer mode only, and only a time, a kind and numbers', as
     const h = harness(directory);
     h.card.value = slow();
     await h.host.prepare(scope(), nothing);
-    await liveDays(h, 1, 3);
+    await liveDays(h, 1, 1);
     assert.deepEqual(h.lines, [], 'nothing is written outside developer mode');
     h.dev.on = true;
-    await liveDays(h, 4, 1);
+    await liveDays(h, 2, 1);
     await h.host.setNickname('gene', '小糖秘密');
     await h.host.noteQuality('gene');
     await h.host.flush();
@@ -579,14 +620,51 @@ test('diagnostics: developer mode only, and only a time, a kind and numbers', as
   });
 });
 
-test('the developer panel line: numbers, and a stage only when the card warms up slowly', () => {
+test('the developer panel line: numbers, and a stage only when the card gets familiar slowly', () => {
   assert.equal(formatRelationshipLine(undefined), '关系：暂无数据');
   const off = formatRelationshipLine({ dayNumber: 12, togetherDays: 9, qualityDays: 2, effectiveDays: 10, slowWarmUp: false, hasNickname: false, nicknameAsked: false });
-  assert.equal(off, '关系：认识第 12 天 · 相处 9 天（有质量 2 天，折算 10） · 慢慢升温：关（从第一天起就很熟）');
+  assert.equal(off, '关系：认识第 12 天 · 相处 9 天（有质量 2 天，折算 10） · 慢慢熟悉：关（从第一天起就很熟）');
   const on = formatRelationshipLine({ dayNumber: 12, togetherDays: 9, qualityDays: 2, effectiveDays: 10, slowWarmUp: true, stage: 'familiar', nextStage: 'close', daysToNext: 20,
-    thresholds: [3, 10, 30, 90], hasNickname: true, nicknameAsked: true });
-  assert.match(on, /慢慢升温：开 · 阶段：熟悉，再过 20 天到亲近/);
+    thresholds: [1, 4, 12, 36], hasNickname: true, nicknameAsked: true });
+  assert.match(on, /慢慢熟悉：开 · 阶段：熟悉，再过 20 天到很熟/);
   assert.doesNotMatch(on, /小糖/);
   const by = formatRelationshipLine({ dayNumber: 2, togetherDays: 0, qualityDays: 0, effectiveDays: 0, slowWarmUp: true, stage: 'familiar', overridden: true, hasNickname: false, nicknameAsked: false });
   assert.match(by, /阶段：熟悉（手动设置，重启后恢复）/);
+});
+
+// ---- I-063: today's date, once per conversation ----
+
+test('I-063 todayLine: month, day, weekday and part of day from the local clock', () => {
+  const at = (h: number) => new Date(2026, 10, 10, h, 30).getTime(); // 2026-11-10 is a Tuesday
+  assert.match(todayLine(at(15)), /^【今天】11 月 10 日，星期二，下午。/);
+  const parts = [[3, '凌晨'], [7, '早上'], [10, '上午'], [12, '中午'], [17, '下午'], [21, '晚上']] as const;
+  for (const [hour, part] of parts) assert.ok(todayLine(at(hour)).includes(`，${part}。`), `${hour} → ${part}`);
+  assert.match(todayLine(new Date(2027, 0, 3, 9).getTime()), /1 月 3 日，星期日，上午/);
+  assert.match(todayLine(at(15)), /平时不用特意提/);
+});
+
+test('I-063 the date line rides in the opening text only and never changes the session tag', () => {
+  const base = { dayNumber: 12, slowWarmUp: false } as const;
+  const without = relationshipOpeningText(base);
+  const withDate = relationshipOpeningText({ ...base, dateLine: todayLine(new Date(2026, 10, 10, 15).getTime()) });
+  assert.ok(withDate.startsWith(without + '\n'), 'appended as the last line');
+  assert.match(withDate.split('\n').at(-1) ?? '', /^【今天】11 月 10 日/);
+  assert.equal(relationshipSessionTag(base), relationshipSessionTag({ ...base }), 'tag has no date input');
+  assert.equal(relationshipOpeningText({ ...base, dateLine: null }), without);
+});
+
+// The warm-up stages
+// say only how familiar she is; both openings say the relationship itself comes from the chat.
+test('warm-up wording never defines the relationship, and both openings point to the chat for it', () => {
+  const banned = /关系：|朋友|老朋友|刚认识|伴侣|恋人/;
+  const byChat = /你们是什么关系，以你们在聊天里说过、一起经历过的为准/;
+  for (const stage of RELATIONSHIP_STAGES) {
+    const text = relationshipOpeningText({ dayNumber: 5, slowWarmUp: true, stage });
+    assert.doesNotMatch(text, banned, stage);
+    assert.match(text, byChat, stage);
+    assert.doesNotMatch(STAGE_LABELS[stage], banned, stage);
+  }
+  const off = relationshipOpeningText({ dayNumber: 5, slowWarmUp: false });
+  assert.match(off, byChat);
+  assert.doesNotMatch(off, banned);
 });

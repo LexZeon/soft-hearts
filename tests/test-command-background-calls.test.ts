@@ -16,19 +16,20 @@ import { createRequire, syncBuiltinESMExports } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 import test, { type TestContext } from 'node:test';
-import { CompanionService } from '../electron/companion';
-import { ChatAvailability } from '../electron/chat-availability';
-import { createChatOutage } from '../electron/chat-outage';
-import { CLAUDE_CHAT_SYSTEM_PROMPT, streamClaude, type ClaudeTask } from '../electron/claude';
-import { PersistentClaudeChat } from '../electron/claude-session';
-import { buildCodexChatPrompt } from '../electron/conversation-context';
-import { createInnerLoopHost, type InnerLoopHost } from '../electron/inner-loop/host';
-import { decideWithClaude } from '../electron/inner-loop/model';
-import { ProactiveSpeechGate } from '../electron/proactive-speech-gate';
-import { createTestCommands } from '../electron/test-commands/wiring';
-import { INNER_LOOP_SYSTEM_PROMPT } from '../shared/inner-loop';
-import type { TestCommandNote } from '../shared/test-command';
+import { CompanionService } from '../electron/brain/companion';
+import { ChatAvailability } from '../electron/brain/chat-availability';
+import { createChatOutage } from '../electron/brain/chat-outage';
+import { CLAUDE_CHAT_SYSTEM_PROMPT, streamClaude, type ClaudeTask } from '../electron/brain/claude';
+import { PersistentClaudeChat } from '../electron/brain/claude-session';
+import { buildCodexChatPrompt } from '../electron/brain/conversation-context';
+import { createInnerLoopHost, type InnerLoopHost } from '../electron/initiative/inner-loop/host';
+import { decideWithClaude } from '../electron/initiative/inner-loop/model';
+import { ProactiveSpeechGate } from '../electron/initiative/proactive-speech-gate';
+import { createTestCommands } from '../electron/safety/test-commands/wiring';
+import { INNER_LOOP_SYSTEM_PROMPT } from '../shared/initiative/inner-loop';
+import type { TestCommandNote } from '../shared/safety/test-command';
 import { readConversation } from '../scripts/lib/claude-smoke-fixture.mjs';
+import { CLAUDE_LAUNCH_HOOK, type ClaudeLaunchHook } from '../electron/brain/claude-launch';
 
 /** The exact texts of the P1b trial card (Codex T-205 round 002). */
 const COMMANDS = ['测试：我冲你挥手', '测试：我打了个哈欠', '测试：我伸了个懒腰'] as const;
@@ -72,24 +73,35 @@ async function untilReal(check: () => boolean | Promise<boolean>, ms = 10_000): 
 
 const childProcess = createRequire(import.meta.url)('node:child_process');
 
-/** Refuses (and counts) every Claude Code launch; anything else passes through. */
+/**
+ * Refuses (and counts) every Claude Code launch; anything else passes through. The brain starts Claude Code through its launch hook
+ * (electron/brain/claude-launch, off the main thread), so the guard sits there; the main thread's own spawn is guarded too (the Claude
+ * 助手 and task execution still start theirs there).
+ */
 function installSpawnGuard(placeholder: string) {
   const launches: { model: string | null; cwd: string | null }[] = [];
   const original = childProcess.spawn;
-  childProcess.spawn = function guarded(this: unknown, file: unknown, args: unknown, options: { cwd?: unknown } | undefined) {
+  const refuse = (file: unknown, args: unknown, options: { cwd?: unknown } | undefined): boolean => {
     const list = Array.isArray(args) ? args.filter((value): value is string => typeof value === 'string') : [];
     const name = path.basename(String(file)).toLowerCase();
     const claudeLike = String(file) === placeholder || /^claude(?:\.(?:exe|cmd|bat|ps1))?$/u.test(name) || list.includes('--strict-mcp-config');
-    if (!claudeLike) return Reflect.apply(original, this, arguments);
+    if (!claudeLike) return false;
     launches.push({ model: list.includes('--model') ? list[list.indexOf('--model') + 1] : null, cwd: typeof options?.cwd === 'string' ? options.cwd : null });
     throw Object.assign(new Error('test guard: no Claude Code launch in this test'), { code: 'EACCES' });
   };
+  childProcess.spawn = function guarded(this: unknown, file: unknown, args: unknown, options: { cwd?: unknown } | undefined) {
+    refuse(file, args, options);
+    return Reflect.apply(original, this, arguments);
+  };
   syncBuiltinESMExports();
+  const hook: ClaudeLaunchHook = (file, args, options, launch) => { refuse(file, args, options); return launch(file, args, options); };
+  Object.defineProperty(globalThis, CLAUDE_LAUNCH_HOOK, { value: hook, configurable: true });
   return {
     launches,
     async restore() {
       childProcess.spawn = original;
       syncBuiltinESMExports();
+      delete (globalThis as Record<string, unknown>)[CLAUDE_LAUNCH_HOOK];
       // streamClaude made an empty throwaway folder before the refused launch; remove exactly those.
       for (const { cwd } of launches) if (cwd && path.basename(cwd).startsWith('turn-') && cwd.includes('claude-chat')) await rm(cwd, { recursive: true, force: true });
     },
@@ -183,7 +195,7 @@ async function assemble(t: TestContext) {
     service.herLifeTick(can);
   }, 1_000);
 
-  /** The pet window's send (src/main.ts sendChat): a developer-mode "测试：…" goes to the host first; anything else is chat. */
+  /** The companion window's send (src/main.ts sendChat): a developer-mode "测试：…" goes to the host first; anything else is chat. */
   async function send(text: string): Promise<'command' | 'chat'> {
     if (commands.accept(PET, text).handled) { await drain(); return 'command'; }
     firstMessageAt ??= Date.now();

@@ -1,4 +1,4 @@
-// Local recognizer component (electron/asr/manifest.ts on the shared store, electron/pose/component-store.ts):
+// Local recognizer component (electron/foundation/asr-manifest.ts on the shared store, electron/senses/pose/component-store.ts):
 // plain-file downloads checked by size and SHA-256, the onnxruntime files copied from an installed pose component instead
 // of downloaded again, offline import, and the two components never cleaning up each other's folders. No network.
 import test from 'node:test';
@@ -6,10 +6,10 @@ import assert from 'node:assert/strict';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { PoseComponentStore } from '../electron/pose/component-store';
-import { POSE_ARCHIVES, downloadBytes, officialDownloadBytes, type ManifestArchive, type PoseManifest } from '../electron/pose/manifest';
-import { ASR_ARCHIVES, ASR_MANIFEST, ASR_MODEL_FILES, SENSEVOICE_REVISION } from '../electron/asr/manifest';
-import { ASR_MODEL_DOWNLOAD_BYTES } from '../electron/asr/host';
+import { PoseComponentStore } from '../electron/senses/pose/component-store';
+import { POSE_ARCHIVES, downloadBytes, officialDownloadBytes, type ManifestArchive, type PoseManifest } from '../electron/foundation/pose-manifest';
+import { ASR_ARCHIVES, ASR_MANIFEST, ASR_MODEL_FILES, SENSEVOICE_REVISION } from '../electron/foundation/asr-manifest';
+import { ASR_MODEL_DOWNLOAD_BYTES } from '../electron/senses/asr/host';
 import { fakeFetch, integrity, makeTgz, sha256 } from './helpers/pose-archives';
 
 const bytes = (text: string, size: number) => Buffer.from(text.repeat(Math.ceil(size / text.length)).slice(0, size));

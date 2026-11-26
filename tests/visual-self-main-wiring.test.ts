@@ -1,19 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import ts from 'typescript';
-import { VisualSelfRuntime, type VisualSelfLease } from '../electron/visual-self-runtime';
-import { scanStopReadoutRequest } from '../shared/stop-readout-request';
+import { VisualSelfRuntime, type VisualSelfLease } from '../electron/senses/visual-self-runtime';
+import { scanStopReadoutRequest } from '../shared/voice/stop-readout-request';
+import { screenCaptures } from '../electron/senses/screen-capture';
+// Reads as text (test-affected selects this test when they change): 'electron/main.ts' (wiring rewrite step 4c: with electron/wiring/*.ts).
+import { WIRING_PRELUDE, wiringFunction, wiringSource } from './helpers/wiring-source';
 
-const source = await readFile(new URL('../electron/main.ts', import.meta.url), 'utf8');
+// Wiring rewrite step 4c: the whole wiring (electron/main.ts and electron/wiring/*.ts); each helper exactly once at any depth (wiringFunction).
+const source = wiringSource();
 const ast = ts.createSourceFile('main.ts', source, ts.ScriptTarget.ES2022, true, ts.ScriptKind.TS);
-const names = ['refreshVisualSelfContext', 'visualSelfData', 'chatContextData', 'captureSharedScreen', 'captureSharedCamera'];
-const helpers = names.map(name => {
-  const matches = ast.statements.filter((n): n is ts.FunctionDeclaration => ts.isFunctionDeclaration(n) && n.name?.text === name);
-  assert.equal(matches.length, 1, name);
-  return matches[0].getText(ast);
-});
+// I-174: the shared screen's reads moved to electron/wiring/senses-screen-capture.ts (the real module, made below as the look wiring makes it).
+const lifted = ['refreshVisualSelfContext', 'visualSelfData', 'chatContextData', 'captureSharedCamera'], names = [...lifted, 'captureSharedScreen'];
+const helpers = [...lifted.map(name => wiringFunction(name)),
+  // no-pet-ok: the fixture's existing window name
+  `const captures = screenCaptures({ media, companion: () => pet, onScreen, capturer: desktopCapturer, displayOf: win => screen.getDisplayMatching(win.getBounds()), now: () => Date.now(),
+    intervalSeconds: () => screenSnapshots.state.intervalSeconds, visualSelf: () => ({ runtime: visualSelfRuntime, sourceId: visualSelfScreenSourceId }) });
+  const captureSharedScreen = (id, signal) => captures.shared(id, signal);`];
 const started: ts.ArrowFunction[] = [];
 function visit(n: ts.Node) {
   if (ts.isCallExpression(n) && n.expression.getText(ast) === 'scopedHost'
@@ -29,7 +33,8 @@ function visit(n: ts.Node) {
   ts.forEachChild(n, visit);
 }
 visit(ast); assert.equal(started.length, 1);
-const compiled = ts.transpileModule(`let visualSelfIdentity = ''; let visualSelfRevision = 0;
+const compiled = ts.transpileModule(`${WIRING_PRELUDE}
+let visualSelfIdentity = ''; let visualSelfRevision = 0;
 let visualSelfScreenSourceId = null; let visualSelfCameraOwnerId = null;
 ${helpers.join('\n')}
 return { ${names.join(',')}, onStarted(request) {
@@ -38,7 +43,8 @@ return { ${names.join(',')}, onStarted(request) {
   const sender = 1; let profileAcceptance = null, profileCollector = null;
   let commandTicket = null, commandIntent = null, commandAdmissionFailed = false;
   let profileSourceEligible = false, visualSelfLease = null;
-  let memorialInput=null, memorialIdentity='';
+  let memorialInput=null, memorialIdentity=''; const handed = null; // 2026-11-23: an ordinary request carries no full-screen line
+  const owner = undefined, currentId = undefined, ownerCard = () => ({ name: '' }); // I-209 step 4: the desktop companion's turn (no speaker name)
   (${started[0].getText(ast)})(); return visualSelfLease;
 }};`, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None } }).outputText;
 
@@ -79,11 +85,13 @@ function fixture() {
   const current = { model: null };
   let api!: Api;
   const env = {
-    visualSelfRuntime: runtime, createHash, scanStopReadoutRequest, pet,
+    // no-pet-ok: pet is the fixture's existing window
+    visualSelfRuntime: runtime, screenCaptures, createHash, scanStopReadoutRequest, pet,
+    onScreen: (win: { isDestroyed(): boolean; isVisible(): boolean; isMinimized(): boolean }) => !win.isDestroyed() && win.isVisible() && !win.isMinimized(), petHeld: () => false, // Unbound v1 step 1 (not out in Unbound here)
     nativeVisibility: () => ({ visible: state.visible && !state.minimized, windowId: 1, revision: state.windowRevision }),
     characterCards: { getActive: () => ({ id: state.card, name: 'Gene' }) }, store: { current },
     screen: { getDisplayMatching: () => ({ id: state.displayId }) },
-    media: { get revision() { return state.mediaRevision; }, get state() { return { screenSharing: state.screen, cameraSharing: state.camera, cameraOwner: state.cameraOwner }; },
+    media: { get revision() { return state.mediaRevision; }, openings: { screen: 0, camera: 0 }, get state() { return { screenSharing: state.screen, cameraSharing: state.camera, cameraOwner: state.cameraOwner }; },
       sharesCameraFrames() { return state.camera; } }, // old sharing mode; local pose sensing is covered by tests/pose-privacy.test.ts
     windows: () => [pet, controls], ownerFor: (id: number) => id === 1 ? 'pet' : 'controls', speechScope: () => state.scope,
     companion: { mood: { get: () => ({ token: state.token }) }, currentSpeechScope: () => state.scope },

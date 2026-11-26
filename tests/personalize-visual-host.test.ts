@@ -1,17 +1,23 @@
 import assert from 'node:assert/strict';
-import { MutationQueue } from '../electron/mutation-queue';
+import { MutationQueue } from '../electron/foundation/mutation-queue';
+import { chatModelLabel } from '../shared/brain/claude-model';
 import { createHash, randomUUID } from 'node:crypto';
 import { lstat, mkdtemp, readFile, realpath, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import ts from 'typescript';
-import { PersonalizeVisualAuthoring } from '../electron/personalize-visual-authoring';
-import { VisualBehaviorStore } from '../electron/visual-behavior-store';
-import type { SelectedVisualImage } from '../electron/selected-visual-image';
-import { BEHAVIOR_RECIPES } from '../shared/behavior-recipes';
+import { PersonalizeVisualAuthoring } from '../electron/stage/personalize-visual-authoring';
+import { VisualBehaviorStore } from '../electron/senses/visual-behavior-store';
+import type { SelectedVisualImage } from '../electron/senses/selected-visual-image';
+import { BEHAVIOR_RECIPES } from '../shared/actions/behavior-recipes';
 import { VISUAL_GENE_SHA, VISUAL_MASK, VISUAL_PURPOSE, visualChoices,
-  type VisualAuthoringState, type VisualPreview, type VisualResearchRequest } from '../shared/personalize-visual';
+  type VisualAuthoringState, type VisualPreview, type VisualResearchRequest } from '../shared/stage/personalize-visual';
+import { WIRING_PRELUDE, ipcGuardSource, wiringFunction, wiringNodes, wiringRegistration } from './helpers/wiring-source';
+
+// Wiring rewrite step 4g: the authoring, the Gene receipt and their handlers are 舞台's ('electron/wiring/stage-wiring.ts'); they are read across
+// 'electron/main.ts' and electron/wiring/*.ts (still exactly one of each), and what they read from the part's needs comes from the evaluating
+// code's names (WIRING_PRELUDE). main.ts's own statements (mutations, mutate) are still read from it.
 
 const source = await readFile(new URL('../electron/main.ts', import.meta.url), 'utf8');
 const tree = ts.createSourceFile('main.ts', source, ts.ScriptTarget.Latest, true);
@@ -21,8 +27,7 @@ function find<T extends ts.Node>(predicate: (n: ts.Node) => n is T, root: ts.Nod
   visit(root); return rows;
 }
 function fn(name: string): string {
-  const rows = tree.statements.filter((n): n is ts.FunctionDeclaration => ts.isFunctionDeclaration(n) && n.name?.text === name);
-  assert.equal(rows.length, 1, name); return rows[0].getText(tree);
+  return wiringFunction(name);
 }
 function variable(name: string, ast = tree): string {
   const rows = ast.statements.filter((n): n is ts.VariableStatement => ts.isVariableStatement(n)
@@ -33,14 +38,13 @@ function evaluate<T>(code: string, env: Record<string, unknown>): T {
   const js = ts.transpileModule(code, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText;
   return new Function(...Object.keys(env), js)(...Object.values(env)) as T;
 }
-const constructors = find((n): n is ts.NewExpression => ts.isNewExpression(n) && n.expression.getText(tree) === 'PersonalizeVisualAuthoring');
+const constructors = wiringNodes((n): n is ts.NewExpression => ts.isNewExpression(n) && n.expression.getText() === 'PersonalizeVisualAuthoring').map(row => row.node.getText(row.ast));
 assert.equal(constructors.length, 1);
 const ports = ['getVisualAuthoring', 'chooseVisualMaterial', 'researchVisual', 'previewVisualBinding',
   'visualPreviewReceipt', 'resolveVisualPreview', 'saveVisualBehavior', 'changeVisualBehavior', 'cancelVisualAuthoring'] as const;
 const registrations = ports.map(name => {
-  const rows = find((n): n is ts.CallExpression => ts.isCallExpression(n) && n.expression.getText(tree) === 'scopedHost'
-    && ts.isStringLiteral(n.arguments[0]) && n.arguments[0].text === name);
-  assert.equal(rows.length, 1, name); return `${rows[0].getText(tree)};`;
+  const statement = wiringRegistration(name);
+  assert.match(statement, /^scopedHost\(/, name); return statement;
 }).join('\n');
 const study = { observations: [{ region: 'eye', visibility: 'ambiguous', description: '合成眼部资料，不能作真实识别结论' }],
   inferences: [], questions: ['是否保留这项候选？'], insufficient: '合成图不验证真实观察质量' };
@@ -74,7 +78,7 @@ async function make() {
   };
   const cold = (name: string) => (..._args: unknown[]): never => { ordinary.push(name); throw Error(`Unexpected cold port: ${name}`); };
   const env: Record<string, unknown> & { motionLibrary: { fixture: boolean } } = {
-    PersonalizeVisualAuthoring, visualBehaviors, createHash, path, store, VISUAL_GENE_SHA, PROFILE_FOLDER: 'soft-hearts-claude',
+    PersonalizeVisualAuthoring, visualBehaviors, createHash, path, store, VISUAL_GENE_SHA, chatModelLabel /* I-222 */, PROFILE_FOLDER: 'soft-hearts-claude',
     characterCards: { getActive: () => ({ id: characterId }) }, speechScope: () => state.scope,
     compileCharacterPersona: () => '合成角色卡', visionSupported: true,
     blushCalibrations: { keyForModel: (file: string) => state.key(file) },
@@ -112,14 +116,15 @@ async function make() {
   };
   const api = evaluate<{ service: PersonalizeVisualAuthoring; reserve: reserve;
     setGeneration(value: number): void; receipt(): unknown }>(`
+    ${WIRING_PRELUDE}
     let bodyModelGeneration=1,visualGeneReceipt=null;
     ${fn('reserveCompanionAuthoring')}
     ${fn('verifyVisualGeneTarget')}
     ${fn('verifyModelTarget')}
-    const service=${constructors[0].getText(tree)};
+    const service=${constructors[0]};
     return {service,reserve:reserveCompanionAuthoring,setGeneration:value=>{bodyModelGeneration=value;},receipt:()=>visualGeneReceipt};`, env);
   const handlers = new Map<string, (event: any, ...args: any[]) => any>();
-  evaluate(`${fn('scopedHost')}\n${variable('mutations')}\n${variable('mutate')}\n${registrations}`, {
+  evaluate(`${ipcGuardSource() /* wiring rewrite step 3: electron/wiring/ipc-wiring.ts */}\n${variable('mutations')}\n${variable('mutate')}\n${registrations}`, {
     MutationQueue, controls, windows: () => [controls, pet], visualAuthoring: api.service,
     ipcMain: { handle: (key: string, handler: any) => handlers.set(key, handler) },
   });
@@ -180,7 +185,7 @@ test('actual reserve rejects every busy source without aborting, queuing or chan
       readingInputSpeech: false, voiceHost: { busy: false }, proactiveVision: { pendingId: null }, replySpeechBusy: () => false,
       ambientSpeakingOwners: new Set(), syncFatigueActivity: () => { syncs++; } };
     row.change(env); const before = [...env.pending.entries()], controller = new AbortController();
-    const reserve = evaluate<reserve>(`${fn('reserveCompanionAuthoring')}\nreturn reserveCompanionAuthoring;`, env);
+    const reserve = evaluate<reserve>(`${WIRING_PRELUDE}\n${fn('reserveCompanionAuthoring')}\nreturn reserveCompanionAuthoring;`, env); // its needs (大脑's, step 4h) read env's names
     assert.throws(() => reserve(1, 'new', controller, 'visual-authoring'), /不会打断或排队/, row.name);
     assert.deepEqual([...env.pending.entries()], before, row.name); assert.equal(controller.signal.aborted, false); assert.equal(syncs, 0);
   }
@@ -250,7 +255,7 @@ test('actual constructor never substitutes another provider or probes a connecti
 }));
 
 test('actual preload exposes fixed visual data routes and removes the exact cancellation listener', async () => {
-  const raw = await readFile(new URL('../electron/preload.ts', import.meta.url), 'utf8');
+  const raw = await readFile(new URL('../electron/safety/preload.ts', import.meta.url), 'utf8');
   const ast = ts.createSourceFile('preload.ts', raw, ts.ScriptTarget.Latest, true);
   const subscribe = ast.statements.find((n): n is ts.FunctionDeclaration => ts.isFunctionDeclaration(n) && n.name?.text === 'subscribe'); assert.ok(subscribe);
   const calls: any[][] = [], listeners = new Map<string, (event: unknown, data: unknown) => void>();
@@ -273,6 +278,7 @@ function targetFixture() {
   const store: any = { current: { model: { path: 'synthetic-configured-gene.pmx', url: 'mmd-asset://synthetic/gene' } } };
   let checks = 0; const waiting = deferred<string>();
   const target = evaluate<{ verify(): Promise<boolean>; generation(value: number): void; receipt(): unknown }>(`
+    ${WIRING_PRELUDE}
     let bodyModelGeneration=7,visualGeneReceipt=null;
     ${fn('verifyVisualGeneTarget')}
     return {verify:verifyVisualGeneTarget,generation:value=>{bodyModelGeneration=value;},receipt:()=>visualGeneReceipt};`, {
@@ -302,7 +308,7 @@ for (const reason of ['path', 'url', 'generation', 'removed-model', 'wrong-hash'
 test('actual Gene target verifier refuses absent models without calibration and generalizes lookup failure', async () => {
   const missing = targetFixture(); missing.store.current.model = null;
   assert.equal(await missing.verify(), false); assert.equal(missing.checks(), 0); assert.equal(missing.receipt(), null);
-  const failure = evaluate<() => Promise<boolean>>(`let bodyModelGeneration=1,visualGeneReceipt=null;${fn('verifyVisualGeneTarget')}\nreturn verifyVisualGeneTarget;`, {
+  const failure = evaluate<() => Promise<boolean>>(`${WIRING_PRELUDE}\nlet bodyModelGeneration=1,visualGeneReceipt=null;${fn('verifyVisualGeneTarget')}\nreturn verifyVisualGeneTarget;`, {
     store: { current: { model: { path: 'synthetic-private-path', url: 'mmd-asset://synthetic/private' } } }, VISUAL_GENE_SHA,
     blushCalibrations: { keyForModel: async () => { throw Error('synthetic internal failure'); } },
   });

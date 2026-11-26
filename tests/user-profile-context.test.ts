@@ -3,13 +3,15 @@ import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { UserProfileStore, type UserProfileKind } from '../electron/user-profile';
-import { UserProfileContext, selectUserProfileContext } from '../electron/user-profile-context';
-import { buildCodexChatPrompt, profileConversationData } from '../electron/conversation-context';
+import { UserProfileStore, type UserProfileKind } from '../electron/memory/user-profile';
+import { UserProfileContext, selectUserProfileContext } from '../electron/memory/user-profile-context';
+import { buildCodexChatPrompt, profileConversationData } from '../electron/brain/conversation-context';
 import ts from 'typescript';
-import type { ChatMessage } from '../shared/contracts';
-import { TurnFrames } from '../electron/look-attachments';
-import { NO_LISTEN_ASK } from '../electron/listen-together/core';
+import type { ChatMessage } from '../shared/foundation/chat';
+import { TurnFrames } from '../electron/senses/look-attachments';
+import { NO_LISTEN_ASK } from '../electron/senses/listen-together/core';
+// Reads as text (test-affected selects this test when they change): 'electron/main.ts' (wiring rewrite step 4c: with electron/wiring/*.ts).
+import { WIRING_PRELUDE, wiringFunction, wiringSource } from './helpers/wiring-source';
 
 async function fixture(run: (store: UserProfileStore, context: UserProfileContext) => Promise<void>) {
   const root = fileURLToPath(new URL('./owned-temp/user-profile-context/', import.meta.url));
@@ -42,7 +44,9 @@ function contextData(text: string) {
 }
 
 test('Claude resolves current host data after preparation instead of retaining an earlier profile copy', async () => {
-  const main = await readFile(new URL('../electron/main.ts', import.meta.url), 'utf8');
+  // Wiring rewrite step 4c: the chat handler stays in electron/main.ts; chatContextData is 感知's (electron/wiring/senses-wiring.ts). Both are
+  // read across the wiring, still exactly one; what the helper reads from its needs comes from the names below (WIRING_PRELUDE).
+  const main = wiringSource();
   const tree = ts.createSourceFile('main.ts', main, ts.ScriptTarget.ES2022, true);
   const chats: ts.CallExpression[] = [];
   const visit = (node: ts.Node) => {
@@ -57,16 +61,14 @@ test('Claude resolves current host data after preparation instead of retaining a
     ts.forEachChild(node, visitChat);
   };
   visitChat(chats[0]); assert.equal(getters.length, 1); const getter = getters[0]; assert.ok(getter.body);
-  const helpers = tree.statements.filter((node): node is ts.FunctionDeclaration =>
-    ts.isFunctionDeclaration(node) && node.name?.text === 'chatContextData');
-  assert.equal(helpers.length, 1);
-  const body = ts.transpileModule(`${helpers[0].getText(tree)}\nfunction resolve() ${getter.body.getText(tree)}`, {
+  const helper = wiringFunction('chatContextData');
+  const body = ts.transpileModule(`${WIRING_PRELUDE}\n${helper}\nfunction resolve() ${getter.body.getText(tree)}`, {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
   }).outputText;
   // turnFrames / sightAgain: the getter also recomposes the perception line for this turn's frames (Codex T-205 round 4); none here.
   // turn.withCurrentRecall: the late recall check (Codex T-222 E04, tests/recall-late-window.test.ts); nothing was recalled here.
   // listenAsk.current: the same check for 一起听 (tests/listen-late-window.test.ts); no 一起听 block here.
-  const factory = new Function('buildCodexChatPrompt', 'settings', 'request', 'userProfileContext', 'profileContextLease', 'visualSelfData', 'visualSelfLease', 'prompt', 'languageProfile', 'turnFrames', 'sightAgain', 'turn', 'listenAsk', body + '\nreturn resolve;');
+  const factory = new Function('buildCodexChatPrompt', 'settings', 'request', 'userProfileContext', 'profileContextLease', 'visualSelfData', 'visualSelfLease', 'prompt', 'languageProfile', 'turnFrames', 'sightAgain', 'turn', 'listenAsk', 'chatMessages', body + '\nreturn resolve;'); // chatMessages: I-134 new chat off here, the renderer's window
   await fixture(async (store, context) => {
     store.setEnabled(true);
     await add(store, 'Please keep replies concise.', 'late-resolve', 'preference');
@@ -76,7 +78,7 @@ test('Claude resolves current host data after preparation instead of retaining a
     let reads = 0;
     const resolve = factory(buildCodexChatPrompt, { persona: 'Synthetic persona.' }, { messages, attachments: [] },
       { read: (lease: string) => { reads++; return context.read(lease); } }, handle, () => undefined, null, plain, undefined,
-      new TurnFrames([]), () => { throw new Error('no frame was dropped'); }, { withCurrentRecall: (persona: string) => persona }, NO_LISTEN_ASK);
+      new TurnFrames([]), () => { throw new Error('no frame was dropped'); }, { withCurrentRecall: (persona: string) => persona }, NO_LISTEN_ASK, messages);
     const task: { readonly prompt: string } = Object.defineProperty({}, 'prompt', { get: resolve }) as { readonly prompt: string };
     assert.equal(reads, 0);
     assert.ok(task.prompt.includes('<private-user-profile-data>'));
@@ -85,7 +87,7 @@ test('Claude resolves current host data after preparation instead of retaining a
     assert.equal(task.prompt, plain); assert.equal(reads, 2);
     context.release(handle);
   });
-  const source = await readFile(new URL('../electron/codex.ts', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../electron/safety/codex.ts', import.meta.url), 'utf8');
   const run = source.slice(source.indexOf('async function runCodex('));
   const preparation = run.indexOf('await prepareChat('), dispatch = run.indexOf('child.stdin.end(task.prompt)');
   assert.ok(preparation >= 0 && preparation < dispatch);

@@ -6,8 +6,8 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { transformSync } from 'esbuild';
-import type { PetReplyUpdate } from '../shared/contracts';
-import type { ReplyLayout } from '../electron/reply-layout';
+import type { PetReplyUpdate } from '../shared/foundation/pet-reply';
+import type { ReplyLayout } from '../electron/brain/reply-layout';
 
 interface ReplyHost { update(value: PetReplyUpdate): void; waitForPresentation(text: string, signal?: AbortSignal): Promise<boolean>; isPresentationCurrent(text: string): boolean; clear(): void; dispose(): void; }
 interface Render { presentationToken: string | null; text?: string; waiting: boolean; layout: ReplyLayout; interactionOpacity: number; }
@@ -37,7 +37,7 @@ function hostFixture(t: TestContext, deferLoad = false) {
     hide() { const changed = this.visible; this.visible = false; if (changed) this.emit('hide'); }
     destroy() { this.destroyed = true; this.emit('closed'); }
   }
-  const filename = new URL('../electron/reply-window.ts', import.meta.url), localRequire = createRequire(filename), module = { exports: {} };
+  const filename = new URL('../electron/brain/reply-window.ts', import.meta.url), localRequire = createRequire(filename), module = { exports: {} };
   const code = transformSync(readFileSync(filename, 'utf8'), { loader: 'ts', format: 'cjs', target: 'es2022' }).code;
   const requireFixture = (name: string) => name === 'electron' ? { BrowserWindow: WindowFixture, ipcMain,
     screen: { getDisplayNearestPoint: () => ({ workArea: { x: 0, y: 0, width: 1920, height: 1040 } }) } } : localRequire(name);
@@ -170,7 +170,7 @@ function preloadFixture() {
   const received = new EventEmitter(), sent: Array<{ channel: string; token: unknown }> = [];
   const windowEvents = new Map<string, () => void>(), documentEvents = new Map<string, () => void>();
   const frames = new Map<number, () => void>(); let frameId = 0, now = 0;
-  const body = { dataset: {} as Record<string, string>, style: {} as Record<string, string>, textContent: '', scrollTop: 0, scrollHeight: 2400,
+  const body = { dataset: {} as Record<string, string>, style: {} as Record<string, string>, textContent: '', scrollTop: 0, scrollHeight: 2400, clientHeight: 0,
     getBoundingClientRect: () => ({ left: 20, right: 300, top: 20, bottom: 120, width: 280, height: 100 }) };
   const svg = { dataset: {} as Record<string, string> }, paths = new Map<string, string>();
   const document = { body: { style: { opacity: '1' } }, visibilityState: 'visible',
@@ -178,12 +178,12 @@ function preloadFixture() {
     querySelector: () => ({ setAttribute: (key: string, value: string) => { paths.set(key, value); } }),
     addEventListener: (name: string, callback: () => void) => { documentEvents.set(name, callback); } };
   const window = { addEventListener: (name: string, callback: () => void) => { windowEvents.set(name, callback); } };
-  const filename = new URL('../electron/reply-preload.ts', import.meta.url), module = { exports: {} };
+  const filename = new URL('../electron/brain/reply-preload.ts', import.meta.url), module = { exports: {} };
   const code = transformSync(readFileSync(filename, 'utf8'), { loader: 'ts', format: 'cjs', target: 'es2022' }).code;
   const requireFixture = (name: string) => name === 'electron'
     ? { ipcRenderer: { on: (channel: string, callback: (...args: unknown[]) => void) => { received.on(channel, callback); }, send: (channel: string, token: unknown) => { sent.push({ channel, token }); } } }
-    : name === '../shared/reply-waiting-presentation' ? { renderReplyWaiting: (node: typeof body, waiting: boolean) => { if (waiting) node.textContent = '…'; } }
-      : name === './reply-pieces-dom' ? createRequire(filename)(name)
+    : name === '../../shared/brain/reply-waiting-presentation' ? { renderReplyWaiting: (node: typeof body, waiting: boolean) => { if (waiting) node.textContent = '…'; } }
+      : (name === './reply-pieces-dom' || name === './reply-scroll') ? createRequire(filename)(name)
       : (() => { throw new Error(`Unexpected static-preload import: ${name}`); })();
   new Function('require', 'module', 'exports', 'document', 'window', 'requestAnimationFrame', 'cancelAnimationFrame', 'getComputedStyle', 'performance', code)(
     requireFixture, module, module.exports, document, window,
@@ -192,7 +192,7 @@ function preloadFixture() {
   const layout: ReplyLayout = { bounds: { x: 0, y: 0, width: 320, height: 140 }, body: { x: 20, y: 20, width: 280, height: 100 },
     tip: { x: 35, y: 132 }, side: 'right', above: true };
   return { sent, body, svg, paths, document,
-    render(token: string | null, extra: { text?: string; waiting?: boolean; interactionOpacity?: number } = {}) {
+    render(token: string | null, extra: { text?: string; waiting?: boolean; interactionOpacity?: number; layout?: ReplyLayout } = {}) {
       received.emit('desk:reply-render', {}, { text: '完整的实际浮窗文字', waiting: false, layout, interactionOpacity: 1, presentationToken: token, ...extra });
     },
     frame() { now += 16; const callbacks = [...frames.values()]; frames.clear(); for (const callback of callbacks) callback(); },
@@ -237,4 +237,72 @@ test('native preview starts at the first sentence, follows new text, and geometr
     f.body.scrollTop=50; f.render(null,{text:next}); assert.equal(f.body.scrollTop,50);
     f.render(null,{waiting:true,text:''}); f.render(null,{text:'下一轮首句。'}); assert.equal(f.body.scrollTop,0);
   } finally { f.dispose(); }
+});
+
+// 2026-11-21 (the bubble was cut off at the left and the last sentences did not show; docs/claude/2026-11-21-bubble-placement.md): a placement that only changes the width.
+test('native preview: a bubble made narrower with the same text stays on its newest line; a reader who scrolled up is left alone', () => {
+  const f = preloadFixture();
+  try {
+    const text = '第一句。\n第二句。'.repeat(300) + '\n最后一句。';
+    f.render(null, { text: '第一句。' }); f.render(null, { text });
+    f.body.clientHeight = 165; Object.defineProperty(f.body, 'scrollHeight', { configurable: true, get: () => f.body.style.width === '150px' ? 3300 : f.body.style.width === '120px' ? 3600 : 2400 }); // taller when narrower
+    f.body.scrollTop = 2400 - 165; // following: at the end
+    f.render(null, { text, layout: { bounds: { x: 0, y: 0, width: 200, height: 140 }, body: { x: 20, y: 20, width: 150, height: 100 }, tip: { x: 35, y: 132 }, side: 'left', above: true } });
+    assert.equal(f.body.scrollTop, 3300, 'the last line is still in view');
+    f.body.scrollTop = 50;
+    f.render(null, { text });
+    assert.equal(f.body.scrollTop, 50, 'the reader\'s own position is kept');
+  } finally { f.dispose(); }
+});
+
+// I-171 (docs/claude/2026-11-21-i171-minimize-keeps-her.md): a minimize is a step away; only a hide to the tray clears her bubble.
+test('I-171: a minimize keeps the bubble\'s words and shows them again, with a fresh paint proof, when the window comes back', async t => {
+  const f = hostFixture(t); f.show('她正说着一半的话'); await tick();
+  const before = f.token(); assert.ok(before); assert.equal(f.child().visible, true);
+  f.owner.minimized = true; f.owner.visible = false; f.owner.emit('minimize'); f.child().hide();
+  assert.equal(await f.reply.waitForPresentation('她正说着一半的话'), false, 'minimized: nothing can be proven shown');
+  f.owner.minimized = false; f.owner.visible = true; f.owner.emit('restore'); await tick();
+  assert.equal(f.child().visible, true, 'her words are still there');
+  const after = f.token(); assert.ok(after); assert.notEqual(after, before, 'a fresh paint proof, the old one is void');
+  const shown = f.reply.waitForPresentation('她正说着一半的话'); f.ack(after);
+  assert.equal(await shown, true, 'the same text is proven shown again');
+});
+
+test('I-171: a hide to the tray still clears the bubble, and a restore afterwards does not bring it back', async t => {
+  const f = hostFixture(t); f.show('她正说着'); await tick();
+  f.owner.visible = false; f.owner.emit('hide'); assert.equal(f.child().visible, false);
+  f.owner.visible = true; f.owner.emit('restore'); await tick();
+  assert.equal(f.child().visible, false, 'cleared by the hide: nothing to bring back');
+});
+
+test('I-171: a reply the page cleared or replaced while minimized is not revived on restore', async t => {
+  const cleared = hostFixture(t); cleared.show('旧的回复'); await tick();
+  cleared.owner.minimized = true; cleared.owner.visible = false; cleared.owner.emit('minimize');
+  cleared.reply.update({ state: 'hidden' });
+  cleared.owner.minimized = false; cleared.owner.visible = true; cleared.owner.emit('restore'); await tick();
+  assert.equal(cleared.child().visible, false, 'a hidden reply stays gone');
+  const replaced = hostFixture(t); replaced.show('旧的回复'); await tick();
+  replaced.owner.minimized = true; replaced.owner.visible = false; replaced.owner.emit('minimize');
+  replaced.show('新的回复'); // the page sent the new reply while minimized
+  replaced.owner.minimized = false; replaced.owner.visible = true; replaced.owner.emit('restore'); await tick();
+  assert.equal(replaced.reply.isPresentationCurrent('旧的回复'), false, 'the old text can never be proven');
+  const shown = replaced.reply.waitForPresentation('新的回复'); replaced.ack(replaced.token());
+  assert.equal(await shown, true, 'the new one shows');
+});
+
+// I-174 item 9 (docs/claude/2026-11-21-i174-parity-fixes.md; user: she finishes saying and reading): minimized, her voice goes on following
+// the bubble (the words are kept and shown on restore); a hide to the tray still ends it. Before, a minimized owner failed the follow proof
+// at once and the reading stopped at the next sentence.
+test('I-174: a minimized window still lets her voice follow the bubble (the next sentence is read); a tray hide does not', async t => {
+  type Follow = { waitForCompletedPrefix(full: string, end: number, signal: AbortSignal, ms: number, commit: (text: string) => boolean): Promise<boolean> };
+  const f = hostFixture(t); f.show('第一句。第二句。'); await tick();
+  f.owner.minimized = true; f.owner.visible = false; f.owner.emit('minimize'); f.child().hide();
+  let committed = '';
+  const ok = await (f.reply as unknown as Follow).waitForCompletedPrefix('第一句。第二句。第三句。', 0, new AbortController().signal, 2000, text => { committed = text; return true; });
+  assert.equal(ok, true, 'minimized: the bubble is still hers, the next sentence may be read');
+  assert.equal(committed, '第一句。第二句。');
+  const hidden = hostFixture(t); hidden.show('第一句。'); await tick();
+  hidden.owner.visible = false; hidden.owner.emit('hide');
+  const refused = await (hidden.reply as unknown as Follow).waitForCompletedPrefix('第一句。第二句。', 0, new AbortController().signal, 300, () => true);
+  assert.equal(refused, false, 'a tray hide: gone, nothing more is read');
 });

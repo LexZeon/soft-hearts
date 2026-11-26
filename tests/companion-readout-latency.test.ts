@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import { mkdtemp, realpath, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CompanionService } from '../electron/companion';
-import { ReplyPresentationState } from '../src/ui/reply-presentation';
-import { CompletedReplySpeech } from '../electron/completed-reply-speech';
+import { CompanionService } from '../electron/brain/companion';
+import { ReplyPresentationState } from '../src/brain/reply-presentation';
+import { CompletedReplySpeech } from '../electron/voice/completed-reply-speech';
 
 function deferred() { let resolve!: () => void; const promise=new Promise<void>(done=>{resolve=done;});return {promise,resolve}; }
 

@@ -10,7 +10,7 @@ import { retargetBvhToGene, parseBvh } from './lib/bvh-to-gene.mjs';
 if (process.argv.length > 2) throw new Error('This offline preparation script accepts no paths or URLs.');
 const workspace = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const local = path.join(workspace, '.local/motion-sources');
-const catalogFile = path.join(workspace, 'shared/motion-catalog.json');
+const catalogFile = path.join(workspace, 'shared/actions/motion-catalog.json');
 const catalog = JSON.parse(await readFile(catalogFile, 'utf8'));
 const gene = catalog.packs.find(pack => pack.id === 'gene');
 const parser = new MMDParser.Parser();

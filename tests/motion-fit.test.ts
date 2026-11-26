@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildModelProfile } from '../shared/model-profile';
+import { buildModelProfile } from '../shared/stage/model-profile';
 import {
   LINEAR_INTERPOLATION, buildRetargetRig, evaluatePose, planRetarget, qarc, qconj, qrotate, retargetTracks, rigFromCompact, tracksOnRig, vnormalize, vsub,
   type CompactRig, type Quat, type RetargetRig, type TrackKey, type Tracks, type VmdLike,
-} from '../shared/motion-retarget';
-import { FIT_SAMPLE_SECONDS, adaptMotion, checkTracks, fitFrames, fitMotion, newIssues, segmentDistance, usesFittedBody } from '../shared/motion-fit';
-import geneSource from '../shared/retarget-gene-source.json';
+} from '../shared/actions/motion-retarget';
+import { FIT_SAMPLE_SECONDS, adaptMotion, checkTracks, fitFrames, fitMotion, newIssues, segmentDistance, usesFittedBody } from '../shared/actions/motion-fit';
+import geneSource from '../shared/foundation/retarget-gene-source.json';
 import { profileInput, toyModel, type ModelData, type ToyOptions } from './helpers/model-fixtures';
 import { catalogMotions, loadBundledMotion, readGene } from './helpers/bundled-motions';
 
@@ -99,7 +99,7 @@ test('feet, joint-limit and stretch checks catch constructed failures on the tar
   const ik = (side: 'Left' | 'Right') => target.slots[`legIk${side}`]!;
   const check = (tracks: Tracks) => checkTracks(target, tracks, last).issues.map(issue => issue.check);
   assert.deepEqual(check(new Map()), [], 'rest pose is clean');
-  // Both feet lifted together (no jump in a desk pet's library): floating.
+  // Both feet lifted together (no jump in a desk companion's library): floating.
   assert.deepEqual(check(new Map([[ik('Left'), still(IDENTITY, [0, 1.2, 0])], [ik('Right'), still(IDENTITY, [0, 1.2, 0])]])), ['floating']);
   // A planted foot dragged sideways: sliding.
   const drag = keys([[0, IDENTITY], [8, IDENTITY, [2, 0, 0]], [16, IDENTITY], [24, IDENTITY, [2, 0, 0]], [32, IDENTITY], [40, IDENTITY, [2, 0, 0]], [48, IDENTITY], [60, IDENTITY]]);

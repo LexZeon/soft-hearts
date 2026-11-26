@@ -1,7 +1,7 @@
 // R28 / F1 (real-chat finding 3): the card's example lines are a tone reference, and an ellipsis is not the habitual opening.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { EXAMPLES_HEADING, OPENING_VARIETY_RULE, compileCharacterPersona, type CharacterTextDraft } from '../shared/character-cards';
+import { EXAMPLES_HEADING, OPENING_VARIETY_RULE, compileCharacterPersona, type CharacterTextDraft } from '../shared/cards/character-cards';
 import { containsExample, exampleLines, legacyPersona, openingLine, openingStats, opensWithEllipsis, runOpeningStats } from '../scripts/lib/fidelity-openings';
 import { FIDELITY_CARDS } from '../scripts/lib/fidelity-scenarios';
 

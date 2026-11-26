@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import catalogData from "../shared/motion-catalog.json";
-import type { CatalogMotion, MotionCatalog } from "../shared/motion-library";
-import { filterMotions, listTags } from "../src/ui/motion-filters";
+import catalogData from "../shared/actions/motion-catalog.json";
+import type { CatalogMotion, MotionCatalog } from "../shared/actions/motion-library";
+import { filterMotions, listTags } from "../src/actions/motion-filters";
 
 const catalog = catalogData as MotionCatalog;
 const motions = catalog.packs.flatMap(pack => pack.motions);

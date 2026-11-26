@@ -4,7 +4,7 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { writeTestMotion } from "../scripts/create-test-motion.mjs";
-import { createVmdParser, readableVmdHeader } from "../src/stage/vmd";
+import { createVmdParser, readableVmdHeader } from "../src/foundation/vmd";
 
 test("a truncated Shift-JIS model label does not corrupt or rewrite VMD motion data", async () => {
   const directory = await mkdtemp(path.join(tmpdir(), "soft-hearts-vmd-"));

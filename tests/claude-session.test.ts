@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import type { ChatMessage } from '../shared/contracts';
-import { buildCodexChatPrompt, buildCompanionPersona } from '../electron/conversation-context';
-import { MoodReplyProtocol } from '../electron/mood-chat';
-import { CLAUDE_FOLLOW_UP_HEADER, CLAUDE_SESSION_SYSTEM_PROMPT, sessionText } from '../electron/claude-session-prompt';
-import { PersistentClaudeChat, persistentClaudeEnabled, type ClaudeTimingInfo, type CompanionClaudeTask, type PersistentClaudeOptions } from '../electron/claude-session';
-import { ClaudeChatProcess } from '../electron/claude-process';
-import { CLAUDE_CHAT_SYSTEM_PROMPT } from '../electron/claude';
+import type { ChatMessage } from '../shared/foundation/chat';
+import { buildCodexChatPrompt, buildCompanionPersona } from '../electron/brain/conversation-context';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
+import { CLAUDE_FOLLOW_UP_HEADER, CLAUDE_SESSION_SYSTEM_PROMPT, sessionText } from '../electron/brain/claude-session-prompt';
+import { PersistentClaudeChat, persistentClaudeEnabled, type ClaudeTimingInfo, type CompanionClaudeTask, type PersistentClaudeOptions } from '../electron/brain/claude-session';
+import { ClaudeChatProcess } from '../electron/brain/claude-process';
+import { CLAUDE_CHAT_SYSTEM_PROMPT } from '../electron/brain/claude';
 
 /**
  * A fake `claude` that speaks Claude Code's multi-turn stream-json protocol:
@@ -423,7 +423,7 @@ test('关掉之后的旧帧: the frames and the turn persona are read where the 
   const f = await fake();
   const { chat } = manager(f.script);
   try {
-    // electron/main.ts hands these over as getters over the turn's frames (electron/look-attachments.ts TurnFrames).
+    // electron/main.ts hands these over as getters over the turn's frames (electron/senses/look-attachments.ts TurnFrames).
     let sharing = true;
     const task = turn([u('你看看我屏幕')], { images: [image] });
     Object.defineProperty(task, 'imageDataUrls', { get: () => (sharing ? [image] : []) });
@@ -577,7 +577,7 @@ test('a CLI that reports init only once still accepts later turns of the same ve
   } finally { chat.dispose(); await f.cleanup(); }
 });
 
-test('熟悉度: the relationship lines sit right after the persona in a session\'s opening message only; a changed switch, stage or nickname opens a new session, a new day number does not', async () => {
+test('熟悉度: the relationship lines sit right after the persona in a session\'s opening message only; a changed switch, stage or nickname rides on the next follow-up once (no new process), a new day number not at all', async () => {
   const f = await fake();
   const { chat } = manager(f.script);
   const withLines = (messages: ChatMessage[], openingContext: string, openingKey: string, id: string) => {
@@ -588,7 +588,7 @@ test('熟悉度: the relationship lines sit right after the persona in a session
     Object.assign(session, { openingContext, openingKey });
     return task;
   };
-  const day3 = '【你们的关系】你们认识第 3 天。', day4 = '【你们的关系】你们认识第 4 天。', stage = '【你们的关系】你们认识第 4 天，现在的关系：熟起来。';
+  const day3 = '【你们的关系】你们认识第 3 天。', day4 = '【你们的关系】你们认识第 4 天。', stage = '【你们的关系】你们认识第 4 天，现在熟的程度：熟起来了。';
   try {
     await chat.stream(withLines([u('你好')], day3, 'off|', 'one'), new AbortController().signal, () => {});
     await chat.stream(withLines([u('你好'), a('第1轮回复。'), u('今天有点累')], day3, 'off|', 'two'), new AbortController().signal, () => {});
@@ -599,13 +599,16 @@ test('熟悉度: the relationship lines sit right after the persona in a session
     // The next day, same chat: the day number alone does not restart the session.
     await chat.stream(withLines([u('你好'), a('第1轮回复。'), u('今天有点累'), a('第2轮回复。'), u('晚安')], day4, 'off|', 'three'), new AbortController().signal, () => {});
     assert.equal((await f.spawns()).length, 1);
-    // The card's switch was turned on: a new session opens with the new lines and the whole window.
+    // The stage moved (since I-210 it does on the 3rd round of day 1): the warm process stays and this one follow-up carries the new lines
+    // (docs/claude/2026-11-25-first-turn-empty.md; a restart here made turn 4 of every fresh profile cold).
     await chat.stream(withLines([u('你好'), a('第1轮回复。'), u('今天有点累'), a('第2轮回复。'), u('晚安'), a('第3轮回复。'), u('早')], stage, 'warming|', 'four'), new AbortController().signal, () => {});
-    const spawns = await f.spawns();
-    assert.equal(spawns.length, 2);
-    const reopened = (await f.userTexts(spawns[1].pid))[0];
-    assert.ok(reopened.startsWith(`${persona}\n\n${stage}\n\n`));
-    assert.equal(JSON.parse(reopened.split('<conversation-data>\n')[1].split('\n</conversation-data>')[0]).history.length, 6);
+    assert.equal((await f.spawns()).length, 1, 'a changed stage does not restart her process');
+    const carried = (await f.userTexts())[3];
+    assert.ok(carried.includes(stage), 'the follow-up under the new tag carries the new relationship lines');
+    // Told once: the next turn under the same tag carries nothing about the relationship again.
+    await chat.stream(withLines([u('你好'), a('第1轮回复。'), u('今天有点累'), a('第2轮回复。'), u('晚安'), a('第3轮回复。'), u('早'), a('第4轮回复。'), u('嗯')], stage, 'warming|', 'five'), new AbortController().signal, () => {});
+    assert.equal((await f.spawns()).length, 1);
+    assert.ok(!(await f.userTexts())[4].includes('你们认识第'));
   } finally { chat.dispose(); await f.cleanup(); }
 });
 

@@ -3,8 +3,9 @@ import { CONTROL_ROOTS, navigateControlPage } from './lib/control-navigation.mjs
 import { SMOKE_CLAUDE_MODEL_ALIASES, SMOKE_POSE } from './lib/smoke-expectations.mjs';
 import { SMOKE_CLAUDE_MODEL, createSmokeIsolation, installRendererBoundary, inspectRendererBoundary, rejectExternalSmokeFlags } from './lib/smoke-isolation.mjs';
 import { FAKE_CLAUDE_REPLY } from './lib/fake-claude.mjs';
+import { APP_QUIT_CAP_MS, CLEANUP_BUDGET_MS, IDENTITY_CAP_MS, SLOW_TEARDOWN_MS, askQuitWithMarker, endedTracker, playwrightCollector, processRunning, quitOwnedApp } from './lib/smoke-quit.mjs';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { writeFileSync } from 'node:fs';
+import { existsSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -80,8 +81,8 @@ async function setDeveloperMode(enabled) {
 }
 /**
  * I-001 local pose sensing, in the packaged app, without a download and without any camera (2026-11-03: in the
- * stable build the pet's camera button seemed to do nothing). The host is up, its bundled files are in app.asar,
- * the inference process starts from there and answers, and a refused camera click says why in the pet and brings
+ * stable build the companion's camera button seemed to do nothing). The host is up, its bundled files are in app.asar,
+ * the inference process starts from there and answers, and a refused camera click says why in the companion and brings
  * the control window's question into view — the second time too.
  */
 async function checkPoseHost() {
@@ -97,7 +98,7 @@ async function checkPoseHost() {
   assert.deepEqual(files, Object.values(SMOKE_POSE.bundle).map(() => true), 'Packaged pose-sensing files are missing from app.asar.');
   // The real worker entry, forked the way the app forks it, with a runtime path that does not exist: it must start
   // inside the package, refuse to load ("runtime") and end on stop. Nothing native is loaded. It ends itself
-  // without the normal exit path (electron/pose/worker.ts endProcess, 2026-11-03), so the exit code is the
+  // without the normal exit path (electron/senses/pose/worker.ts endProcess, 2026-11-03), so the exit code is the
   // system's; what matters is that the process is really gone at once, not lingering into the app's own quit.
   const worker = await instance.evaluate(async ({ app, utilityProcess }, { name, missing }) => {
     const path = process.getBuiltinModule('node:path');
@@ -115,13 +116,18 @@ async function checkPoseHost() {
     });
   }, { name: SMOKE_POSE.bundle.worker, missing: path.join(isolation.root, 'no-pose-runtime', 'onnxruntime-node') });
   assert.deepEqual(worker.messages, [{ type: 'failed', reason: 'runtime' }], 'The packaged pose worker must start from app.asar and answer.');
-  assert.ok(typeof worker.code === 'number' && worker.exitMs < 1500, 'The packaged pose worker must end on stop: ' + JSON.stringify(worker));
+  // It must end by itself (an exit event, not the 15 s timeout). How fast the system reports that exit is recorded, not
+  // asserted: on a busy machine, or a package a virus scanner is still reading, the report came 6–11 s late (2026-11-22/23)
+  // while the worker had already killed itself. The rule that keeps it from hanging is guarded in code
+  // (tests/pose-worker-self-end.test.ts and its mutation entries), independent of load.
+  assert.ok(typeof worker.code === 'number', 'The packaged pose worker must end on stop: ' + JSON.stringify(worker));
   assert.ok(Number.isInteger(worker.pid), 'The pose worker process id must be known.');
   const workerStart = performance.now();
   while (processListed(worker.pid) && performance.now() - workerStart < 3000) await pause(50);
-  poseWorkerExit = { exitMs: worker.exitMs, goneMs: Math.round(performance.now() - workerStart), listed: processListed(worker.pid) };
+  poseWorkerExit = { exitMs: worker.exitMs, slow: worker.exitMs >= 1500, goneMs: Math.round(performance.now() - workerStart), listed: processListed(worker.pid) };
+  if (poseWorkerExit.slow) console.warn(`Pose worker exit was reported ${worker.exitMs} ms after stop (busy machine or a fresh package being scanned); it did end.`);
   assert.equal(poseWorkerExit.listed, false, 'The pose worker process must be gone, not lingering after its exit event.');
-  // The user's path: only the pet on screen, click its camera button; then again with the control window on the chat page.
+  // The user's path: only the companion on screen, click its camera button; then again with the control window on the chat page.
   const controlsWindow = what => instance.evaluate(({ BrowserWindow }, what) => {
     const win = BrowserWindow.getAllWindows().find(win => /index\.html(?:\?|$)/.test(win.webContents.getURL()) && !new URL(win.webContents.getURL()).searchParams.has('pet'));
     if (what === 'hide') win.hide();
@@ -139,7 +145,7 @@ async function checkPoseHost() {
     await pet.waitForFunction(line => { const toast = document.getElementById('toast'); return toast?.classList.contains('show') && toast.textContent === line; }, SMOKE_POSE.refusedLine, { timeout: 5000 })
       .catch(() => assert.fail('The pet must say why the camera stayed off (' + attempt + ').'));
     await poll(() => controlsWindow('look'), 'control window shown (' + attempt + ')', 5000);
-    // Still readable a moment later: mood broadcasts used to wipe it at once (src/ui/ImmersiveNotice.ts).
+    // Still readable a moment later: mood broadcasts used to wipe it at once (src/stage/ImmersiveNotice.ts).
     await pause(1500);
     assert.equal(await pet.evaluate(line => { const toast = document.getElementById('toast'); return !!toast?.classList.contains('show') && toast.textContent === line; }, SMOKE_POSE.refusedLine), true,
       'The pet\'s line must stay up long enough to read (' + attempt + ').');
@@ -176,7 +182,8 @@ async function run() {
   for (const window of [page, pet]) {
     window.on('pageerror', error => { remember(error); errors.push(error.message); });
     await window.waitForSelector('#chat-input');
-    await window.locator('#voice-action-slot > [role="status"]').waitFor({ state: 'attached' });
+    // The host-owned continuation status (aria-live); the call's own "通话中" mark (I-091) is another status in the same slot.
+    await window.locator('#voice-action-slot > [role="status"][aria-live="polite"]').waitFor({ state: 'attached' });
     assert.equal(await window.locator('#voice-action-slot button[data-voice-action]').count(), 0,
       'Manual start/finish buttons were explicitly removed; the host-owned continuation status remains.');
     // Declare initial documents ready before accepting the first message.
@@ -186,6 +193,8 @@ async function run() {
       window.desktop.onChatStarted(event => window.__smokeEvents.started.push({ id: event.id, owner: event.owner }));
       window.desktop.onStream(event => window.__smokeEvents.stream.push({ id: event.id, kind: event.kind, type: event.type, text: event.text })); });
   }
+  // Overhaul step 8: the windows load while the app still starts its parts; the task refusal waits until it registered its handlers.
+  await isolation.afterAppReady(instance, page);
   await page.waitForSelector('#stage canvas');
   assert.deepEqual(await page.locator('#control-navigation > .control-nav-roots > li > button[data-nav-group]').evaluateAll(nodes => nodes.map(node => node.getAttribute('data-nav-node'))), [...CONTROL_ROOTS]);
   if (process.env.MMD_TEST_MODEL) {
@@ -230,7 +239,12 @@ async function run() {
   assert.equal(await page.locator('.message').count(), 0);
   const next = await send('新的对话'); await page.waitForFunction(() => document.querySelector('#chat-state')?.textContent === '回复完成');
   assert.notEqual(next.turn.spawn, first.turn.spawn, 'A new conversation must not continue the old Claude Code process.');
-  assert.ok(next.turn.opening && next.turn.historyLength === 0, 'History cleared: the new session opens with an empty history window.');
+  // I-134 long chat is on in every channel since 2026-11-25 (user: 发布版和稳定版最好都是默认我现在开发版的设置): 「新对话」 clears the
+  // window and starts a fresh process, but she still reads today's chat from the local records, so the opening carries it.
+  const longChat = process.env.SOFT_HEARTS_LONG_CHAT !== '0';
+  assert.ok(next.turn.opening && (longChat ? next.turn.historyLength > 0 : next.turn.historyLength === 0), longChat
+    ? 'Long chat: the new session opens with today\'s chat from the local records (one conversation per character).'
+    : 'History cleared: the new session opens with an empty history window.');
   phase = 'fake-claude-receipts';
   await poll(() => [first, next].every(record => latest(record).replies === 1), 'actual fake Claude Code replies finished');
   for (const window of [page, pet]) {
@@ -294,10 +308,11 @@ async function run() {
   if (process.env.MMD_TEST_MODEL) await page.waitForFunction(() => document.querySelector('#stage-status')?.textContent === '模型已就绪');
   await setDeveloperMode(false);
   const boundary = await isolation.evidence(instance);
-  assert.equal(boundary.fetchAttempts, 0); assert.equal(boundary.captureAttempts + boundary.taskAttempts + boundary.browserAttempts + boundary.realtimeAttempts, 0);
+  assert.equal(boundary.fetchAttempts, 0); assert.ok(boundary.taskRefusal && boundary.taskProbes === 3, 'The task refusal was in place and answered only its own probes.');
+  assert.equal(boundary.captureAttempts + boundary.taskAttempts + boundary.browserAttempts + boundary.realtimeAttempts, 0);
   // Claude Code launches. Chat: only the conversation's process and the fresh one after new-chat (a spare may be pre-started).
   // I-037 reactions (on in development builds) launch their own judges: one-shot calls, or the warm judge process
-  // (electron/inner-loop/warm-line.ts), which may start at any moment while the app is idle. They are told apart by their system
+  // (electron/initiative/inner-loop/warm-line.ts), which may start at any moment while the app is idle. They are told apart by their system
   // prompt once each fake process said hello (2026-11-07: a warm judge started before this check made the old single count 5).
   assert.deepEqual(boundary.claude.denied, []);
   for (const spawn of boundary.claude.spawned) {
@@ -340,7 +355,7 @@ async function run() {
       return { prompt: record.prompt, acceptedId: record.id, fakeClaude: { spawn: turn.spawn, seq: turn.seq, opening: turn.opening, historyLength: turn.historyLength, replies: turn.replies, interrupted: turn.interrupted } }; }),
     fakeClaude: isolation.fakeClaude().spawns.map(({ index, cwdEmpty, start, stdinEnded, unexpected }) => ({ index, cwdEmpty, argvOk: start?.argvOk ?? false, model: start?.model ?? null, stdinEnded, unexpected })),
     untestedExternal: ['desktop snapshots and real capture', 'real Claude Code CLI, login and model service', 'real Codex', 'speaker listening and physical input'],
-    startupLimit: 'Filtered env, missing Codex locator, inert Claude Code placeholder with empty config folder, and synthetic settings precede launch. Fetch/browser/media hooks and the Claude Code interposer install later; no blanket startup-zero or OS sandbox claim.' };
+    startupLimit: 'Filtered env, missing Codex locator, inert Claude Code placeholder with empty config folder, and synthetic settings precede launch. Fetch/browser/media hooks and the Claude Code interposer install at the first window, the Claude task refusal once the app registered its handlers; no blanket startup-zero or OS sandbox claim.' };
 }
 let work;
 try {
@@ -350,9 +365,10 @@ try {
 } catch (error) { remember(error); report = { status: 'FAIL', ...primary }; console.error(primary.failure); }
 finally {
   activeStopped = true;
-  const end = performance.now() + 30000, remaining = cap => Math.max(1, Math.min(cap, end - performance.now() - 1000));
+  // 30 s for every step as before, plus Electron's teardown and the identity hashing their own budgets (scripts/lib/smoke-quit.mjs).
+  const end = performance.now() + CLEANUP_BUDGET_MS, remaining = cap => Math.max(1, Math.min(cap, end - performance.now() - 1000));
   const save = () => { const bytes = JSON.stringify(report, null, 2) + '\n'; writeFileSync(path.join(output, 'report.json'), bytes); if (isolation) writeFileSync(isolation.resultFile, bytes); };
-  const watchdog = setTimeout(() => { report ??= {}; Object.assign(report, { status: 'FAIL', cleanupIncomplete: true, cleanup, nativeExitNotInferredFromRunner: true }); if (primary) Object.assign(report, primary); try { save(); } finally { process.exit(1); } }, 30000);
+  const watchdog = setTimeout(() => { report ??= {}; Object.assign(report, { status: 'FAIL', cleanupIncomplete: true, cleanup, nativeExitNotInferredFromRunner: true }); if (primary) Object.assign(report, primary); try { save(); } finally { process.exit(1); } }, CLEANUP_BUDGET_MS);
   const pending = new Set();
   const attempt = async (label, action, cap) => {
     pending.add(label);
@@ -364,8 +380,22 @@ finally {
     // Diagnostics only (an SDK-close timeout used to leave no clue which process kept the app's pipes open).
     const processes = await bounded(instance.evaluate(({ app }) => app.getAppMetrics().map(metric => ({ pid: metric.pid, type: metric.type }))), 750, 'app-processes').catch(() => null);
     if (processes) cleanup.appProcesses = processes;
-    const closeStart = performance.now();
-    cleanup.sdkCloseResolved = await attempt('SDK-close', async () => { await instance.close(); return true; }, 8000) === true;
+    // The quit in two parts (scripts/lib/smoke-quit.mjs, docs/claude/2026-11-24-quit-hang.md): the app's own within the old 8 s cap,
+    // then Electron's process teardown on its own budget (a busy computer slows only that part, for every build).
+    const closeStart = performance.now(), marker = path.join(isolation.root, 'main-quit-done'), collector = playwrightCollector(instance);
+    const owned = [...new Set([...(processes ?? []).map(entry => entry.pid), ownedResources.mainPid].filter(pid => Number.isSafeInteger(pid) && pid > 0))];
+    if (await attempt('app-quit-request', () => instance.evaluate(askQuitWithMarker, marker), 750) === true) {
+      pending.add('app-quit');
+      try {
+        const ended = endedTracker(owned, processRunning);
+        const quit = await quitOwnedApp({ quit: () => {}, now: () => performance.now(), onOwnQuit: collector.start,
+          ownQuitDone: () => existsSync(marker) || isolation.mainExit().absent, gone: () => ended() && collector.collected });
+        cleanup.appQuitMs = Math.round(quit.appQuitMs); cleanup.teardownMs = Math.round(quit.teardownMs);
+        if (quit.teardownMs > SLOW_TEARDOWN_MS) console.warn(`Electron's teardown took ${cleanup.teardownMs} ms after the app's own quit (${cleanup.appQuitMs} ms): a busy computer (docs/claude/2026-11-24-quit-hang.md).`);
+      } catch (error) { remember(error); errors.push(error?.part ?? 'app-quit'); }
+      finally { pending.delete('app-quit'); }
+    }
+    cleanup.sdkCloseResolved = await attempt('SDK-close', () => collector.done(), APP_QUIT_CAP_MS) === true;
     cleanup.sdkCloseMs = Math.round(performance.now() - closeStart);
   } else cleanup.sdkCloseResolved = true;
   if (isolation) { cleanup.actualMainExited = await attempt('actual-main-exit', () => isolation.waitForMainExit(4000), 4500) === true; cleanup.main = isolation.mainExit(); }
@@ -377,8 +407,10 @@ finally {
   if (isolation && cleanup.sdkCloseResolved && cleanup.actualMainExited && cleanup.fakeClaudeExited && activeSettled) cleanup.profileRemoved = await attempt('owned-profile-remove', async () => { await isolation.cleanup(); return true; }, 2000) === true;
   report ??= { status: 'FAIL' }; report.cleanup = cleanup; report.errors = errors;
   // Hashing the package again takes longer at below-normal priority on half the cores (I-030, the user at the computer): 4 s timed
-  // out once on 2026-11-04 although nothing was wrong. Still inside the 30 s cleanup budget.
-  const identity = isolation && await attempt('final-package-identity', () => isolation.finishIdentity(), 15000); if (identity) report.identity = identity;
+  // out once on 2026-11-04 although nothing was wrong; with every core busy it took 43 s (2026-11-24). Its own budget, time reported.
+  const identityStart = performance.now();
+  const identity = isolation && await attempt('final-package-identity', () => isolation.finishIdentity(), IDENTITY_CAP_MS); if (identity) report.identity = identity;
+  if (isolation) cleanup.identityMs = Math.round(performance.now() - identityStart);
   report.pendingCleanup = [...pending];
   if (primary || !cleanup.sdkCloseResolved || !cleanup.actualMainExited || !cleanup.profileRemoved || !cleanup.fakeClaudeExited || !activeSettled || pending.size || performance.now() >= end) { report.status = 'FAIL'; process.exitCode = 1; }
   if (primary) Object.assign(report, primary);

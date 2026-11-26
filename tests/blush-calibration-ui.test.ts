@@ -1,9 +1,9 @@
-import { registerUiMessages, setUiLanguage } from '../shared/ui-language';
-import { ENGLISH_SETTINGS_UI_COPY } from '../shared/ui-copy.settings.en';
+import { registerUiMessages, setUiLanguage } from '../shared/foundation/ui-language';
+import { ENGLISH_SETTINGS_UI_COPY } from '../shared/foundation/ui-copy.settings.en';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { BlushCalibrationControls, type BlushCalibrationControlsOptions } from '../src/ui/BlushCalibrationControls';
-import { DEFAULT_BLUSH_CALIBRATION, type BlushCalibration, type BlushCalibrationView } from '../shared/blush';
+import { BlushCalibrationControls, type BlushCalibrationControlsOptions } from '../src/mood/BlushCalibrationControls';
+import { DEFAULT_BLUSH_CALIBRATION, type BlushCalibration, type BlushCalibrationView } from '../shared/mood/blush';
 
 // Only text nodes and event callbacks are supplied here. Draft, save and model
 // generation behavior runs through the real production controls class.

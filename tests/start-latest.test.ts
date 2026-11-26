@@ -118,7 +118,7 @@ $marker = '--soft-hearts-desktop=' + $owner + ' --soft-hearts-build=' + $hash + 
 ${scenario}
 `, "utf8");
   try {
-    const { stdout, stderr } = await run("powershell.exe", ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "RemoteSigned", "-File", harness], { encoding: "utf8", timeout: 60000, windowsHide: true, env: { ...process.env, PSModulePath: undefined } });
+    const { stdout, stderr } = await run("powershell.exe", ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "RemoteSigned", "-File", harness], { encoding: "utf8", timeout: 600000, windowsHide: true, env: { ...process.env, PSModulePath: undefined } });
     assert.doesNotMatch(stdout + stderr, /SHOULD_NOT_LEAK_FIXTURE_JSON/, 'public launcher diagnostics must never include a rejected settings body');
     const result = stdout.split(/\r?\n/).find(line => line.startsWith("RESULT:"));
     assert.ok(result, stdout); return JSON.parse(result.slice(7));

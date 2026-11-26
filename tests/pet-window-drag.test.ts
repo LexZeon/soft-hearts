@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test, { type TestContext } from 'node:test';
-import { PetWindowDrag } from '../electron/pet-window-drag';
-import type { Bounds } from '../electron/pet-view';
+import { PetWindowDrag } from '../electron/stage/pet-window-drag';
+import type { Bounds } from '../electron/stage/pet-view';
 
 function fixture(t: TestContext, initial: Bounds = { x: 200, y: 150, width: 400, height: 400 }, area: Bounds = { x: 0, y: 0, width: 1600, height: 900 }) {
   t.mock.timers.enable({ apis: ['setInterval'] });

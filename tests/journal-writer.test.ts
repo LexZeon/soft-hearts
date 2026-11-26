@@ -1,12 +1,12 @@
-// 体验记录 (E2): electron/journal/writer.ts appends one line per moment into <profile>/journal/<local date>.jsonl, never rotates
+// 体验记录 (E2): electron/memory/journal/writer.ts appends one line per moment into <profile>/journal/<local date>.jsonl, never rotates
 // or deletes, stops a full day with one `truncated` line, writes nothing while off, and a failing disk never reaches the caller.
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test, { type TestContext } from 'node:test';
-import { JournalWriter, nodeJournalFs, type JournalFs } from '../electron/journal/writer';
-import { readJournalLine, type JournalInput } from '../shared/journal';
+import { JournalWriter, nodeJournalFs, type JournalFs } from '../electron/memory/journal/writer';
+import { readJournalLine, type JournalInput } from '../shared/memory/journal';
 
 async function folder(t: TestContext): Promise<string> {
   const root = await mkdtemp(path.join(os.tmpdir(), 'sh-journal-'));
@@ -112,7 +112,7 @@ test('after a restart the panel gets the newest lines back through the same whit
 });
 
 test('the writer source never renames, truncates or deletes a file', async () => {
-  const source = await readFile(new URL('../electron/journal/writer.ts', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../electron/memory/journal/writer.ts', import.meta.url), 'utf8');
   const code = source.split('\n').filter(line => !line.trim().startsWith('//') && !line.trim().startsWith('*') && !line.trim().startsWith('/**')).join('\n');
   for (const call of ['unlink', 'rm', 'rmdir', 'rename', 'truncate', 'ftruncate', 'writeFile', 'copyFile', 'cp'])
     assert.ok(!new RegExp(`\\b${call}\\s*\\(`).test(code), call);

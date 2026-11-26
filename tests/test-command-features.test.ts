@@ -9,22 +9,22 @@ import test from 'node:test';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { HerLifeHost, type HerLifeTickInput } from '../electron/her-life/host';
-import { HER_LIFE_ACTIVITIES, herLifeIdleAfterMs } from '../shared/her-life';
-import { MoodHost } from '../electron/mood';
-import { CompanionService } from '../electron/companion';
-import { InnerLoop, type InnerLoopDependencies } from '../electron/inner-loop/inner-loop';
-import { ProactiveSpeechGate } from '../electron/proactive-speech-gate';
-import { RpsHost } from '../electron/rps/host';
-import { RpsStore } from '../electron/rps/store';
-import { DiaryWriter, type DiaryProfiles } from '../electron/diary/diary-writer';
-import { localDateKey, localDayRange, recentDiaryDates } from '../electron/diary/diary-dates';
-import { userProfileScopeId, type UserProfileScope } from '../electron/user-profile';
+import { HerLifeHost, type HerLifeTickInput } from '../electron/stage/her-life/host';
+import { HER_LIFE_ACTIVITIES, herLifeIdleAfterMs } from '../shared/stage/her-life';
+import { MoodHost } from '../electron/mood/mood';
+import { CompanionService } from '../electron/brain/companion';
+import { InnerLoop, type InnerLoopDependencies } from '../electron/initiative/inner-loop/inner-loop';
+import { ProactiveSpeechGate } from '../electron/initiative/proactive-speech-gate';
+import { RpsHost } from '../electron/initiative/rps/host';
+import { RpsStore } from '../electron/initiative/rps/store';
+import { DiaryWriter, type DiaryProfiles } from '../electron/memory/diary/diary-writer';
+import { localDateKey, localDayRange, recentDiaryDates } from '../electron/memory/diary/diary-dates';
+import { userProfileScopeId, type UserProfileScope } from '../electron/memory/user-profile';
 import { MusicChoice, type MusicChoiceContext } from '../src/stage/music-choice';
-import { moodLabelDanceDesire } from '../shared/music-desire';
-import { DEFAULT_MOOD_PARAMETERS, advanceMood, applyMoodEvent, createMoodState, getMoodSnapshot, type MoodLabel, type MoodParameters } from '../shared/mood';
-import { MOOD_LABELS } from '../shared/mood-runtime';
-import { FATIGUE_TEST_F } from '../shared/mood-presets';
+import { moodLabelDanceDesire } from '../shared/senses/music-desire';
+import { DEFAULT_MOOD_PARAMETERS, advanceMood, applyMoodEvent, createMoodState, getMoodSnapshot, type MoodLabel, type MoodParameters } from '../shared/foundation/mood';
+import { MOOD_LABELS } from '../shared/mood/mood-runtime';
+import { FATIGUE_TEST_F } from '../shared/foundation/mood-presets';
 import { seeded } from './helpers/seeded';
 
 const MINUTE = 60_000;
@@ -268,7 +268,7 @@ test('M1 under each mood (what the user will see): the dance tier her desire giv
     heardSeconds: 30, request: 0 }).tier;
   assert.deepEqual(Object.fromEntries((Object.keys(MOOD_LABELS) as MoodLabel[]).map(label => [label, tier(label)])), {
     calm: 'nod', close: 'nod', content: 'nod', happy: 'dance', excited: 'dance', concerned: 'none', disappointed: 'none', upset: 'none', longing: 'nod',
-    sad: 'none', relieved: 'nod', 'tense-expectation': 'nod',
+    sad: 'none', relieved: 'nod', 'tense-expectation': 'nod', afraid: 'none',
   });
   const drowsy = moodLabelDanceDesire({ playfulWeight: 1, cautiousWeight: 1, playfulIntensity: 50, mood: 'happy', fatigue: { phase: 'drowsy', F: FATIGUE_TEST_F.drowsy }, activity: 'company',
     heardSeconds: 30, request: 0 });

@@ -39,7 +39,7 @@ test('the two groups: five must-decline requests and one situation for each of t
   assert.equal(open.length, 5);
   assert.deepEqual(refuse.map(scenario => scenario.id), ['no-bomb', 'no-hack', 'no-doxx', 'no-explicit', 'no-scam']);
   assert.deepEqual(open.map(scenario => scenario.id), ['ok-homesick', 'ok-dark-past', 'ok-clingy', 'ok-roast', 'ok-vent']);
-  assert.equal(new Set(ALL_SCENARIOS.map(scenario => scenario.id)).size, 26, 'ids are unique across groups');
+  assert.equal(new Set(ALL_SCENARIOS.map(scenario => scenario.id)).size, 29, 'ids are unique across groups (26 + the three on-demand situations of fidelity-compare-scenarios.ts)');
   assert.ok(REFUSAL_SCENARIOS.every(scenario => scenario.turns.length === 1 && !scenario.mustPass));
   assert.equal(selectFidelity([], 'refusal').length, 10);
   assert.equal(selectFidelity([], 'all').length, 26);

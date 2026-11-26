@@ -1,9 +1,10 @@
-import * as uiCopy from '../src/ui/ui-language';
+import * as uiCopy from '../src/foundation/ui-language';
 const { uiText, uiHtml, uiMarkup, uiTemplate } = uiCopy;
 import test from 'node:test';import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';import vm from 'node:vm';import ts from 'typescript';import {transformSync} from 'esbuild';
-import {conciseFailure,NOTICE_ACTIONS} from '../src/notice-policy';
-const text=readFileSync(new URL('../src/main.ts',import.meta.url),'utf8'),ast=ts.createSourceFile('main.ts',text,ts.ScriptTarget.Latest,true);
+import {conciseFailure,NOTICE_ACTIONS} from '../src/settings/notice-policy';
+import { rendererSource as readRendererSource } from './helpers/renderer-source'; // overhaul step 5: src/main.ts and src/wiring/*.ts
+const text=readRendererSource(),ast=ts.createSourceFile('main.ts',text,ts.ScriptTarget.Latest,true);
 function declarations(names:string[]):string{return names.map(name=>{const list=ast.statements.filter(n=>ts.isFunctionDeclaration(n)&&n.name?.text===name);assert.equal(list.length,1,name);return list[0].getText(ast);}).join('\n');}
 function context(values:Record<string,any>,names:string[]):Record<string,any>{vm.createContext(Object.assign(values, { uiText, uiHtml, uiMarkup, uiTemplate }));vm.runInContext(transformSync(declarations(names),{loader:'ts',target:'es2022'}).code,values);return values;}
 test('actual early notice keeps bounded errors for details and accepts only fixed action summaries',()=>{

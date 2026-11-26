@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {setUiLanguage} from '../shared/ui-language';
-import {ListenTogetherSwitch} from '../src/ui/ListenTogetherSwitch';
-import {AmbientAudioControls} from '../src/ui/AmbientAudio';
-import {AudioReadingHostBroker} from '../electron/audio-reading-host-broker';
+import {setUiLanguage} from '../shared/foundation/ui-language';
+import {ListenTogetherSwitch} from '../src/senses/ListenTogetherSwitch';
+import {AmbientAudioControls} from '../src/senses/AmbientAudio';
+import {AudioReadingHostBroker} from '../electron/voice/audio-reading-host-broker';
 
 class Element {
  textContent='';className='';hidden=false;disabled=false;type='';id='';checked=false;dataset:Record<string,string>={};

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
-import { CharacterCardStore } from "../electron/character-cards";
+import { CharacterCardStore } from "../electron/cards/character-cards";
 import {
   BUNDLED_CHARACTER_MODEL,
   CHARACTER_CARD_FORMAT,
@@ -12,7 +12,7 @@ import {
   compileCharacterPersona,
   validateCharacterDraft,
   type CharacterDraft,
-} from "../shared/character-cards";
+} from "../shared/cards/character-cards";
 
 const draft = (
   name: string,

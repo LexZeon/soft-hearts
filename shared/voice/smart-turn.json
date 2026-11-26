@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "name": "Smart Turn v3.2 (CPU ONNX)",
+  "use": "I-099/I-100: in a call only, tells whether the user has finished their turn or only paused; runs on this computer, offline",
+  "version": "v3.2",
+  "repository": "https://huggingface.co/pipecat-ai/smart-turn-v3",
+  "revision": "f766f81d3cfdf7737ac64aad813d91bbfd56bf93",
+  "url": "https://huggingface.co/pipecat-ai/smart-turn-v3/resolve/f766f81d3cfdf7737ac64aad813d91bbfd56bf93/smart-turn-v3.2-cpu.onnx",
+  "retrieved": "2026-11-12",
+  "license": {
+    "id": "BSD-2-Clause",
+    "url": "https://github.com/pipecat-ai/smart-turn/blob/4e12f2bbef04e47c348836f57100885f6973a5ae/LICENSE",
+    "codeRevision": "4e12f2bbef04e47c348836f57100885f6973a5ae",
+    "attribution": "Copyright (c) 2024–2025, Daily",
+    "trainingData": "CC-BY-4.0 (pipecat-ai/smart-turn-data-v3.2-train and -test; origin and consent of the recordings not verified)"
+  },
+  "model": { "relativePath": "smart-turn/smart-turn-v3.2-cpu.onnx", "bytes": 8679182, "sha256": "2bb026316b14a660486a75b1733cd3fbab8c2fd0314dc9af7be49f8cca967e4f" },
+  "licenseFile": { "relativePath": "smart-turn/LICENSE", "bytes": 1301, "sha256": "0d66364067f678c08586ebb60a16a2aed4fa081ec11057df35585759ce0e774f" }
+}

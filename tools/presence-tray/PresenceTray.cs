@@ -1,7 +1,9 @@
 // I-030 "我在用电脑" tray toggle (docs/claude/2026-11-04-presence-tray-plan.md). The user's own check box: checked (the default,
 // and every time the program starts) means the user is using the computer, so Claude's heavy work is capped
-// (scripts/dev/presence.mjs); unchecked means no cap. It only writes %LOCALAPPDATA%\claude-presence\presence.json: no screen,
-// no keyboard, no list of programs. Built with the C# compiler that ships with Windows (tools/presence-tray/build.ps1); C# 5 only.
+// (scripts/dev/presence.mjs); unchecked means no cap. It only writes %USERPROFILE%\.claude-presence\presence.json: no screen,
+// no keyboard, no list of programs. Built with the C# compiler that ships with Windows (tools/presence-tray/install.ps1); C# 5 only.
+// 2026-11-12: the folder moved out of %LOCALAPPDATA%. The Claude desktop app is a Windows package and sees a private copy of
+// AppData, so Claude read a stale copy while this tray wrote the real file. The user folder is the same file for both.
 using System;
 using System.Diagnostics;
 using System.Drawing;
@@ -30,7 +32,7 @@ sealed class PresenceTray : ApplicationContext {
   /** Give back the memory start-up used (it stays idle in the tray). */
   static void Trim() { try { GC.Collect(); SetProcessWorkingSetSize(Process.GetCurrentProcess().Handle, (IntPtr)(-1), (IntPtr)(-1)); } catch (Exception) { } }
 
-  readonly string dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "claude-presence");
+  readonly string dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".claude-presence");
   readonly NotifyIcon tray = new NotifyIcon();
   readonly ToolStripMenuItem toggle = new ToolStripMenuItem("我在用电脑（勾着时 Claude 收着用）");
   readonly ToolStripMenuItem running = new ToolStripMenuItem();

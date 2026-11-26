@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
-import { withCodexImages } from "../electron/codex-images";
-import { codexArguments } from "../electron/codex";
+import { withCodexImages } from "../electron/safety/codex-images";
+import { codexArguments } from "../electron/safety/codex";
 
 // Original 32×32 solid-green PNG fixture; no user screen or model content.
 const green =

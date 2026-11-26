@@ -1,10 +1,10 @@
-/** 「她主动找你说话」 reaches the wired inner-loop host (electron/inner-loop/host.ts): the setting is read at each opportunity. No model call. */
+/** 「她主动找你说话」 reaches the wired inner-loop host (electron/initiative/inner-loop/host.ts): the setting is read at each opportunity. No model call. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ProactiveSpeechGate } from '../electron/proactive-speech-gate';
-import { createInnerLoopHost } from '../electron/inner-loop/host';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
-import type { ProactiveTalk } from '../shared/behaviors/inner-rhythm/knobs';
+import { ProactiveSpeechGate } from '../electron/initiative/proactive-speech-gate';
+import { createInnerLoopHost } from '../electron/initiative/inner-loop/host';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
+import type { ProactiveTalk } from '../shared/foundation/settings';
 
 const MINUTE = 60_000;
 const flush = async () => { for (let i = 0; i < 30; i++) await Promise.resolve(); };

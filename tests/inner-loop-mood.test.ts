@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { advanceMood, applyMoodEvent, canRequestAmbientSpeech, createMoodState, DEFAULT_MOOD_PARAMETERS, getMoodAttentionCandidate,
-  releaseUnspokenSpeech, type MoodState } from '../shared/mood';
+  releaseUnspokenSpeech, type MoodState } from '../shared/foundation/mood';
+import { speechIntervalAfterUnanswered as STRETCH } from '../shared/behaviors/busy-chat/unanswered'; // the mood host passes busy chat's stretch to the gate (overhaul parts 3); direct calls here do too
 
 const MINUTE = 60_000;
 const p = DEFAULT_MOOD_PARAMETERS;
@@ -82,6 +83,6 @@ test('a spoken inner line counts for every other proactive source', () => {
   const spoken = accept(bored(now), 'speech', 's1', now);
   // Gene allows one unanswered line: no more generic or audio speech until the user answers.
   const later = advanceMood(spoken, now + 2 * p.frequency.speechIntervalMs, { online: true }, p);
-  assert.notEqual(getMoodAttentionCandidate(later, later.updatedAt, p), 'speech');
-  assert.equal(canRequestAmbientSpeech(later, source, later.updatedAt, p), false);
+  assert.notEqual(getMoodAttentionCandidate(later, later.updatedAt, p, true, STRETCH), 'speech');
+  assert.equal(canRequestAmbientSpeech(later, source, later.updatedAt, p, STRETCH), false);
 });

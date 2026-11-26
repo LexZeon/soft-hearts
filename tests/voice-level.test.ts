@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULT_SPEECH_LEVEL, SilenceWatch, SpeechLevelGate, chunkRms } from '../src/ui/voice-level';
-import { VoiceSegmenter } from '../src/ui/MediaInput';
+import { DEFAULT_SPEECH_LEVEL, SilenceWatch, SpeechLevelGate, chunkRms } from '../src/voice/voice-level';
+import { VoiceSegmenter } from '../src/senses/MediaInput';
 
 // a quiet laptop array microphone never crossed the one fixed level (0.01, about -40 dBFS),
 // so nothing was ever sent to recognition and nothing was said. The level a voice must pass now follows the room.

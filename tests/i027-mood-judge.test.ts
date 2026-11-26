@@ -1,5 +1,5 @@
 /**
- * I-027 心情调整员 (shared/behaviors/mood-judge/, electron/mood-judge/) with a fake haiku on a fake clock. Never a real model call.
+ * I-027 心情调整员 (shared/behaviors/mood-judge/, electron/mood/mood-judge/) with a fake haiku on a fake clock. Never a real model call.
  * What it pins: default off means zero calls; a batch waits knobs.gatherMs and calls are knobs.spacingMs apart; the quiet rules
  * ask nothing; the daily cap and its local-midnight reset (and the count surviving a restart); every bound; malformed,
  * unconfident, late and stale answers change nothing; a character switch or falling asleep drops a batch; after Opus's tail a
@@ -12,12 +12,12 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { MoodJudgeHost, type MoodJudgeHostOptions, type MoodJudgeQuiet } from '../electron/mood-judge/host';
-import { MoodJudgeStore } from '../electron/mood-judge/store';
-import { createMoodJudge, moodJudgeFrame, type MoodJudgeMoodPort } from '../electron/mood-judge/wiring';
-import { MoodHost } from '../electron/mood';
-import { MoodJournal, type MoodJournalEvent } from '../electron/journal/sources';
-import { settingDetail } from '../electron/agent-channel/app-tools';
+import { MoodJudgeHost, type MoodJudgeHostOptions, type MoodJudgeQuiet } from '../electron/mood/mood-judge/host';
+import { MoodJudgeStore } from '../electron/mood/mood-judge/store';
+import { createMoodJudge, moodJudgeFrame, type MoodJudgeMoodPort } from '../electron/mood/mood-judge/wiring';
+import { MoodHost } from '../electron/mood/mood';
+import { MoodJournal, type MoodJournalEvent } from '../electron/memory/journal/sources';
+import { settingDetail } from '../electron/safety/agent-channel/app-tools';
 import {
   MOOD_JUDGE_SYSTEM_PROMPT, boundMoodJudgement, liftDelta, mergeMoodNote, mergeNote, mergeUserText, moodJudgePrompt, moodJudgeReason, moodJudgeWhyOf,
   parseMoodJudgeAnswer, watchMoodJudge, type MoodJudgeFrame, type MoodJudgeWatchState,
@@ -25,12 +25,12 @@ import {
 import { judgeAnswer, neverAsked, scriptedMoodJudge } from '../shared/behaviors/mood-judge/fake';
 import { MOOD_JUDGE_WHYS, moodJudgeDailyCap, type MoodJudgeAsk, type MoodJudgeItem, type MoodJudgeMoodNote, type MoodJudgeNow } from '../shared/behaviors/mood-judge/interface';
 import { MOOD_JUDGE_KNOBS } from '../shared/behaviors/mood-judge/knobs';
-import { DEFAULT_MOOD_PARAMETERS, type MoodValues } from '../shared/mood';
-import type { MoodView } from '../shared/mood-runtime';
-import { buildJournalEntry, describeJournalEntry, type JournalInput } from '../shared/journal';
-import { capability } from '../shared/capabilities';
-import { agentSetting } from '../shared/agent-channel';
-import { formatMoodJudgeLines } from '../src/ui/MoodPanel';
+import { DEFAULT_MOOD_PARAMETERS, type MoodValues } from '../shared/foundation/mood';
+import type { MoodView } from '../shared/mood/mood-runtime';
+import { buildJournalEntry, describeJournalEntry, type JournalInput } from '../shared/memory/journal';
+import { capability } from '../shared/settings/capabilities';
+import { agentSetting } from '../shared/safety/agent-channel';
+import { formatMoodJudgeLines } from '../src/mood/MoodPanel';
 
 const SECOND = 1_000, MINUTE = 60_000, DAY = 86_400_000;
 
@@ -483,7 +483,9 @@ test('MoodHost: pats come with their contact, a message and its tail with the re
   host.event({ type: 'chat', id: 'r1', reason: '收到用户聊天' });
   host.event({ type: 'appraisal', id: 'appraisal-r1', responseTo: 'r1', delta: { O: 3 }, context: 'positive', reason: '模型的理由' });
   assert.deepEqual(notes.map(note => [note.type, note.id, note.session ?? null]),
-    [['rua', 'stroke-0', 'touch-1'], ['rua', 'stroke-1', 'touch-1'], ['rua', 'stroke-2', 'touch-1'], ['chat', 'r1', null], ['appraisal', 'appraisal-r1', null]]);
+    [['rua', 'stroke-0', 'touch-1'], ['rua', 'stroke-1', 'touch-1'], ['rua', 'stroke-2', 'touch-1'], ['chat', 'r1', null], ['appraisal', 'appraisal-r1', null],
+      // 心情第二批: the warm tail raised a blush, and the blush lifts E a little (a host-owned lift like any other)
+      ['lift', 'moment-shy-appraisal-r1', null]]);
   assert.ok(notes[0].applied.O > 0);
   assert.equal(notes[4].responseTo, 'r1');
   // The correction: values move by what was asked (saturation aside); the interaction clock and boredom stay.

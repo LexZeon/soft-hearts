@@ -6,11 +6,11 @@ import path from 'node:path';
 import {
   changeSummary, classifyPermission, DENY_BACKGROUND, DENY_NETWORK, DENY_OUTSIDE, DENY_READ_ONLY, DENY_TOOL,
   isWithin, unsafePathShape, type PolicyFs,
-} from '../electron/claude-tasks/policy';
+} from '../electron/safety/claude-tasks/policy';
 import {
   TASK_PERMISSION_TOOL, TASK_SYSTEM_PROMPT, TaskStreamReader, taskArguments, taskMcpConfig, taskSettingsJson, verifyTaskInit,
-} from '../electron/claude-tasks/process';
-import { ClaudeStreamReader, claudeArguments } from '../electron/claude';
+} from '../electron/safety/claude-tasks/process';
+import { ClaudeStreamReader, claudeArguments } from '../electron/brain/claude';
 
 async function folders() {
   const root = await realpath(await mkdtemp(path.join(os.tmpdir(), 'r20-policy-')));
@@ -129,7 +129,7 @@ test('task argv is assembled exactly (snapshot), with the prompt kept off the co
     '--restricted',
     '--tools', 'Read,Glob,Grep,Edit,Write,NotebookEdit,Bash,PowerShell',
     '--disallowedTools', 'WebFetch,WebSearch',
-    '--settings', '{"permissions":{"ask":["Bash","PowerShell","Edit","Write","MultiEdit","NotebookEdit"],"deny":["WebFetch","WebSearch"]}}',
+    '--settings', '{"permissions":{"ask":["Bash","PowerShell","Edit","Write","MultiEdit","NotebookEdit"],"deny":["WebFetch","WebSearch","SendMessage","ListAgents"]},"crossSessionInbound":"refuse"}',
     '--setting-sources', '',
     '--mcp-config', '/tmp/shn-task-x/mcp.json',
     '--strict-mcp-config',
@@ -143,7 +143,7 @@ test('task argv is assembled exactly (snapshot), with the prompt kept off the co
   assert.ok(!plain.includes('--model'));
   assert.ok(!plain.some(arg => /dangerously|bypass|--add-dir|--safe-mode|--allowed-?tools|--permission-mode/i.test(arg)), 'no flag widens or skips permissions');
   assert.equal(TASK_PERMISSION_TOOL, 'mcp__soft-hearts-task__approve');
-  assert.deepEqual(JSON.parse(taskSettingsJson()).permissions.deny, ['WebFetch', 'WebSearch']);
+  assert.deepEqual(JSON.parse(taskSettingsJson()).permissions.deny, ['WebFetch', 'WebSearch', 'SendMessage', 'ListAgents']); // + peer tools (2026-11-25)
   const config = taskMcpConfig({ command: '/app/electron', args: ['/app/shim.mjs'], env: { ELECTRON_RUN_AS_NODE: '1' } }, '/tmp/shn-task-x/p.sock', 'a'.repeat(64)) as any;
   assert.deepEqual(Object.keys(config.mcpServers), ['soft-hearts-task']);
   assert.deepEqual(config.mcpServers['soft-hearts-task'].env, { ELECTRON_RUN_AS_NODE: '1', SOFT_HEARTS_TASK_ENDPOINT: '/tmp/shn-task-x/p.sock', SOFT_HEARTS_TASK_TOKEN: 'a'.repeat(64) });
@@ -154,7 +154,9 @@ test('chat stays tool-free: chat argv is unchanged and never carries task permis
   for (const args of [claudeArguments({ model: '' }), claudeArguments({ model: 'haiku' }, 'persistent chat prompt')]) {
     assert.equal(args[args.indexOf('--tools') + 1], '');
     assert.ok(args.includes('--safe-mode') && args.includes('--strict-mcp-config'));
-    assert.ok(!args.some(arg => /--permission-prompt-tool|--mcp-config|--restricted|--settings$|--add-dir|Bash|Write/.test(arg)), args.join(' '));
+    assert.ok(!args.some(arg => /--permission-prompt-tool|--mcp-config|--restricted|--add-dir|Bash|Write/.test(arg)), args.join(' '));
+    // Its only settings are the peer lockdown (2026-11-25, electron/brain/claude-settings.ts): no task ask/deny rules.
+    assert.deepEqual(JSON.parse(args[args.indexOf('--settings') + 1]!), { permissions: { deny: ['SendMessage', 'ListAgents'] }, crossSessionInbound: 'refuse' });
   }
   // A chat process that reports tools is still stopped, whatever the task feature is doing.
   const reader = new ClaudeStreamReader(() => {});

@@ -18,6 +18,9 @@ test-results/
 
 # Reviewed CC BY 4.0 Gene assets explicitly authorized for source ZIPs/releases.
 !assets/bundled/mmdagent-ex/gene/c7eace43dffaccff6ad0597433ef85fa57c91e03/model/gene.pmx
+
+# The author's own Mumi model (0.2.0 preinstalled character; licence note beside it).
+!assets/bundled/mumi/model.pmx
 !assets/bundled/mmdagent-ex/gene/c7eace43dffaccff6ad0597433ef85fa57c91e03/motions/**/*.vmd
 
 # User-authorized, separately attributed CC BY 4.0 curated motions; originals stay in .local.
@@ -35,3 +38,7 @@ _probe/
 
 # The public-snapshot exporter lives in scripts/release/ (the plain "release/" rule above is for build output).
 !scripts/release/
+
+# Python bytecode
+__pycache__/
+*.pyc

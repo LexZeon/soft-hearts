@@ -9,15 +9,23 @@
  *    倾向每比 50 高 1 点加多少（负数是减）；mood = 她此刻的心情标签加减多少；sleepy = 犯困时加减多少；
  *    recent = 刚做过同一种反应的"近期惩罚"：刚做完减 penalty，每过 halfLifeMs 减半（不是硬冷却，分数够高照样会再做）。
  *  - 得分 = 基础分 + 倾向加减 + 心情加减 + 犯困加减 − 近期惩罚 + 整体偏移 offset + 一点随机（±jitter），全是加减，不连乘。
- *  - 做不到的（模型没有那个部位、她睡着、脸红正在红、她正在别的互动里）直接不进候选（硬门槛，写在 electron/reactions/performers.ts）。
+ *  - 做不到的（模型没有那个部位、她睡着、脸红正在红、她正在别的互动里）直接不进候选（硬门槛，写在 electron/mood/reactions/performers.ts）。
  *  - 身体互动（摸头、捏脸、喂点心）：分数最高的那个到了 actAt 就马上做。说的话：和她的回复并行问 haiku 一次，
  *    把每一类的前几个候选和分数交给它，它在候选里挑 0–2 个、给轻重和心情变化；haiku 没答时按她回复尾注的语境，用"暖心的话"那一类的最高分。
  *  - 加一种反应：在 REACTION_TABLE 里加一行（需要新的表现时再在 performers.ts 加一个表现），haiku 的说明自动从这一行生成。
  * 这些都只是试用值；真实 haiku 的挑法、用户觉得敏感不敏感，要用户在开发版里验收。
  */
-import type { MoodLabel } from '../../mood';
+import type { MoodChannel, MoodLabel } from '../../foundation/mood';
+import type { TouchPart } from '../../mood/touch';
 import type { DispositionId } from './dispositions';
 import type { ReactionEventId } from './events';
+
+/**
+ * I-136: the mood numbers a row may lean on directly (body path only): the five hormones (read as moodLevel against the card's
+ * baseline, 50 = at baseline), A her sleep pressure (0–1, read as 100 × A), and the mood values B boredom and M longing
+ * (0–100, read as 50 + value / 2, so none = 50 = no effect).
+ */
+export type ReactionMoodNumber = MoodChannel | 'A' | 'B' | 'M';
 
 export const REACTION_LEVELS = ['light', 'mid', 'strong'] as const;
 export type ReactionLevel = typeof REACTION_LEVELS[number];
@@ -28,7 +36,7 @@ export interface ReactionRow {
   readonly label: string;
   /** 给 haiku 的一句白话：这个反应看起来是什么样、什么时候合适。 */
   readonly describe: string;
-  /** 哪个表现来做（electron/reactions/performers.ts 的键），和交给它的参数（小动作的词）。 */
+  /** 哪个表现来做（electron/mood/reactions/performers.ts 的键），和交给它的参数（小动作的词）。 */
   readonly performer: string;
   readonly arg?: string;
   readonly events: Partial<Record<ReactionEventId, number>>;
@@ -36,47 +44,59 @@ export interface ReactionRow {
   readonly mood?: Partial<Record<MoodLabel, number>>;
   readonly sleepy?: number;
   readonly recent: { readonly penalty: number; readonly halfLifeMs: number };
+  /**
+   * I-136：身体互动时直接读心情的数（激素按相对基线的档位读，50 = 基线），每比 50 高 1 点加多少（负数是减）。
+   * 说的话那一路不读（那边只有标签）。整项加减夹在 ±25 以内（choose.ts REACTION_HORMONE_CAP）。
+   */
+  readonly hormones?: Partial<Record<ReactionMoodNumber, number>>;
+  /** I-136：点 / 拉在哪个部位时加减多少（没有部位的事件不读）。 */
+  readonly parts?: Partial<Record<TouchPart, number>>;
+  /** I-136：拉得越重加减越多：每 1（拉满）加多少。 */
+  readonly strength?: number;
 }
 
 export const REACTION_TABLE: Readonly<Record<string, ReactionRow>> = Object.freeze({
   // 用户可能怎么说：夸她的时候脸红得太少／太多了／摸头摸一下就红
   // 怎么调：events 里各事件的基础分；lean.shy 是害羞的人多红多少；recent 是刚红过以后多久才容易再红（不是冷却，分够高照样红）
   blush: { label: '脸红', describe: '脸颊红起来（轻重是红的深浅），可以和别的反应一起', performer: 'blush',
-    events: { praise: 58, 'good-news': 30, coax: 45, care: 42, warm: 50, pat: 52, pinch: 48 },
+    events: { praise: 58, 'good-news': 30, coax: 45, care: 42, warm: 50, pat: 52, pinch: 48, click: 30, pull: 28 },
     lean: { shy: 0.8, volatile: 0.2, restrained: -0.3 },
-    mood: { close: 6, happy: 4, content: 2, relieved: 2, upset: -20, disappointed: -15, concerned: -10, sad: -10 },
+    mood: { close: 6, happy: 4, content: 2, relieved: 2, upset: -20, disappointed: -15, concerned: -10, afraid: -10, sad: -10 },
+    hormones: { O: 0.3, C: -0.2 }, parts: { face: 10, hand: 8, head: 4, torso: -6, leg: -8, foot: -8 },
     sleepy: -8, recent: { penalty: 28, halfLifeMs: 60_000 } },
 
   // 用户可能怎么说：被夸了也不害羞／老是低头害羞
   // 怎么调：害羞＝一下子低头、垂眼看向一边、脸红、抿嘴笑，约 3 秒；events 是各事件的基础分，lean.shy 是害羞的人多做多少
   shy: { label: '害羞', describe: '一下子低头、垂眼看向一边、脸红、抿嘴笑，约 3 秒；被夸、被撒娇时最像', performer: 'shy',
-    events: { praise: 52, 'good-news': 20, coax: 42, care: 30, warm: 40, pat: 25, pinch: 45 },
+    events: { praise: 52, 'good-news': 20, coax: 42, care: 30, warm: 40, pat: 25, pinch: 45, click: 28, pull: 35 },
     lean: { shy: 0.9, restrained: -0.25, lively: -0.1 },
-    mood: { close: 6, happy: 3, upset: -25, disappointed: -20, concerned: -15, sad: -15 },
+    mood: { close: 6, happy: 3, upset: -25, disappointed: -20, concerned: -15, afraid: -15, sad: -15 },
+    hormones: { O: 0.2, N: 0.15 }, parts: { face: 6, hand: 8 },
     sleepy: -12, recent: { penalty: 35, halfLifeMs: 120_000 } },
 
   // 用户可能怎么说：报喜的时候她不够开心／一点小事就乐
   // 怎么调：开心＝心情往"愉快"那边抬一下（期待、舒适涨一点，脸上跟着笑），轻重见下面 happyLift
   happy: { label: '开心', describe: '一下子开心起来，脸上带笑（心情往愉快那边抬一下）', performer: 'happy',
-    events: { praise: 45, 'good-news': 65, coax: 40, care: 50, warm: 45, pat: 30, pinch: 10, feed: 55 },
+    events: { praise: 45, 'good-news': 65, coax: 40, care: 50, warm: 45, pat: 30, pinch: 10, feed: 55, click: 20, pull: 10 },
     lean: { soothable: 0.5, volatile: 0.4, restrained: -0.3, lively: 0.2 },
-    mood: { upset: -25, disappointed: -15, sad: -15, concerned: -10, happy: 5, excited: 5 },
+    mood: { upset: -25, disappointed: -15, sad: -15, concerned: -10, afraid: -10, happy: 5, excited: 5 },
+    hormones: { D: 0.3, E: 0.3, C: -0.2 },
     sleepy: -10, recent: { penalty: 25, halfLifeMs: 120_000 } },
 
   // 用户可能怎么说：她点头点得太多／听到我关心她也不点头
   nod: { label: '点头', describe: '轻轻点一下头，表示听到了、认同、谢谢', performer: 'action', arg: 'nod',
-    events: { praise: 30, 'good-news': 40, coax: 30, care: 45, warm: 35, pat: 20, feed: 35 },
-    lean: { lively: 0.2, restrained: 0.1 }, sleepy: -5, recent: { penalty: 30, halfLifeMs: 90_000 } },
+    events: { praise: 30, 'good-news': 40, coax: 30, care: 45, warm: 35, pat: 20, feed: 35, click: 15 },
+    lean: { lively: 0.2, restrained: 0.1 }, hormones: { E: 0.2 }, sleepy: -5, recent: { penalty: 30, halfLifeMs: 90_000 } },
 
   // 用户可能怎么说：撒娇的时候想看她歪头
   tilt: { label: '歪头', describe: '歪一下头，俏皮或者有点疑惑、在撒娇', performer: 'action', arg: 'tilt',
-    events: { praise: 30, 'good-news': 30, coax: 40, care: 30, pinch: 25 },
-    lean: { lively: 0.3, clingy: 0.1 }, sleepy: -8, recent: { penalty: 30, halfLifeMs: 90_000 } },
+    events: { praise: 30, 'good-news': 30, coax: 40, care: 30, pinch: 25, click: 44 },
+    lean: { lively: 0.3, clingy: 0.1 }, hormones: { D: 0.2, N: 0.1 }, parts: { head: 8, face: 4, torso: -5 }, sleepy: -8, recent: { penalty: 30, halfLifeMs: 90_000 } },
 
   // 用户可能怎么说：比心太多／撒娇的时候想要她比心
   heart: { label: '比心', describe: '双手比个心，亲昵、撒娇、开心时', performer: 'action', arg: 'heart',
     events: { praise: 25, 'good-news': 35, coax: 45, care: 30, warm: 30 },
-    lean: { clingy: 0.6, lively: 0.3, restrained: -0.4 }, mood: { upset: -30, disappointed: -20, concerned: -15 },
+    lean: { clingy: 0.6, lively: 0.3, restrained: -0.4 }, mood: { upset: -30, disappointed: -20, concerned: -15, afraid: -15 },
     sleepy: -10, recent: { penalty: 40, halfLifeMs: 180_000 } },
 
   // 用户可能怎么说：我报喜她都不鼓掌／一点小事就鼓掌
@@ -87,20 +107,20 @@ export const REACTION_TABLE: Readonly<Record<string, ReactionRow>> = Object.free
 
   // 用户可能怎么说：想看她俏皮地眨眼
   wink: { label: '眨一只眼', describe: '俏皮地眨一只眼', performer: 'action', arg: 'wink',
-    events: { praise: 25, 'good-news': 25, coax: 25 },
+    events: { praise: 25, 'good-news': 25, coax: 25, click: 15 },
     lean: { lively: 0.6, restrained: -0.4, shy: -0.2 }, mood: { upset: -30, sad: -20 },
     sleepy: -10, recent: { penalty: 40, halfLifeMs: 180_000 } },
 
   // 用户可能怎么说：捏她脸的时候想看她撅嘴
   pout: { label: '撅嘴', describe: '撅一下嘴，假装不满、撒娇（说话时会等她说完）', performer: 'action', arg: 'pout',
-    events: { pinch: 50, coax: 30, praise: 10 },
-    lean: { lively: 0.3, clingy: 0.2, restrained: -0.3 }, mood: { close: 3 },
+    events: { pinch: 50, coax: 30, praise: 10, click: 35, pull: 40 },
+    lean: { lively: 0.3, clingy: 0.2, restrained: -0.3 }, mood: { close: 3 }, hormones: { D: 0.2, C: 0.15 }, parts: { face: 10, hair: 6 },
     sleepy: -5, recent: { penalty: 30, halfLifeMs: 90_000 } },
 
   // 用户可能怎么说：她挥手挥得莫名其妙
   wave: { label: '挥手', describe: '挥挥手，打招呼或者"不客气啦"', performer: 'action', arg: 'wave',
-    events: { care: 15, 'good-news': 20 },
-    lean: { lively: 0.4, restrained: -0.2 }, sleepy: -10, recent: { penalty: 40, halfLifeMs: 300_000 } },
+    events: { care: 15, 'good-news': 20, click: 20 },
+    lean: { lively: 0.4, restrained: -0.2 }, parts: { hand: 15, arm: 6 }, sleepy: -10, recent: { penalty: 40, halfLifeMs: 300_000 } },
 });
 
 export interface ReactionKnobs {

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CryingTimeline, type CryingSnapshot, type CryingTimelineInput } from '../src/stage/crying-timeline';
-import { DEFAULT_MOOD_PARAMETERS, applyMoodEvent, createMoodState, getMoodSnapshot } from '../shared/mood';
+import { CryingTimeline, type CryingSnapshot, type CryingTimelineInput } from '../src/mood/crying-timeline';
+import { DEFAULT_MOOD_PARAMETERS, applyMoodEvent, createMoodState, getMoodSnapshot } from '../shared/foundation/mood';
 
 const AT = 1_800_000_000_000;
 const snapshot = (overrides: Partial<CryingSnapshot> = {}): CryingSnapshot => ({

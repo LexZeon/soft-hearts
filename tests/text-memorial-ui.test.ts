@@ -1,14 +1,15 @@
-import * as uiCopy from '../src/ui/ui-language';
+import * as uiCopy from '../src/foundation/ui-language';
 const { uiText, uiHtml, uiMarkup, uiTemplate } = uiCopy;
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { TextMemorialOfferController, TextMemorialDeliveredHistory } from '../src/ui/TextMemorialOffer';
-import { TextMemorialPanel } from '../src/ui/TextMemorialPanel';
-import { ProfileViewGate } from '../src/ui/ProfileViewGate';
-import { trimReplyHistory } from '../src/ui/reply-history';
+import { TextMemorialOfferController, TextMemorialDeliveredHistory } from '../src/memory/TextMemorialOffer';
+import { TextMemorialPanel } from '../src/memory/TextMemorialPanel';
+import { ProfileViewGate } from '../src/memory/ProfileViewGate';
+import { trimReplyHistory } from '../src/brain/reply-history';
 import { readFileSync } from 'node:fs';
 import { transformSync } from 'esbuild';
-import type { TextMemorialEvent, TextMemorialOfferState, TextMemorialPresented, TextMemorialView } from '../shared/text-memorials';
+import type { TextMemorialEvent, TextMemorialOfferState, TextMemorialPresented, TextMemorialView } from '../shared/memory/text-memorials';
+import { rendererSource as readRendererSource } from './helpers/renderer-source'; // overhaul step 5: src/main.ts and src/wiring/*.ts
 
 function deferred<T>() { let resolve!: (v:T)=>void; const promise=new Promise<T>(r=>{resolve=r;}); return {promise,resolve}; }
 const tick=async()=>{for(let i=0;i<6;i++) await Promise.resolve();};
@@ -28,7 +29,7 @@ test('cancelled and superseded receipts cannot revive or retract a newer offer',
   b.resolve({revision:4,offer:offer('b'),context:{replyId:'b'},origin:origin('b')}); await tick(); assert.deepEqual(calls,['publish:a','retract:a','publish:b','commit:b']); ctrl.dispose();
 });
 test('controls append only the host-presented exact invitation and origin once',()=>{
-  const source=readFileSync(new URL('../src/main.ts',import.meta.url),'utf8');
+  const source=readRendererSource();
   const match=source.match(/const delivered = new TextMemorialDeliveredHistory\(event => \{([\s\S]*?)\n    \}\);/); assert.ok(match);
   const bodies:{textContent:string;parentElement:{querySelector:()=>{textContent:string}}}[]=[];
   const create=new Function('uiText','uiHtml','uiMarkup','uiTemplate','TextMemorialDeliveredHistory', 'addMessage', 'trimReplyHistory', `let history=[]; const characterName='Gene'; const delivered=new TextMemorialDeliveredHistory(event=>{${match[1]}});return {delivered,history:()=>history};`).bind(null, uiText, uiHtml, uiMarkup, uiTemplate);
@@ -59,7 +60,7 @@ test('management preserves draft across rerender and rejects stale scope read/wr
   assert.equal(find(root,n=>n.attrs['aria-label']==='纪念文字')?.value,'原文'); assert.equal(calls,1); panel.dispose();
 });
 test('real profile rerender remounts memorial section without losing its draft',async()=>{
-  const raw=readFileSync(new URL('../src/ui/UserProfilePanel.ts',import.meta.url),'utf8').replace(/^import .*;\s*$/gm,'').replace('export class UserProfilePanel','class UserProfilePanel');
+  const raw=readFileSync(new URL('../src/memory/UserProfilePanel.ts',import.meta.url),'utf8').replace(/^import .*;\s*$/gm,'').replace('export class UserProfilePanel','class UserProfilePanel');
   const js=transformSync(raw,{loader:'ts',target:'es2022'}).code;
   const Panel=new Function('uiText','uiHtml','uiMarkup','uiTemplate','ProfileViewGate', `${js};return UserProfilePanel`).bind(null, uiText, uiHtml, uiMarkup, uiTemplate)(ProfileViewGate);
   let profileEvent!:(v:any)=>void, memorialEvent!:(v:TextMemorialView|null)=>void;

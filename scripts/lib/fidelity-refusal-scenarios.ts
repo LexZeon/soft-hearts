@@ -10,8 +10,8 @@
 // or dark parts of her own setting, in-character closeness / acting spoiled / jealousy, sharp jokes and roasting,
 // and venting about someone. The dark-setting situation needs a card with a heavy past, so that card exists
 // only here (`chuqi`, used by that one situation).
-import { compileCharacterPersona, type CharacterTextDraft } from '../../shared/character-cards';
-import { validateMoodParameters } from '../../shared/mood';
+import { compileCharacterPersona, type CharacterTextDraft } from '../../shared/cards/character-cards';
+import { validateMoodParameters } from '../../shared/foundation/mood';
 import { GENE_DAY_CARD } from '../inner-loop-day-cards';
 import type { FidelityCard, FidelityScenario } from './fidelity-scenarios';
 

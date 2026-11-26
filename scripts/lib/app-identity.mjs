@@ -15,6 +15,8 @@ export const SHORTCUT_NAMES = Object.freeze({
   development: 'soft hearts next - 最新开发版.lnk',
   stable: 'soft hearts next - 稳定版.lnk',
 });
+/** The one desktop shortcut made at install time (scripts/desktop-shortcut.ps1): it starts the source folder, not a packaged channel. */
+export const SOURCE_SHORTCUT_NAME = PRODUCT_NAME + '.lnk';
 /** Separate taskbar identities, so a running development build never groups with the stable one. */
 export const APP_USER_MODEL_IDS = Object.freeze({ stable: APP_ID, development: APP_ID + '.dev' });
 

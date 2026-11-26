@@ -1,5 +1,5 @@
 /**
- * I-037: the one cue the reaction host sends to the pet window's stage (`desk:reaction`; src/stage/reaction-performers.ts plays it).
+ * I-037: the one cue the reaction host sends to the companion window's stage (`desk:reaction`; src/mood/reaction-performers.ts plays it).
  * Only reactions that need the stage itself go this way (the shy show); a blush, a happy lift and the small actions use the mood host
  * and her small-action path. Data only: an id, a closed kind and a level.
  */
@@ -19,10 +19,10 @@ export function readReactionStageCue(value: unknown): ReactionStageCue | null {
   return { id: v.id, kind: v.kind as ReactionStageKind, level: v.level as ReactionLevel };
 }
 
-/** What the stage says it did with a cue (src/stage/reaction-performers.ts ReactionStageResult), or 'no-answer' when the host heard nothing in time. */
+/** What the stage says it did with a cue (src/mood/reaction-performers.ts ReactionStageResult), or 'no-answer' when the host heard nothing in time. */
 export const REACTION_STAGE_ANSWERS = ['played', 'busy', 'unsupported', 'invalid', 'no-answer'] as const;
 export type ReactionStageAnswer = typeof REACTION_STAGE_ANSWERS[number];
-/** The pet window's answer to one cue (`desk:reactionResult`; exactly these two fields). 'no-answer' is the host's own word, never accepted from the window. */
+/** The companion window's answer to one cue (`desk:reactionResult`; exactly these two fields). 'no-answer' is the host's own word, never accepted from the window. */
 export interface ReactionStageReply { readonly id: string; readonly result: Exclude<ReactionStageAnswer, 'no-answer'> }
 
 export function readReactionStageReply(value: unknown): ReactionStageReply | null {

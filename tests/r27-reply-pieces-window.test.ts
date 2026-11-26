@@ -6,10 +6,10 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { transformSync } from 'esbuild';
-import type { PetReplyPieces, PetReplyUpdate } from '../shared/contracts';
-import type { ReplyLayout } from '../electron/reply-layout';
-import { validateReplyUpdate } from '../electron/reply-input';
-import { replyPieces } from '../shared/reply-bubbles';
+import type { PetReplyPieces, PetReplyUpdate } from '../shared/foundation/pet-reply';
+import type { ReplyLayout } from '../electron/brain/reply-layout';
+import { validateReplyUpdate } from '../electron/brain/reply-input';
+import { replyPieces } from '../shared/voice/reply-bubbles';
 
 const tick = async () => { for (let index = 0; index < 8; index++) await Promise.resolve(); };
 
@@ -51,12 +51,12 @@ class FakeDocument {
 function preloadFixture() {
   const received = new EventEmitter(), sent: unknown[] = [], frames = new Map<number, () => void>(); let frameId = 0, now = 0;
   const document = new FakeDocument(), window = { addEventListener() {} };
-  const filename = new URL('../electron/reply-preload.ts', import.meta.url), localRequire = createRequire(filename), module = { exports: {} };
+  const filename = new URL('../electron/brain/reply-preload.ts', import.meta.url), localRequire = createRequire(filename), module = { exports: {} };
   const code = transformSync(readFileSync(filename, 'utf8'), { loader: 'ts', format: 'cjs', target: 'es2022' }).code;
   const requireFixture = (name: string) => name === 'electron'
     ? { ipcRenderer: { on: (channel: string, callback: (...args: unknown[]) => void) => { received.on(channel, callback); }, send: (_channel: string, token: unknown) => { sent.push(token); } } }
-    : name === '../shared/reply-waiting-presentation' ? { renderReplyWaiting: (node: FakeElement, waiting: boolean) => { if (waiting) node.textContent = '…'; } }
-      : name === './reply-pieces-dom' ? localRequire(name) : (() => { throw new Error(`Unexpected static-preload import: ${name}`); })();
+    : name === '../../shared/brain/reply-waiting-presentation' ? { renderReplyWaiting: (node: FakeElement, waiting: boolean) => { if (waiting) node.textContent = '…'; } }
+      : (name === './reply-pieces-dom' || name === './reply-scroll') ? localRequire(name) : (() => { throw new Error(`Unexpected static-preload import: ${name}`); })();
   new Function('require', 'module', 'exports', 'document', 'window', 'requestAnimationFrame', 'cancelAnimationFrame', 'getComputedStyle', 'performance', code)(
     requireFixture, module, module.exports, document, window,
     (callback: () => void) => { const id = ++frameId; frames.set(id, callback); return id; }, (id: number) => frames.delete(id),
@@ -134,7 +134,7 @@ function hostFixture(t: TestContext) {
     showInactive() { this.visible = true; this.emit('show'); } hide() { const changed = this.visible; this.visible = false; if (changed) this.emit('hide'); }
     destroy() { this.destroyed = true; this.emit('closed'); }
   }
-  const filename = new URL('../electron/reply-window.ts', import.meta.url), localRequire = createRequire(filename), module = { exports: {} };
+  const filename = new URL('../electron/brain/reply-window.ts', import.meta.url), localRequire = createRequire(filename), module = { exports: {} };
   const code = transformSync(readFileSync(filename, 'utf8'), { loader: 'ts', format: 'cjs', target: 'es2022' }).code;
   const requireFixture = (name: string) => name === 'electron' ? { BrowserWindow: WindowFixture, ipcMain,
     screen: { getDisplayNearestPoint: () => ({ workArea: { x: 0, y: 0, width: 1920, height: 1040 } }) } } : localRequire(name);

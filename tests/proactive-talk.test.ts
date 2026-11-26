@@ -26,7 +26,7 @@ const run = (blocks: typeof day, seed: number, talk: ProactiveTalk | undefined, 
 const signature = (r: DayResult) => JSON.stringify([r.calls, r.opportunities, r.diagnostics.map(d => [d.at, d.cue, d.called, d.decision, d.result]), r.spoken]);
 const sum = (rs: DayResult[], pick: (r: DayResult) => number) => rs.reduce((n, r) => n + pick(r), 0);
 
-/** The caps the card carries and the loop must never relax (shared/mood.ts: speechIntervalMs, speechPerHour, speechWithoutReply). */
+/** The caps the card carries and the loop must never relax (shared/foundation/mood.ts: speechIntervalMs, speechPerHour, speechWithoutReply). */
 function assertCaps(r: DayResult, card = GENE_DAY_CARD, label = '') {
   const { speechIntervalMs, speechPerHour } = card.parameters.frequency;
   const at = r.spoken.map(s => s.at).sort((a, b) => a - b);

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CompletedReplySpeech } from '../electron/completed-reply-speech';
+import { CompletedReplySpeech } from '../electron/voice/completed-reply-speech';
 
 test('a live completed plan remains pending beyond five seconds and only full ready releases it', async t => {
   t.mock.timers.enable({ apis: ['setTimeout'] });

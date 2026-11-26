@@ -3,24 +3,24 @@
 // repaired, a leading "<br>" run dropped). On the next message the two did not line up, the session was judged
 // "diverged", closed, and the reply came from a cold or pre-warmed process. Here the turns run the way electron/main.ts
 // wires them: the provider's deltas go into CompanionService.begin's turn (bubble, streamed speech, archive), the window's
-// history is built with the renderer's own helpers (src/ui/reply-history.ts), and the host tells the session what the
+// history is built with the renderer's own helpers (src/brain/reply-history.ts), and the host tells the session what the
 // turn showed. The model is a fake `claude` speaking Claude Code's stream-json; every reply below is synthetic.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import type { ChatMessage } from '../shared/contracts';
-import { CompanionService, type CompanionTurn } from '../electron/companion';
-import { CompletedReplySpeech } from '../electron/completed-reply-speech';
-import { PersistentClaudeChat, type CompanionSessionInput } from '../electron/claude-session';
-import { buildCodexChatPrompt } from '../electron/conversation-context';
-import { VoiceChatHost } from '../electron/voice-chat-host';
-import { appendReplyHistory, outgoingChatMessages } from '../src/ui/reply-history';
-import { encodeWav } from '../src/ui/MediaInput';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { speakableText } from '../shared/speakable-text';
-import { voiceUtteranceMessages, type VoiceConversationEvent } from '../shared/voice-conversation';
+import type { ChatMessage } from '../shared/foundation/chat';
+import { CompanionService, type CompanionTurn } from '../electron/brain/companion';
+import { CompletedReplySpeech } from '../electron/voice/completed-reply-speech';
+import { PersistentClaudeChat, type CompanionSessionInput } from '../electron/brain/claude-session';
+import { buildCodexChatPrompt } from '../electron/brain/conversation-context';
+import { VoiceChatHost } from '../electron/voice/voice-chat-host';
+import { appendReplyHistory, outgoingChatMessages } from '../src/brain/reply-history';
+import { encodeWav } from '../src/senses/MediaInput';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { speakableText } from '../shared/voice/speakable-text';
+import { voiceUtteranceMessages, type VoiceConversationEvent } from '../shared/voice/voice-conversation';
 
 const PERSONA = '角色名称：小桃\n你是测试角色小桃，说话温柔。';
 
@@ -176,7 +176,7 @@ test('a reply that began with HTML line breaks: the next message stays on the sa
   });
 });
 
-// "UTF-8 read as GBK" garbage (shared/mojibake.ts, docs/claude/2026-11-03-mojibake-guard.md), garbled the same way as there.
+// "UTF-8 read as GBK" garbage (shared/foundation/mojibake.ts, docs/claude/2026-11-03-mojibake-guard.md), garbled the same way as there.
 const garble = (text: string): string => new TextDecoder('gbk').decode(Buffer.from(text, 'utf8'));
 const SAID = '面试没过不是你的问题，是他们没眼光。今天先好好休息，我陪着你。';
 
@@ -217,7 +217,7 @@ test('voice: legs whose plan was cut regroup to the shown utterance, and the typ
   await withHarness(async h => {
     const signal = new AbortController().signal;
     const shownOf = new Map<string, string>();
-    // One leg of an utterance: the protocol filters it like any reply; the voice host (electron/voice-chat-host.ts) keeps the
+    // One leg of an utterance: the protocol filters it like any reply; the voice host (electron/voice/voice-chat-host.ts) keeps the
     // leg's shown text once the leg has finished, and that is what the session is told.
     const leg = async (id: string, messages: ChatMessage[]) => {
       let text = '';

@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PoseEngine, type OrtLike, type OrtSessionLike, type OrtTensorLike } from '../electron/pose/engine';
-import { parseWorkerMessage, type WorkerToHost } from '../electron/pose/protocol';
-import { syntheticFrame } from '../electron/pose/pipeline';
+import { PoseEngine, type OrtLike, type OrtSessionLike, type OrtTensorLike } from '../electron/senses/pose/engine';
+import { parseWorkerMessage, type WorkerToHost } from '../electron/senses/pose/protocol';
+import { syntheticFrame } from '../electron/senses/pose/pipeline';
 
 // onnxruntime stand-in: per-route cost (ms on a fake clock), optional DirectML failures, a switchable "person".
 // The detector model is the byte [1], the pose model [2]; outputs have the real models' names and shapes.

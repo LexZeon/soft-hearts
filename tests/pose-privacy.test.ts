@@ -2,10 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import ts from 'typescript';
-import { MediaRuntime } from '../electron/runtime';
-import { PoseSensingHost } from '../electron/pose/host';
-import type { PoseComponentStore } from '../electron/pose/component-store';
-import type { PoseSensingView } from '../shared/pose-signals';
+import { MediaRuntime } from '../electron/senses/media-runtime';
+import { PoseSensingHost } from '../electron/senses/pose/host';
+import type { PoseComponentStore } from '../electron/senses/pose/component-store';
+import type { PoseSensingView } from '../shared/senses/pose-signals';
+// Reads as text (test-affected selects this test when they change): 'electron/main.ts' (wiring rewrite step 4c: with electron/wiring/*.ts).
+import { wiringSource } from './helpers/wiring-source';
+import { desktopApiSource } from './helpers/desktop-api-source';
 
 const frame = 'data:image/jpeg;base64,aGVsbG8=';
 
@@ -131,18 +134,22 @@ test('download only from the button; delete turns the camera off first; diagnost
   dev.host.syncCamera(dev.media.update({ cameraSharing: true }, 'controls'));
   await dev.flush();
   dev.forks[0].message!({ type: 'ready', route: 'dml', level: 'normal', p90: { dml: 15, cpu: 45 }, dmlBad: false });
-  dev.forks[0].message!({ type: 'signal', signal: { present: true, confidence: 0.9, facing: 'toward', posture: 'sitting', energy: 0.1, rhythm: false, tempo: null, events: ['stretch'], hand: null, capability: 'full' } });
+  dev.forks[0].message!({ type: 'signal', signal: { present: true, confidence: 0.9, facing: 'toward', facingConfidence: 0.9, posture: 'sitting', postureConfidence: 0.9, energy: 0.1, rhythm: false, tempo: null, events: ['stretch'], eventConfidence: { stretch: 0.8 }, hand: null, capability: 'full', face: null, points: [], head: null } });
   assert.deepEqual(dev.host.diagnostics(), { present: 1, stretch: 1 });
   for (const view of [...r.published, ...dev.published]) assert.ok(!JSON.stringify(view).includes('\\'), 'no path in any published state');
 });
 
 // ---- The hot files: the camera-frame paths in electron/main.ts go through the local-mode check (AST, no eval).
-const mainSource = readFileSync(new URL('../electron/main.ts', import.meta.url), 'utf8');
+const mainSource = wiringSource();
 const main = ts.createSourceFile('main.ts', mainSource, ts.ScriptTarget.Latest, true);
 test('main process: every camera capture path is closed while local sensing owns the camera', () => {
-  let capture: ts.FunctionDeclaration | undefined;
-  main.forEachChild(node => { if (ts.isFunctionDeclaration(node) && node.name?.text === 'captureSharedCamera') capture = node; });
-  assert.ok(capture?.body);
+  // Wiring rewrite step 4c: `main` is the whole wiring (electron/main.ts and electron/wiring/*.ts); the function is found at any depth, exactly once.
+  const captures: ts.FunctionDeclaration[] = [];
+  const find = (node: ts.Node) => { if (ts.isFunctionDeclaration(node) && node.name?.text === 'captureSharedCamera') captures.push(node); node.forEachChild(find); };
+  find(main);
+  assert.equal(captures.length, 1);
+  const capture = captures[0];
+  assert.ok(capture.body);
   const first = capture.body.statements[0];
   assert.ok(ts.isIfStatement(first) && first.expression.getText(main) === '!media.sharesCameraFrames()'
     && ts.isReturnStatement(first.thenStatement) && first.thenStatement.expression?.getText(main) === 'null', 'the capture itself refuses first');
@@ -156,21 +163,22 @@ test('main process: every camera capture path is closed while local sensing owns
     node.forEachChild(visit);
   };
   visit(main);
-  assert.equal(callers.length, 3, 'per-message attachments, proactive topics and I-040\'s one look (electron/sense-router/)');
+  assert.equal(callers.length, 5, 'per-message attachments, proactive topics, I-040\'s one look (electron/senses/sense-router/), I-085\'s own look (electron/initiative/self-look/) and I-166\'s small frame taken again out in full-screen (electron/wiring/see-and-say-wiring.ts)');
   for (const condition of callers) assert.ok(condition.startsWith('media.sharesCameraFrames()'), condition);
   assert.match(mainSource, /scopedHost\('publishCameraSample'[\s\S]{0,200}!media\.sharesCameraFrames\(\)/);
   // poseCameraPolicy: no pose host ⇒ refused as 'unavailable', never silently shared (tests/camera-refusal.test.ts).
-  // (The voice policy of the local speech recognizer, electron/asr/voice-route.ts, follows as the third argument.)
+  // (The voice policy of the local speech recognizer, electron/senses/asr/voice-route.ts, follows as the third argument.)
+  // (Wiring rewrite step 4c: the switches and the pose host are both made in electron/wiring/senses-wiring.ts.)
   assert.match(mainSource, /new MediaRuntime\(\(\) => syncAudioCapture\(\), poseCameraPolicy\(\(\) => poseSensing\), voiceRoute\.policy\)/,
     'before (or without) the pose host the camera switch is refused, never silently shared');
   assert.match(mainSource, /poseSensing = createPoseSensingOrNull\(/, 'a pose-sensing failure cannot end the whole app');
   assert.match(mainSource, /poseSensing\?\.syncCamera\(next\);/);
 });
 
-// ---- Preloads: the pet/control renderer gets enums and counts only; the sensor window exposes nothing.
-const preloadSource = readFileSync(new URL('../electron/preload.ts', import.meta.url), 'utf8');
-const contractSource = readFileSync(new URL('../shared/contracts.ts', import.meta.url), 'utf8');
-const sensorSource = readFileSync(new URL('../electron/pose/sensor-preload.ts', import.meta.url), 'utf8');
+// ---- Preloads: the companion/control renderer gets enums and counts only; the sensor window exposes nothing.
+const preloadSource = readFileSync(new URL('../electron/safety/preload.ts', import.meta.url), 'utf8');
+const contractSource = desktopApiSource(); // DesktopAPI across its per-part slices (shared/contracts.ts extends shared/<part>/desktop-api.ts)
+const sensorSource = readFileSync(new URL('../electron/senses/pose/sensor-preload.ts', import.meta.url), 'utf8');
 test('renderer API: fixed pose channels without arguments; no frame, port or path ever crosses', () => {
   const preload = ts.createSourceFile('preload.ts', preloadSource, ts.ScriptTarget.Latest, true);
   const contracts = ts.createSourceFile('contracts.ts', contractSource, ts.ScriptTarget.Latest, true);
@@ -216,7 +224,7 @@ test('sensor window preload: nothing exposed to its page; only the port and thre
 });
 
 test('control-window IPC answers carry the fixed view only (the chosen file paths stay in the host)', async () => {
-  const { registerPoseControls } = await import('../electron/pose/control-ipc');
+  const { registerPoseControls } = await import('../electron/senses/pose/control-ipc');
   const handlers = new Map<string, { run: (...args: unknown[]) => unknown; controlOnly: boolean }>();
   const imported: string[][] = [];
   const view: PoseSensingView = { phase: 'idle', prompt: false, downloadBytes: 1, installedBytes: 2, progress: null, route: null, level: null, componentVersion: 1, notice: 'import-done' };

@@ -3,8 +3,8 @@ import test, { type TestContext } from 'node:test';
 import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { MusicSettingsStore } from '../electron/music-settings';
-import { normalizeMusicSettings, DEFAULT_MUSIC_SETTINGS } from '../shared/music-settings';
+import { MusicSettingsStore } from '../electron/senses/music-settings';
+import { normalizeMusicSettings, DEFAULT_MUSIC_SETTINGS } from '../shared/senses/music-settings';
 
 async function fixture(t: TestContext) {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'soft-hearts-music-store-'));

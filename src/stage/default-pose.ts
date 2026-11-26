@@ -1,4 +1,4 @@
-import catalog from '../../shared/motion-catalog.json';
+import catalog from '../../shared/actions/motion-catalog.json';
 
 // Fixed background identities only. An idle tag or familiar filename is never
 // sufficient; model-specific playback acceptance remains a separate check.

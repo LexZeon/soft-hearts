@@ -3,13 +3,14 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import ts from 'typescript';
 import { transformSync } from 'esbuild';
-import { ReplyPresentationState } from '../src/ui/reply-presentation';
-import { TextMemorialOfferController } from '../src/ui/TextMemorialOffer';
-import type { TextMemorialEvent } from '../shared/text-memorials';
+import { ReplyPresentationState } from '../src/brain/reply-presentation';
+import { TextMemorialOfferController } from '../src/memory/TextMemorialOffer';
+import type { TextMemorialEvent } from '../shared/memory/text-memorials';
+import { rendererSource as readRendererSource } from './helpers/renderer-source'; // overhaul step 5: src/main.ts and src/wiring/*.ts
 
 // Extract the real main.ts callbacks so this integration test exercises the actual
 // eligibility and publish wiring with the real readout and offer controller.
-const source = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
+const source = readRendererSource();
 const ast = ts.createSourceFile('main.ts', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
 function property(name: string, parentText: string): string {
   const found: ts.PropertyAssignment[] = [];
@@ -28,7 +29,7 @@ const code = transformSync(`function make(replyPresentation, calls) {
   const $ = () => ({value: ''});
   const speech = { stop: () => calls.push('stop') };
   const window = { desktop: { updatePetReply: async () => {}, setAmbientAudioSpeaking: async () => {} } };
-  const stage = {setSpeaking() {}}, mediaInput = {setSpeaking() {}}, ambientAudioController = {setSpeaking() {}}, speechChannel = {postMessage() {}};
+  const stage = {setSpeaking() {}}, mediaInput = {setSpeaking() {}}, ambientAudioController = {setSpeaking() {}}, speechChannel = {postMessage() {}}, callControls = null;
   return { current: ${currentSource}, publish: ${publishSource}, speaking: ${speakingSource},
     plan: value => { ordinaryReplyPresentation = value; } };
 } return make;`, {loader:'ts',target:'es2022'}).code;

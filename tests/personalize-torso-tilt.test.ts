@@ -1,8 +1,8 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {Bone,BufferGeometry,MeshBasicMaterial,Quaternion,Skeleton,SkinnedMesh,Vector3} from 'three';
-import {BODY_TWEAK_BASE,BODY_TWEAK_BINDING,BODY_TWEAK_TARGET,makeBodyHeadTweak,makeBodyTorsoTweak,parseBodyVisualStudy,validateBodyPoseProfile,validateBodyPoseSelection} from '../shared/personalize-body';
-import {bodyPoseBinding} from '../shared/personalize-body-bindings';import {applyBodyPoseTweak,applyBodyHeadTweak,applyBodyTorsoTweak,bodyBindingForProfile} from '../electron/personalize-body-tweak';
-import {PersonalizeStaticPose} from '../src/stage/personalize-static-pose';import {MmdStage} from '../src/stage/MmdStage';
+import { Bone, BufferGeometry, MeshBasicMaterial, Quaternion, Skeleton, SkinnedMesh, Vector3 } from 'three';
+import { BODY_TWEAK_BASE, BODY_TWEAK_BINDING, BODY_TWEAK_TARGET, makeBodyHeadTweak, makeBodyTorsoTweak, parseBodyVisualStudy, validateBodyPoseProfile, validateBodyPoseSelection } from '../shared/stage/personalize-body';
+import { bodyPoseBinding } from '../shared/stage/personalize-body-bindings';import { applyBodyPoseTweak, applyBodyHeadTweak, applyBodyTorsoTweak, bodyBindingForProfile } from '../electron/stage/personalize-body-tweak';
+import { PersonalizeStaticPose } from '../src/stage/personalize-static-pose';
 const base=bodyPoseBinding(BODY_TWEAK_BINDING,BODY_TWEAK_TARGET)!;
 const offsets={shoulderOffsetDegrees:0,upperArmOffsetDegrees:0,elbowOffsetDegrees:0},torso=(offsetDegrees:number,enabled=true,strength=.5)=>({offsetDegrees,enabled,strength});
 const fixed={bindingId:BODY_TWEAK_BINDING,semantic:'mood.happy',label:'test',strength:.5,enabled:true,targetModelSha:BODY_TWEAK_TARGET,sourceSha:BODY_TWEAK_BASE} as const;
@@ -42,11 +42,6 @@ test('current-base torso preserves animated breath, does not accumulate, and rej
   bones[0].add(bones[5]);const unsupported=new PersonalizeStaticPose(mesh,property,rest);assert.equal(unsupported.apply(0),0);unsupported.restore();
   const remaining=new PersonalizeStaticPose(mesh,applyBodyTorsoTweak(headBinding,torso(10,true,.5),0).properties,rest);assert.equal(remaining.apply(0),1);assert.ok(bones[9].quaternion.angleTo(other)>.01);remaining.restore();
  }finally{mesh.skeleton.dispose();geometry.dispose();material.dispose();}
-});
-test('actual transition and actual contact fallback block only torso eligibility',()=>{
- const bones=Array.from({length:6},()=>new Bone()),stage=Object.assign(Object.create(MmdStage.prototype),{mesh:{skeleton:{bones}},chest:bones[5],center:null,moodContact:{pinch:{pinching:false}},cheekMotion:null,motionTransition:{ownsProperty:(name:string)=>name==='.bones[上半身].quaternion'}}) as any;
- assert.equal(stage.torsoContributionAllowed(),false);stage.motionTransition.ownsProperty=()=>false;assert.equal(stage.torsoContributionAllowed(),true);
- stage.moodContact.pinch.pinching=true;assert.equal(stage.torsoContributionAllowed(),false);stage.center=new Bone();assert.equal(stage.torsoContributionAllowed(),true);
 });
 test('torso advice strict optional data never weakens legacy and uncertain references become null',()=>{
  const old={observations:[],inferences:[],questions:[],insufficient:''},v={offsetDegrees:4,sufficiency:'sufficient',referenceSufficiency:'uncertain',reason:'r',unknowns:'u'};

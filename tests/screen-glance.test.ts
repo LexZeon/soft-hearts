@@ -6,13 +6,13 @@ import assert from 'node:assert/strict';
 import {
   ACTIVITY_WORDS, GLANCE_MAX, GLANCE_PROMPT, GLANCE_SYSTEM_PROMPT, SCREEN_ACTIVITIES, glanceFit, parseGlanceAnswer, programActivity, programKey,
   programTable, type ScreenActivity,
-} from '../shared/screen-activity';
+} from '../shared/senses/screen-activity';
 import {
   GLANCE_CACHE_MS, GLANCE_GAP_MS, GLANCE_RECENT_MS, GLANCE_RETRY_MS, GLANCE_TIMEOUT_MS, LAST_SEEN_MS, PROBE_RESTARTS, PROBE_STALE_MS, ScreenGlance,
-} from '../electron/screen-glance';
+} from '../electron/senses/screen-glance';
 import {
   FOREGROUND_POLL_MS, WindowsForegroundProbe, foregroundHelperScript, readForegroundLine, type ForegroundProbe, type ForegroundReading,
-} from '../electron/foreground-app';
+} from '../electron/senses/foreground-app';
 import { EventEmitter } from 'node:events';
 import { PassThrough } from 'node:stream';
 import type { ChildProcess } from 'node:child_process';

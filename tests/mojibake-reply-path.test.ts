@@ -7,11 +7,11 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CompanionService } from '../electron/companion';
-import { CompletedReplySpeech } from '../electron/completed-reply-speech';
-import { ProactiveSpeechGate } from '../electron/proactive-speech-gate';
-import { ProactiveVision, type ProactiveVisionMessage } from '../electron/proactive-vision';
-import { speakableText } from '../shared/speakable-text';
+import { CompanionService } from '../electron/brain/companion';
+import { CompletedReplySpeech } from '../electron/voice/completed-reply-speech';
+import { ProactiveSpeechGate } from '../electron/initiative/proactive-speech-gate';
+import { ProactiveVision, type ProactiveVisionMessage } from '../electron/senses/proactive-vision';
+import { speakableText } from '../shared/voice/speakable-text';
 
 const garble = (text: string): string => new TextDecoder('gbk').decode(Buffer.from(text, 'utf8'));
 /** Splits like a streaming provider: a lone first character, then pieces of a few characters. */

@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { MoodHost } from '../electron/mood';
-import { defaultCharacterResponseRule, type CharacterResponseProfile } from '../shared/character-response';
+import { MoodHost } from '../electron/mood/mood';
+import { defaultCharacterResponseRule, type CharacterResponseProfile } from '../shared/cards/character-response';
 
 async function fixture(t: TestContext) {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'soft-response-host-'));

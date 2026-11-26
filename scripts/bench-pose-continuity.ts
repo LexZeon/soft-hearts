@@ -3,7 +3,7 @@
 // pays its Euler sync). Run (the tsx CLI would not pass --expose-gc on):
 //   node --expose-gc --import ./node_modules/tsx/dist/esm/index.mjs scripts/bench-pose-continuity.ts
 import { Bone, Euler, Quaternion } from 'three';
-import { BaseSourceWatch, PoseContinuity } from '../src/stage/pose-continuity';
+import { BaseSourceWatch, PoseContinuity } from '../src/senses/pose-continuity';
 
 const BONES = 224, MORPHS = 184, FRAMES = 20_000;
 const bones = Array.from({ length: BONES }, (_, i) => Object.assign(new Bone(), { name: `b${i}` }));

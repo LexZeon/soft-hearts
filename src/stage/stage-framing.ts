@@ -1,14 +1,14 @@
 import { MathUtils } from 'three';
-import type { CameraConfig } from '../../shared/contracts';
-import { DEFAULT_SETTINGS } from '../../shared/defaults';
-import { sameFramingCamera } from '../../shared/pet-framing';
+import type { CameraConfig } from '../../shared/foundation/settings';
+import { DEFAULT_SETTINGS } from '../../shared/foundation/defaults'; // direct, not via ../../shared/settings: through the page the window bundle would take the host-only capability table (docs/claude/2026-11-16-overhaul-parts-4.md)
+import { sameFramingCamera } from '../../shared/stage/pet-framing';
 
 /**
- * Share of the viewport height above the model that framing keeps clear for the pet's hover toolbar
- * (2026-11-02 P4). In the default 400x560 pet window the expanded toolbar is three rows (12 buttons
+ * Share of the viewport height above the model that framing keeps clear for the companion's hover toolbar
+ * (2026-11-02 P4). In the default 400x560 companion window the expanded toolbar is three rows (12 buttons
  * wrap into two, plus the window-size readout) ending 97 px down, and it reveals itself for a pointer
  * 24 px below that: 121 px. 0.22 x 560 = 123 px. Applied in every window, so the controls preview and
- * the pet frame to the same camera; a pet whose toolbar reaches lower (narrow or small windows) uses
+ * the companion frame to the same camera; a companion whose toolbar reaches lower (narrow or small windows) uses
  * its measured reach instead (framingTopBand).
  */
 export const FRAMING_TOP_BAND = 0.22;
@@ -43,7 +43,7 @@ export function framingCamera(preset: FramingPreset, model: FramingModel, view: 
   return { yaw: 0, pitch: 0, distance, targetY: lifted === high ? centerY : (low + lifted) / 2, targetX: model.centerX, targetZ: 0, fov: view.fov };
 }
 
-/** The band a pet frames with: the shared band, or the measured toolbar when it reaches lower (narrow windows). */
+/** The band a companion frames with: the shared band, or the measured toolbar when it reaches lower (narrow windows). */
 export function framingTopBand(viewportHeight: number, reservedTopPixels = 0): number {
   const measured = viewportHeight > 0 && Number.isFinite(reservedTopPixels) && reservedTopPixels > 0 ? reservedTopPixels / viewportHeight : 0;
   return Math.min(MAX_TOP_BAND, Math.max(FRAMING_TOP_BAND, measured));
@@ -52,6 +52,6 @@ export function framingTopBand(viewportHeight: number, reservedTopPixels = 0): n
 /**
  * The shipped default camera (distance 30, target height 10) was never framed for any model: a fresh
  * profile, "use bundled model" and "restore defaults" save it. On the bundled Gene it puts the crown
- * above the pet window (P4). The pet replaces it with full framing before the model's first frame.
+ * above the companion window (P4). The companion replaces it with full framing before the model's first frame.
  */
 export const isUnframedCamera = (camera: CameraConfig): boolean => sameFramingCamera(camera, DEFAULT_SETTINGS.camera);

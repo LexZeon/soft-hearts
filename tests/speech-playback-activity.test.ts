@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SpeechPlaybackActivity } from '../electron/speech-playback-activity';
+import { SpeechPlaybackActivity } from '../electron/voice/speech-playback-activity';
 
 test('old opaque lease cannot end a reused playback ID after a scope change', () => {
   let serial = 0;

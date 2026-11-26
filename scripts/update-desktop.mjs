@@ -3,7 +3,7 @@
 import { spawn } from 'node:child_process';
 import { gateHeavy } from './dev/presence.mjs';
 import { createHash, randomUUID } from 'node:crypto';
-import { createWriteStream } from 'node:fs';
+import { createWriteStream, readdirSync } from 'node:fs';
 import { cp, lstat, mkdir, readFile, readdir, realpath, symlink, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,13 +23,24 @@ const staging = path.join(root, '.local', 'desktop-updates');
 // the scorer page tests load tools/bridge/scorer.html). Without them every unit run in the frozen copy failed, so no
 // development version and no desktop shortcut was ever installed (R26, 2026-11-03). tests/frozen-inputs.test.mjs
 // finds any other repository file a test reads that is missing here.
-const folders = ['electron', 'shared', 'src', 'scripts', 'tests', 'assets/bundled', 'handbook', 'tools/bridge'];
+const folders = ['electron', 'shared', 'src', 'scripts', 'tests', 'assets/bundled', 'assets/icons', 'handbook', 'tools/bridge', 'docs/images'];
 // The public source snapshot has no handbook/ and no tools/bridge/ (maintainer-only): a missing one of these is an empty
 // input there, not an error. Where they exist they count as before. Any other missing folder still fails.
-const optionalFolders = new Set(['handbook', 'tools/bridge']);
+const optionalFolders = new Set(['handbook', 'tools/bridge', 'assets/icons', 'docs/images']); // assets/icons: the placeholder shortcut icon (I-224); the shortcut script falls back without it, so a workspace that lacks it still updates
+// Every page directly in these folders is an input (unit tests read many of them; the few that ship with the app and that the assistant
+// reads are listed in shared/safety/user-manuals.json and package.json extraResources, not here). Listed when this script starts, so a
+// page added later is included without editing this file. A folder the source does not have (the public snapshot has only a few docs) adds nothing.
+const assistantDocs = ['docs', 'docs/release-notes', 'docs/mood'].flatMap(folder => {
+  try { return readdirSync(path.join(inputRoot, folder), { withFileTypes: true }).filter(entry => entry.isFile() && entry.name.endsWith('.md')).map(entry => `${folder}/${entry.name}`); }
+  catch (error) { if (error.code === 'ENOENT') return []; throw error; }
+}).sort();
 // The double-click launchers are inputs too: their tests run inside the frozen copy.
-const fixed = ['package.json', 'pnpm-lock.yaml', 'tsconfig.json', 'vite.config.ts', 'index.html', 'LICENSE', 'ACKNOWLEDGEMENTS.md', 'THIRD_PARTY_NOTICES.md',
-  'start-soft-hearts.cmd', 'promote-to-stable.cmd'];
+// README.md and docs/images: the homepage test (tests/readme-homepage.test.mjs) checks both halves and every picture it shows (I-228, I-232).
+const fixed = ['package.json', 'README.md', 'pnpm-lock.yaml', 'tsconfig.json', 'vite.config.ts', 'index.html', 'LICENSE', 'ACKNOWLEDGEMENTS.md', 'THIRD_PARTY_NOTICES.md',
+  'start-soft-hearts.cmd', 'promote-to-stable.cmd',
+  // The install page the v0.2.0 notes link to (tests/public-snapshot.test.mjs checks those links inside the copy).
+  'START-HERE.md',
+  ...assistantDocs];
 /** What prepare() freezes and fingerprints: these files plus everything under these folders. */
 export const runtimeInputs = Object.freeze({ fixed: Object.freeze([...fixed]), folders: Object.freeze([...folders]) });
 const scopeArgument = process.argv.includes('--validation-files') ? process.argv.indexOf('--validation-files') : process.argv.indexOf('--files');
@@ -54,6 +65,24 @@ export function requireUnitSummary(output) {
     || summary.pass + summary.skipped !== summary.tests)
     throw new Error('Unit execution did not prove a nonempty passing test set; exit zero alone is insufficient.');
   return summary;
+}
+/**
+ * Windows refuses a command line over 32 767 characters, and tsx re-spawns node with every test file on it: on 2026-11-18 the
+ * 1079 test files hit `spawn ENAMETOOLONG` and no candidate could be built. The files run in batches whose argument text stays
+ * well under the limit; every batch must pass on its own (requireUnitSummary) and the summaries are added up.
+ */
+export function unitTestBatches(files, maxChars = 20_000) {
+  const batches = [];
+  let current = [], size = 0;
+  for (const file of files) {
+    if (current.length && size + file.length + 1 > maxChars) { batches.push(current); current = []; size = 0; }
+    current.push(file); size += file.length + 1;
+  }
+  if (current.length) batches.push(current);
+  return batches;
+}
+export function addUnitSummary(total, next) {
+  return total ? Object.fromEntries(['tests', 'pass', 'fail', 'skipped'].map(key => [key, total[key] + next[key]])) : next;
 }
 export function selectUnitTestFiles(inputs) {
   const selected = inputs.filter(file => /^tests\/[^/]+\.test\.(?:ts|mjs)$/.test(file)).sort();
@@ -162,7 +191,7 @@ async function prepare({ unitPlan: unitPlanName = argumentValue('--unit-plan') }
     const steps = [
       ['assets', 'scripts/verify-bundled-assets.mjs', []],
       ['types', 'node_modules/typescript/bin/tsc', ['--noEmit']],
-      ['unit tests', 'node_modules/tsx/dist/cli.mjs', ['--test', ...testFiles]],
+      ...unitTestBatches(testFiles).map((batch, index, all) => [all.length > 1 ? `unit tests ${index + 1}/${all.length}` : 'unit tests', 'node_modules/tsx/dist/cli.mjs', ['--test', ...batch]]),
     ];
     if (!reuse) steps.push(
       ['renderer', 'node_modules/vite/bin/vite.js', ['build']],
@@ -170,7 +199,7 @@ async function prepare({ unitPlan: unitPlanName = argumentValue('--unit-plan') }
       ['package', 'node_modules/electron-builder/out/cli/cli.js', ['--dir', '--win', `--${process.arch}`]],
     );
     for (const [label, script, args] of steps) { console.log(`Checking ${label}...`); const output = await run(process.execPath, [script, ...args], source, log);
-      if (label === 'unit tests') unitSummary = requireUnitSummary(output); }
+      if (label.startsWith('unit tests')) unitSummary = addUnitSummary(unitSummary, requireUnitSummary(output)); }
     const name = reuse ? path.basename(reuse.bundle) : process.arch === 'x64' ? 'win-unpacked' : `win-${process.arch}-unpacked`;
     const unpacked = path.join(source, 'release', name);
     if (reuse) {

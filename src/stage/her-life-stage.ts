@@ -1,6 +1,6 @@
 /**
  * 她自己的生活, stage side (docs/claude/2026-11-02-her-life.md). The host says what she is doing
- * (MoodView.herLife); this turns the shared table (shared/her-life.ts) into
+ * (MoodView.herLife); this turns the shared table (shared/stage/her-life.ts) into
  *  1. an eased LifeActivity for the R18 procedural life (gaze, head, sway, blink, face), and
  *  2. an optional held pose from an existing library motion (thinking: hand to chin; sleepy: a slumped upper body),
  *     written through the stage's own program layer (remembered, restored every frame).
@@ -16,19 +16,19 @@
  *  - The held pose is two keyframe poses of the library motion eased back and forth, never the clip's own
  *    timeline: its inner keys are not velocity-continuous (measured: a 0.2° kink at 60 fps).
  *  - "抬起头": an eased envelope (eyes to the user, chin up a little; 2.15 s plain), started once per host look-up id. The
- *    host's style for it (shared/her-life.ts herLifeLookUpStyle) makes it quicker or slower, more or less chin, a small
+ *    host's style for it (shared/stage/her-life.ts herLifeLookUpStyle) makes it quicker or slower, more or less chin, a small
  *    tilt or a smile, on that same envelope.
  * No allocation per frame after a clip is bound.
  */
 import { MathUtils, Quaternion, type AnimationClip, type Bone, type Interpolant, type SkinnedMesh } from 'three';
 import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
 import { HER_LIFE_NEUTRAL_PRESENTATION, HER_LIFE_TABLE, isHerLifeActivity, readHerLifeLookUpStyle, type HerLifeActivity, type HerLifeLookUpStyle,
-  type HerLifeMotion, type HerLifeMotionId, type HerLifeMotionResource, type HerLifePresentation, type HerLifeView } from '../../shared/her-life';
-import { isHerNeedId, scaledHerNeedPresentation, type HerNeedView } from '../../shared/her-needs';
+  type HerLifeMotion, type HerLifeMotionId, type HerLifeMotionResource, type HerLifePresentation, type HerLifeView } from '../../shared/stage/her-life';
+import { isHerNeedId, scaledHerNeedPresentation, type HerNeedView } from '../../shared/mood';
 import { LIFE_LOOK_UP_LIFT, type LifeActivity } from './procedural-life';
 import { watchDirection, watchGaze, type ScreenRect } from '../../shared/behaviors/watch-along/direction';
-import { WATCH_ALONG_KNOBS } from '../../shared/behaviors/watch-along/knobs';
-import { createVmdParser, type VmdDataTransform } from './vmd';
+import { WATCH_ALONG_KNOBS } from '../../shared/senses';
+import { createVmdParser, type VmdDataTransform } from '../foundation/vmd';
 import { withKeyframeInterpolation } from './keyframe-interpolation';
 
 export interface HerLifeStageGates {
@@ -51,11 +51,11 @@ export interface HerLifeStageInput {
   /** Wall clock (ms), for the look-up's freshness. */
   nowMs: number;
   /**
-   * 她也会需要你 (shared/her-needs.ts, MoodView.herNeed): a small feeling of hers, or the warmth after she was soothed. While it is
+   * 她也会需要你 (shared/mood/her-needs.ts, MoodView.herNeed): a small feeling of hers, or the warmth after she was soothed. While it is
    * there it is shown instead of her own activity (same offsets, same cross-fade, same giving way); null or absent: her own activity.
    */
   need?: HerNeedView | null;
-  /** How plainly the need shows on this card in this mood (shared/her-needs.ts herNeedVisibility); 1 when absent. */
+  /** How plainly the need shows on this card in this mood (shared/mood/her-needs.ts herNeedVisibility); 1 when absent. */
   needVisibility?: number;
   /**
    * I-006 step 3: where her window is and the display it is on (the browser's own numbers, both in the same coordinates), for looking at
@@ -134,7 +134,7 @@ export class HerLifeStage {
   private beatPhase = 0;
   private lookUpId: string | null = null;
   private lookUpTime = Infinity;
-  /** How she looks up this time (shared/her-life.ts herLifeLookUpStyle); null: the plain look-up. */
+  /** How she looks up this time (shared/stage/her-life.ts herLifeLookUpStyle); null: the plain look-up. */
   private lookUpStyle: HerLifeLookUpStyle | null = null;
   /** I-006 step 3: how much she is following the screen (0..1, eased), and the eased direction to the middle of her screen (x right, y up). */
   private watchWeight = 0;

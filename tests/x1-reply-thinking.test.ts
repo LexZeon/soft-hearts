@@ -17,19 +17,19 @@
 import test, { type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
 import os from 'node:os';
-import type { ChatMessage } from '../shared/contracts';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { DEFAULT_MOOD_PARAMETERS } from '../shared/mood';
-import { DEFAULT_TTS_CONFIG, type TtsConfig, type TtsStreamEvent } from '../shared/tts';
-import { CUE_TEXT, FEED_CUE_INSTRUCTION, THINK_CUE_INSTRUCTION, THINK_CUE_KINDS } from '../shared/feed-cue';
-import { FeedCueSynth } from '../electron/feed-cue';
-import { PersistentClaudeChat, type CompanionClaudeTask } from '../electron/claude-session';
-import { ReplyPresentationState } from '../src/ui/reply-presentation';
-import { ReplyThinkingPresenter, THINK_CUE_DEADLINE_MS, type ReplyThinkingOptions } from '../src/ui/reply-thinking';
-import { FeedCuePlayer } from '../src/ui/feed-cue-player';
-import { SharedAudioOutput } from '../src/ui/audio-output';
-import { CANCEL_SETTLE_MS } from '../src/ui/speech';
-import { ReplyThinking } from '../src/stage/reply-thinking';
+import type { ChatMessage } from '../shared/foundation/chat';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { DEFAULT_MOOD_PARAMETERS } from '../shared/foundation/mood';
+import { DEFAULT_TTS_CONFIG, type TtsConfig, type TtsStreamEvent } from '../shared/voice/tts';
+import { CUE_TEXT, FEED_CUE_INSTRUCTION, THINK_CUE_INSTRUCTION, THINK_CUE_KINDS } from '../shared/initiative/feed-cue';
+import { FeedCueSynth } from '../electron/senses/feed-cue';
+import { PersistentClaudeChat, type CompanionClaudeTask } from '../electron/brain/claude-session';
+import { ReplyPresentationState } from '../src/brain/reply-presentation';
+import { ReplyThinkingPresenter, THINK_CUE_DEADLINE_MS, type ReplyThinkingOptions } from '../src/brain/reply-thinking';
+import { FeedCuePlayer } from '../src/initiative/feed-cue-player';
+import { SharedAudioOutput } from '../src/voice/audio-output';
+import { CANCEL_SETTLE_MS } from '../src/voice/speech';
+import { ReplyThinking } from '../src/brain/reply-thinking-stage';
 import { pausableEngine, pauseAudioWorld } from './helpers/feed-pause-audio';
 import { fakeClaudeStream } from './helpers/fake-claude-stream';
 
@@ -193,7 +193,7 @@ test('X1 timing: on the same fake Claude Code the thinking presentation adds no 
   const history: ChatMessage[] = [];
   const character = { seedKey: 'gene', weights: DEFAULT_MOOD_PARAMETERS.weights, intensity: DEFAULT_MOOD_PARAMETERS.intensity, companion: null };
   const turn = async (thinking: boolean, n: number) => {
-    // The stage's thinking channel keeps rendering meanwhile, as the pet's frame loop would.
+    // The stage's thinking channel keeps rendering meanwhile, as the companion's frame loop would.
     const channel = new ReplyThinking(), owner = {}, stageCalls: (string | null)[] = [];
     const frames = setInterval(() => channel.frame(1 / 60, { owner, character, gates: { head: true, gaze: true, face: true } }), 16);
     const presenterUnderTest = new ReplyThinkingPresenter({ stage: () => ({ setReplyThinking: key => { stageCalls.push(key); channel.set(key); } }),
@@ -201,24 +201,24 @@ test('X1 timing: on the same fake Claude Code the thinking presentation adds no 
       cue: { play: () => new Promise(() => {}) }, voiceOn: () => true, speaks: () => true });
     const presentation = new ReplyPresentationState(undefined, thinking ? id => presenterUnderTest.waiting(id) : undefined);
     const id = `x1-${thinking ? 'on' : 'off'}-${n}`, user: ChatMessage = { role: 'user', content: `第${n}句` };
-    let reply = '', inDelta = false, firstDelta = -1, firstPaint = -1, paintedInDelta = false;
+    let reply = '', inDelta = false, firstDelta = -1, firstPaint = -1, paintedInDelta = false, loopTurned = false, paintedBeforeLoopTurned = false;
     const sentAt = performance.now();
     // The renderer's beginChat at send time (the host's chat-started), then the stream.
     presentation.begin(id);
-    presentation.startReadout(id, () => { if (firstPaint < 0) { firstPaint = performance.now(); paintedInDelta = inDelta; } });
+    presentation.startReadout(id, () => { if (firstPaint < 0) { firstPaint = performance.now(); paintedInDelta = inDelta; paintedBeforeLoopTurned = !loopTurned; } });
     const atSend = [...stageCalls];
     try {
       await chat.stream(task([...history, user], id), new AbortController().signal, (type, text) => {
         if (type !== 'delta') return;
-        if (firstDelta < 0) firstDelta = performance.now();
+        if (firstDelta < 0) { firstDelta = performance.now(); setImmediate(() => { loopTurned = true; }); }
         inDelta = true;
         try { reply += text; presentation.content(id, reply); presentation.readoutContent(id, reply); }
         finally { inDelta = false; }
       });
     } finally { clearInterval(frames); }
     presentation.close(id); presentation.cancelReadout();
-    history.push(user, { role: 'assistant', content: `收到，${user.content}` });
-    return { firstWordMs: firstDelta - sentAt, paintGapMs: firstPaint - firstDelta, paintedInDelta, atSend, stageCalls, reply };
+    history.push(user, { role: 'assistant', content: `好哒，${user.content}` });
+    return { firstWordMs: firstDelta - sentAt, paintGapMs: firstPaint - firstDelta, paintedInDelta, paintedBeforeLoopTurned, atSend, stageCalls, reply };
   };
   try {
     await turn(false, 0); // the process starts once; every measured turn runs on the same warm process
@@ -226,7 +226,8 @@ test('X1 timing: on the same fake Claude Code the thinking presentation adds no 
     for (let n = 1; n <= 16; n++) {
       const thinking = n % 2 === 0, result = await turn(thinking, n);
       assert.equal(result.paintedInDelta, true, 'the first word is painted inside the delta that carries it (no await between)');
-      assert.ok(result.reply.startsWith('收到，'));
+      assert.equal(result.paintedBeforeLoopTurned, true, 'and before the event loop turns once (a count of turns, not milliseconds: a busy machine does not change it)');
+      assert.ok(result.reply.startsWith('好哒，'));
       (thinking ? on : off).push(result.firstWordMs); gaps.push(result.paintGapMs);
       if (thinking) {
         assert.deepEqual(result.atSend, [`x1-on-${n}`], 'the stage is told synchronously at send');
@@ -238,7 +239,8 @@ test('X1 timing: on the same fake Claude Code the thinking presentation adds no 
     const difference = median(on) - median(off);
     if (REPORT) console.log(`first word (send → first delta, ms): without thinking median ${median(off).toFixed(2)} [${off.map(v => v.toFixed(1)).join(' ')}]; with thinking median ${median(on).toFixed(2)} [${on.map(v => v.toFixed(1)).join(' ')}]; delta → bubble paint at most ${Math.max(...gaps).toFixed(3)} ms`);
     assert.ok(difference < 15, `first word is not slower with thinking (median +${difference.toFixed(2)} ms)`);
-    assert.ok(Math.max(...gaps) < 5, 'the bubble paints within the first delta in both');
+    // (the paint is inside the delta and before the loop turned, asserted per turn above; the gap in ms is only reported, since one
+    // slice of a busy machine between the two clock reads is not a sign that anything waited)
   } finally {
     chat.dispose();
     const pids = (await claude.spawns()).map(spawn => spawn.pid);

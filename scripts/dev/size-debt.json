@@ -1,0 +1,174 @@
+{
+ "note": "Size debt baseline (scripts/dev/size-check.mjs). Hotspots and the handler count may only shrink; other big files may grow by slack; new files at most limit bytes. Shrinking lowers the pins automatically; raising one is deliberate: node scripts/dev/size-check.mjs --repin <path> --reason \"why\" (the reason shows in the diff).",
+ "limit": 40960,
+ "slack": 4096,
+ "hotspots": {
+  "electron/main.ts": {
+   "bytes": 63616,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "src/main.ts": {
+   "bytes": 5915,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "shared/contracts.ts": {
+   "bytes": 3569,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "electron/safety/preload.ts": {
+   "bytes": 36914,
+   "reason": "2026-11-24 2026-11-24 (docs/claude/2026-11-24-voice-keep.md): one typed entry, voiceKeep (one request object, controls only), for the dev-only keep-her-voice switch in the control window's developer area; the preload is one explicit whitelist object and cannot be split. The handler answers {available:false} on stable and packaged builds"
+  }
+ },
+ "handlers": {
+  "file": "electron/main.ts",
+  "count": 1,
+  "reason": "2026-11-17 baseline when the check was added"
+ },
+ "pinned": {
+  "electron/brain/claude-session.ts": {
+   "bytes": 52583,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "electron/brain/companion.ts": {
+   "bytes": 69297,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "electron/brain/reply-draft-guard.ts": {
+   "bytes": 102871,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "electron/cards/character-cards.ts": {
+   "bytes": 48321,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "electron/cards/character-convert/translate.ts": {
+   "bytes": 54425,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "electron/memory/memory.ts": {
+   "bytes": 85874,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "electron/memory/user-profile.ts": {
+   "bytes": 44640,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "electron/mood/mood.ts": {
+   "bytes": 99267,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "electron/safety/test-commands/entries.ts": {
+   "bytes": 47797,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "electron/senses/listen-together/core.ts": {
+   "bytes": 45971,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "scripts/ambient-audio-smoke.mjs": {
+   "bytes": 49856,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "scripts/chat-motion-repair-smoke.mjs": {
+   "bytes": 50156,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "scripts/dev/structure-inventory.mjs": {
+   "bytes": 48462,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "scripts/dev/wiring-golden.mjs": {
+   "bytes": 60963,
+   "reason": "2026-11-17 wiring step 5b: the golden reads secureWindow's order list and the quit lists in place (wiredList, readWindowListeners); splitting the reader is left for its own step"
+  },
+  "scripts/hair-stability-smoke.mjs": {
+   "bytes": 43098,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "scripts/lib/i134-replay.ts": {
+   "bytes": 49849,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "scripts/model-physics-smoke.mjs": {
+   "bytes": 64884,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "scripts/update-desktop.mjs": {
+   "bytes": 45714,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "shared/actions/motion-retarget.ts": {
+   "bytes": 50561,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "shared/foundation/i139-texts.ts": {
+   "bytes": 56468,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "shared/foundation/mood.ts": {
+   "bytes": 54150,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "shared/foundation/ui-copy.character.en.ts": {
+   "bytes": 80417,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "shared/foundation/ui-copy.en.ts": {
+   "bytes": 57114,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "shared/foundation/ui-copy.journal.en.ts": {
+   "bytes": 47210,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "shared/foundation/ui-copy.test-command.en.ts": {
+   "bytes": 48540,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "shared/mood/her-needs.ts": {
+   "bytes": 51880,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "shared/senses/look-request.ts": {
+   "bytes": 43783,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "shared/settings/capabilities.ts": {
+   "bytes": 49661,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "shared/stage/model-profile.ts": {
+   "bytes": 51273,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "src/cards/CharacterCards.ts": {
+   "bytes": 48884,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "src/mood/MoodPanel.ts": {
+   "bytes": 51267,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "src/stage/music-likeness.ts": {
+   "bytes": 42823,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "src/stage/procedural-life.ts": {
+   "bytes": 61091,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "src/stage/sleep-body.ts": {
+   "bytes": 51906,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "src/voice/EmotionalVoice.ts": {
+   "bytes": 53748,
+   "reason": "2026-11-17 baseline when the check was added"
+  },
+  "src/voice/VoiceOutput.ts": {
+   "bytes": 44625,
+   "reason": "2026-11-17 baseline when the check was added"
+  }
+ }
+}

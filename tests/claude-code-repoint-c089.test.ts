@@ -9,8 +9,8 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { linkClaudeCode, type ClaudeCodeLinkOptions, type ClaudeRun } from '../electron/agent-channel/claude-code-link';
-import { InterconnectStore } from '../electron/agent-channel/interconnect';
+import { linkClaudeCode, type ClaudeCodeLinkOptions, type ClaudeRun } from '../electron/safety/agent-channel/claude-code-link';
+import { InterconnectStore } from '../electron/safety/agent-channel/interconnect';
 
 const NAME = 'soft-hearts-next';
 const SPARE = 'soft-hearts-next-update';
@@ -72,7 +72,8 @@ function fake(id: string, options: {
         const call = [...args];
         let result: ClaudeRun;
         if (timeoutMs !== 60_000) invalid.push(call);
-        if (args.join(' ') === 'mcp list') {
+        if (args[1] === 'get') { result = reply(1, '', 'No MCP server found (this simulation cannot read one by name; 2026-11-12 mcp get fallback)'); }
+        else if (args.join(' ') === 'mcp list') {
           const status = ([n, value]: [string,string]) =>
             n === NAME && value === OLD_LINE && options.usableOld === false ? n + ': ' + value + ' - ✗ Failed to connect — missing executable' : row(n, value);
           result = listOverride ?? reply(0, entries.size
@@ -116,7 +117,7 @@ function fake(id: string, options: {
     setFault(value?: Fault) { fault = value; },
     setList(value: ClaudeRun) { listOverride = value; },
     last: () => trace.at(-1)!,
-    commands: () => trace.filter(event => event.stage === stage && event.kind === 'command').map(event => event.args),
+    commands: () => trace.filter(event => event.stage === stage && event.kind === 'command' && event.args?.[1] !== 'get').map(event => event.args),
   };
 }
 function assertFinal(sim: ReturnType<typeof fake>) {

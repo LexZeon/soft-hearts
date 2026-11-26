@@ -11,12 +11,12 @@ export class FixedOpeningChoice implements OpeningChoiceHost {
   private readonly settled = new Map<string, { id: OpeningCandidateId; at: number }>();
   private readonly log: (OpeningWhy & { characterId: string })[] = [];
   /** `order`: the ones it may pick, first that is there wins (one left out is never picked). */
-  constructor(private readonly order: readonly OpeningCandidateId[] = ['screen', 'listen', 'mood', 'play', 'quiet']) {}
+  constructor(private readonly order: readonly OpeningCandidateId[] = ['screen', 'listen', 'mood', 'play', 'keepsake', 'give', 'quiet']) {}
 
   choose(characterId: string, now: OpeningNow, without: readonly OpeningCandidateId[] = []): OpeningChoice | null {
     this.asked.push({ characterId, now, without: [...without] });
     const id = this.order.find(candidate => OPENING_CANDIDATE_IDS.includes(candidate) && !without.includes(candidate)
-      && (candidate === 'quiet' || now.available[candidate] === true));
+      && (candidate === 'quiet' || (now.available as Readonly<Record<string, boolean | undefined>>)[candidate] === true));
     return id ? { id, label: OPENING_CHOICE_KNOBS.candidates[id].label, why: ['假实现：固定顺序'], weights: '' } : null;
   }
 

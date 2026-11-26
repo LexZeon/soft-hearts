@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';
 import {mkdtemp,readFile,rm} from 'node:fs/promises';import path from 'node:path';import os from 'node:os';
-import {PersonalizeBodyControls} from '../src/ui/PersonalizeBodyControls';import {PersonalizeBodyAuthoring} from '../electron/personalize-body-authoring';import {PersonalizeBodyStore} from '../electron/personalize-body-store';
-import {BODY_TWEAK_BINDING,BODY_TWEAK_TARGET} from '../shared/personalize-body';import {bodyPoseBinding} from '../shared/personalize-body-bindings';import type {SelectedVisualImage} from '../electron/selected-visual-image';
+import {PersonalizeBodyControls} from '../src/stage/PersonalizeBodyControls';import {PersonalizeBodyAuthoring} from '../electron/stage/personalize-body-authoring';import {PersonalizeBodyStore} from '../electron/stage/personalize-body-store';
+import {BODY_TWEAK_BINDING,BODY_TWEAK_TARGET} from '../shared/stage/personalize-body';import {bodyPoseBinding} from '../shared/stage/personalize-body-bindings';import type {SelectedVisualImage} from '../electron/senses/selected-visual-image';
 class Element {children:Element[]=[];textContent='';value='';checked=false;disabled=false;hidden=false;open=false;className='';src='';dataset:Record<string,string>={};
  onclick:(()=>void)|null=null;oninput:(()=>void)|null=null;ontoggle:(()=>void)|null=null;constructor(readonly tagName:string){}
  append(...nodes:Element[]){this.children.push(...nodes);}replaceChildren(...nodes:Element[]){this.children=[...nodes];}setAttribute(_name:string,_value:string){} }

@@ -11,7 +11,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { BufferGeometry, Float32BufferAttribute } from 'three';
-import { HER_ACTION_SPECS } from '../shared/her-actions';
+import { HER_ACTION_SPECS } from '../shared/actions/her-actions';
 import {
   FACE_EXCLUSIVE_COOLDOWN_S, FACE_EXCLUSIVE_TIMING, FaceExclusive, faceTracksByName, resolveFaceMorphs, writeExactMorph,
   type FaceRequest, type FaceScope,

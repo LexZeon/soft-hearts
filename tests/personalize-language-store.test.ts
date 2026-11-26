@@ -1,9 +1,9 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';import os from 'node:os';import path from 'node:path';import { randomUUID } from 'node:crypto';
-import { PersonalizeLanguageStore } from '../electron/personalize-language';
-import { atomicWriteFile } from '../electron/atomic-file';
-import { CharacterCardStore } from '../electron/character-cards';
-import { emptyLanguageRules, emptyLanguageProfile, validateLanguageProfile, personalizeLanguageContext } from '../shared/personalize-language';
+import { PersonalizeLanguageStore } from '../electron/cards/personalize-language';
+import { atomicWriteFile } from '../electron/foundation/atomic-file';
+import { CharacterCardStore } from '../electron/cards/character-cards';
+import { emptyLanguageRules, emptyLanguageProfile, validateLanguageProfile, personalizeLanguageContext } from '../shared/cards/personalize-language';
 const profile=(tone='温和简短；复杂问题保留步骤。')=>({enabled:true,rules:{...emptyLanguageRules(),tone}});
 async function fixture(run:(directory:string)=>Promise<void>){const directory=await mkdtemp(path.join(os.tmpdir(),'soft-personalize-'));try{await run(directory);}finally{assert.equal(path.dirname(path.resolve(directory)),path.resolve(os.tmpdir()));assert.ok(path.basename(directory).startsWith('soft-personalize-'));await rm(directory,{recursive:true,force:true});}}
 

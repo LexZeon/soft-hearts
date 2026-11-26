@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { ReplyPresentationState, type ReadoutClock } from '../src/ui/reply-presentation';
+import { ReplyPresentationState, type ReadoutClock } from '../src/brain/reply-presentation';
 
 function fakeClock() {
   let now = 0, next = 0; const timers = new Map<number, { at: number; fn: () => void }>();

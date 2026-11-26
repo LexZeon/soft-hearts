@@ -6,11 +6,11 @@
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { DEFAULT_MOOD_PARAMETERS, MOOD_CHANNELS, advanceMood, createMoodState, getMoodSnapshot, type MoodLabel, type MoodParameters } from '../shared/mood';
-import { MOOD_LABELS } from '../shared/mood-runtime';
+import { DEFAULT_MOOD_PARAMETERS, MOOD_CHANNELS, advanceMood, createMoodState, getMoodSnapshot, type MoodLabel, type MoodParameters } from '../shared/foundation/mood';
+import { MOOD_LABELS } from '../shared/mood/mood-runtime';
 import {
   FATIGUE_TEST_F, MOOD_PRESETS, MOOD_TEST_HOLD_MS, heldMoodState, moodPresetValues, moodValueForLevel, withBaselineMood, withMoodPresetValues,
-} from '../shared/mood-presets';
+} from '../shared/foundation/mood-presets';
 
 const MINUTE = 60_000;
 const LABELS = Object.keys(MOOD_LABELS) as MoodLabel[];

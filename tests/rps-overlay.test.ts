@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { RPS_TIMING, type RpsThrowRequest, type RpsView } from '../shared/rps';
-import { RpsOverlay, petSayPorts, rpsOverlayModel } from '../src/ui/RpsOverlay';
-import { RpsSpeech, type RpsSayPorts } from '../src/ui/rps-speech';
-import { setUiLanguage } from '../shared/ui-language';
+import { RPS_TIMING, type RpsThrowRequest, type RpsView } from '../shared/initiative/rps';
+import { RpsOverlay, petSayPorts, rpsOverlayModel } from '../src/initiative/RpsOverlay';
+import { RpsSpeech, type RpsSayPorts } from '../src/initiative/rps-speech';
+import { setUiLanguage } from '../shared/foundation/ui-language';
 
 class Element {
   children: Element[] = []; className = ''; textContent = ''; hidden = false; disabled = false; type = ''; title = '';
@@ -81,7 +81,7 @@ test('with her hand up the buttons sit below the raised arm, out from it (pretri
   const overlay = new RpsOverlay(root as never, { rpsGet: async () => null, rpsThrow: async () => 'accepted', rpsRespond: async () => true, rpsEvents: () => () => {} },
     { now: () => 0, document: doc as never });
   const box = root.children[0];
-  // The pet window is 400 × 560; Gene's face at (200, 165), her raised fist at (120, 200), the elbow at (165, 270) (the pretrial screenshot).
+  // The companion window is 400 × 560; Gene's face at (200, 165), her raised fist at (120, 200), the elbow at (165, 270) (the pretrial screenshot).
   overlay.place({ x: 200, y: 165, visible: true, radius: 24 }, 400, 560);
   const before = { left: parseFloat(box.style.left), top: parseFloat(box.style.top) };
   overlay.place({ x: 200, y: 165, visible: true, radius: 24, raisedHand: { x: 120, y: 200, elbowX: 165, elbowY: 270 } }, 400, 560);
@@ -92,6 +92,46 @@ test('with her hand up the buttons sit below the raised arm, out from it (pretri
   overlay.place({ x: 200, y: 165, visible: true, radius: 24, raisedHand: { x: 30, y: 520, elbowX: 60, elbowY: 540 } }, 400, 560);
   assert.ok(parseFloat(box.style.left) >= 8 && parseFloat(box.style.top) <= 560 - 150, 'still inside the window');
   overlay.dispose();
+});
+
+test('the buttons hold still while she pumps her fist, and follow only a real move of the arm', () => {
+  const root = new Element('div');
+  const overlay = new RpsOverlay(root as never, { rpsGet: async () => null, rpsThrow: async () => 'accepted', rpsRespond: async () => true, rpsEvents: () => () => {} },
+    { now: () => 0, document: doc as never });
+  const box = root.children[0];
+  const at = () => `${box.style.left},${box.style.top}`;
+  const arm = (dy: number, dx = 0) => ({ x: 200, y: 165, visible: true, radius: 24, raisedHand: { x: 120 + dx, y: 200 + dy, elbowX: 165 + dx, elbowY: 270 + dy } });
+  overlay.show(view({ phase: 'ready' }));
+  overlay.place(arm(0), 400, 560);
+  const first = at();
+  // Breathing and a small sway between rounds: no move.
+  for (const dy of [3, -4, 6, -2, 10]) { overlay.place(arm(dy, 4), 400, 560); assert.equal(at(), first, `small move ${dy}`); }
+  // "石头——剪刀——布！": three pumps of the fist, each well past the threshold; the buttons do not follow while she counts.
+  overlay.show(view({ phase: 'count', revision: 2 }));
+  for (const dy of [70, 0, 70, 0, 70]) { overlay.place(arm(dy), 400, 560); assert.equal(at(), first, `pump ${dy}`); }
+  // After the count, a real move of the arm (or the arm going down) is followed.
+  overlay.show(view({ phase: 'reveal', revision: 3 }));
+  overlay.place(arm(120, -60), 400, 560);
+  assert.notEqual(at(), first, 'a real move is followed');
+  const moved = at();
+  overlay.place({ x: 200, y: 165, visible: true, radius: 24 }, 400, 560);
+  assert.notEqual(at(), moved, 'the arm going down moves them back beside her face');
+  // A new game is placed afresh.
+  overlay.show(view({ id: 'g2', phase: 'ready', revision: 1 }));
+  overlay.place(arm(0), 400, 560);
+  assert.equal(at(), first);
+  overlay.dispose();
+});
+
+test('the end says who won and the score in words', () => {
+  setUiLanguage('zh-CN');
+  assert.equal(rpsOverlayModel(view({ phase: 'end', result: 'her', score: { her: 2, user: 1 } }), 0).call, '她赢了 2 : 1');
+  assert.equal(rpsOverlayModel(view({ phase: 'end', result: 'user', score: { her: 0, user: 2 } }), 0).call, '你赢了 2 : 0');
+  assert.equal(rpsOverlayModel(view({ phase: 'end', result: null }), 0).call, null, 'a game that was stopped or timed out claims no winner');
+  assert.equal(rpsOverlayModel(view({ phase: 'reveal', result: 'her', score: { her: 2, user: 1 } }), 0).call, null, 'only at the end');
+  setUiLanguage('en');
+  assert.equal(rpsOverlayModel(view({ phase: 'end', result: 'user', score: { her: 1, user: 2 } }), 0).call, 'You won 2 : 1');
+  setUiLanguage('zh-CN');
 });
 
 test('her game line: skipped (and reported done at once) while a chat reply runs or the user types; without the voice the bubble stays for a reading time', async () => {
@@ -130,7 +170,7 @@ test('petSayPorts: the same PetUI and speech calls as her other unprompted lines
 });
 
 // Codex T-112 round 028 (fixed 17f9807): a line skipped while she was busy was still reported as said, and a line already
-// handed to the voice had no local revocation in the pet window (a cancelled game read on and its old `said` came back).
+// handed to the voice had no local revocation in the companion window (a cancelled game read on and its old `said` came back).
 test('round 028: a skipped line is reported as not shown; a line still being read is revoked locally on a new game, the end or a newer line', async () => {
   const log: string[] = [];
   const pending = new Map<string, () => void>();
@@ -177,6 +217,7 @@ test('round 028: the overlay answers `skipped` for a line it did not show, `said
   overlay.show(view({ phase: 'reveal', revision: 2, say: { id: 'g1l1', text: '嘿嘿' } })); await flush();
   free = true;
   overlay.show(view({ phase: 'reveal', revision: 3, say: { id: 'g1l2', text: '嘿嘿' } })); await flush();
-  assert.deepEqual(responses, [{ id: 'g1l1', action: 'skipped' }, { id: 'g1l2', action: 'said' }]);
+  // 2026-11-25: each one says why it was not read aloud (a chat had the window; read-aloud was off), so the journal can show it.
+  assert.deepEqual(responses, [{ id: 'g1l1', action: 'skipped', unread: 'busy' }, { id: 'g1l2', action: 'said', unread: 'voice-off' }]);
   overlay.dispose();
 });

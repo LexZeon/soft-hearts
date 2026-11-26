@@ -1,6 +1,6 @@
 /**
  * On a model that is not the reviewed Gene the library gestures go
- * through motion retargeting (shared/motion-retarget.ts): bones that map one to one keep their keys (one per capture frame), the
+ * through motion retargeting (shared/actions/motion-retarget.ts): bones that map one to one keep their keys (one per capture frame), the
  * re-posed combinations are baked every 2 frames. The capture smoothing (capture-smoothing.ts) first only took runs one frame
  * apart, so a baked arm or wrist kept its jitter on exactly the models that are not Gene. Here: a synthetic T-pose body with twist
  * bones (no user data), both chat gestures retargeted onto it by the stage's own retarget, played by the stage's ChatGesturePlayer
@@ -10,20 +10,20 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import type { AnimationClip, Bone, Quaternion, SkinnedMesh } from 'three';
-import { RPS_TIMING as T, type RpsView } from '../shared/rps';
-import { RpsPerformance, rpsStageCue } from '../src/stage/rps-performance';
+import { RPS_TIMING as T, type RpsView } from '../shared/initiative/rps';
+import { RpsPerformance, rpsStageCue } from '../src/initiative/rps-performance';
 import { bodyModel } from './helpers/body-fixtures';
 import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
-import { buildModelProfile } from '../shared/model-profile';
-import { StageMotionRetarget, clearRetargetCache } from '../src/stage/motion-retarget';
-import { parseVmdWith } from '../src/stage/vmd';
+import { buildModelProfile } from '../shared/stage/model-profile';
+import { StageMotionRetarget, clearRetargetCache } from '../src/actions/motion-retarget';
+import { parseVmdWith } from '../src/foundation/vmd';
 import { withKeyframeInterpolation } from '../src/stage/keyframe-interpolation';
 import { ChatGesturePlayer, isChatGestureTrack } from '../src/stage/chat-gesture';
-import { smoothCapturedClip, smoothCapturedRotations } from '../src/stage/capture-smoothing';
-import { PoseContinuity } from '../src/stage/pose-continuity';
-import catalog from '../shared/motion-catalog.json';
-import { catalogMotionFile } from './helpers/gene-stage-harness';
+import { smoothCapturedClip, smoothCapturedRotations } from '../src/senses/capture-smoothing';
+import { PoseContinuity } from '../src/senses/pose-continuity';
+import catalog from '../shared/actions/motion-catalog.json';
 import { profileInput, toThreeMesh, toyModel } from './helpers/model-fixtures';
+import { catalogMotionFile } from './helpers/frame-stats';
 
 type Gesture = readonly ['genea-2022-gestures' | 'mpi-embm-gestures', 'speaking-gesture-2' | 'conversation-joy'];
 const GESTURES: readonly Gesture[] = [['genea-2022-gestures', 'speaking-gesture-2'], ['mpi-embm-gestures', 'conversation-joy']];

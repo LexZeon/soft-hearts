@@ -5,7 +5,7 @@ import test from 'node:test';
 import {
   DANCE_BASE, DANCE_DANCE_AT, DANCE_NOD_AT, DANCE_REQUEST_WINDOW_MS, DANCE_STAY_MARGIN, danceReluctance, danceRequestStrength, danceTierOf,
   danceTierWithHysteresis, moodLabelDanceDesire, type DanceDesireInput,
-} from '../shared/music-desire';
+} from '../shared/senses/music-desire';
 
 const card = { playfulWeight: 1, cautiousWeight: 1 };
 const base = (over: Partial<DanceDesireInput> = {}): DanceDesireInput => ({ playfulWeight: 1, cautiousWeight: 1, playfulIntensity: 50, mood: 'calm',
@@ -118,7 +118,7 @@ test('M1 request: strength rises at once for a willing card, late for a stubborn
 });
 
 test('M1 desire: the decision is local: no model, network or process in the modules that make it', () => {
-  for (const file of ['../shared/music-desire.ts', '../shared/dance-request.ts', '../src/stage/music-choice.ts']) {
+  for (const file of ['../shared/senses/music-desire.ts', '../shared/actions/dance-request.ts', '../src/stage/music-choice.ts']) {
     const source = readFileSync(new URL(file, import.meta.url), 'utf8');
     const imports = [...source.matchAll(/^import[^;]*from\s+['"]([^'"]+)['"]/gmu)].map(match => match[1]);
     for (const spec of imports) assert.ok(!/claude|codex|child_process|node:|electron|http|fetch/iu.test(spec), `${file} imports ${spec}`);

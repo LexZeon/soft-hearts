@@ -1,11 +1,11 @@
-// Local recognizer front end (electron/asr/features.ts): Kaldi-compatible fbank, FunASR LFR and CMVN.
+// Local recognizer front end (electron/senses/asr/features.ts): Kaldi-compatible fbank, FunASR LFR and CMVN.
 // The fbank is checked against an independent, deliberately naive implementation (direct DFT, mel weights from the
 // Kaldi formula), so a mistake in the FFT, the window, pre-emphasis or the mel banks shows up as a mismatch.
 // End-to-end correctness with the real SenseVoice model was checked by hand (docs/claude/2026-11-03-voice-input-local.md).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { applyCmvn, applyLfr, fbank, MEL_BINS, senseVoiceFeatures, wavSamples, type Features } from '../electron/asr/features';
-import { encodeWav } from '../src/ui/MediaInput';
+import { applyCmvn, applyLfr, fbank, MEL_BINS, senseVoiceFeatures, wavSamples, type Features } from '../electron/senses/asr/features';
+import { encodeWav } from '../src/senses/MediaInput';
 
 function naiveFbank(samples: Float32Array): number[][] {
   const rows: number[][] = [];

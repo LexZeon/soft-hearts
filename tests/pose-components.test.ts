@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { ComponentInstallError, PoseComponentStore, defaultComponentRoot } from '../electron/pose/component-store';
-import { POSE_MANIFEST, POSE_MODEL_FILES, downloadBytes, installedBytes, officialDownloadBytes, posePlatform, type ManifestArchive, type PoseManifest } from '../electron/pose/manifest';
+import { ComponentInstallError, PoseComponentStore, defaultComponentRoot } from '../electron/senses/pose/component-store';
+import { POSE_MANIFEST, POSE_MODEL_FILES, downloadBytes, installedBytes, officialDownloadBytes, posePlatform, type ManifestArchive, type PoseManifest } from '../electron/foundation/pose-manifest';
 import { fakeFetch, integrity, makeTgz, makeZip, sha256 } from './helpers/pose-archives';
 
 // A miniature manifest with the same shape as the real one: an npm tarball with shared and per-platform files,

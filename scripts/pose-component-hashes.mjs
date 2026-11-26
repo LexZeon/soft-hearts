@@ -1,4 +1,4 @@
-// Maintainer helper for the pose-sensing component manifest (electron/pose/manifest.ts).
+// Maintainer helper for the pose-sensing component manifest (electron/foundation/pose-manifest.ts).
 // Prints size + SHA-256 for every file the manifest keeps, read from an already-extracted copy:
 //   node scripts/pose-component-hashes.mjs <node_modules dir with onnxruntime-node + onnxruntime-common> <models dir>
 // The models dir holds det_rtmdet_nano.onnx and pose_rtmpose_m_256x192.onnx (the end2end.onnx files from the

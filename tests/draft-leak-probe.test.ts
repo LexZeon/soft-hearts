@@ -3,8 +3,8 @@
 // two identical prompts. The F2 candidate (docs/claude/2026-11-03-draft-leak-fix.md) keeps its own rewrite.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { rpsChatContext } from '../shared/rps-personality';
-import { userStateChatLine } from '../shared/user-state';
+import { rpsChatContext } from '../shared/initiative/rps-personality';
+import { userStateChatLine } from '../shared/senses/user-state';
 import { DRAFT_LEAK_CANDIDATE_WORDING, RPS_ACCEPT_OLD, toCandidateUserStateLine, toOldRpsWording } from '../scripts/lib/draft-leak-old-wording';
 import { abSummary, callsCount, draftSigns } from '../scripts/lib/draft-leak-probe';
 import { compareOutcomes, quantile, type Baseline } from '../scripts/lib/draft-leak-corpus';

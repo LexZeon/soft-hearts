@@ -1,5 +1,5 @@
 // I-048 step 2: the small grayscale thumbnail the change gate compares (frame-change.ts). Making the small bitmap from a screenshot is
-// Electron's job (electron/watch-notes/frame-picture.ts); turning its BGRA bytes into one gray byte per point is plain code. Pure.
+// Electron's job (electron/senses/watch-notes/frame-picture.ts); turning its BGRA bytes into one gray byte per point is plain code. Pure.
 
 /** Thumbnail size the gate compares (32 x 18 = 576 points, the screen's proportions). */
 export const THUMB_WIDTH = 32;

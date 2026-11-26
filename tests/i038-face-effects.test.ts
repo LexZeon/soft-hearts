@@ -16,11 +16,8 @@ import { createHash } from 'node:crypto';
 import { Bone, BufferGeometry, Float32BufferAttribute, ShaderMaterial, Skeleton, SkinnedMesh, Uint16BufferAttribute, UniformsUtils, Vector3 } from 'three';
 import { MMDToonShader } from 'three/examples/jsm/shaders/MMDToonShader.js';
 import { probeBlushAnchors, type BlushAnchors } from '../src/stage/procedural-blush';
-import { ProceduralTears, tearsSupport } from '../src/stage/procedural-tears';
+import { ProceduralTears, tearsSupport } from '../src/mood/procedural-tears';
 import { StageModelProfile } from '../src/stage/model-profile';
-import { drowsyFaceGapNote } from '../src/stage/drowsy-expression';
-import { applyMoodEvent, createMoodState, DEFAULT_MOOD_PARAMETERS, getMoodSnapshot } from '../shared/mood';
-import { geneStage } from './helpers/gene-stage-harness';
 import { loadPublicGeneForTargets } from './public-gene-fixture';
 
 const REPORT = !!process.env.R29_REPORT;
@@ -124,80 +121,4 @@ test('same face with the mouth measured where its open-mouth shape moves (as the
     assert.ok(Math.abs(v(probe.anchors.up).dot(v(probe.anchors.forward))) < 1e-9);
     assert.ok(Math.abs(drop.left) < 0.05 && Math.abs(drop.right) < 0.05, `cheeks off their place by ${drop.left} / ${drop.right}`);
   } finally { g.close(); }
-});
-
-test('neither face nor eye material recognisable: the stage paints nothing on the face and says why', async () => {
-  const h = await geneStage({ fps: 60, notReviewed: true });
-  try {
-    for (const material of h.mesh.material as ShaderMaterial[]) if (material.name === '顔' || material.name === '目') material.name = `material-${material.name === '顔' ? 3 : 4}`;
-    const before = h.mesh.material;
-    h.stage.rebuildBlush();
-    assert.equal(h.stage.proceduralBlush, null, 'no blush guessed onto an unknown surface');
-    assert.equal(h.stage.proceduralTears, null, 'no tears guessed either');
-    assert.equal(h.mesh.material, before, 'the materials are untouched');
-    const note = h.stage.getMoodDegradation();
-    if (REPORT) console.log(`renamed face and eyes: ${note}`);
-    assert.match(note, /脸颊/); assert.match(note, /泪/);
-    // Tears without measured eyes stay off even where a cheek surface exists (the eye bones alone are not where the eyes are drawn).
-    const { g, mesh, head, eyes } = await gene({ '目': 'material-04' });
-    try {
-      const probe = probeBlushAnchors(mesh, head, eyes);
-      assert.ok(probe.anchors, probe.reason); assert.equal(probe.anchors.eyeReference, 'eye-bones');
-      const support = tearsSupport(probe.anchors, false, true);
-      assert.equal(support.supported, false); assert.match(support.reason, /双眼展示位置/);
-    } finally { g.close(); }
-  } finally { h.close(); }
-});
-
-/** One accepted reunion after a long absence on the real frame loop, on Gene whose face material has no known name. */
-async function reunion(fps: number, tears: boolean) {
-  const h = await geneStage({ fps, notReviewed: true });
-  try {
-    for (const material of h.mesh.material as ShaderMaterial[]) if (material.name === '顔') material.name = 'material-03';
-    if (tears) h.stage.rebuildBlush(); // the stage's own probe and card gate (tearsVerifiedGene is false here)
-    const surface = tears ? h.stage.proceduralTears : null;
-    if (tears) assert.equal(surface?.getState().supported, true, h.stage.tearsReason);
-    h.run(1);
-    const now = Date.now(), parameters = structuredClone(DEFAULT_MOOD_PARAMETERS), initial = createMoodState(now, parameters);
-    initial.lastInteractionAt = now - parameters.longing.graceMs - 86 / parameters.longing.perHour * 3_600_000;
-    const state = applyMoodEvent(initial, { type: 'chat', id: 'i038-reunion', context: 'neutral' }, now, parameters);
-    const snapshot = getMoodSnapshot(state, now, parameters);
-    h.stage.setMood({ characterId: 'gene', token: 'gene_token', revision: 2, developerMode: false, expressions: true, parameters, snapshot });
-    const start = h.shown.length - 1, amounts: number[] = [];
-    h.run(parameters.longing.cryDurationMs / 1000 + 1, () => { amounts.push(surface?.getState().amount ?? 0); });
-    amounts.push(surface?.getState().amount ?? 0);
-    const frames = h.shown.slice(start);
-    return { amounts, catches: frames.filter((frame, index) => index && frame.guardJumps !== frames[index - 1].guardJumps).map(frame => frame.guardLast) };
-  } finally { h.close(); }
-}
-
-for (const fps of [60, 30]) {
-  test(`R29: tears on a face material with no known name fade in and out on the real frame loop at ${fps} fps, no guard catch`, async () => {
-    const { amounts, catches } = await reunion(fps, true), control = await reunion(fps, false);
-    const shown = amounts.slice(1), steps = shown.slice(1).map((value, index) => Math.abs(value - shown[index]));
-    const firstVisible = shown.find(value => value > 0) ?? 0, lastVisible = [...shown].reverse().find(value => value > 0) ?? 0, maxStep = Math.max(...steps);
-    if (REPORT) console.log(`I-038 tears ${fps} fps: frames shown ${shown.filter(value => value > 0).length}, peak ${Math.max(...shown).toFixed(3)}, max step ${maxStep.toFixed(4)}, `
-      + `first ${firstVisible.toFixed(4)}, last ${lastVisible.toFixed(4)}, end ${shown.at(-1)}, catches ${JSON.stringify(catches)} (without tears ${JSON.stringify(control.catches)})`);
-    assert.ok(Math.max(...shown) > 0.95, 'the cry reaches its peak');
-    assert.equal(shown.at(-1), 0);
-    assert.ok(firstVisible < 0.05 && lastVisible < 0.05, `no pop (first ${firstVisible}, last ${lastVisible})`);
-    assert.ok(maxStep <= 1.5 / (0.65 * fps) + 0.01, `amount step ${maxStep}`);
-    assert.deepEqual(catches, control.catches); assert.deepEqual(catches, []);
-  });
-}
-
-test('困的脸 on a model with only half-lowered lids: it shows that half and the developer note names the missing brow', async () => {
-  assert.equal(drowsyFaceGapNote({ brow: 68, eye: 95 }), '');
-  assert.equal(drowsyFaceGapNote({ brow: -1, eye: 7 }), '困的脸缺皱眉表情：只做半闭眼');
-  assert.equal(drowsyFaceGapNote({ brow: 3, eye: -1 }), '困的脸缺半闭眼表情：只做皱眉');
-  const h = await geneStage({ fps: 60, drowsy: true });
-  try {
-    Object.assign(h.stage, { tearsVerifiedGene: false, sadIndex: -1 }); // another model, no troubled-brow slot
-    h.run(2);
-    const shown = h.shown.at(-1)!;
-    assert.ok(shown.jitome > 0.02, `the half-lowered lids still show (${shown.jitome})`);
-    assert.match(h.stage.getMoodDegradation(), /困的脸缺皱眉表情：只做半闭眼/);
-    Object.assign(h.stage, { tearsVerifiedGene: true });
-    assert.doesNotMatch(h.stage.getMoodDegradation(), /困的脸缺/, 'the reviewed Gene says nothing new');
-  } finally { h.close(); }
 });

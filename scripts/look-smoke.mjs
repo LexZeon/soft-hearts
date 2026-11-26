@@ -1,7 +1,7 @@
 // 识图分三档 · 第 1 步「细看」的真机检查（docs/claude/2026-11-03-image-depth-step1.md）。Source build only (run after
 // `vite build && node scripts/build-electron.mjs`). Everything is synthetic: an isolated temporary profile and LOCALAPPDATA,
 // the synthetic Claude Code (scripts/lib/claude-smoke-fixture.mjs) and a stubbed desktopCapturer that returns a generated
-// 32×32 frame and counts calls — no real screen pixels, camera, microphone or account. The pet opens at the top-left corner.
+// 32×32 frame and counts calls — no real screen pixels, camera, microphone or account. The companion opens at the top-left corner.
 //   node scripts/look-smoke.mjs
 import { _electron as electron } from 'playwright';
 import { createClaudeFixture } from './lib/claude-smoke-fixture.mjs';

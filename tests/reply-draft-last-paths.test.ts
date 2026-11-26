@@ -1,5 +1,5 @@
 // 2026-11-05 (docs/claude/2026-11-05-reply-guard-last-paths.md): the last two paths of the reply-draft filter
-// (electron/reply-draft-guard.ts) that decided from how much of the reply had arrived instead of from the text, so the same
+// (electron/brain/reply-draft-guard.ts) that decided from how much of the reply had arrived instead of from the text, so the same
 // reply could be shown when cut in one place and cut away (or emptied) when it came whole or was cut in another:
 //   * path 1, a plan line with a label and a colon ("笔记：用户……", "Memorial: …", planParagraph): judged on whatever had
 //     arrived when 240 (or 1200) characters were in, checked for "said to the user" only while it was still open, and a quoted
@@ -15,9 +15,9 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { ReplyDraftGuard, type DraftDrop } from '../electron/reply-draft-guard';
-import { MoodReplyProtocol } from '../electron/mood-chat';
-import { CompanionService } from '../electron/companion';
+import { ReplyDraftGuard, type DraftDrop } from '../electron/brain/reply-draft-guard';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
+import { CompanionService } from '../electron/brain/companion';
 
 const HOLD = 240;
 const REPLY = '……嗯，我在呢。今天先好好睡一觉，明天的事明天再说。';

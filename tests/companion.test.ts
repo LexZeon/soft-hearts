@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { CompanionService, memoryProviderScope, type CompanionTurn } from '../electron/companion';
-import type { ProviderConfig } from '../shared/contracts';
-import type { MemoryScope } from '../shared/memory';
+import { CompanionService, memoryProviderScope, type CompanionTurn } from '../electron/brain/companion';
+import type { ProviderConfig } from '../shared/foundation/settings';
+import type { MemoryScope } from '../shared/memory/memory';
 
 const providerA: ProviderConfig = { kind: 'claude', baseUrl: 'https://first.example/v1', model: 'a' };
 const providerB: ProviderConfig = { kind: 'claude', baseUrl: 'https://second.example/v1', model: 'b' };

@@ -1,13 +1,13 @@
-// 2026-11-08 (stable build, the user: "我开了屏幕，但是她还是说屏幕没开"): "和我一起看会儿视频吧" with screen sharing on was not a
-// request to look, so the turn carried no frame and her line read as "you cannot see it"; she answered "我这边看不到你的屏幕".
+// 2026-11-08 (stable build): an invitation to watch a video together, with screen sharing on, was not a
+// request to look, so the turn carried no frame and her line read as "you cannot see it".
 // An invitation to watch together now asks for the screen. Every sentence below is synthetic.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { scanLookRequest } from '../shared/look-request';
-import { SHARING_LINE, perceptionTurnLine, perceptionTurnState } from '../shared/perception-rule';
+import { scanLookRequest } from '../shared/senses/look-request';
+import { SHARING_LINE, perceptionTurnLine, perceptionTurnState } from '../shared/brain/perception-rule';
 
 test('an invitation to watch something together asks her to look at the screen', () => {
-  for (const text of ['和我一起看会儿视频吧', '陪我看剧', '一起看电影吧', '来一起看视频！', '我们一起看这集吧', '咱一起追剧呀', '跟我看会儿直播', '要不一起看个电影？'])
+  for (const text of ['咱们一块儿看会儿综艺吧', '陪我看剧', '一起看电影吧', '来一起看视频！', '我们一起看这集吧', '咱一起追剧呀', '跟我看会儿直播', '要不一起看个电影？'])
     assert.equal(scanLookRequest(text), 'screen', text);
 });
 
@@ -18,7 +18,7 @@ test('watching with someone else, a no, someone else\'s words, or no watching at
 });
 
 test('with sharing on the invitation takes a frame; with sharing off her line says sharing is off', () => {
-  const text = '和我一起看会儿视频吧';
+  const text = '咱们一块儿看会儿综艺吧';
   const on = perceptionTurnState({ screenSharing: true, cameraSharing: false }, [{ source: 'screen' }], text);
   assert.ok(!perceptionTurnLine(on).includes('看不到'), 'with a frame she is not told she cannot see');
   const off = perceptionTurnLine(perceptionTurnState({ screenSharing: false, cameraSharing: false }, [], text));

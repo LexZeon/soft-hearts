@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import catalog from '../shared/motion-catalog.json';
-import { BEHAVIOR_SEMANTICS } from '../shared/behavior-motion';
-import { BEHAVIOR_COVERAGE, BEHAVIOR_RECIPES, admitBehaviorRecipe, type RecipeGates } from '../shared/behavior-recipes';
-import { BehaviorRecipeSession, type BehaviorRecipeRequest } from '../electron/behavior-recipe-session';
+import catalog from '../shared/actions/motion-catalog.json';
+import { BEHAVIOR_SEMANTICS } from '../shared/actions/behavior-motion';
+import { BEHAVIOR_COVERAGE, BEHAVIOR_RECIPES, admitBehaviorRecipe, type RecipeGates } from '../shared/actions/behavior-recipes';
+import { BehaviorRecipeSession, type BehaviorRecipeRequest } from '../electron/actions/behavior-recipe-session';
 
 const gates = (): RecipeGates => ({ enabled: true, visible: true, targetVerified: true, manualPose: false,
   manualGesture: false, manualExpression: false, manualHead: false, dynamicPose: false, phase: 'idle',

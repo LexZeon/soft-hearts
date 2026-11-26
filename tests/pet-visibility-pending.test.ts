@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import ts from 'typescript';
 import {transformSync} from 'esbuild';
-import {WindowVisibilityTracker} from '../src/ui/window-visibility';
+import {WindowVisibilityTracker} from '../src/stage/window-visibility';
+import { rendererSource as readRendererSource } from './helpers/renderer-source'; // overhaul step 5: src/main.ts and src/wiring/*.ts
 
-const source=readFileSync(new URL('../src/main.ts',import.meta.url),'utf8');
+const source=readRendererSource();
 const ast=ts.createSourceFile('main.ts',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
 const declarations=['projectPetVisibility','requestPetVisibility','acceptWindowVisibility'].map(name=>{
   const rows=ast.statements.filter(n=>ts.isFunctionDeclaration(n)&&n.name?.text===name);assert.equal(rows.length,1);return rows[0].getText(ast);

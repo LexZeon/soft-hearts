@@ -7,11 +7,11 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { PoseEngine, type OrtLike, type OrtSessionLike, type OrtTensorLike } from '../electron/pose/engine';
-import { syntheticFrame } from '../electron/pose/pipeline';
-import { startPoseWorker, type WorkerEnd } from '../electron/pose/worker';
-import { KILL_WAIT_MS, QUIT_GRACE_MS, STOP_GRACE_MS, WorkerExits } from '../electron/pose/worker-exit';
-import { createPoseQuitGate, POSE_QUIT_LIMIT_MS } from '../electron/pose/quit-gate';
+import { PoseEngine, type OrtLike, type OrtSessionLike, type OrtTensorLike } from '../electron/senses/pose/engine';
+import { syntheticFrame } from '../electron/senses/pose/pipeline';
+import { startPoseWorker, type WorkerEnd } from '../electron/senses/pose/worker';
+import { KILL_WAIT_MS, QUIT_GRACE_MS, STOP_GRACE_MS, WorkerExits } from '../electron/senses/pose/worker-exit';
+import { createPoseQuitGate, POSE_QUIT_LIMIT_MS } from '../electron/senses/pose/quit-gate';
 
 // ---------------------------------------------------------------- a runtime whose runs can be held open
 

@@ -1,11 +1,13 @@
-import * as uiCopy from '../src/ui/ui-language';
+import * as uiCopy from '../src/foundation/ui-language';
 const { uiText, uiHtml, uiMarkup, uiTemplate } = uiCopy;
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
-import { normalizeMusicSettings, type MusicSettings } from '../shared/music-settings';
+import { normalizeMusicSettings, type MusicSettings } from '../shared/senses/music-settings';
+import { ipcGuardSource } from './helpers/wiring-source';
+import { rendererSource as readRendererSource } from './helpers/renderer-source'; // overhaul step 5: src/main.ts and src/wiring/*.ts
 
 function deferred<T>() {
   let resolve!: (value: T) => void, reject!: (error: Error) => void;
@@ -17,10 +19,11 @@ function execute(source: string, names: string[], sandbox: Record<string, unknow
   const file = ts.createSourceFile('music-wiring.ts', source, ts.ScriptTarget.ES2022, true);
   const declarations = names.map(name => {
     const item = file.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === name);
+    if (!item && (name === 'host' || name === 'scopedHost')) return name === 'host' ? ipcGuardSource() : ''; // wiring rewrite step 3: electron/wiring/ipc-wiring.ts
     assert.ok(item, name); return item.getText(file);
   });
   if (handlers.length) {
-    const registration = file.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === 'registerIPC');
+    const registration = file.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === 'registerMusicSettings'); // wiring rewrite step 5: the handlers moved out of registerIPC, unchanged
     assert.ok(registration && ts.isFunctionDeclaration(registration) && registration.body);
     for (const name of handlers) {
       const statement = registration.body.statements.find(node => ts.isExpressionStatement(node)
@@ -34,8 +37,8 @@ function execute(source: string, names: string[], sandbox: Record<string, unknow
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None },
   }).outputText, Object.assign(sandbox, { uiText, uiHtml, uiMarkup, uiTemplate }));
 }
-const hostSource = readFileSync(new URL('../electron/main.ts', import.meta.url), 'utf8');
-const rendererSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
+const hostSource = readFileSync(new URL('../electron/wiring/senses-music-wiring.ts', import.meta.url), 'utf8'); // wiring rewrite step 5 (was electron/main.ts)
+const rendererSource = readRendererSource();
 
 test('actual music handlers reject pet/foreign/subframe writes and broadcast only successful atomic commits', async () => {
   const controls = { webContents: { id: 1 } }, pet = { webContents: { id: 2 } };

@@ -1,7 +1,7 @@
 /**
- * 她的动作, host side (electron/her-action-host.ts): a test command's action becomes a short-lived cue to every window; only a
- * live cue resolves, only to its one pinned VMD (bytes hashed again here); the pet's answer settles the command once; with no
- * pet window or no answer the command says so instead of waiting forever.
+ * 她的动作, host side (electron/actions/her-action-host.ts): a test command's action becomes a short-lived cue to every window; only a
+ * live cue resolves, only to its one pinned VMD (bytes hashed again here); the companion's answer settles the command once; with no
+ * companion window or no answer the command says so instead of waiting forever.
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -9,10 +9,10 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { HerActionHost } from '../electron/her-action-host';
-import { HER_ACTION_CUE_MS, HER_ACTION_PACK, HER_ACTION_SPECS, type HerActionCue } from '../shared/her-actions';
-import { catalogMotionFile } from './helpers/gene-stage-harness';
+import { HerActionHost } from '../electron/actions/her-action-host';
+import { HER_ACTION_CUE_MS, HER_ACTION_PACK, HER_ACTION_SPECS, type HerActionCue } from '../shared/actions/her-actions';
 import { fakeTimers } from './helpers/test-command-fixtures';
+import { catalogMotionFile } from './helpers/frame-stats';
 
 function host(options: { visible?: boolean; file?: (packId: unknown, motionId: unknown) => Promise<string> } = {}) {
   const time = fakeTimers(), sent: HerActionCue[] = [], asked: string[] = [];
@@ -53,7 +53,7 @@ test('resolve: only a live cue, only its pinned bytes (hashed again here); expir
   assert.deepEqual({ ...resource, url: resource.url.replace(/e{32}/, 'E') }, { cueId: 'cue1', action: 'bow', packId: HER_ACTION_PACK, motionId: 'bow',
     url: 'mmd-asset://E/bow.vmd', sha256: HER_ACTION_SPECS.bow.sha256, durationMs: 66 / 30 * 1000 });
   assert.deepEqual(h.asked, [`${HER_ACTION_PACK}/bow`]);
-  // Still resolvable after the pet answered (the other window may still be loading), until the cue's life ends.
+  // Still resolvable after the companion answered (the other window may still be loading), until the cue's life ends.
   h.actions.report({ cueId: 'cue1', status: 'played', missing: [], detail: '' });
   assert.equal((await h.actions.resolve('cue1')).action, 'bow');
   h.time.advance(HER_ACTION_CUE_MS);

@@ -2,8 +2,8 @@
  * #11 的假实现：守约测试（tests/idle-gesture.test.ts）拿它和真实现跑同一组约定；以后接新实现，先拿它对一遍。
  * 不挑、不算分量：主机这一侧按给定的顺序轮着出样子；舞台这一侧只记下收到了什么，不动。
  */
-import type { MoodCue } from '../../mood';
-import type { BehaviorFaceBindingId } from '../../behavior-motion';
+import type { MoodCue } from '../../foundation/mood';
+import type { BehaviorFaceBindingId } from '../../actions';
 import type { IdleShapeId } from './knobs';
 import { IDLE_GESTURE_REST, type IdleGestureFrame, type IdleGestureHost, type IdleGestureNow, type IdleGesturePresentation,
   type IdleGestureSource, type IdleGestureStage, type IdleGestureWhy } from './interface';

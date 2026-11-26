@@ -1,11 +1,11 @@
-import { uiText, uiTemplate } from '../src/ui/ui-language';
-import { registerUiMessages, setUiLanguage } from '../shared/ui-language';
-import { ENGLISH_SETTINGS_UI_COPY } from '../shared/ui-copy.settings.en';
+import { uiText, uiTemplate } from '../src/foundation/ui-language';
+import { registerUiMessages, setUiLanguage } from '../shared/foundation/ui-language';
+import { ENGLISH_SETTINGS_UI_COPY } from '../shared/foundation/ui-copy.settings.en';
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
 import {transformSync} from 'esbuild';
-import {ProfileViewGate} from '../src/ui/ProfileViewGate';
+import {ProfileViewGate} from '../src/memory/ProfileViewGate';
 
 const sample=(scopeId:string,generation:number,revision=0,text='原始信息')=>({scopeId,generation,revision,enabled:false,entries:[{id:'one',kind:'pending_inference' as const,text,manual:false,source:{requestId:'r',messageId:'m',quote:'<script>原文</script>'},createdAt:1,updatedAt:1}],diary:[]});
 function deferred<T>() { let resolve!:(v:T)=>void,reject!:(v:unknown)=>void;const promise=new Promise<T>((a,b)=>{resolve=a;reject=b});return {promise,resolve,reject}; }
@@ -20,7 +20,7 @@ const find=(root:Element,p:(e:Element)=>boolean):Element|undefined=>p(root)?root
 const texts=(root:Element):string=>[root.textContent,...root.children.map(texts)].join('|');
 const button=(root:Element,label:string)=>{const b=find(root,n=>n.tagName==='button'&&n.textContent===label);assert.ok(b,label);return b;};
 function PanelCtor(){
-  const source=readFileSync(new URL('../src/ui/UserProfilePanel.ts',import.meta.url),'utf8').replace(/^import .*;\s*$/gm,'').replace('export class UserProfilePanel','class UserProfilePanel');
+  const source=readFileSync(new URL('../src/memory/UserProfilePanel.ts',import.meta.url),'utf8').replace(/^import .*;\s*$/gm,'').replace('export class UserProfilePanel','class UserProfilePanel');
   const js=transformSync(source,{loader:'ts',target:'es2022'}).code;
   return new Function('ProfileViewGate','uiText','uiTemplate',`${js};return UserProfilePanel`)(ProfileViewGate,uiText,uiTemplate);
 }

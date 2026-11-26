@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import { MoodHost } from '../electron/mood';
-import { matchesDirectContactCancellation } from '../src/ui/MoodCompanion';
-import type { MoodInput, MoodView } from '../shared/mood-runtime';
+import { MoodHost } from '../electron/mood/mood';
+import { matchesDirectContactCancellation } from '../src/mood/MoodCompanion';
+import type { MoodInput, MoodView } from '../shared/mood/mood-runtime';
 
 type Host = Pick<MoodHost, 'load' | 'activate' | 'get' | 'interaction' | 'flush' | 'beginChatGesture'> & { cancelDirectContact?(): void };
 async function withHost<T>(create: (directory: string, changed: (view: MoodView) => void, now: () => number) => Host,

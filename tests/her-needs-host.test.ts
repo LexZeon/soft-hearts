@@ -8,15 +8,15 @@ import test from 'node:test';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { HerNeedsHost, type HerNeedsHostOptions, type HerNeedsTickInput } from '../electron/her-needs/host';
-import { CompanionService } from '../electron/companion';
-import { MoodHost } from '../electron/mood';
-import { innerLoopPrompt, type InnerLoopContextSources } from '../electron/inner-loop/context';
-import { buildInnerLoopPrompt, type InnerLoopQuiet } from '../shared/inner-loop';
-import { DEFAULT_MOOD_PARAMETERS, advanceMood, applyMoodLift, createMoodState, getMoodSnapshot, type MoodValues } from '../shared/mood';
-import { localDateKey } from '../electron/diary/diary-dates';
-import type { MoodInput } from '../shared/mood-runtime';
-import { BIG_LINE_WORDS, HER_NEED_DEJECTION, HER_NEED_TABLE, WELCOME_BACK_LINE, herNeedChatLine, herNeedRelief, herNeedSpeechLine, type HerNeedId, type HerNeedLimitInput } from '../shared/her-needs';
+import { HerNeedsHost, type HerNeedsHostOptions, type HerNeedsTickInput } from '../electron/mood/her-needs/host';
+import { CompanionService } from '../electron/brain/companion';
+import { MoodHost } from '../electron/mood/mood';
+import { innerLoopPrompt, type InnerLoopContextSources } from '../electron/initiative/inner-loop/context';
+import { buildInnerLoopPrompt, type InnerLoopQuiet } from '../shared/initiative/inner-loop';
+import { DEFAULT_MOOD_PARAMETERS, advanceMood, applyMoodLift, createMoodState, getMoodSnapshot, type MoodValues } from '../shared/foundation/mood';
+import { localDateKey } from '../electron/memory/diary/diary-dates';
+import type { MoodInput } from '../shared/mood/mood-runtime';
+import { HER_NEED_DEJECTION, HER_NEED_TABLE, WELCOME_BACK_LINE, herNeedChatLine, herNeedRelief, herNeedSpeechLine, type HerNeedId, type HerNeedLimitInput } from '../shared/mood/her-needs';
 
 const SECOND = 1_000, MIN = 60_000, HOUR = 3_600_000, DAY_MS = 24 * HOUR;
 const flat: MoodValues = { D: 50, O: 50, E: 50, N: 50, C: 50 };
@@ -24,7 +24,8 @@ const T0 = new Date(2026, 10, 3, 9, 0, 0).getTime();
 /** What none of her lines may carry (the user's "big line", 2026-11-03: a little 撒娇 is fine, a lever on the user is not). */
 const LEVER = /你走了|难过死|别去|在乎我就|离不开|没有你|少了你|必须|应该来|该来|多陪|欠我|活该/u;
 /** The big line stated in her own lines (so the checks look at what is left). */
-const BIG_LINE_PHRASES = new RegExp([BIG_LINE_WORDS, '不要求用户[^；。，]*', '也不要越说越委屈', '不要用户道歉或补偿', '不让用户不敢再离开', '不撒娇抱怨', '不惩罚、不加码、不翻旧账'].join('|'), 'gu');
+/** The old big-line phrases are gone from her lines (rules removal 2026-11-25); kept as a never-matching regex so the lever checks still run on the whole line. */
+const BIG_LINE_PHRASES = /(?!)/gu;
 
 interface Rig { host: HerNeedsHost; clock: { now: number }; changed: string[]; lifts: { characterId: string; id: string; delta: Partial<MoodValues>; reason: string; relief?: number }[]; directory: string; file: string;
   tick(over?: Partial<HerNeedsTickInput>): void; ticks(seconds: number, over?: Partial<HerNeedsTickInput>): void; developer: { on: boolean }; appended: string[] }
@@ -202,7 +203,7 @@ test('host: the chat line is told once per state and a message counts as a few w
     r.clock.now += MIN;
     const first = r.host.chatTurn('gene');
     assert.equal(first, herNeedChatLine('need', 'lonely'));
-    assert.ok(first.includes(BIG_LINE_WORDS)); assert.match(first, /你先和好/);
+    assert.doesNotMatch(first, /撒个娇|先和好|不惩罚|不翻旧账/u);
     assert.equal(r.lifts.length, 0, 'one message is half of what she needs');
     r.clock.now += MIN;
     const second = r.host.chatTurn('gene');
@@ -278,7 +279,7 @@ test('host: the user comes after she was left unanswered: 释然 (a lift as big 
     r.lifts.length = 0;
     const line = r.host.chatTurn('gene');
     assert.equal(line, herNeedChatLine('relief'));
-    assert.match(line, /先给台阶、先和好/); assert.ok(line.includes(BIG_LINE_WORDS));
+    assert.doesNotMatch(line, /撒个娇|先和好|不惩罚|不翻旧账|先给台阶/u);
     assert.equal(r.lifts.length, 1);
     assert.deepEqual(r.lifts[0].delta, herNeedRelief(piled));
     assert.ok(Math.abs(r.lifts[0].relief! - piled) < 1e-9, 'the label 释然 is asked for, as much as had piled up');
@@ -509,7 +510,7 @@ test('welcome back: after three days the first reply is written under "很想、
     clock.now += 4 * HOUR; mood.get();
     const ordinary = mood.chatContext();
     assert.match(ordinary, /主感受/); assert.doesNotMatch(ordinary, /用户隔了一阵子/);
-    assert.match(ordinary, /关切或失落时不因先前舒适而强行欢快/, 'an ordinary context is exactly what it was');
+    assert.doesNotMatch(ordinary, /强行欢快|当成对你的攻击/u, 'the two directives are gone (rules removal 2026-11-25); the mood is still stated');
     clock.now += 68 * HOUR; mood.get();
     assert.equal(mood.get().snapshot.primary, 'sad', 'the label before this change would have said 伤感 here');
     const away = mood.chatContext();
@@ -517,7 +518,7 @@ test('welcome back: after three days the first reply is written under "很想、
     assert.doesNotMatch(away, /伤感|主感受想念|强行欢快/);
     assert.doesNotMatch(away.replace(WELCOME_BACK_LINE.replace(BIG_LINE_PHRASES, ''), '').replace(BIG_LINE_PHRASES, ''), LEVER);
     assert.doesNotMatch(away, /失落|委屈|孤单|寂寞|冷落/);
-    assert.match(away, /小小地嘀咕一句/); assert.match(away, /先给台阶、先和好/);
+    assert.doesNotMatch(away, /小小地嘀咕一句|先给台阶|先和好|撒娇/u);
     // The user replies: for the 12 seconds of the reunion she is glad (not "释然 + 想念余韵" and nothing else).
     mood.event({ type: 'chat', id: 'back', reason: '收到用户聊天' });
     assert.ok(mood.get().snapshot.reunion, 'the reunion exists now');
@@ -551,7 +552,7 @@ test('inner loop prompt: the small feeling appears only on a speech chance that 
   const line = herNeedSpeechLine('lonely');
   const withNeed = buildInnerLoopPrompt(promptInput({ need: line }));
   assert.ok(withNeed.includes(line));
-  assert.match(withNeed, /很短、很可爱/); assert.match(withNeed, /小小地撒个娇、别扭一下/); assert.ok(withNeed.includes(BIG_LINE_WORDS));
+  assert.match(withNeed, /很短的话/); assert.doesNotMatch(withNeed, /很可爱|小小地撒个娇|不翻旧账/u);
   assert.equal(buildInnerLoopPrompt(promptInput()), buildInnerLoopPrompt(promptInput({ need: '' })), 'byte for byte the old prompt without one');
   for (const [name, over] of Object.entries({
     'a motion chance': { cue: 'motion' as const, allowSpeech: false }, 'speech not allowed': { allowSpeech: false },

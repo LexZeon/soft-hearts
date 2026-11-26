@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { PerspectiveCamera, Quaternion, Vector3 } from "three";
-import { normalizeModelPhysicsSettings, type ModelPhysicsQuality } from "../shared/model-physics";
+import { normalizeModelPhysicsSettings, type ModelPhysicsQuality } from "../shared/stage/model-physics";
 import { LocalModelPhysics, MODEL_PHYSICS_BUDGETS, OwnedAmmoScope } from "../src/stage/model-physics";
 import type { AmmoModule } from "../src/stage/ammo-runtime";
 import { joint, mockAmmo, physicsMesh } from "./physics-fixture";
@@ -166,7 +166,9 @@ test("hide destroys worlds, restoration skips hidden time and repeated toggles b
   assert.equal(physics.getState().status, "disposed");
 });
 
-test("all hair qualities keep a bounded uniform quantum under uneven display batches without slowing their clock", () => {
+// R01 (2026-11-17): the chest now uses the same uniform quanta (it used to solve with the variable elapsed time and show each result
+// until the next solve, "动了也比较卡"); see tests/physics-lab-fixes.test.ts for its per-frame interpolation.
+test("all hair and chest qualities keep a bounded uniform quantum under uneven display batches without slowing their clock", () => {
   const displayDeltas = [0.0358, 0.0341, 0.0392, 0.0295];
   for (const [part, quality] of [["hair", "low"], ["chest", "low"], ["hair", "standard"], ["hair", "high"]] as const) {
     const mock = mockAmmo();
@@ -177,9 +179,9 @@ test("all hair qualities keep a bounded uniform quantum under uneven display bat
     for (let i = 0; i < 240; i++) {
       const delta = displayDeltas[i % displayDeltas.length], before = mock.updates;
       displayTime += delta; physics.frame(delta);
-      if (part === "hair") assert.ok(mock.updates - before <= Math.ceil(0.05 / quantum));
+      assert.ok(mock.updates - before <= Math.ceil(0.05 / quantum));
     }
-    if (part === "hair") {
+    {
       assert.ok(mock.deltas.length > 100 && mock.deltas.every(delta => delta === quantum));
       const simulatedTime = mock.deltas.reduce((sum, delta) => sum + delta, 0);
       assert.ok(displayTime - simulatedTime >= -1e-8 && displayTime - simulatedTime < quantum + 1e-8,
@@ -188,7 +190,7 @@ test("all hair qualities keep a bounded uniform quantum under uneven display bat
       physics.frame(0.6);
       assert.equal(mock.updates, calls + Math.floor((0.05 + 1e-8) / quantum), "A real stall drops backlog and advances only the bounded new frame.");
       assert.equal(mock.deltas.at(-1), quantum);
-    } else assert.ok(mock.deltas.some(delta => Math.abs(delta - 0.05) > 0.001), "Chest retains its independent elapsed clock.");
+    }
     physics.dispose(); assert.equal(mock.alive.size, 0);
   }
 });

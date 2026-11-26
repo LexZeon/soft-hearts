@@ -2,7 +2,7 @@
  * #26 的假实现：卡上的脸红参数原样用，每次都一样（= 原来的做法：同一个形状、卡上的冷却、摸头门槛照卡上的）。
  * 守约测试（tests/blush.test.ts）拿它和真实现跑同一组约定；别的测试要固定的脸红时也用它。以后接新实现，先拿它对一遍。
  */
-import type { MoodBlushParameters } from '../../mood';
+import type { MoodBlushParameters } from '../../foundation/mood';
 import { blushShapeText } from './choose';
 import type { BlushChance, BlushHost, BlushNow, BlushOutcome, BlushPrepared, BlushWhy } from './interface';
 

@@ -1,5 +1,5 @@
 /**
- * #8 on the real MoodHost (electron/mood.ts) with an isolated temporary profile: 20 rounds of "you answer her, then leave her
+ * #8 on the real MoodHost (electron/mood/mood.ts) with an isolated temporary profile: 20 rounds of "you answer her, then leave her
  * alone for an hour" with the old fixed timing (FixedBoredomTiming = the card's numbers, as before) and with her own timing
  * (BoredomTimingDirector). Every look / motion / speech the one-second tick issues is recorded. Also: never more motions or
  * speech than before, the speech cooldown and hourly limit untouched, the saved and shown parameters stay the card's, the
@@ -11,9 +11,9 @@ import test from 'node:test';
 import os from 'node:os';
 import path from 'node:path';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
-import { MoodHost } from '../electron/mood';
-import { DEFAULT_MOOD_PARAMETERS, type MoodParameters } from '../shared/mood';
-import type { MoodView } from '../shared/mood-runtime';
+import { MoodHost } from '../electron/mood/mood';
+import { DEFAULT_MOOD_PARAMETERS, type MoodParameters } from '../shared/foundation/mood';
+import type { MoodView } from '../shared/mood/mood-runtime';
 import { IdleGestureDirector } from '../shared/behaviors/idle-gesture/choose';
 import { BoredomTimingDirector } from '../shared/behaviors/boredom-timing/choose';
 import { FixedBoredomTiming } from '../shared/behaviors/boredom-timing/fake';

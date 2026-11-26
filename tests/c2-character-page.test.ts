@@ -7,21 +7,22 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { deflateSync } from 'node:zlib';
-import { CharacterAvatarStore, avatarBytesFromDataUrl, findModelPreview, validateAvatarPng } from '../electron/character-avatars';
-import { CharacterCardStore } from '../electron/character-cards';
-import { forgetCharacterMemories, forgettableProviderScopes } from '../electron/character-forget';
-import { buildCharacterRoster, type RosterCard } from '../electron/character-roster';
-import { CharacterSwitchGate } from '../electron/character-switch';
-import { CompanionService, memoryProviderScope } from '../electron/companion';
-import { RpsStore } from '../electron/rps/store';
-import { UserProfileStore } from '../electron/user-profile';
-import { localDateKey } from '../electron/diary/diary-dates';
-import { BUNDLED_CHARACTER_MODEL, defaultCharacterMoodTemplate, type CharacterCardState } from '../shared/character-cards';
-import { characterTagline, type CharacterRosterEntry, type CharacterRosterView } from '../shared/character-roster';
-import { uniqueCharacterName } from '../shared/character-model';
-import { registerUiMessages, setUiLanguage } from '../shared/ui-language';
-import { ENGLISH_CHARACTER_UI_COPY } from '../shared/ui-copy.character.en';
-import { CharacterPage, lastChatText, type CharacterPageApi } from '../src/ui/CharacterPage';
+import { CharacterAvatarStore, avatarBytesFromDataUrl, findModelPreview, validateAvatarPng } from '../electron/cards/character-avatars';
+import { CharacterCardStore } from '../electron/cards/character-cards';
+import { forgetCharacterMemories, forgettableProviderScopes } from '../electron/cards/character-forget';
+import { characterForgetRegistry } from '../electron/memory/privacy-wiring';
+import { buildCharacterRoster, type RosterCard } from '../electron/cards/character-roster';
+import { CharacterSwitchGate } from '../electron/cards/character-switch';
+import { CompanionService, memoryProviderScope } from '../electron/brain/companion';
+import { RpsStore } from '../electron/initiative/rps/store';
+import { UserProfileStore } from '../electron/memory/user-profile';
+import { localDateKey } from '../electron/memory/diary/diary-dates';
+import { BUNDLED_CHARACTER_MODEL, defaultCharacterMoodTemplate, type CharacterCardState } from '../shared/cards/character-cards';
+import { characterTagline, type CharacterRosterEntry, type CharacterRosterView } from '../shared/cards/character-roster';
+import { uniqueCharacterName } from '../shared/cards/character-model';
+import { registerUiMessages, setUiLanguage } from '../shared/foundation/ui-language';
+import { ENGLISH_CHARACTER_UI_COPY } from '../shared/foundation/ui-copy.character.en';
+import { CharacterPage, lastChatText, type CharacterPageApi } from '../src/cards/CharacterPage';
 
 async function withDirectory(run: (directory: string) => Promise<void>): Promise<void> {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'soft-character-page-'));
@@ -159,9 +160,14 @@ test('deleting a card keeps her memories by default; "同时删除她的记忆" 
     const scope = (characterId: string) => ({ characterId, providerScope });
     // Default delete: only the card goes (CharacterCardStore.remove); nothing of hers is touched.
     assert.equal(service.memory.list(scope('card-doomed')).records.length, 1);
+    const notesCleared: string[] = [];
     const forgotten = await forgetCharacterMemories('card-doomed', { providerScopes: () => forgettableProviderScopes(provider, memoryProviderScope),
-      memory: service.memory, profiles, relationship: service.relationship, rps });
+      providerScopesOf: id => service.memory.providerScopesOf(id),
+      clears: characterForgetRegistry({ memory: service.memory, profiles, relationship: service.relationship, rps, feeding: { forget: () => false },
+        herNote: { clear: async scope => { notesCleared.push(scope.characterId + '|' + scope.providerScope); } }, movingMemory: null, songMemory: null, semantic: null,
+        listenTogether: null, watchTogether: null, upcoming: null, hands: null }) });
     assert.deepEqual(forgotten.failed, []);
+    assert.ok(notesCleared.length >= 1 && notesCleared.every(key => key.startsWith('card-doomed|')), 'her note and bookmark go with her memory, only hers');
     assert.equal(forgotten.records, 1);
     assert.equal(forgotten.profiles, 1);
     assert.equal(service.memory.list(scope('card-doomed')).records.length, 0);
@@ -297,6 +303,21 @@ test('deleting asks first; "同时删除她的记忆" is unticked by default; ti
   f.page.dispose();
 }));
 
+test('I-173: open_control_page with a card opens her 「更多」 and returns its 删除 to flash, clicking nothing; an unknown card gives nothing', async () => withDom(async () => {
+  const f = pageFixture();
+  await f.page.init();
+  const menu = () => all(f.tile('alice')).find(node => node.className === 'character-tile-menu')!;
+  assert.equal(menu().hidden, true);
+  const target = await f.page.revealCardMenu('alice');
+  assert.equal(menu().hidden, false);
+  assert.equal(f.action('alice', 'more').attributes['aria-expanded'], 'true');
+  assert.equal(target, f.action('alice', 'delete') as unknown as HTMLElement);
+  assert.equal(all(f.tile('alice')).find(node => node.className === 'character-tile-confirm')!.hidden, true, 'the delete question is not opened');
+  assert.equal(f.calls.some(call => call[0] === 'delete'), false, 'nothing deleted');
+  assert.equal(await f.page.revealCardMenu('nobody'), null);
+  f.page.dispose();
+}));
+
 test('adding a character four ways: current model, a model file, a card file, blank', async () => withDom(async () => {
   const f = pageFixture();
   await f.page.init();
@@ -329,6 +350,28 @@ test('her small picture is taken once when her own model is shown, and only when
   f.page.dispose(); g.page.dispose();
 }));
 
+test('each preinstalled card names its own preinstalled model (Gene / One / Mumi), in Chinese and English', async () => withDom(async () => {
+  const { PREINSTALLED_PRESETS, presetModel } = await import('../electron/cards/gene-preinstalled-card');
+  assert.equal(PREINSTALLED_PRESETS.length, 6);
+  const cards: RosterCard[] = PREINSTALLED_PRESETS.map(preset => ({ id: preset.key, name: preset.key, description: '', personality: '', ...presetModel(preset) }));
+  cards.push({ id: 'own', name: 'Own', description: '', personality: '', modelPath: 'C:/models/own.pmx', modelName: 'own.pmx' });
+  const view = await buildCharacterRoster({ cards: () => cards, activeId: () => cards[0].id, revision: () => 1, presetGeneId: async () => null, avatar: async () => null,
+    previewImage: async () => null, knownDay: async () => null, lastChatAt: () => null, pendingSwitchId: () => null, fileExists: async () => true });
+  const expected = (key: string) => key.includes(':one') ? 'One' : key.includes(':mumi') ? 'Mumi' : 'Gene';
+  for (const language of ['zh-CN', 'en'] as const) {
+    registerUiMessages({ en: ENGLISH_CHARACTER_UI_COPY, 'zh-CN': {} }); setUiLanguage(language);
+    try {
+      const f = pageFixture(); f.setView(view); await f.page.init();
+      const modelLine = (id: string) => all(f.tile(id)).find(node => node.className.includes('character-tile-model'))!.textContent;
+      for (const preset of PREINSTALLED_PRESETS) {
+        assert.equal(modelLine(preset.key), language === 'en' ? `Model: preinstalled ${expected(preset.key)}` : `模型：预装 ${expected(preset.key)}`, `${preset.key} ${language}`);
+      }
+      assert.equal(modelLine('own'), language === 'en' ? 'Model: own.pmx' : '模型：own.pmx');
+      f.page.dispose();
+    } finally { setUiLanguage('zh-CN'); }
+  }
+}));
+
 test('the page in English shows no Chinese fixed text (names stay as written)', async () => withDom(async () => {
   registerUiMessages({ en: ENGLISH_CHARACTER_UI_COPY, 'zh-CN': {} }); setUiLanguage('en');
   try {
@@ -338,8 +381,28 @@ test('the page in English shows no Chinese fixed text (names stay as written)', 
     const texts = all(f.root).flatMap(node => [node.textContent, node.title, ...Object.values(node.attributes)]).filter(Boolean);
     assert.deepEqual(texts.filter(text => /[\u3400-\u9fff]/u.test(text)), []);
     assert.ok(texts.includes('Switch to her'));
-    assert.ok(texts.includes('Also delete her memories (chats, diary and profile, familiarity and nickname, rock-paper-scissors record)'));
+    assert.ok(texts.some(text => text.startsWith('Also delete her memories (chats, diary and profile, familiarity and nickname, ') && text.endsWith('all go into the recycle bin together)')));
     assert.match(lastChatText(Date.now()), /^Last chat: today \d\d:\d\d$/);
     f.page.dispose();
   } finally { setUiLanguage('zh-CN'); }
+}));
+
+test('I-071 v2 第三步: each card offers 「转成英文版 / 中文版」 by its language; a click opens the Claude 助手 and asks it, nothing else', async () => withDom(async () => {
+  const f = pageFixture({ assistantConvertCharacter: async id => { f.calls.push(['convert', id]); return null as never; },
+    openControls: async page => { f.calls.push(['open', page]); } });
+  f.setView({ entries: [
+    { id: 'gene', name: 'Gene', tagline: '', active: true, preset: true, model: { state: 'bundled', name: 'Gene' }, avatar: { kind: 'initial', dataUrl: null, initial: 'G' }, knownDay: null, lastChatAt: null },
+    { id: 'en', name: 'Gene (English)', tagline: '', active: false, preset: false, model: { state: 'bundled', name: 'Gene' }, avatar: { kind: 'initial', dataUrl: null, initial: 'G' }, knownDay: null, lastChatAt: null, language: 'en' },
+  ], activeId: 'gene', revision: 1, pendingSwitchId: null });
+  await f.page.init();
+  assert.equal(f.action('gene', 'convert').textContent, '转成英文版');
+  assert.equal(f.action('en', 'convert').textContent, '转成中文版');
+  f.action('gene', 'convert').click(); await flush();
+  assert.deepEqual(f.calls.filter(call => call[0] === 'open' || call[0] === 'convert'), [['open', 'claude-assistant'], ['convert', 'gene']]);
+  f.page.dispose();
+  // Without the assistant (an older bridge) there is no button.
+  const g = pageFixture();
+  await g.page.init();
+  assert.equal(g.action('gene', 'convert'), undefined);
+  g.page.dispose();
 }));

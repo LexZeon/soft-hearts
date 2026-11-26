@@ -1,7 +1,7 @@
 // 识图分三档第 1 步：发送前在本机认出"你叫她看"（docs/claude/2026-11-03-image-depth-step1.md）。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { isLookAffirmation, isLookOffer, scanLookRequest, type LookTarget } from '../shared/look-request';
+import { isLookAffirmation, isLookOffer, scanLookRequest, type LookTarget } from '../shared/senses/look-request';
 
 const cases: ReadonlyArray<[string, LookTarget | null]> = [
   // 对她说的：看屏幕上的东西
@@ -15,14 +15,15 @@ const cases: ReadonlyArray<[string, LookTarget | null]> = [
   ['你看看，这个报错什么意思', 'screen'], ['这题怎么做，帮我看看', 'screen'], ['你要不要看看我画的图', 'screen'],
   ['你再看看这里', 'either'], ['看下这个', 'either'], ['看一下这题', 'screen'], ['你可以看看我写的作文吗', 'screen'],
   ['你看看我屏幕上这个', 'screen'], ['宝贝看看这个', 'either'], ['让你看看我写的代码', 'screen'],
+  ['你能看到我屏幕吗', 'screen'], ['这会儿能看到我的桌面吗', 'screen'], // I-161：问她看不看得到屏幕，就是请她看
   // 对她说的：看我（摄像头）
   ['你看看我', 'camera'], ['看看我今天的发型', 'camera'], ['瞧瞧我这身', 'camera'], ['你看我这身怎么样', 'camera'],
-  ['你看看我的新衣服', 'camera'], ['让你看看我的新发型', 'camera'], ['看看我', 'camera'],
+  ['你看看我的新衣服', 'camera'], ['让你看看我的新发型', 'camera'], ['看看我', 'camera'], ['你能看见我吗', 'camera'], ['你看看我是不是胖了', 'camera'], // 2026-11-21：问她看不看得见你、说到你本人，也是请她看你
   // 不算：用户自己看、逗她、口头禅、问她能不能看见、看电影
   ['我看看', null], ['让我看看', null], ['我先看看', null], ['我去看一下', null], ['我看一下屏幕', null], ['我在看屏幕', null],
   ['你看看你', null], ['你看看你，又迷糊了', null], ['你瞧瞧你', null], ['你瞅瞅你那样', null], ['你看看人家', null],
   ['你看，我就说吧', null], ['你看我说得对吧', null], ['你看我干嘛', null], ['让你看看我的厉害', null], ['你看着办吧', null],
-  ['你看过这部电影吗', null], ['你看到我屏幕了吗', null], ['你能看到我屏幕吗', null], ['你能看见我吗', null], ['你看得到吗', null],
+  ['你看过这部电影吗', null], ['你看到我屏幕了吗', null], ['你看得到吗', null],
   ['我想看看电影', null], ['我在看电视', null], ['今天看了一部电影', null], ['看情况吧', null], ['看心情', null], ['看起来不错', null],
   ['你看起来很累', null], ['好看', null], ['看看再说', null], ['看看吧', null], ['再看看', null], ['给我看看你的新衣服', null],
   ['你给我看看', null], ['你看这次又这样', null], ['你看这样子要下雨', null], ['来看看今天吃什么', null], ['我们一起看看', null],

@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {DEFAULT_SETTINGS} from '../shared/defaults';import {MotionPreviewSession} from '../src/ui/motion-preview';
+import {DEFAULT_SETTINGS} from '../shared/foundation/defaults';import {MotionPreviewSession} from '../src/actions/motion-preview';
 
 function deferred<T>(){let resolve!:(value:T)=>void;const promise=new Promise<T>(done=>{resolve=done;});return {promise,resolve};}
 function setup(){const settings=structuredClone(DEFAULT_SETTINGS);settings.model={path:'/gene',url:'mmd-asset://gene',name:'Gene'};let applied=0,cancelled=0;

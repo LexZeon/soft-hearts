@@ -3,20 +3,20 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import type { AppSettings } from '../shared/contracts';
-import { DEFAULT_SETTINGS } from '../shared/defaults';
-import { AGENT_SETTINGS, type AgentSettingSpec } from '../shared/agent-channel';
-import type { ChatSettingCardView } from '../shared/chat-settings';
+import type { AppSettings } from '../shared/foundation/settings';
+import { DEFAULT_SETTINGS } from '../shared/foundation/defaults';
+import { AGENT_SETTINGS, type AgentSettingSpec } from '../shared/safety/agent-channel';
+import type { ChatSettingCardView } from '../shared/brain/chat-settings';
 import {
   ChatSettingProposals, chatSettingApplier, chatSettingsSystemText, currentSettingsText, mentionsSettings, parseChatSettingProposal,
   type ChatSettingApplier,
-} from '../electron/chat-settings';
-import { MoodReplyProtocol } from '../electron/mood-chat';
-import { CompanionService, type CompanionTurn } from '../electron/companion';
-import { CLAUDE_SESSION_SYSTEM_PROMPT, sessionText } from '../electron/claude-session-prompt';
-import { createAppTools, settingViews, type AgentAppBridge } from '../electron/agent-channel/app-tools';
-import type { AgentAuditEntry, AgentConfirmRequest, AgentToolDefinition } from '../electron/agent-channel/registry';
-import { setUiLanguage } from '../shared/ui-language';
+} from '../electron/brain/chat-settings';
+import { MoodReplyProtocol } from '../electron/mood/mood-chat';
+import { CompanionService, type CompanionTurn } from '../electron/brain/companion';
+import { CLAUDE_SESSION_SYSTEM_PROMPT, sessionText } from '../electron/brain/claude-session-prompt';
+import { createAppTools, settingViews, type AgentAppBridge } from '../electron/safety/agent-channel/app-tools';
+import type { AgentAuditEntry, AgentConfirmRequest, AgentToolDefinition } from '../electron/safety/agent-channel/registry';
+import { setUiLanguage } from '../shared/foundation/ui-language';
 
 setUiLanguage('zh-CN');
 const settings = (patch: (value: AppSettings) => void = () => {}) => { const value = structuredClone(DEFAULT_SETTINGS); patch(value); return value; };

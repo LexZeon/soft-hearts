@@ -4,10 +4,10 @@ import { readFileSync } from 'node:fs';
 import { Euler, Quaternion, type Bone } from 'three';
 import { EyelidCompositor } from '../src/stage/channel-compositors';
 import { PERFORMANCE_LIMITS, PREVIEW_PERFORMANCE_MS, emptyPerformance, previewPerformance } from '../src/stage/preview-performance';
-import { surpriseSample } from '../src/stage/surprise-preview-overlay';
+import { surpriseSample } from '../src/mood/surprise-preview-overlay';
 import { ProceduralLife, lifeRig, type LifeGates, type LifeInput, type LifePort, type LifeRig } from '../src/stage/procedural-life';
 import { StageModelProfile } from '../src/stage/model-profile';
-import { SHY_CLIP_ID, SURPRISE_CLIP_ID } from '../shared/surprise-preview';
+import { SHY_CLIP_ID, SURPRISE_CLIP_ID } from '../shared/initiative/surprise-preview';
 import { readPmxLite } from './helpers/pmx-lite';
 import { toThreeMesh, toyModel } from './helpers/model-fixtures';
 

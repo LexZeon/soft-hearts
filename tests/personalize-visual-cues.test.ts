@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { BehaviorMotionController, type BehaviorBindingSource } from '../electron/behavior-motion';
-import { MoodHost } from '../electron/mood';
-import { createMoodState, getMoodSnapshot, type MoodSnapshot } from '../shared/mood';
-import type { BehaviorMotionCue, BehaviorMotionPlan } from '../shared/behavior-motion';
+import { BehaviorMotionController, type BehaviorBindingSource } from '../electron/actions/behavior-motion';
+import { MoodHost } from '../electron/mood/mood';
+import { createMoodState, getMoodSnapshot, type MoodSnapshot } from '../shared/foundation/mood';
+import type { BehaviorMotionCue, BehaviorMotionPlan } from '../shared/actions/behavior-motion';
 
 function snapshot(cue = true): MoodSnapshot {
   const value = getMoodSnapshot(createMoodState(1_000), 1_000);

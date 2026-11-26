@@ -1,0 +1,13 @@
+{
+  "note": "The pages that ship with the app and that the user's Claude and the assistant read (read_handbook): how-to answers, the card and voice guides, the knob table, the data map, release notes. Written for the person who uses the app: no development process, no dated decisions, no user quotes. One list, three readers that must agree (tests/user-manuals.test.ts): shared/safety/handbook-docs.ts (what read_handbook lists), package.json build.extraResources (what the packaged app bundles), scripts/release/export-public.mjs (what the public snapshot keeps). A new user-facing page is added to this list, and to package.json's filter (the test says so if it is missing).",
+  "manuals": {
+    "docs/character-card-guide.md": "guide",
+    "docs/character-cards.md": "guide",
+    "docs/data-map.md": "guide",
+    "docs/knobs.md": "guide",
+    "docs/touching-her.md": "guide",
+    "docs/voice-design-guide.md": "guide",
+    "docs/release-notes/v0.1.0.md": "guide",
+    "docs/release-notes/v0.2.0.md": "guide"
+  }
+}

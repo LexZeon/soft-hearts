@@ -64,7 +64,7 @@ function writeInside(reportDir: string, relative: string, content: string, conte
 export function loadBundledMotions(filter?: readonly string[]): LabMotion[] {
   const files = catalogMotionFiles();
   const unknown = (filter ?? []).filter(key => !files.some(file => motionKey(file) === key));
-  if (unknown.length) throw new LabError(`Unknown motion ${unknown.join(', ')} (use pack/motion ids from shared/motion-catalog.json)`);
+  if (unknown.length) throw new LabError(`Unknown motion ${unknown.join(', ')} (use pack/motion ids from shared/actions/motion-catalog.json)`);
   return files.filter(file => !filter?.length || filter.includes(motionKey(file)))
     .map(file => labMotion(file, new Uint8Array(readFileSync(path.join(REPO_ROOT, file.relativePath)))));
 }

@@ -1,4 +1,4 @@
-// Codex T-205 第四轮（X-258，2026-11-04，固定 9f58785）：每条消息一个进程的备用路（electron/claude.ts streamClaude，只在常驻进程
+// Codex T-205 第四轮（X-258，2026-11-04，固定 9f58785）：每条消息一个进程的备用路（electron/brain/claude.ts streamClaude，只在常驻进程
 // 不可用时用）在调用当下就把提示词和图冻结成要写进 stdin 的那一行，之后还要建临时目录、启动进程。这中间关掉共享并中止这轮聊天，
 // 调用方收到"已停止"，模拟进程的 stdin 却仍收到了旧图一张。修法：真正启动进程、写 stdin 之前再核一次中止，并且现读提示词和图
 // （electron/main.ts 的 prompt / imageDataUrls 是按这一轮的帧现算的 getter）。docs/claude/2026-11-04-v1-refusal-grab.md 末节。
@@ -9,7 +9,9 @@ import { readFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import ts from 'typescript';
-import { streamClaude, type ClaudeTask } from '../electron/claude';
+import { streamClaude, type ClaudeTask } from '../electron/brain/claude';
+// Reads as text (test-affected selects this test when they change): 'electron/main.ts' (wiring rewrite step 4c: with electron/wiring/*.ts).
+import { wiringSource } from './helpers/wiring-source';
 
 const green = 'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAQ0lEQVR4AcXBAQEAAAiDMKR/5xuD7RgjJDGJSUxiEpOYxCQmMYlJTGISk5jEJCYxiUlMYhKTmMQkJjGJSUxiEpOYxB4v5AI+g+yDOgAAAABJRU5ErkJggg==';
 const image = `data:image/png;base64,${green}`;
@@ -80,7 +82,7 @@ test('备用路：共享一直开着，图照常写进 stdin（对照）', async
 
 // electron/main.ts（语法树检查，不 eval）：备用路现读的提示词也按这一轮剩下的帧重写感知行，和常驻进程的 persona 一样。
 test('electron/main.ts：交给适配器的 prompt 是现读的 getter，帧被丢掉时用 turnFrames.recompose 重写感知行', () => {
-  const source = readFileSync(new URL('../electron/main.ts', import.meta.url), 'utf8');
+  const source = wiringSource();
   const main = ts.createSourceFile('main.ts', source, ts.ScriptTarget.Latest, true);
   let prompt = '';
   const visit = (node: ts.Node): void => {
@@ -90,5 +92,6 @@ test('electron/main.ts：交给适配器的 prompt 是现读的 getter，帧被�
   };
   visit(main);
   assert.match(prompt, /turnFrames\.recompose\(request\.attachments, settings\.persona, sightAgain\)/);
-  assert.match(prompt, /buildCodexChatPrompt\(persona, request\.messages,/);
+  // I-134: the window is `chatMessages` (her archive's window while new chat is on, else exactly request.messages).
+  assert.match(prompt, /buildCodexChatPrompt\(persona, chatMessages,/);
 });

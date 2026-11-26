@@ -11,29 +11,31 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { performance } from 'node:perf_hooks';
-import type { ChatMessage, ProviderConfig } from '../../shared/contracts';
-import type { MoodParameters } from '../../shared/mood';
-import { DEFAULT_SETTINGS } from '../../shared/defaults';
-import { compileCharacterPersona, effectiveCharacterMood } from '../../shared/character-cards';
-import { CompanionService, memoryProviderScope } from '../../electron/companion';
-import { MoodHost } from '../../electron/mood';
-import { MemoryStore } from '../../electron/memory';
-import { ChatSettingProposals } from '../../electron/chat-settings';
-import { preinstalledGeneDraft } from '../../electron/gene-preinstalled-card';
-import { buildCodexChatPrompt } from '../../electron/conversation-context';
-import { PersistentClaudeChat, type ClaudeTimingInfo } from '../../electron/claude-session';
-import { claudeSessionSystemPrompt } from '../../electron/claude-session-prompt';
-import { APP_REPLY_OPENING, type OpeningMode } from '../../electron/reply-opening';
-import { ClaudeChatProcess } from '../../electron/claude-process';
+import type { ChatMessage } from '../../shared/foundation/chat';
+import type { ProviderConfig } from '../../shared/foundation/settings';
+import type { MoodParameters } from '../../shared/foundation/mood';
+import { DEFAULT_SETTINGS } from '../../shared/foundation/defaults';
+import { compileCharacterPersona, effectiveCharacterMood } from '../../shared/cards/character-cards';
+import { CompanionService, memoryProviderScope } from '../../electron/brain/companion';
+import { MoodHost } from '../../electron/mood/mood';
+import { MemoryStore } from '../../electron/memory/memory';
+import { ChatSettingProposals } from '../../electron/brain/chat-settings';
+import { preinstalledGeneDraft } from '../../electron/cards/gene-preinstalled-card';
+import { buildCodexChatPrompt } from '../../electron/brain/conversation-context';
+import { PersistentClaudeChat, type ClaudeTimingInfo } from '../../electron/brain/claude-session';
+import type { OnceLine } from '../../electron/brain/i139-chat';
+import { claudeSessionSystemPrompt } from '../../electron/brain/claude-session-prompt';
+import { APP_REPLY_OPENING, type OpeningMode } from '../../electron/brain/reply-opening';
+import { ClaudeChatProcess } from '../../electron/brain/claude-process';
 import { serializeExpectation, type TurnRecord, type TurnUsage } from './prompt-eval-analysis';
 import type { EvalScenario } from './prompt-eval-scenarios';
-import { emptyRelationship, type RelationshipData } from '../../shared/relationship';
-import { isConversationOpening, memeContextSection } from '../../electron/diary/diary-data';
-import { localDateKey, shiftDate } from '../../electron/diary/diary-dates';
+import { emptyRelationship, type RelationshipData } from '../../shared/memory/relationship';
+import { isConversationOpening, memeContextSection } from '../../electron/memory/diary/diary-data';
+import { localDateKey, shiftDate } from '../../electron/memory/diary/diary-dates';
 
 /** 熟悉度 for an evaluation run: what the host would know about this character and the user (docs/claude/2026-11-02-familiarity.md). */
 export interface EvalRelationship {
-  /** The card's "关系慢慢升温". */
+  /** The card's "慢慢熟悉". */
   slowWarmUp: boolean;
   /** 认识第 N 天: today is day N. */
   dayNumber: number;
@@ -86,6 +88,10 @@ export interface RunOptions {
   systemPrompt?: string;
   /** Called before every real turn; throw to stop (budget guard). */
   beforeTurn?: () => void;
+  /** I-112 / I-115 blind test: the I-098 speak-only path with a judge that never calls a model (no tail, human speaking rules; mood is not recorded). */
+  speakOnly?: boolean;
+  /** Host state the app would have (today's chat notes, ...), set once per scenario before the first turn. */
+  setup?: (companion: CompanionService, characterId: string) => void;
   /**
    * Before a turn's companion.begin: set up host state the app would have at that moment (the draft-leak probe seeds
    * F2's judgment of the user here, docs/claude/2026-11-03-draft-leak-fix.md).
@@ -107,8 +113,21 @@ export interface RunOptions {
   textMemorial?: (input: { scenario: EvalScenario; index: number; user: string }) => boolean;
   /** The first visible delta of turn `id` arrived (I-037's A/B starts haiku here, as electron/main.ts does). */
   onFirstDelta?: (id: string) => void;
+  /**
+   * Before the CompanionService is built (next to the "away" seed): fill the scenario's temp data folder as the app's own archive would
+   * be (I-134 seeds the chat records that came before a replayed moment). characterId is this scenario's scope owner.
+   */
+  seed?: (input: { directory: string; characterId: string; provider: ProviderConfig }) => Promise<void>;
   /** Awaited, so the fidelity suite can score a scenario as soon as its last reply is in. */
   onTurn?: (record: TurnRecord) => unknown;
+  /**
+   * I-139 (scripts/i139-gate.ts): the switch-on session input, as electron/main.ts passes it: the card's name and language (opening
+   * layers, new headers), layer 2's value, and the lines of `hostContext` a process hears only on its first turn and on change.
+   * Absent: every turn as before.
+   */
+  relaxed?: { name: string; language?: 'zh-CN' | 'en' | null } | null;
+  openingMemory?: { date: string; text: string } | null;
+  onceLines?: (input: { scenario: EvalScenario; index: number; user: string }) => OnceLine[];
 }
 
 interface Sink {
@@ -246,8 +265,11 @@ export async function runEval(options: RunOptions): Promise<TurnRecord[]> {
       const characterId = randomUUID();
       try {
         if (scenario.away) await seedAway(directory, characterId, provider, scenario.away, mood);
+        if (options.seed) await options.seed({ directory, characterId, provider });
         const companion = new CompanionService(directory, () => {});
         companion.setReplyOpening(opening);
+        if (options.speakOnly) companion.setSpeakOnly({ ask: async () => '' });
+        options.setup?.(companion, characterId);
         await companion.load();
         await companion.context(characterId, provider, persona, mood);
         // F6 "更真实的情绪": the app's own source, as main.ts sets it from the card store.
@@ -282,7 +304,7 @@ export async function runEval(options: RunOptions): Promise<TurnRecord[]> {
           sink = current;
           let error: string | null = null;
           const window = [...messages];
-          // The memes of her diary ride along in the opening block of a conversation, as electron/user-profile.ts adds them.
+          // The memes of her diary ride along in the opening block of a conversation, as electron/memory/user-profile.ts adds them.
           const memeBlock = relationship?.memes?.length && turn.relationshipMemes !== false && isConversationOpening(window) ? memeContextSection(relationship.memes) : null;
           try {
             await chat.stream({
@@ -291,7 +313,9 @@ export async function runEval(options: RunOptions): Promise<TurnRecord[]> {
               imageDataUrls: options.images?.({ scenario, index }) ?? [], replyId: id,
               session: { key: companion.currentSpeechScope(), basePersona: persona, persona: turn.persona, openingContext: turn.relationshipOpening, openingKey: turn.relationshipTag,
                 // As the app: the session records the reply as shown (liveVisible below), so a cut draft does not reopen it.
-                messages: window, language: null, data: () => memeBlock, shown: () => turn.shownReply?.() ?? null },
+                messages: window, language: null, data: () => memeBlock, shown: () => turn.shownReply?.() ?? null,
+                ...(options.relaxed ? { relaxed: options.relaxed, openingMemory: options.openingMemory ?? null,
+                  ...(options.onceLines ? { onceLines: () => options.onceLines!({ scenario, index, user: step.user }) } : {}) } : {}) },
             }, new AbortController().signal, (type, text) => {
               if (type === 'delta') { chunks.push([Math.round(performance.now() - current.t0), text]); if (chunks.length === 1) options.onFirstDelta?.(id); }
               turn.push(type, text);

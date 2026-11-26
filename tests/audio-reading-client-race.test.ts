@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import ts from 'typescript';
-import type { AudioCaptureDescriptor } from '../shared/audio-capture';
+import type { AudioCaptureDescriptor } from '../shared/senses/audio-capture';
 
 test('actual system driver rechecks dance intent after a delayed physical-ready acknowledgement', async () => {
-  const source = await readFile(new URL('../src/ui/AudioReadingClient.ts', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../src/voice/AudioReadingClient.ts', import.meta.url), 'utf8');
   const tree = ts.createSourceFile('AudioReadingClient.ts', source, ts.ScriptTarget.Latest, true);
   const klass = tree.statements.find(s => ts.isClassDeclaration(s) && s.name?.text === 'AudioReadingClient') as ts.ClassDeclaration;
   const method = klass.members.find(m => ts.isMethodDeclaration(m) && m.name.getText(tree) === 'driveSystem')!;

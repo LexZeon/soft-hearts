@@ -4,11 +4,13 @@ import {createHash} from 'node:crypto';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
-import {MotionTrackCoverageHost,motionTrackFacts,bindMotionTrackStructure,parseMotionTrackCoverageRequest} from '../electron/motion-track-coverage';
-import {matchesMotionTrackFilter,type MotionTrackCoverage} from '../shared/motion-track-coverage';
-import type {MotionCatalog,CatalogMotion} from '../shared/motion-library';
-import {stripDefaultVmdTracks,type VmdTrackData} from '../src/stage/vmd-tracks';
-import gene from '../shared/motion-track-gene-structure.json';
+import {MotionTrackCoverageHost,motionTrackFacts,bindMotionTrackStructure,parseMotionTrackCoverageRequest} from '../electron/actions/motion-track-coverage';
+import {matchesMotionTrackFilter,type MotionTrackCoverage} from '../shared/actions/motion-track-coverage';
+import type {MotionCatalog,CatalogMotion} from '../shared/actions/motion-library';
+import {stripDefaultVmdTracks,type VmdTrackData} from '../src/foundation/vmd-tracks';
+import gene from '../shared/actions/motion-track-gene-structure.json';
+import { ipcGuardSource } from './helpers/wiring-source';
+import { wiringSource } from './helpers/wiring-source';
 
 const sha=(value:Uint8Array)=>createHash('sha256').update(value).digest('hex');
 function fixture(parse?: (bytes:Uint8Array)=>ReturnType<typeof parsed>){
@@ -84,27 +86,28 @@ test('same Stage parser is exercised with a synthetic in-memory VMD and never mu
 });
 
 test('actual scoped Main and typed preload caller reject foreign owners/subframes/extra args and use only fixed coverage request',()=>{
-  const source=fs.readFileSync(new URL('../electron/main.ts',import.meta.url),'utf8'),ast=ts.createSourceFile('main.ts',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS),nodes:ts.Node[]=[];
+  const source=wiringSource() /* wiring rewrite step 4: electron/wiring/actions-wiring.ts */,ast=ts.createSourceFile('main.ts',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS),nodes:ts.Node[]=[];
   const visit=(n:ts.Node)=>{nodes.push(n);ts.forEachChild(n,visit);};visit(ast);
-  const helper=nodes.find(n=>ts.isFunctionDeclaration(n)&&n.name?.text==='scopedHost')!;
+  // Wiring rewrite step 3: the IPC guard is electron/wiring/ipc-wiring.ts (ipcGuardSource: its actual host / scopedHost).
+  const helper=ipcGuardSource();
   const call=nodes.find(n=>ts.isCallExpression(n)&&n.expression.getText(ast)==='scopedHost'&&n.arguments[0].getText(ast)==="'motionTrackCoverageRead'")!;
   const methods=new Map<string,Function>(),requests:unknown[][]=[],controls={webContents:{id:7}},pet={webContents:{id:8}};
   const ctx={controls,windows:()=>[controls,pet],ipcMain:{handle:(id:string,handler:Function)=>methods.set(id,handler)},motionTrackCoverage:{read:(...args:unknown[])=>{requests.push(args);return'read';}}};
-  vm.runInNewContext(ts.transpileModule(helper.getText(ast)+'\n'+call.getText(ast),{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,ctx);
+  vm.runInNewContext(ts.transpileModule(helper+'\n'+call.getText(ast),{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,ctx);
   const frame={},event=(id:number,sub=false)=>({sender:{id,mainFrame:frame},senderFrame:sub?{}:frame}),request=fixture().request,read=methods.get('desk:motionTrackCoverageRead')!;
   assert.throws(()=>read(event(8),request));assert.throws(()=>read(event(7,true),request));assert.throws(()=>read(event(7),request,'extra'));assert.equal(requests.length,0);assert.equal(read(event(7),request),'read');assert.equal(requests[0][1],request);
-  const preload=fs.readFileSync(new URL('../electron/preload.ts',import.meta.url),'utf8');let api:any;const calls:unknown[][]=[];
+  const preload=fs.readFileSync(new URL('../electron/safety/preload.ts',import.meta.url),'utf8');let api:any;const calls:unknown[][]=[];
   vm.runInNewContext(ts.transpileModule(preload,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports:{},process:{platform:'win32'},require:(name:string)=>{assert.equal(name,'electron');return{contextBridge:{exposeInMainWorld:(_name:string,value:unknown)=>{api=value;}},ipcRenderer:{invoke:(...args:unknown[])=>{calls.push(args);return Promise.resolve();}}};}});
   api.motionTrackCoverageRead(request);assert.equal(calls[0][0],'desk:motionTrackCoverageRead');assert.equal(calls[0][1],request);assert.equal(calls[0].length,2);
 });
 
 test('actual Main factory reuses existing host model verifier and invalidates after its async generation changes',async()=>{
-  const source=fs.readFileSync(new URL('../electron/main.ts',import.meta.url),'utf8'),ast=ts.createSourceFile('main.ts',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS),found:ts.Node[]=[];
+  const source=wiringSource() /* wiring rewrite step 4: electron/wiring/actions-wiring.ts */,ast=ts.createSourceFile('main.ts',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS),found:ts.Node[]=[];
   const visit=(n:ts.Node)=>{if(ts.isNewExpression(n)&&n.expression.getText(ast)==='MotionTrackCoverageHost')found.push(n);ts.forEachChild(n,visit);};visit(ast);assert.equal(found.length,1);
   const f=fixture();let release!:(sha:string)=>void;const paths:string[]=[],controls={isDestroyed:()=>false,isVisible:()=>true,isMinimized:()=>false,webContents:{id:7}};
   class ActualHost extends MotionTrackCoverageHost{constructor(ports:any){super({...ports,read:async()=>f.bytes,parse:parsed});}}
   const ctx:any=vm.createContext({MotionTrackCoverageHost:ActualHost,motionTrackCoverageCatalog:f.catalog,controls,
-    companionCommandContext:()=> 'actual-opaque-context',bodyModelGeneration:0,store:{current:{model:{path:'owned-synthetic-model'}}},
+    companionCommandContext:()=> 'actual-opaque-context',bodyModelGeneration:0,needs:{get bodyModelGeneration(){return ctx.bodyModelGeneration;}},store:{current:{model:{path:'owned-synthetic-model'}}},
     blushCalibrations:{keyForModel:(path:string)=>{paths.push(path);return new Promise<string>(yes=>release=yes);}},motionLibrary:{resolvePreview:async()=> 'owned-synthetic-motion'}});
   const host=vm.runInContext(ts.transpileModule('('+found[0].getText(ast)+')',{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,ctx)as MotionTrackCoverageHost;
   const pending=host.read(7,f.request);assert.deepEqual(paths,['owned-synthetic-model']);ctx.bodyModelGeneration++;release(gene.modelSha256);await assert.rejects(pending,/变化/);

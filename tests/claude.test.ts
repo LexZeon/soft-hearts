@@ -10,8 +10,9 @@ import {
   claudeFailure,
   claudeInput,
   streamClaude,
-} from "../electron/claude";
+} from "../electron/brain/claude";
 import { discoverClaude } from "../scripts/claude-discovery.mjs";
+import { ClaudeStartGate } from "../electron/brain/claude-start-gate";
 
 const green =
   "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAQ0lEQVR4AcXBAQEAAAiDMKR/5xuD7RgjJDGJSUxiEpOYxCQmMYlJTGISk5jEJCYxiUlMYhKTmMQkJjGJSUxiEpOYxB4v5AI+g+yDOgAAAABJRU5ErkJggg==";
@@ -39,14 +40,17 @@ test("chat arguments turn off every tool, MCP server, slash command, setting sou
   assert.equal(value("--output-format"), "stream-json");
   for (const flag of ["--strict-mcp-config", "--safe-mode", "--disable-slash-commands", "--no-session-persistence", "--include-partial-messages", "--verbose"])
     assert.ok(args.includes(flag), flag);
-  assert.ok(!args.includes("--model"), "empty model follows the CLI default");
+  // I-222: an empty chat model is Opus; only the follow choice leaves --model out.
+  assert.deepEqual(args.slice(-2), ["--model", "opus"], "empty chat model launches Opus");
+  assert.ok(!claudeArguments({ model: "follow-default" }).includes("--model"), "the follow choice keeps Claude Code's default");
+  assert.ok(!claudeArguments({ model: " follow-default " }).includes("--model"));
   assert.ok(!args.some(arg => /dangerously|bypass|--allowed-?tools|--add-dir|--mcp-config/i.test(arg)));
   assert.deepEqual(claudeArguments({ model: "  sonnet " }).slice(-2), ["--model", "sonnet"]);
   assert.deepEqual(claudeArguments({ model: "fable" }).slice(-2), ["--model", "fable"]);
-  // A chat model inherited from the Codex edition stays in the saved settings (memory scope) but
-  // never reaches Claude Code, which would reject it; the CLI default answers instead.
+  // A chat model inherited from the Codex edition stays in the saved settings but never reaches Claude Code, which would reject it;
+  // it was never chosen in this app, so Opus answers (I-222).
   for (const stale of ["gpt-5", "gpt-5-codex", "o4-mini", "qwen3:8b", "sonnet --dangerously-skip-permissions"])
-    assert.ok(!claudeArguments({ model: stale }).includes("--model"), stale);
+    assert.deepEqual(claudeArguments({ model: stale }).slice(-2), ["--model", "opus"], stale);
 });
 
 test("child environment drops parent Claude Code session wiring but keeps the user's own auth choices", () => {
@@ -67,10 +71,15 @@ test("child environment drops parent Claude Code session wiring but keeps the us
   for (const key of ["CLAUDECODE", "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_SSE_PORT", "claude_code_messaging_socket", "ELECTRON_RUN_AS_NODE"])
     assert.equal(env[key], undefined, key);
   assert.equal(env.CLAUDE_CONFIG_DIR, "/cfg");
-  assert.equal(env.CLAUDE_CODE_OAUTH_TOKEN, "user-own-token");
   assert.equal(env.CLAUDE_CODE_USE_BEDROCK, "1");
-  assert.equal(env.ANTHROPIC_API_KEY, "user-key");
+  // 2026-11-25 (tests/claude-env-from-session.test.ts): with a session marker present (CLAUDECODE above), credentials may be the
+  // session's own, so they are left out; without one they are the user's and stay.
+  assert.equal(env.CLAUDE_CODE_OAUTH_TOKEN, undefined);
+  assert.equal(env.ANTHROPIC_API_KEY, undefined);
   assert.equal(env.DISABLE_AUTOUPDATER, "1");
+  const own = claudeEnvironment({ PATH: "/bin", CLAUDE_CONFIG_DIR: "/cfg", CLAUDE_CODE_OAUTH_TOKEN: "user-own-token", ANTHROPIC_API_KEY: "user-key" });
+  assert.equal(own.CLAUDE_CODE_OAUTH_TOKEN, "user-own-token");
+  assert.equal(own.ANTHROPIC_API_KEY, "user-key");
 });
 
 test("stdin carries one stream-json user message with verified base64 images", () => {
@@ -237,8 +246,9 @@ test("a login failure from the CLI reaches the user as a short message", async (
     process.stdout.write(${JSON.stringify(JSON.stringify({ type: "result", subtype: "success", is_error: true, result: "Invalid API key · Please run /login" }))} + "\\n");
     process.exitCode = 1;`);
   try {
+    // Its own start gate: a lost login pauses the gate (I-202), which must not refuse the later tests of this file.
     await assert.rejects(streamClaude({ kind: "chat", model: "", workingDirectory: fake.root, writable: false, prompt: "你好" },
-      new AbortController().signal, () => {}, process.execPath, [fake.script]), /未登录/);
+      new AbortController().signal, () => {}, process.execPath, [fake.script], { gate: new ClaudeStartGate() }), /未登录/);
   } finally { await rm(fake.root, { recursive: true, force: true, maxRetries: 20, retryDelay: 50 }); }
 });
 

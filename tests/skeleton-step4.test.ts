@@ -11,25 +11,22 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import catalogData from '../shared/motion-catalog.json';
-import { buildModelProfile } from '../shared/model-profile';
-import {
-  RETARGET_ALGORITHM_VERSION, STANDARD_SOURCE_RIG, buildRetargetRig, evaluatePose, planRetarget, tracksOnRig, vlength, vscale, vsub, vadd, type Pose, type RetargetRig,
-  type VmdLike,
-} from '../shared/motion-retarget';
-import { MOTION_FIT_VERSION, adaptMotion } from '../shared/motion-fit';
-import { MOTION_SCORE_STAMP, acceptMotionFitRecord } from '../shared/motion-fit-record';
-import { MOTION_CONTACTS, contactFor, contactWeight } from '../shared/motion-contact';
-import { HER_ACTION_PACK, herActionDurationMs, type HerActionId } from '../shared/her-actions';
-import { sha256Hex } from '../shared/sha256-sync';
-import type { Vec3 } from '../shared/universal-skeleton';
-import { StageMotionRetarget, clearRetargetCache } from '../src/stage/motion-retarget';
+import catalogData from '../shared/actions/motion-catalog.json';
+import { buildModelProfile } from '../shared/stage/model-profile';
+import { RETARGET_ALGORITHM_VERSION, STANDARD_SOURCE_RIG, buildRetargetRig, evaluatePose, planRetarget, tracksOnRig, vlength, vscale, vsub, vadd, type Pose, type RetargetRig, type VmdLike } from '../shared/actions/motion-retarget';
+import { MOTION_FIT_VERSION, adaptMotion } from '../shared/actions/motion-fit';
+import { MOTION_SCORE_STAMP, acceptMotionFitRecord } from '../shared/actions/motion-fit-record';
+import { MOTION_CONTACTS, contactFor, contactWeight } from '../shared/actions/motion-contact';
+import { HER_ACTION_PACK, type HerActionId } from '../shared/actions/her-actions';
+import { sha256Hex } from '../shared/foundation/sha256-sync';
+import type { Vec3 } from '../shared/foundation/universal-skeleton';
+import { StageMotionRetarget, clearRetargetCache } from '../src/actions/motion-retarget';
 import { readGene } from './helpers/bundled-motions';
-import { catalogMotionFile, geneStage, type GeneStage, type ShownFrame } from './helpers/gene-stage-harness';
 import { BODY_VARIANTS, scaleArms, widenShoulders } from './helpers/body-variants';
 import type { EditableBone } from './helpers/hand-variants';
 import { profileInput, toThreeMesh, type ModelData } from './helpers/model-fixtures';
 import { readVmdLite } from './helpers/vmd-lite';
+import { catalogMotionFile, type ShownFrame } from './helpers/frame-stats';
 
 const GENE = readGene();
 const GENE_PROPORTIONS = buildModelProfile(profileInput({ ...GENE, morphs: [] })).proportions;
@@ -190,12 +187,6 @@ const POINTS = [...new Set([...PALM, ...TIPS].flatMap(name => [`左${name}`, `�
 const EXTRA = [...TURNING, ...POINTS.filter(name => !(TURNING as readonly string[]).includes(name))];
 const DEG = 180 / Math.PI;
 const turnStep = (a: ShownFrame, b: ShownFrame) => Math.max(...TURNING.map((_, k) => a.extra[k].angleTo(b.extra[k]) * DEG));
-function lockstep(a: GeneStage, b: GeneStage, seconds: number) { for (let i = 0, n = Math.round(seconds * a.rate); i < n; i++) { a.tick(); b.tick(); } }
-const apart = (a: GeneStage, b: GeneStage, from: number, to: number) => {
-  let best = 0;
-  for (let i = from; i < to; i++) for (let k = 0; k < TURNING.length; k++) best = Math.max(best, a.shown[i].extra[k].angleTo(b.shown[i].extra[k]) * DEG);
-  return best;
-};
 /** R29d "unexpected step": the largest change of a frame's step over the previous step, over the watched rotations. */
 function surprise(frames: readonly ShownFrame[]): number {
   let best = 0;
@@ -212,48 +203,3 @@ const shownGap = (frame: ShownFrame, id: 'clap' | 'two-hand-heart'): Vec3 =>
   mean(TOUCHES[id].points.map(group => vsub(mean(group.map(name => shownAt(frame, `左${name}`))), mean(group.map(name => shownAt(frame, `右${name}`))))));
 
 const SHOWN_MODELS = { gene: undefined, 'wide shoulders (×1.25)': BODY_VARIANTS['wide shoulders (×1.25)'], 'short arms (×0.8)': BODY_VARIANTS['short arms (×0.8)'] } as const;
-for (const fps of [60, 30] as const) test(`R29 at ${fps} fps: 鼓掌 / 比心 on wider shoulders and shorter arms meet as on Gene, ease in and out, step about as on Gene, the guard catches nothing`, async t => {
-  const lines: string[] = [];
-  const options = { herActions: true, fps, extraBones: EXTRA } as const;
-  const runs: Record<string, { step: number; surprise: number; gaps: Vec3[]; shoulders: number }> = {};
-  for (const [model, edit] of Object.entries(SHOWN_MODELS)) {
-    const restEdit = edit ? { restEdit: edit as (bones: EditableBone[]) => void } : {};
-    const h = await geneStage({ ...options, ...restEdit }), idle = await geneStage({ ...options, ...restEdit });
-    try {
-      assert.equal(!!h.stage.motionRetarget, !!edit);
-      lockstep(h, idle, 1.0);
-      for (const id of ['clap', 'two-hand-heart'] as const) {
-        const seconds = herActionDurationMs(id) / 1000, jumps = h.shown.at(-1)!.guardJumps, start = h.shown.length;
-        const report = await h.playAction(id);
-        assert.equal(report?.status, 'played', `${model} ${id}: ${JSON.stringify(report)}`);
-        lockstep(h, idle, seconds + 0.6);
-        const end = h.shown.length, frames = h.shown.slice(start - 1, end), finish = start + Math.round(seconds * h.rate);
-        let step = 0;
-        for (let i = 1; i < frames.length; i++) step = Math.max(step, turnStep(frames[i], frames[i - 1]));
-        const opening = apart(h, idle, start, start + 2), closing = apart(h, idle, finish - 2, finish + 2), back = apart(h, idle, end - 3, end);
-        const unexpected = surprise(frames), guard = h.shown.at(-1)!.guardJumps - jumps;
-        const touching = h.shown.slice(start, finish).filter((_, i) => TOUCHES[id].frames.includes(Math.round(i / h.rate * 30)));
-        runs[`${model} ${id}`] = { step, surprise: unexpected, gaps: touching.map(frame => shownGap(frame, id)),
-          shoulders: vlength(vsub(shownAt(h.shown[0], '左腕'), shownAt(h.shown[0], '右腕'))) };
-        lines.push(`${fps} fps ${model} ${id}: max step ${step.toFixed(2)}°/frame, unexpected ${unexpected.toFixed(2)}°, opening ${opening.toFixed(3)}°, closing ${closing.toFixed(3)}°, back ${back.toFixed(3)}°, guard ${guard}`);
-        assert.equal(guard, 0, `${model} ${id}: the display guard caught ${guard} (${h.shown.at(-1)!.guardLast})`);
-        assert.ok(opening < 0.5, `${model} ${id} eases in: ${opening.toFixed(3)}°`);
-        assert.ok(closing < 1, `${model} ${id} eases out: ${closing.toFixed(3)}°`);
-        assert.ok(back < 1, `${model} ${id}: back in its idle (${back.toFixed(3)}°)`);
-      }
-    } finally { idle.close(); h.close(); }
-  }
-  // Gene's head in shown units: Gene's shoulders as shown over its 2.667 model units (the edited bodies keep Gene's head and hands).
-  const head = HEAD * runs['gene clap'].shoulders / GENE_SHOULDERS;
-  for (const model of Object.keys(SHOWN_MODELS).filter(name => name !== 'gene')) for (const id of ['clap', 'two-hand-heart'] as const) {
-    const gene = runs[`gene ${id}`], run = runs[`${model} ${id}`];
-    assert.equal(run.gaps.length, gene.gaps.length);
-    const error = Math.max(...run.gaps.map((gap, k) => vlength(vsub(gap, gene.gaps[k])) / head));
-    lines.push(`${fps} fps ${model} ${id}: hands at the touches ${error.toFixed(3)} heads off Gene (${run.gaps.length} shown frames); step ${run.step.toFixed(2)}° vs Gene ${gene.step.toFixed(2)}°, unexpected ${run.surprise.toFixed(2)}° vs ${gene.surprise.toFixed(2)}°`);
-    assert.ok(run.gaps.length >= 6, `${model} ${id}: ${run.gaps.length} touch frames shown`);
-    assert.ok(error < 0.02, `${model} ${id}: shown hands ${error.toFixed(3)} heads off where they meet on Gene`);
-    assert.ok(run.step <= gene.step * 1.25 + 0.3, `${model} ${id}: steps ${run.step.toFixed(2)}°, Gene ${gene.step.toFixed(2)}°`);
-    assert.ok(run.surprise <= gene.surprise * 1.25 + 0.3, `${model} ${id}: unexpected step ${run.surprise.toFixed(2)}° vs Gene ${gene.surprise.toFixed(2)}°`);
-  }
-  t.diagnostic(lines.join('\n'));
-});

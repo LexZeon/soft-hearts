@@ -2,7 +2,7 @@
  * Model lab (docs/claude/2026-11-02-model-lab.md): a PMX parsed in Node by the
  * same parser the app's MMDLoader uses (three's MMDParser), turned into the
  * part of an MMDLoader mesh that the stage adapters read
- * (src/stage/model-profile.ts `modelProfileInput`, src/stage/motion-retarget.ts
+ * (src/stage/model-profile.ts `modelProfileInput`, src/actions/motion-retarget.ts
  * `meshRigBones`/`meshMorphNames`). Those adapters then run unchanged, so the
  * lab computes the profile, the collision proxy and the retarget rig exactly as
  * the app does after loading the model.
@@ -30,7 +30,7 @@ import { Bone, BufferGeometry, Float32BufferAttribute, Skeleton, SkinnedMesh, Ui
 // Three.js r170 does not publish declarations for its bundled MMD parser.
 // @ts-expect-error Bundled parser has no TypeScript declaration; PmxData below scopes its use.
 import { MMDParser } from 'three/examples/jsm/libs/mmdparser.module.js';
-import { describePmxPreparation, preparePmxForMmdParser, type PmxDowngrade } from '../../shared/pmx-text-encoding';
+import { describePmxPreparation, preparePmxForMmdParser, type PmxDowngrade } from '../../shared/foundation/pmx-text-encoding';
 
 /** The fields of MMDParser.parsePmx(buffer, true) that the lab reads. */
 export interface PmxData {
@@ -58,7 +58,7 @@ export interface PmxConversion {
 /**
  * Parses like the app's MMDLoader (left-to-right conversion on). Parser failures name the cause; the app cannot load such a model either.
  * The file is first converted in memory where needed (UTF-16LE text, 2.1 → 2.0, empty additional-UV morphs), exactly as the app's
- * mmd-asset protocol serves it (electron/asset-protocol.ts, shared/pmx-text-encoding.ts `preparePmxForMmdParser`).
+ * mmd-asset protocol serves it (electron/foundation/asset-protocol.ts, shared/foundation/pmx-text-encoding.ts `preparePmxForMmdParser`).
  */
 export function readPmx(bytes: Uint8Array): { data: PmxData; conversion: PmxConversion | null } {
   const prepared = preparePmxForMmdParser(bytes), source = prepared.bytes;

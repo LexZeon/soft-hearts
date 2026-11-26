@@ -2,7 +2,7 @@
 //
 //   Build:  node node_modules/tsx/dist/cli.mjs scripts/pose-release-pack.ts build --official <dir> --out <dir>
 //           <dir> holds onnxruntime-node-1.31.1.tgz and onnxruntime-common-1.31.1.tgz exactly as downloaded from the
-//           npm registry URLs in electron/pose/manifest.ts. Each tarball is checked against the registry integrity in
+//           npm registry URLs in electron/foundation/pose-manifest.ts. Each tarball is checked against the registry integrity in
 //           the manifest, each kept file against its SHA-256, then the files are written unchanged (only split by
 //           platform) into a deterministic .tgz with the licence texts and a PACK-MANIFEST.json, plus
 //           <pack>.manifest.json and SHA256SUMS.txt next to it. Same inputs and Node version → same bytes.
@@ -13,17 +13,17 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { gzipSync } from 'node:zlib';
-import { extractTarGz } from '../electron/pose/archive';
+import { extractTarGz } from '../electron/senses/pose/archive';
 import {
   POSE_ARCHIVES, POSE_COMPONENT_VERSION, POSE_MANIFEST, POSE_PACK_REPLACES, POSE_PLATFORMS, archiveFiles, packProblem, posePackFiles, posePackName,
   type ManifestArchive, type ManifestFile, type PosePlatform,
-} from '../electron/pose/manifest';
+} from '../electron/foundation/pose-manifest';
 
-const LICENSE_DIR = path.resolve('electron/pose/licenses');
+const LICENSE_DIR = path.resolve('electron/senses/pose/licenses');
 /** Fixed timestamp for every tar entry (2026-11-03 00:00 UTC) so the pack bytes do not depend on when it was built. */
 const PACK_MTIME = Date.UTC(2026, 10, 3) / 1000;
 
-/** Where each licence text in electron/pose/licenses came from (written into the pack manifest). */
+/** Where each licence text in electron/senses/pose/licenses came from (written into the pack manifest). */
 const LICENSE_SOURCES: Record<string, string> = {
   'README.txt': 'written by this project (sources and terms of every component)',
   'onnxruntime-LICENSE.txt': 'https://github.com/microsoft/onnxruntime/blob/v1.31.1/LICENSE',
