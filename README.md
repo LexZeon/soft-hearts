@@ -14,6 +14,8 @@
 
 **▶ [Demo video (recorded on v0.1.0) · 演示视频（0.1.0 版时录的，B 站）](https://www.bilibili.com/video/BV1eEWW6DEQL/)**
 
+**🎬 Chatting with each of the three, short clips on X (Chinese interface, English voice) · 和三个角色聊天的演示（X，中文界面、英文朗读）：[Gene](https://x.com/LexZeon/status/2124380389389340807) · [One](https://x.com/LexZeon/status/2124243179818119212) · [Mumi](https://x.com/LexZeon/status/2123477000056934522)**
+
 **💬 [Join us on Discord · 来 Discord 一起聊](https://discord.gg/tBuXwHaxh)**
 
 </div>

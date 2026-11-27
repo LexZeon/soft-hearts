@@ -1285,6 +1285,17 @@
   ]
  },
  {
+  "id": "XP-owner-x-links-wider-than-posts",
+  "part": "trunk",
+  "file": "scripts/release/export-public.mjs",
+  "find": "\\/status\\/\\d+(?![\\w-])/g;",
+  "replace": "(?![\\w-])/g;",
+  "what": "公开版导出放行的不再只是主人自己的 X 帖子链接，连他的 X 主页地址也放行（放行范围变宽，名字漏出去不报）",
+  "tests": [
+   "tests/public-snapshot.test.mjs"
+  ]
+ },
+ {
   "id": "XQ-scan-ignores-owner-words",
   "part": "trunk",
   "file": "scripts/release/export-public.mjs",
