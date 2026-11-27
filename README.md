@@ -12,13 +12,13 @@
 
 <a href="#install">🚀 Install</a> · <a href="#features">✨ What she can do</a> · <a href="#first-use">👣 First use</a> · <a href="#thanks">🙏 Thanks</a> · <a href="#zh">📖 中文</a>
 
-**▶ [Demo video · 演示视频（B 站）](https://www.bilibili.com/video/BV1eEWW6DEQL/)**
+**▶ [Demo video (recorded on v0.1.0) · 演示视频（0.1.0 版时录的，B 站）](https://www.bilibili.com/video/BV1eEWW6DEQL/)**
 
 </div>
 
-> **专为 Claude、专为 Windows 做。** 想接别的模型（比如 DeepSeek、ChatGPT 一类）或在 macOS / Linux 上跑：看 [docs/PORTING.md](docs/PORTING.md)（尽力而为的说明，不保证，我们不测试也不维护别的模型和系统）。
->
 > **Made for Claude and for Windows.** To connect another model or run on macOS / Linux, see [docs/PORTING.md](docs/PORTING.md) (best effort, not supported: we do not test or maintain other models or systems).
+>
+> **专为 Claude、专为 Windows 做。** 想接别的模型（比如 DeepSeek、ChatGPT 一类）或在 macOS / Linux 上跑：看 [docs/PORTING.md](docs/PORTING.md)（尽力而为的说明，不保证，我们不测试也不维护别的模型和系统）。
 
 ## 🌍 English
 
