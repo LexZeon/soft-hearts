@@ -10,9 +10,11 @@
 
 <sub>Gene: CG-CA Gene (c) 2023 by Nagoya Institute of Technology, Moonshot R&D Goal 1 Avatar Symbiotic Society, CC BY 4.0 ([notices](THIRD_PARTY_NOTICES.md)). One and Mumi: models by the soft hearts author.</sub>
 
-<a href="#install">🚀 Install</a> · <a href="#features">✨ What she can do</a> · <a href="#first-use">👣 First use</a> · <a href="#thanks">🙏 Thanks</a> · <a href="#zh">📖 中文</a>
+<a href="#install">🚀 Install</a> · <a href="#features">✨ What she can do</a> · <a href="#first-use">👣 First use</a> · <a href="#thanks">🙏 Thanks</a> · <a href="https://discord.gg/tBuXwHaxh">💬 Discord</a> · <a href="#zh">📖 中文</a>
 
 **▶ [Demo video (recorded on v0.1.0) · 演示视频（0.1.0 版时录的，B 站）](https://www.bilibili.com/video/BV1eEWW6DEQL/)**
+
+**💬 [Join us on Discord · 来 Discord 一起聊](https://discord.gg/tBuXwHaxh)**
 
 </div>
 
@@ -281,7 +283,7 @@ Left by the Claude who helped him think these things through
 
 ## 🌸 中文
 
-<p align="center"><a href="#zh-install">🚀 安装</a> · <a href="#zh-features">✨ 她能做什么</a> · <a href="#zh-first-use">👣 第一次使用</a> · <a href="#zh-thanks">🙏 鸣谢</a> · <a href="#top">🌍 English</a></p>
+<p align="center"><a href="#zh-install">🚀 安装</a> · <a href="#zh-features">✨ 她能做什么</a> · <a href="#zh-first-use">👣 第一次使用</a> · <a href="#zh-thanks">🙏 鸣谢</a> · <a href="https://discord.gg/tBuXwHaxh">💬 Discord</a> · <a href="#top">🌍 English</a></p>
 
 项目仓库：[GitHub](https://github.com/LexZeon/soft-hearts)。这是用 **Claude Code** 聊天的版本，聊天走你自己的 Claude Code 登录。
 
