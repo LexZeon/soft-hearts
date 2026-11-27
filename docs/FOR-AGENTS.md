@@ -11,8 +11,8 @@ Other people with other systems and other agents (macOS + Codex, Linux + DeepSee
 Any system (macOS, Linux, Windows), any agent (Codex, OpenCode, a DeepSeek-backed agent, your own). Work out how to connect yourself, in this order:
 
 1. [docs/PORTING.md](PORTING.md), section "Plug yourself in: the brain protocol": the app starts a program called `claude` and speaks JSON lines with it. Build a small relay that pretends to be `claude` and forwards to your own CLI or API, then point `CLAUDE_PATH` at it. The section lists every argument, every message in and out, the time limits, how a process is cancelled and ended on each system, and what the hidden markers in the reply look like.
-2. The same section has a table of starting points by system and agent (all unverified) and a self-check list to run after you plug in: first word, marker leaks, cancel, one archive per reply, no tools in companion chat.
-3. The safety floor in section 5 applies to your relay: no tools for companion chat, keys only in the host or your own login, and the user's data goes only to the service the user chose.
+2. The same section has a table of starting points by system and agent (all unverified) and a self-check list to run after you plug in: first word, marker leaks, cancel, one archive per reply, no tools added to companion chat.
+3. The safety floor in section 5 applies to your relay: no tools added to companion chat (prove there are none, or keep the chat boxed in; see the note under "Rules that hold for every agent"), keys only in the host or your own login, and the user's data goes only to the service the user chose.
 
 ## What this is 🧩
 
@@ -26,8 +26,10 @@ A desktop companion: a 3D character (PMX/PMD or VRM model) on the screen that ta
 
 ## Rules that hold for every agent 📏
 
+**Changed on 2026-11-26.** Until then "companion chat has no tools, and a port must be able to prove it" was a bottom line. The owner lifted that one line (in short: the software will in future be able to operate the computer through an agent); the other safety rules stay as they are. Today the Claude edition still runs her chat without tools and checks at every start; that code is unchanged. A port that cannot prove there are no tools keeps the chat boxed in instead (file system denied except its own scratch folder, network off for tools, the turn stops the moment a tool request appears, a self-check at every start) and does not add tools to the chat. Later she may act on the computer through the user's own agent; that design is not written yet and nothing of it exists in the app. The details are in section 5 of `docs/PORTING.md`.
+
 - Develop against the development profile (`pnpm dev`), never against a real user profile.
-- Do not weaken the safety floor in section 5 of `docs/PORTING.md` to make a change pass: no tools in companion chat, keys only in the host, perception off by default, one archive per reply, private data stays local.
+- Do not weaken the safety floor in section 5 of `docs/PORTING.md` to make a change pass: no tools added to companion chat, keys only in the host, perception off by default, one archive per reply, private data stays local.
 - Do not commit private models, textures, chat logs, character-card text, keys or screenshots of someone's desktop. Third-party assets live only under `assets/bundled/` with their original credit.
 - If you are the Claude installing it for a user for the first time, ask the language first (Chinese or English) and write it to `.local/first-language.txt` before the first launch: `START-HERE.md`, step 2. The app reads it once, on a fresh profile only.
 - Put a new feature in its own part's folder and attach it through the wiring files; keep new files small.
@@ -50,8 +52,8 @@ soft hearts 专为 Claude 和 Windows 做。如果你是别的 agent（接别的
 任何系统（macOS、Linux、Windows），任何 agent（Codex、OpenCode、接了 DeepSeek 的 agent、你自己的）。按这个顺序弄清怎么把自己接上：
 
 1. [docs/PORTING.md](PORTING.md) 里的"Plug yourself in: the brain protocol"一节：应用启动一个叫 `claude` 的程序，和它用 JSON 行对话。做一个假装成 `claude` 的小转接程序，转发给你自己的命令行或 API，再把 `CLAUDE_PATH` 指向它。这一节列出了每个参数、进出的每种消息、时间限制、各系统上怎样取消和结束一个进程，以及回复里的隐藏记号长什么样。
-2. 同一节里有一张按系统和 agent 排的起点表（都没验证过），和一份接上以后要跑的自检清单：第一个字、记号漏出、取消、一次回复只存一次、陪伴聊天里没有工具。
-3. 第 5 节的安全底线同样适用于你的转接程序：陪伴聊天不带工具、密钥只放在主程序或你自己的登录里、用户的数据只发给用户选的那个服务。
+2. 同一节里有一张按系统和 agent 排的起点表（都没验证过），和一份接上以后要跑的自检清单：第一个字、记号漏出、取消、一次回复只存一次、没有给陪伴聊天加工具。
+3. 第 5 节的安全底线同样适用于你的转接程序：不给陪伴聊天加工具（能证明没有就证明，拿不出证明就把聊天关在碰不到东西的地方，见"对每个 agent 都成立的规矩"下面的说明）、密钥只放在主程序或你自己的登录里、用户的数据只发给用户选的那个服务。
 
 ## 这是什么 🧩
 
@@ -65,8 +67,10 @@ soft hearts 专为 Claude 和 Windows 做。如果你是别的 agent（接别的
 
 ## 对每个 agent 都成立的规矩 📏
 
+**2026-11-26 改了一处。** 在此之前，"陪伴聊天不带工具，而且移植必须能证明"是一条底线。用户把这一条去掉了（大意：以后的软件是能借 agent 操作电脑的），其他安全规矩照旧。Claude 版今天仍然让她的聊天不带工具，每次启动都检查，这部分代码没变。拿不出"没有工具"证明的移植，改为把聊天关在碰不到东西的地方（文件系统拒绝，只留它自己的临时文件夹；工具走的网络关掉；一出现工具请求就停这一轮；每次启动自检），并且不给聊天加工具。以后她也许会借用户自己的 agent 去操作电脑；这个方案还没写，应用里现在没有它的任何部分。细节见 `docs/PORTING.md` 第 5 节。
+
 - 对着开发配置（`pnpm dev`）开发，不要对着真实用户的配置。
-- 不要为了让一个改动通过而削弱 `docs/PORTING.md` 第 5 节的安全底线：陪伴聊天不带工具、密钥只在主程序里、感知默认关闭、一次回复只存一次、私人数据只留在本机。
+- 不要为了让一个改动通过而削弱 `docs/PORTING.md` 第 5 节的安全底线：不给陪伴聊天加工具、密钥只在主程序里、感知默认关闭、一次回复只存一次、私人数据只留在本机。
 - 不要提交私人模型、贴图、聊天记录、角色卡文字、密钥，或别人桌面的截图。第三方素材只放在 `assets/bundled/` 下，并保留原来的署名。
 - 如果你是第一次替用户安装的 Claude，先问语言（中文还是 English），第一次启动之前把它写进 `.local/first-language.txt`：见 `START-HERE.md` 第 2 步。应用只读它一次，而且只在全新的配置上。
 - 新功能放进它自己那个部分的文件夹，通过接线文件接入；新文件保持小。

@@ -6,7 +6,7 @@
 
 - soft hearts is **made for Claude and for Windows**: chat goes through the Claude Code on the user's own computer, and the desktop behaviour is tuned for Windows. Other models and systems are **not tested, not maintained, not guaranteed**.
 - This page is a map for agents and developers who want to connect it to their own model (for example the API or command line of DeepSeek, ChatGPT and the like) or run it on macOS / Linux: what is Claude-specific, what is Windows-specific, what each is for, what you have to provide yourself, which behaviours get worse on another model, and what to test first.
-- Whatever you change, keep the safety floor of section 5 below exactly as it is: keys live only in the host; a window gets no Node and no arbitrary path; screen, camera and microphone are off by default and only the user's own words can turn them on; a reply is stored only once; private data does not leave the machine.
+- Whatever you change, keep the safety floor of section 5 below as it is (one line of it was relaxed on 2026-11-26: a port no longer has to prove there are no tools in chat, see the note at the top of section 5): keys live only in the host; a window gets no Node and no arbitrary path; screen, camera and microphone are off by default and only the user's own words can turn them on; a reply is stored only once; private data does not leave the machine.
 - **An agent that wants to plug itself in as the brain should read the section "Plug yourself in: the brain protocol" first** (after section 2): how to build a relay program that pretends to be `claude` (with `CLAUDE_PATH` pointing at it), what the app writes to it and reads from it, cancelling and ending the process, the hidden markers, the safety floor, plus a table of starting points for macOS / Linux / Windows × Codex / DeepSeek / OpenCode (all unverified) and a self-check list. It applies to any system with any agent.
 - **Wherever the app says Claude, you can change it to your own agent** (section 3.5, "Where the app says Claude"): the names shown on screen ("Claude assistant", "operated by Claude", "Claude tasks") follow when you change two lines in `shared/foundation/assistant-name.ts`; the places that really call Claude Code (the long-lived chat process, the one-shot small judgments, task execution, the internal channel, installing and discovery, diagnostics) are changed by plugging your agent in as in "Plug yourself in"; the prompts written for her that talk about Claude you have to rewrite yourself. A port that is not Claude should not call itself Claude.
 - This is a best-effort guide: it can be read and connected to, and that is all.
@@ -74,7 +74,7 @@ How to do it, in order:
   [--effort low|medium|high]   only on a few one-shot calls
   ```
 
-  `--tools ""`, `--strict-mcp-config`, `--safe-mode`, `--disable-slash-commands` and `--setting-sources ""` are the "no tools, no MCP, no user settings" promise. Your relay must keep that promise, not ignore the flags (see the safety floor below). `--model` is passed only when the name is `default`, `fable`, `opus`, `sonnet`, `haiku` or `opusplan` (each optionally with `[1m]`), contains `claude`, or is a Bedrock ARN; anything else is dropped. Since 0.2.0 an empty chat model (or a dropped name) is sent as `--model opus`, and only the `follow-default` choice sends no `--model` (`shared/brain/claude-model.ts` `chatModelArgument`). So your relay sees `--model haiku` for the small background judgments and `--model opus`, another Claude alias, or nothing for chat: map those names to your own small and large models.
+  `--tools ""`, `--strict-mcp-config`, `--safe-mode`, `--disable-slash-commands` and `--setting-sources ""` are how the Claude edition says "no tools, no MCP, no user settings" today. Do not just ignore the flags: either keep that promise or, if your backend cannot prove it, keep the chat boxed in (see the safety floor below). `--model` is passed only when the name is `default`, `fable`, `opus`, `sonnet`, `haiku` or `opusplan` (each optionally with `[1m]`), contains `claude`, or is a Bedrock ARN; anything else is dropped. Since 0.2.0 an empty chat model (or a dropped name) is sent as `--model opus`, and only the `follow-default` choice sends no `--model` (`shared/brain/claude-model.ts` `chatModelArgument`). So your relay sees `--model haiku` for the small background judgments and `--model opus`, another Claude alias, or nothing for chat: map those names to your own small and large models.
 - **Other launch shapes you can leave unsupported.** The optional task runner (`electron/safety/claude-tasks/process.ts`) and the user-assistant process (`electron/safety/assistant/process.ts`) add `--tools` with names, `--mcp-config`, `--permission-prompt-tool`, `--restricted` and so on. They only start when the user switches those features on. A relay that exits non-zero on those flags leaves them off, which is the safe default.
 - **`claude mcp add/get/list/remove`.** When the user opens the internal-channel panel, the app can run these through the same binary to register its MCP server with the user's own Claude Code (`electron/safety/agent-channel/claude-code-link.ts`). A relay does not need them: make `mcp` exit non-zero. If your agent supports stdio MCP servers, register the app's server in your own way instead; the control window prints the same entry as JSON (`mcpServers: { name: { command, args, env } }`, built by `electron/safety/agent-channel/setup-text.ts`), and the server is `scripts/soft-hearts-mcp.mjs`. Read section 5 first: a new caller needs a fresh safety review.
 
@@ -90,7 +90,7 @@ The app writes the next user message only after the previous turn's `result` was
 
 For every user turn, in this order (`ClaudeStreamReader` in `electron/brain/claude.ts`, `ClaudeChatProcess.line` in `electron/brain/claude-process.ts`):
 
-1. `{"type":"system","subtype":"init","session_id":"...","model":"...","tools":[],"mcp_servers":[], ...}`. **Before any text.** `tools` and `mcp_servers` must be present and empty arrays; missing or non-empty stops the turn as unsafe. Text arriving with no init seen is also a stop. Claude Code sends one per turn; the app checks each. `model` is only logged.
+1. `{"type":"system","subtype":"init","session_id":"...","model":"...","tools":[],"mcp_servers":[], ...}`. **Before any text.** `tools` and `mcp_servers` must be present and empty arrays; missing or non-empty stops the turn as unsafe (the app's check is unchanged, so a relay may report empty lists only if that is true of the chat as it runs). Text arriving with no init seen is also a stop. Claude Code sends one per turn; the app checks each. `model` is only logged.
 2. Streamed text as `{"type":"stream_event","event":{...}}` with inner events: `message_start`, `content_block_start` (`content_block.type` must be `text`, `thinking` or `redacted_thinking`; any other type is read as a tool request and stops the turn), `content_block_delta` with `{"type":"text_delta","text":"..."}` (this is what is shown and spoken; send small deltas in order, and send the first one as early as you can), `content_block_stop`, `message_delta` (`delta.stop_reason`; the value `refusal` marks a refusal), `message_stop`.
 3. Optionally `{"type":"assistant","message":{"id":"...","role":"assistant","content":[{"type":"text","text":"..."}]}}`. It is used as the text only if you sent no deltas at all; do not send both with different text.
 4. `{"type":"result","subtype":"success","is_error":false,"result":"<full text>","usage":{...},"total_cost_usd":0}` ends the turn. Fields read from `usage`: `input_tokens`, `output_tokens`, `cache_read_input_tokens`, `cache_creation_input_tokens` (all optional, numbers only). Failure: `is_error: true` or a `subtype` other than `success`, with `result` (or `errors`) holding a text. The failure kind (quota, login, rate limit, offline, certificate, other) is guessed from English phrases in that text (`shared/brain/claude-failure.ts`); anything unknown falls into "other", which is safe.
@@ -129,9 +129,9 @@ Code to read first: `electron/brain/claude-launch/` (how processes start and end
 
 ### Safety floor for a relay
 
-These are not negotiable (the same floor as section 5):
+These are not negotiable, except the one line relaxed on 2026-11-26 (the same floor as section 5; read the note at the top of that section):
 
-- **The relay must not give companion chat tools.** If your CLI or API can run commands, read files, browse or load MCP servers, turn that off when the relay forwards (or refuse to run), and keep `tools: []` and `mcp_servers: []` in `init` true. Never forward a tool request to the app as text; if your backend asks for a tool, end the turn with an error `result`. Do not read the user's own agent settings into the chat.
+- **The relay does not add tools to companion chat.** If your CLI or API can run commands, read files, browse or load MCP servers, turn that off when the relay forwards (or refuse to run), and keep `tools: []` and `mcp_servers: []` in `init` true. If you cannot turn them off or prove it, you are no longer required to: keep the chat boxed in instead (file system denied except its own scratch folder, network off for tools, the turn stops the moment a tool request appears, a self-check at every start) and still add no tools. Never forward a tool request to the app as text; if your backend asks for a tool, end the turn with an error `result`. Do not read the user's own agent settings into the chat.
 - **Keys stay in the main process or in your own CLI's login.** The app never hands a key to a window. Do not write a key into the relay's source, a log or the command line (the command line is visible to other programs).
 - **Do not send the user's data to a service the user did not choose.** The prompt text carries private conversation, memory and sometimes a camera or screen frame. It may go to the backend the user picked for this app and nowhere else: no extra logging service, no telemetry, no second model "for quality". Do not save frames or prompts to disk.
 - **Keep the other two switches off until reviewed:** task execution and the internal MCP channel (sections 3.1 and 5).
@@ -142,10 +142,10 @@ None of these rows has been tested by the maintainers. "Unverified" means exactl
 
 | System and agent | Where to hook in | Watch out for | First thing to verify |
 |---|---|---|---|
-| **macOS + Codex** | Relay that forwards to Codex's non-interactive or JSON-event mode (look up your CLI's non-interactive, JSON-stream mode; unverified). | Streaming granularity (a mode that emits only whole messages makes the first word late); whether tools and shell are really off for chat (require proof, see the safety floor); cancel by ending the child on `SIGTERM`; MCP support differs. | Hand test: pipe one `user` line into the relay and see `init`, deltas, `result`. |
+| **macOS + Codex** | Relay that forwards to Codex's non-interactive or JSON-event mode (look up your CLI's non-interactive, JSON-stream mode; unverified). | Streaming granularity (a mode that emits only whole messages makes the first word late); whether tools and shell are really off for chat (prove it, or else box the chat in; see the safety floor); cancel by ending the child on `SIGTERM`; MCP support differs. | Hand test: pipe one `user` line into the relay and see `init`, deltas, `result`. |
 | **macOS + DeepSeek** | Relay that calls an OpenAI-compatible chat-completions endpoint with streaming on, mapping each streamed content piece to a `text_delta` (unverified for your account: model names, limits, the exact fields). | Keep your own message list; send no tool definitions; abort the HTTP request on interrupt and on `SIGTERM`; a reasoning model may emit reasoning text, which must not go into `text_delta`; check that the model follows the closed markers. | Same hand test, then a small one-shot (`--model haiku` shape) that must return strict JSON. |
 | **Linux + DeepSeek** | Same as macOS + DeepSeek. | Same, plus: a GUI launch does not inherit your shell variables, so keep the key where your relay reads it (its own owner-only config file), not in the app's environment; make the relay file executable. | Same, then `pnpm dev` with `CLAUDE_PATH` set from a launcher that has the display. |
-| **Linux + OpenCode** | Relay that forwards to OpenCode's non-interactive mode, or to its local server if it has one (look up its current docs; unverified). | Whether it has a no-tools mode you can prove; streaming support; process cleanup on `SIGTERM`; MCP is its own concern. | Hand test, then check that no tool list is anywhere in what the relay forwards. |
+| **Linux + OpenCode** | Relay that forwards to OpenCode's non-interactive mode, or to its local server if it has one (look up its current docs; unverified). | Whether it has a no-tools mode (and whether you can prove it, or must box the chat in instead); streaming support; process cleanup on `SIGTERM`; MCP is its own concern. | Hand test, then check that no tool list is anywhere in what the relay forwards. |
 | **Windows + another agent** | Relay compiled to a `.exe` (a `.cmd` shim cannot be started) forwarding to that agent's CLI or API (unverified for any particular agent). | The app ends the tree with `taskkill /T /F`, so child processes die with the relay; pass the long system prompt to your backend as data, never through a shell command line. | Hand test from a terminal, then `pnpm dev`; this is the system the app was built on, so window behaviour should already work. |
 
 ### Self-check for the agent that plugged itself in
@@ -158,7 +158,7 @@ Do these in order; stop at the first one that fails and fix it before going on.
 4. **Hidden markers do not leak.** Over at least a dozen replies, look for `<sh-` text, `⟦look`, raw JSON, or reasoning and "plan" text on screen or in the spoken voice. If any shows, the model is ignoring the closed markers or your relay adds text; do not paper over it in the app.
 5. **Cancel stops.** Press stop mid-reply, switch character mid-reply, and talk over her: nothing may appear afterwards and no relay or backend process may remain (check the process list; on Unix this tests your `SIGTERM` handling).
 6. **One reply is stored once.** After a normal reply, an interrupted one and a superseded one, the conversation history must hold each exactly once (look through the app on the development profile, not by editing files).
-7. **No tools in companion chat.** The relay's `init` has empty lists, your backend request carries no tool definitions, and a deliberate "run this command" message produces words, not an action. Run `tests/brain-gates.test.ts`, `tests/claude.test.ts` and `tests/claude-session*.test.ts` against your changes; do not weaken them.
+7. **No tools added to companion chat.** The relay's `init` has empty lists (true of the chat as it runs: proven, or boxed in as in the safety floor), your backend request carries no tool definitions, and a deliberate "run this command" message produces words, not an action. Run `tests/brain-gates.test.ts`, `tests/claude.test.ts` and `tests/claude-session*.test.ts` against your changes; do not weaken them.
 8. **Small calls.** One-shot calls return exit code 0 with clean text or JSON; try a slow and a failing backend and check that the app shows its quiet "she cannot answer" state instead of freezing.
 9. **Report honestly.** Write down what you measured and what you did not, in your own fork's notes; this repository does not promise your combination works.
 
@@ -171,7 +171,7 @@ Everything that depends on Claude Code is listed by seam below. The rest of the 
 | Seam | Today | Where | What your replacement must provide |
 |---|---|---|---|
 | **Companion chat turn** | One long-lived `claude -p --input-format stream-json --output-format stream-json --include-partial-messages` process per character; the user message goes to stdin each turn; text arrives as incremental events | `electron/brain/claude-session.ts` (`PersistentClaudeChat.stream`), `claude-process.ts`, `claude-session-prompt.ts`, pool in `session-pool/` | `stream(task, signal, emit, control?)`: stream text with `emit('delta', text)`, keep context across turns (or rebuild it each turn, slower), honour `signal` (after abort no more text may come out), start a new context on `close('context')`. The prompt and image getters on `task` must be read when written out, not earlier. |
-| **No tools in companion chat** | Launch arguments disable all tools, MCP, slash commands, user settings and session persistence; start-up report (`system/init`) must list no tools and no MCP servers; any tool block in the stream stops the turn | `electron/brain/claude.ts` (`claudeArguments`, `ClaudeStreamReader`) | A way to prove the model has no tools (or to refuse the turn), a runtime stop when a tool request appears, and a refusal of any task whose `kind` is not `'chat'` or that is `writable`. Safety floor item 1. |
+| **No tools in companion chat (today's Claude edition)** | Launch arguments disable all tools, MCP, slash commands, user settings and session persistence; start-up report (`system/init`) must list no tools and no MCP servers; any tool block in the stream stops the turn | `electron/brain/claude.ts` (`claudeArguments`, `ClaudeStreamReader`) | A way to prove the model has no tools, or else the boxed-in fallback (section 5, item 1; no longer a proof requirement since 2026-11-26), a runtime stop when a tool request appears, and a refusal of any task whose `kind` is not `'chat'` or that is `writable`. Safety floor item 1. |
 | **One-shot small calls** | A fresh `claude -p` per call with its own system prompt and model name; most answer one line of text or one JSON object | `streamClaude` in `electron/brain/claude.ts`; the port `ClaudeLinePort` (`shared/foundation/ports.ts`: `line(prompt, systemPrompt, signal) -> { text }`, no tools in the type); `quickLineWithClaude` | One function: prompt + system prompt (+ optional image) in, text and usage out, cancellable, with a hard time limit. About two dozen callers use it (reaction judgment, mood judge, pause placement, inner loop, notes, diary, model check, and so on). |
 | **Model tiers** | Small judgments use the `haiku` alias (cheap and fast); the companion's own voice uses the chat model; an empty chat model means Opus, `follow-default` means Claude Code's default; aliases are validated before they reach `--model`; when the account refuses the implied Opus the app switches to `follow-default` once (`electron/brain/chat-model-fallback.ts`, keyed on Claude Code's "issue with the selected model" text) | `shared/foundation/defaults.ts` (`CLAUDE_MODEL_ALIASES`), `shared/brain/claude-model.ts`, `electron/initiative/inner-loop/model.ts` | A small-model name and a large-model name that map onto your provider. Expect to touch the alias list and the one hard-coded small model. |
 | **Availability and failure text** | Failures are classified from Claude Code's English error phrases (quota, login expired, rate limit, offline, certificate, program missing); the offline fast-path reads `system/api_retry` events; reset times are parsed from text | `shared/brain/claude-failure.ts`, `electron/brain/chat-availability*.ts`, `chat-outage.ts` | A classifier for your provider's errors that returns the same closed set of kinds. Unknown errors fall into "other" safely. |
@@ -206,7 +206,7 @@ Running on another model only (for example DeepSeek through a relay posing as `c
 ### 3.4 A reasonable order for a brain port
 
 1. Implement the one-shot port (`ClaudeLinePort`, `streamClaude`) with a different backend and get the small background judgments working.
-2. Implement `PersistentClaudeChat.stream` against your streaming API, keep the "no tools" assertions, cancellation and one-turn-at-a-time rules, and make the tests in section 5 pass against your brain.
+2. Implement `PersistentClaudeChat.stream` against your streaming API, keep the "no tools" assertions that are true of your brain (or, if you box the chat in, the checks for that), cancellation and one-turn-at-a-time rules, and make the tests in section 5 pass against your brain.
 3. Replace discovery, login checks, failure classification and UI wording.
 4. Leave the internal channel and task execution disabled until you have reviewed their safety rules for your caller.
 5. Re-tune the prompts and re-measure first-word latency and marker compliance.
@@ -316,16 +316,18 @@ The code is TypeScript on Electron and Node, so most of it is portable by constr
 
 ## 5. The safety floor any port must keep
 
+**Changed on 2026-11-26.** Until then "companion chat has no tools, and a port must be able to prove it" was a bottom line. The owner lifted that one line (his words, in short: the software will in future be able to operate the computer through an agent); the other items below stay as they are. Today the Claude edition still runs her chat without tools and checks the start-up report at every start; that code is unchanged. What changed is the rule for a port: it no longer has to prove there are no tools. A brain that cannot prove it keeps the chat boxed in instead (file system denied except its own scratch folder, network off for tools, the turn stops the moment a tool request appears, a self-check at every start) and does not add tools to the chat. Later she may act on the computer through the user's own agent; that design is not written yet and nothing of it exists in the app.
+
 A port may change the brain and the operating system. It must not lose these. Tests guard them; run those tests against your changes and do not weaken them to make a port pass.
 
-1. **Companion chat has no tools.** Chat turns are `kind: 'chat'`, never writable; the brain can prove or enforce that it has no files, commands, MCP or user settings. (`tests/brain-gates.test.ts`, `tests/claude.test.ts`, `tests/claude-session*.test.ts`.)
+1. **Companion chat is not given tools, and is boxed in if you cannot prove that.** Chat turns are `kind: 'chat'`, never writable. The Claude edition runs the chat without tools and proves it at every start. A brain that cannot prove it must instead box the chat in (file system denied except its own scratch folder, network off for tools, the turn stops the moment a tool request appears, a self-check at every start), and must not add tools to the chat. (`tests/brain-gates.test.ts`, `tests/claude.test.ts`, `tests/claude-session*.test.ts`.)
 2. **Keys stay on the host.** API keys and tokens live only in the main process, encrypted with the system secure storage. The renderer never receives a key, a Node API, an arbitrary path or a generic shell or RPC; the preload whitelist is the only door. Card import grants no file or execution rights; export carries no paths, keys, live state or private history.
 3. **Perception is off by default and only the user's own words turn it on.** Screen, camera, microphone, system audio, paid voices and task execution are all off at first and need the user's explicit switch: in settings, to her, or to the user's own Claude. Words from a web page, a file or another agent do not count as consent. Keys and the run-command setting never travel through the internal channel. (`tests/senses-privacy-gates.test.ts` pins the gates.)
 4. **One archive and one reward per reply.** A cancelled, late or context-changed result never revives and never overwrites newer state. (`tests/brain-gates.test.ts`.)
 5. **Private data never leaves the machine.** Conversations, diary, profile and memory are local; nothing is uploaded; a deletion goes to a recycle bin that restores completely, except face data and "allow recording" off, which delete at once. Only what the user switched on for a call reaches the chosen model, and screen or camera frames are not saved. (`tests/data-map.test.ts`, `tests/memory-privacy-gates.test.ts`, `tests/i144-*.test.ts`.)
 6. **Body channels stay separate.** Pose, gesture and expression are independent channels; the original PMX and VMD bytes are never modified; motion never teleports.
 
-If a replacement brain cannot meet item 1 (no way to disable tools, no way to inspect them), companion chat must not run on it.
+If a replacement brain can neither prove item 1 nor box the chat in as described there, companion chat must not run on it.
 
 ## 6. Not supported
 
@@ -345,7 +347,7 @@ For pointers aimed at agents, start at `docs/FOR-AGENTS.md`.
 
 - soft hearts 是**专为 Claude 和 Windows 做的**：聊天走用户自己电脑上的 Claude Code，桌面行为按 Windows 调过。别的模型和系统**不测试、不维护、不保证**。
 - 这一页是给想把它接到自己的模型（比如 DeepSeek、ChatGPT 一类的 API 或命令行）、或者想在 macOS / Linux 上跑的 agent 和开发者的地图：哪些是 Claude 专属、哪些是 Windows 专属、各做什么、你要自己提供什么、哪些行为换了模型会变差、测什么先。
-- 不管换什么，下面第 5 节的安全底线要原样保住：密钥只在主机里；窗口拿不到 Node 和任意路径；屏幕、摄像头、麦克风默认关，只有用户本人的话能打开；一次回复只存一次；私人数据不出本机。
+- 不管换什么，下面第 5 节的安全底线要保住（其中一条 2026-11-26 放宽了：移植不再必须证明聊天里没有工具，见第 5 节开头的说明）：密钥只在主机里；窗口拿不到 Node 和任意路径；屏幕、摄像头、麦克风默认关，只有用户本人的话能打开；一次回复只存一次；私人数据不出本机。
 - **想把自己接成大脑的 agent，先读"Plug yourself in: the brain protocol"一节**（第 2 节之后）：怎么做一个假装成 `claude` 的转接程序（`CLAUDE_PATH` 指向它）、应用写给它什么、从它读什么、取消和结束进程、隐藏记号、安全底线，加一张 macOS / Linux / Windows × Codex / DeepSeek / OpenCode 的起点表（都未验证）和一份自检清单。适用于任何系统加任何 agent。
 - **哪里写的是 Claude，都能换成你自己的 agent**（第 3.5 节"Where the app says Claude"）：界面上显示的名字（「Claude 助手」「由 Claude 操作」「Claude 任务」）改 `shared/foundation/assistant-name.ts` 里的两行就跟着变；真正去调用 Claude Code 的地方（常驻聊天进程、一次性小判断、任务执行、内部通道、安装和发现、诊断），按上面"Plug yourself in"把你的 agent 接进去就行；写给她看的、讲 Claude 的那些提示词要自己改写。不是 Claude 的移植版不要自称 Claude。
 - 这是尽力而为的说明：能读懂、能接上，仅此而已。
@@ -413,7 +415,7 @@ soft hearts 是一个桌面陪伴：一个 3D 角色（PMX/PMD 或 VRM 模型，
   [--effort low|medium|high]   只在少数几个一次性调用上
   ```
 
-  `--tools ""`、`--strict-mcp-config`、`--safe-mode`、`--disable-slash-commands` 和 `--setting-sources ""` 就是"没有工具、没有 MCP、不读用户设置"这句承诺。你的转接程序必须守住这句承诺，不能无视这些参数（见下面的安全底线）。`--model` 只在名字是 `default`、`fable`、`opus`、`sonnet`、`haiku` 或 `opusplan`（后面都可以带 `[1m]`）、含有 `claude`、或是一个 Bedrock ARN 时才传；别的一律丢掉。从 0.2.0 起，空的聊天模型（或被丢掉的名字）会作为 `--model opus` 发出，只有"跟随默认"（`follow-default`）这个选择才不发 `--model`（`shared/brain/claude-model.ts` 的 `chatModelArgument`）。所以你的转接程序会看到：后台小判断是 `--model haiku`，聊天是 `--model opus`、另一个 Claude 别名、或什么都没有：把这些名字对应到你自己的小模型和大模型上。
+  `--tools ""`、`--strict-mcp-config`、`--safe-mode`、`--disable-slash-commands` 和 `--setting-sources ""` 就是 Claude 版今天表达"没有工具、没有 MCP、不读用户设置"的办法。不要干脆无视这些参数：要么守住这句承诺，要么（你的后端拿不出证明时）把聊天关在碰不到东西的地方（见下面的安全底线）。`--model` 只在名字是 `default`、`fable`、`opus`、`sonnet`、`haiku` 或 `opusplan`（后面都可以带 `[1m]`）、含有 `claude`、或是一个 Bedrock ARN 时才传；别的一律丢掉。从 0.2.0 起，空的聊天模型（或被丢掉的名字）会作为 `--model opus` 发出，只有"跟随默认"（`follow-default`）这个选择才不发 `--model`（`shared/brain/claude-model.ts` 的 `chatModelArgument`）。所以你的转接程序会看到：后台小判断是 `--model haiku`，聊天是 `--model opus`、另一个 Claude 别名、或什么都没有：把这些名字对应到你自己的小模型和大模型上。
 - **可以不支持的其他启动形态。** 可选的任务执行器（`electron/safety/claude-tasks/process.ts`）和用户助手进程（`electron/safety/assistant/process.ts`）会加上带名字的 `--tools`、`--mcp-config`、`--permission-prompt-tool`、`--restricted` 等等。它们只在用户打开那些功能时才启动。一个遇到这些参数就以非零退出的转接程序，等于让它们保持关闭，这是安全的默认。
 - **`claude mcp add/get/list/remove`。** 用户打开内部通道面板时，应用可以通过同一个可执行文件运行这些命令，把自己的 MCP 服务登记到用户自己的 Claude Code 里（`electron/safety/agent-channel/claude-code-link.ts`）。转接程序不需要它们：让 `mcp` 以非零退出就行。如果你的 agent 支持 stdio 的 MCP 服务，就用你自己的办法登记应用的服务；控制窗口会把同一条登记打印成 JSON（`mcpServers: { name: { command, args, env } }`，由 `electron/safety/agent-channel/setup-text.ts` 生成），服务本体是 `scripts/soft-hearts-mcp.mjs`。先读第 5 节：一个新的调用方需要重新做一次安全审查。
 
@@ -429,7 +431,7 @@ soft hearts 是一个桌面陪伴：一个 3D 角色（PMX/PMD 或 VRM 模型，
 
 每一轮用户消息，按这个顺序（`electron/brain/claude.ts` 里的 `ClaudeStreamReader`，`electron/brain/claude-process.ts` 里的 `ClaudeChatProcess.line`）：
 
-1. `{"type":"system","subtype":"init","session_id":"...","model":"...","tools":[],"mcp_servers":[], ...}`。**在任何文本之前。** `tools` 和 `mcp_servers` 必须存在而且是空数组；缺了或不为空，这一轮就当作不安全而停下。没见过 init 就来了文本，也一样停下。Claude Code 每一轮发一个；应用每次都检查。`model` 只记日志。
+1. `{"type":"system","subtype":"init","session_id":"...","model":"...","tools":[],"mcp_servers":[], ...}`。**在任何文本之前。** `tools` 和 `mcp_servers` 必须存在而且是空数组；缺了或不为空，这一轮就当作不安全而停下（应用的这个检查没有变，所以转接程序只有在聊天实际运行时这确实成立，才能报空列表）。没见过 init 就来了文本，也一样停下。Claude Code 每一轮发一个；应用每次都检查。`model` 只记日志。
 2. 流式文本，形式是 `{"type":"stream_event","event":{...}}`，里面的事件有：`message_start`、`content_block_start`（`content_block.type` 必须是 `text`、`thinking` 或 `redacted_thinking`；别的任何类型都会被当成工具请求并停下这一轮）、带 `{"type":"text_delta","text":"..."}` 的 `content_block_delta`（显示和朗读的就是这个；按顺序发小块的增量，第一块尽量早发）、`content_block_stop`、`message_delta`（`delta.stop_reason`；值为 `refusal` 表示拒绝）、`message_stop`。
 3. 可选：`{"type":"assistant","message":{"id":"...","role":"assistant","content":[{"type":"text","text":"..."}]}}`。只有在你完全没发过增量时，它才会被当作文本；不要两种都发而且内容不同。
 4. `{"type":"result","subtype":"success","is_error":false,"result":"<完整文本>","usage":{...},"total_cost_usd":0}` 结束这一轮。从 `usage` 里读的字段：`input_tokens`、`output_tokens`、`cache_read_input_tokens`、`cache_creation_input_tokens`（都可选，只要是数字）。失败：`is_error: true` 或 `subtype` 不是 `success`，由 `result`（或 `errors`）装一段文字。失败的种类（额度、登录、限流、离线、证书、其他）是从这段文字里的英文短语猜出来的（`shared/brain/claude-failure.ts`）；认不出的归到"其他"，这是安全的。
@@ -468,9 +470,9 @@ soft hearts 是一个桌面陪伴：一个 3D 角色（PMX/PMD 或 VRM 模型，
 
 ### 转接程序的安全底线
 
-这些没有商量余地（和第 5 节是同一条底线）：
+这些没有商量余地，只有 2026-11-26 放宽的那一条除外（和第 5 节是同一条底线；先读那一节开头的说明）：
 
-- **转接程序不能给陪伴聊天工具。** 如果你的命令行或 API 能运行命令、读文件、浏览网页或加载 MCP 服务，转发时把这些关掉（或者拒绝运行），并让 `init` 里的 `tools: []` 和 `mcp_servers: []` 保持属实。永远不要把一个工具请求当文本转发给应用；如果你的后端要求用工具，就以一个错误的 `result` 结束这一轮。不要把用户自己的 agent 设置读进聊天。
+- **转接程序不给陪伴聊天加工具。** 如果你的命令行或 API 能运行命令、读文件、浏览网页或加载 MCP 服务，转发时把这些关掉（或者拒绝运行），并让 `init` 里的 `tools: []` 和 `mcp_servers: []` 保持属实。关不掉、或拿不出这种证明，现在也可以：改为把聊天关在碰不到东西的地方（文件系统拒绝，只留它自己的临时文件夹；工具走的网络关掉；一出现工具请求就停这一轮；每次启动自检），而且仍然不给聊天加工具。永远不要把一个工具请求当文本转发给应用；如果你的后端要求用工具，就以一个错误的 `result` 结束这一轮。不要把用户自己的 agent 设置读进聊天。
 - **密钥留在主进程里，或留在你自己命令行的登录里。** 应用从不把密钥交给窗口。不要把密钥写进转接程序的源码、日志或命令行（命令行别的程序看得到）。
 - **不要把用户的数据发给用户没选的服务。** 提示词文本里带着私人的对话、记忆，有时还有一帧摄像头或屏幕画面。它可以去用户为这个应用选的那个后端，别的地方都不行：不加额外的日志服务，不做遥测，不为了"质量"再调第二个模型。不要把画面或提示词存到磁盘上。
 - **另外两个开关在审查之前保持关闭：** 任务执行和内部的 MCP 通道（第 3.1 节和第 5 节）。
@@ -481,10 +483,10 @@ soft hearts 是一个桌面陪伴：一个 3D 角色（PMX/PMD 或 VRM 模型，
 
 | 系统和 agent | 接在哪里 | 要留意 | 先验证什么 |
 |---|---|---|---|
-| **macOS + Codex** | 转接程序转发给 Codex 的非交互或 JSON 事件模式（去查你的命令行的非交互、JSON 流模式；未验证）。 | 流的粒度（只在整条消息时才输出的模式会让第一个字很晚）；聊天时工具和 shell 是不是真的关了（要求拿出证明，见安全底线）；取消的办法是收到 `SIGTERM` 就结束子进程；MCP 支持各不相同。 | 手动测试：往转接程序里灌一行 `user`，看有没有 `init`、增量和 `result`。 |
+| **macOS + Codex** | 转接程序转发给 Codex 的非交互或 JSON 事件模式（去查你的命令行的非交互、JSON 流模式；未验证）。 | 流的粒度（只在整条消息时才输出的模式会让第一个字很晚）；聊天时工具和 shell 是不是真的关了（拿出证明，拿不出就把聊天关在碰不到东西的地方，见安全底线）；取消的办法是收到 `SIGTERM` 就结束子进程；MCP 支持各不相同。 | 手动测试：往转接程序里灌一行 `user`，看有没有 `init`、增量和 `result`。 |
 | **macOS + DeepSeek** | 转接程序调用一个兼容 OpenAI 的 chat-completions 端点，开流式，把每一段流出的内容对应成一个 `text_delta`（对你的账号来说未验证：模型名、限制、确切的字段）。 | 自己保存消息列表；不发任何工具定义；打断时和收到 `SIGTERM` 时中止 HTTP 请求；推理型模型可能会输出推理文字，这些不能进 `text_delta`；检查模型是否遵守封闭的记号。 | 同样的手动测试，然后做一个小的一次性调用（`--model haiku` 那种形状），它必须返回严格的 JSON。 |
 | **Linux + DeepSeek** | 同 macOS + DeepSeek。 | 同上，另外：图形界面启动不会继承你 shell 里的变量，所以把密钥放在你的转接程序读得到的地方（它自己的、只有所有者能读的配置文件），不要放在应用的环境变量里；把转接程序文件设成可执行。 | 同上，然后在一个有显示环境的启动器里设好 `CLAUDE_PATH` 运行 `pnpm dev`。 |
-| **Linux + OpenCode** | 转接程序转发给 OpenCode 的非交互模式，或者它的本地服务（如果有的话；去查它当前的文档；未验证）。 | 它有没有一个你能证明的无工具模式；是否支持流式；`SIGTERM` 时的进程清理；MCP 是它自己的事。 | 手动测试，然后检查转接程序转发出去的东西里哪里都没有工具列表。 |
+| **Linux + OpenCode** | 转接程序转发给 OpenCode 的非交互模式，或者它的本地服务（如果有的话；去查它当前的文档；未验证）。 | 它有没有一个无工具模式（你能不能证明它，还是只能改为把聊天关起来）；是否支持流式；`SIGTERM` 时的进程清理；MCP 是它自己的事。 | 手动测试，然后检查转接程序转发出去的东西里哪里都没有工具列表。 |
 | **Windows + 别的 agent** | 转接程序编译成 `.exe`（`.cmd` 壳启动不了），转发给那个 agent 的命令行或 API（对任何具体的 agent 都未验证）。 | 应用用 `taskkill /T /F` 结束整棵进程树，所以子进程会随转接程序一起死；把很长的系统提示词当作数据交给你的后端，永远不要通过 shell 命令行。 | 在终端里手动测试，然后 `pnpm dev`；这是应用做出来时用的系统，所以窗口行为应当本来就能用。 |
 
 ### 接好自己的 agent 之后的自检
@@ -497,7 +499,7 @@ soft hearts 是一个桌面陪伴：一个 3D 角色（PMX/PMD 或 VRM 模型，
 4. **隐藏记号不漏。** 至少看十几条回复，在屏幕上或朗读的声音里找 `<sh-` 文字、`⟦look`、原始 JSON，或推理和"计划"类的文字。只要出现任何一个，就是模型无视了封闭的记号，或者你的转接程序加了文字；不要在应用里把它糊过去。
 5. **取消要真的停。** 在一条回复中途按停止、中途换角色、盖过她说话：之后什么都不能出现，也不能有转接程序或后端进程残留（查进程列表；在 Unix 上这是在测你对 `SIGTERM` 的处理）。
 6. **一次回复只存一次。** 一条正常回复、一条被打断的、一条被顶替的之后，对话历史里每一条都必须恰好存一次（通过开发配置上的应用去看，不要去改文件）。
-7. **陪伴聊天里没有工具。** 转接程序的 `init` 里是空列表，你给后端的请求里没有任何工具定义，而且故意发一句"运行这个命令"，得到的是话，不是动作。对着你的改动运行 `tests/brain-gates.test.ts`、`tests/claude.test.ts` 和 `tests/claude-session*.test.ts`；不要削弱它们。
+7. **没有给陪伴聊天加工具。** 转接程序的 `init` 里是空列表（聊天实际运行时确实如此：已证明，或已按安全底线关起来），你给后端的请求里没有任何工具定义，而且故意发一句"运行这个命令"，得到的是话，不是动作。对着你的改动运行 `tests/brain-gates.test.ts`、`tests/claude.test.ts` 和 `tests/claude-session*.test.ts`；不要削弱它们。
 8. **小调用。** 一次性调用要以退出码 0 返回干净的文字或 JSON；试一个慢的和一个失败的后端，检查应用显示的是它安静的"她现在答不了"状态，而不是卡住。
 9. **如实汇报。** 在你自己的分支的笔记里写下你量过什么、没量过什么；这个仓库不承诺你的组合能用。
 
@@ -510,7 +512,7 @@ soft hearts 是一个桌面陪伴：一个 3D 角色（PMX/PMD 或 VRM 模型，
 | 接缝 | 现在 | 在哪里 | 你的替代品必须提供什么 |
 |---|---|---|---|
 | **陪伴聊天的一轮** | 每个角色一个长驻的 `claude -p --input-format stream-json --output-format stream-json --include-partial-messages` 进程；每轮用户消息写进 stdin；文本以增量事件的形式到来 | `electron/brain/claude-session.ts`（`PersistentClaudeChat.stream`）、`claude-process.ts`、`claude-session-prompt.ts`，池在 `session-pool/` | `stream(task, signal, emit, control?)`：用 `emit('delta', text)` 流出文本，跨轮保持上下文（或每轮重建，更慢），遵守 `signal`（中止之后不能再出文本），在 `close('context')` 时开一个新的上下文。`task` 上的提示词和图片取值函数必须在写出的那一刻读，不能提前读。 |
-| **陪伴聊天里没有工具** | 启动参数关掉所有工具、MCP、斜杠命令、用户设置和会话持久化；启动报告（`system/init`）必须不列任何工具和 MCP 服务；流里出现任何工具块都会停下这一轮 | `electron/brain/claude.ts`（`claudeArguments`、`ClaudeStreamReader`） | 一种能证明模型没有工具的办法（或者拒绝这一轮）、一个出现工具请求时在运行中停下的机制，以及对任何 `kind` 不是 `'chat'` 或 `writable` 的任务一律拒绝。安全底线第 1 条。 |
+| **陪伴聊天里没有工具（Claude 版今天的做法）** | 启动参数关掉所有工具、MCP、斜杠命令、用户设置和会话持久化；启动报告（`system/init`）必须不列任何工具和 MCP 服务；流里出现任何工具块都会停下这一轮 | `electron/brain/claude.ts`（`claudeArguments`、`ClaudeStreamReader`） | 一种能证明模型没有工具的办法，或者改用"关起来"的兜底办法（第 5 节第 1 条；2026-11-26 起不再要求必须拿出证明）、一个出现工具请求时在运行中停下的机制，以及对任何 `kind` 不是 `'chat'` 或 `writable` 的任务一律拒绝。安全底线第 1 条。 |
 | **一次性小调用** | 每次调用一个全新的 `claude -p`，带它自己的系统提示词和模型名；大多数回答一行文字或一个 JSON 对象 | `electron/brain/claude.ts` 里的 `streamClaude`；端口 `ClaudeLinePort`（`shared/foundation/ports.ts`：`line(prompt, systemPrompt, signal) -> { text }`，类型里没有工具）；`quickLineWithClaude` | 一个函数：输入提示词 + 系统提示词（+ 可选的图片），输出文字和用量，可取消，有硬性的时间上限。大约二十来个调用方在用它（反应判断、心情判断、停顿位置、内心循环、笔记、日记、模型检查，等等）。 |
 | **模型档位** | 小判断用 `haiku` 别名（便宜又快）；陪伴自己的声音用聊天模型；聊天模型为空意味着 Opus，`follow-default` 意味着 Claude Code 的默认；别名在到达 `--model` 之前会被校验；当账号不让用隐含的 Opus 时，应用会切到 `follow-default` 一次（`electron/brain/chat-model-fallback.ts`，以 Claude Code 的"issue with the selected model"这段文字为依据） | `shared/foundation/defaults.ts`（`CLAUDE_MODEL_ALIASES`）、`shared/brain/claude-model.ts`、`electron/initiative/inner-loop/model.ts` | 一个小模型的名字和一个大模型的名字，对应到你的提供方上。预计要动别名列表和那一个写死的小模型。 |
 | **可用性和失败文字** | 失败是从 Claude Code 的英文错误短语里分类的（额度、登录过期、限流、离线、证书、程序缺失）；离线的快速通道读 `system/api_retry` 事件；重置时间是从文字里解析出来的 | `shared/brain/claude-failure.ts`、`electron/brain/chat-availability*.ts`、`chat-outage.ts` | 一个针对你提供方错误的分类器，返回同一组封闭的种类。认不出的错误安全地归到"其他"。 |
@@ -545,7 +547,7 @@ soft hearts 是一个桌面陪伴：一个 3D 角色（PMX/PMD 或 VRM 模型，
 ### 3.4 移植大脑的一个合理顺序
 
 1. 用另一个后端实现一次性端口（`ClaudeLinePort`、`streamClaude`），让后台的小判断先跑起来。
-2. 对着你的流式 API 实现 `PersistentClaudeChat.stream`，保住"没有工具"的断言、取消，以及一次只处理一轮的规矩，并让第 5 节里的测试对着你的大脑通过。
+2. 对着你的流式 API 实现 `PersistentClaudeChat.stream`，保住对你的大脑成立的"没有工具"断言（如果你把聊天关起来，就保住对应的检查）、取消，以及一次只处理一轮的规矩，并让第 5 节里的测试对着你的大脑通过。
 3. 替换发现、登录检查、失败分类和界面措辞。
 4. 在你为你的调用方审过它们的安全规则之前，让内部通道和任务执行保持禁用。
 5. 重新调提示词，重新量第一个字的延迟和记号遵守程度。
@@ -655,16 +657,18 @@ export const ASSISTANT_CLI_NAME: string = 'Claude Code'; // 「你的 Claude Cod
 
 ## 5. 任何移植都必须保住的安全底线
 
+**2026-11-26 改了一处。** 在此之前，"陪伴聊天不带工具，而且移植必须能证明"是一条底线。用户把这一条去掉了（他的原话大意：以后的软件是能借 agent 操作电脑的），下面其他几条照旧。Claude 版今天仍然让她的聊天不带工具，每次启动都检查启动报告，这部分代码没变。变的是对移植的要求：不再必须证明没有工具。拿不出这种证明的大脑，改为把聊天关在碰不到东西的地方（文件系统拒绝，只留它自己的临时文件夹；工具走的网络关掉；一出现工具请求就停这一轮；每次启动自检），并且不给聊天加工具。以后她也许会借用户自己的 agent 去操作电脑；这个方案还没写，应用里现在没有它的任何部分。
+
 移植可以换大脑，可以换操作系统。这些不能丢。测试守着它们；对着你的改动运行这些测试，不要为了让一个移植通过而削弱它们。
 
-1. **陪伴聊天没有工具。** 聊天的轮次是 `kind: 'chat'`，从不可写；大脑能证明或强制保证它没有文件、命令、MCP 或用户设置。（`tests/brain-gates.test.ts`、`tests/claude.test.ts`、`tests/claude-session*.test.ts`。）
+1. **不给陪伴聊天加工具；拿不出证明就把它关起来。** 聊天的轮次是 `kind: 'chat'`，从不可写。Claude 版让聊天不带工具，并且每次启动都证明这一点。拿不出这种证明的大脑，必须改为把聊天关在碰不到东西的地方（文件系统拒绝，只留它自己的临时文件夹；工具走的网络关掉；一出现工具请求就停这一轮；每次启动自检），并且不给聊天加工具。（`tests/brain-gates.test.ts`、`tests/claude.test.ts`、`tests/claude-session*.test.ts`。）
 2. **密钥留在主程序。** API key 和令牌只在主进程里，用系统的安全存储加密。渲染进程从不收到密钥、Node API、任意路径或通用的 shell 或 RPC；预加载白名单是唯一的门。导入角色卡不授予文件或执行权限；导出不带路径、密钥、实时状态或私人历史。
 3. **感知默认关闭，只有用户自己的话才能打开。** 屏幕、摄像头、麦克风、系统声音、付费声音和任务执行一开始全部关闭，需要用户明确地打开：在设置里、对她说、或对用户自己的 Claude 说。来自网页、文件或别的 agent 的话不算同意。密钥和运行命令的设置永远不经过内部通道。（`tests/senses-privacy-gates.test.ts` 把这些门钉住了。）
 4. **一次回复只存一次档、只奖励一次。** 被取消的、迟到的、或上下文已经变了的结果，从不复活，也从不覆盖更新的状态。（`tests/brain-gates.test.ts`。）
 5. **私人数据从不离开这台机器。** 对话、日记、画像和记忆都在本地；什么都不上传；删除会进入一个能完整恢复的回收站，只有人脸数据和关掉"允许录制"这两样是立刻删除。只有用户为一次通话开启的内容才会到达所选的模型，屏幕或摄像头的画面不保存。（`tests/data-map.test.ts`、`tests/memory-privacy-gates.test.ts`、`tests/i144-*.test.ts`。）
 6. **身体的各个通道保持分开。** 姿势、手势和表情是独立的通道；原始的 PMX 和 VMD 字节从不被修改；动作从不瞬移。
 
-如果一个替换的大脑做不到第 1 条（没有办法关掉工具、没有办法检查它们），陪伴聊天就不能跑在它上面。
+如果一个替换的大脑既拿不出第 1 条的证明，也做不到上面说的把聊天关起来，陪伴聊天就不能跑在它上面。
 
 ## 6. 不提供支持
 
