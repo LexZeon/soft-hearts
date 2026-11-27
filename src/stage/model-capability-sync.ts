@@ -35,6 +35,11 @@ export interface ModelCapabilitySyncState {
   loaded: boolean;
   /** haiku found parts this load of the stage does not use yet: they take effect the next time the model loads. */
   waitingForReload: boolean;
+  /**
+   * 2026-11-27: the host's record for this load was read (matched or not) or could not be read: the page no longer says it is reading.
+   * Absent (older callers, tests): treated as not yet.
+   */
+  settled?: boolean;
   /** T-213: her actions on this model (the stage's own pre-play rule), fingers left out, bones hanging elsewhere than in Gene. */
   adaptation: ModelAdaptation | null;
 }
@@ -45,6 +50,8 @@ export interface ModelCapabilitySyncOptions {
   onChange?(state: ModelCapabilitySyncState): void;
   /** Waits before asking again when the host's profile copy has not arrived yet (it is written right after the stage builds it). */
   retryDelaysMs?: readonly number[];
+  /** 2026-11-27: one read of the host's record that has not answered after this long counts as a failed attempt (default 10 s). */
+  readTimeoutMs?: number;
   wait?(ms: number): Promise<void>;
 }
 
@@ -64,6 +71,7 @@ export class ModelCapabilitySync {
   private record: ModelCapabilityRecord | null = null;
   private card: ModelCapabilities | null = null;
   private checking = false;
+  private settledRead = false;
   private disposed = false;
   private running: Promise<void> = Promise.resolve();
 
@@ -74,7 +82,7 @@ export class ModelCapabilitySync {
     // The same names and haiku matches as the card (derive below); the stage applies the same rule before it plays an action.
     const adaptation = profile ? modelAdaptation(profile, this.modelKey ? this.record?.haiku ?? {} : {}) : null;
     return { modelKey: this.modelKey, targetKey: this.targetKey, card: this.card, record: this.record ? structuredClone(this.record) : null,
-      checking: this.checking, loaded: !!profile,
+      checking: this.checking, loaded: !!profile, settled: this.settledRead,
       waitingForReload: !!this.modelKey && !!this.source && matchesWaiting(this.record, this.source.fromHaiku), adaptation };
   }
 
@@ -86,9 +94,12 @@ export class ModelCapabilitySync {
     if (this.disposed) return;
     if (this.source !== source) this.source?.releaseCheckInput();
     const generation = ++this.generation;
-    this.source = source; this.modelKey = this.targetKey = null; this.record = null; this.checking = false; this.card = null;
+    this.source = source; this.modelKey = this.targetKey = null; this.record = null; this.checking = false; this.card = null; this.settledRead = false;
     this.notify();
-    this.running = new Promise<void>(resolve => queueMicrotask(() => { this.attach(generation, source).catch(() => {}).finally(resolve); }));
+    this.running = new Promise<void>(resolve => queueMicrotask(() => {
+      // Whatever happens in the read, the page stops saying it is reading (2026-11-27: it said so for good on a fresh profile).
+      this.attach(generation, source).catch(() => {}).finally(() => { if (generation === this.generation && !this.settledRead) { this.settledRead = true; this.notify(); } resolve(); });
+    }));
   }
 
   /** Resolves once the latest model's record is read and its check (if any) has finished. */
@@ -99,7 +110,7 @@ export class ModelCapabilitySync {
     if (this.disposed) return;
     this.generation++;
     this.source?.releaseCheckInput();
-    this.source = null; this.modelKey = this.targetKey = null; this.record = null; this.checking = false; this.card = null;
+    this.source = null; this.modelKey = this.targetKey = null; this.record = null; this.checking = false; this.card = null; this.settledRead = false;
     this.notify();
   }
 
@@ -138,11 +149,11 @@ export class ModelCapabilitySync {
       if (attempt) await wait(delays[attempt - 1]);
       if (generation !== this.generation) return;
       let view: ModelCapabilityView;
-      try { view = await this.options.api.getModelCapabilities(); } catch { continue; }
+      try { view = await this.readOnce(); } catch { continue; }
       if (generation !== this.generation) return;
       last = view;
       if (view.modelKey && acceptCachedProfile(view.profile, identity)) {
-        this.modelKey = this.targetKey = view.modelKey; this.record = view.record;
+        this.modelKey = this.targetKey = view.modelKey; this.record = view.record; this.settledRead = true;
         this.push(this.derive());
         break;
       }
@@ -150,13 +161,23 @@ export class ModelCapabilitySync {
     if (generation !== this.generation) return;
     if (!this.modelKey) {
       // Not matched (the host has no profile copy for its model): the user's choices still apply; nothing is written.
-      this.targetKey = last?.modelKey ?? null; this.record = last?.record ?? null;
-      this.push(this.derive());
+      this.targetKey = last?.modelKey ?? null; this.record = last?.record ?? null; this.settledRead = true;
+      let card: ModelCapabilities | null = null;
+      try { card = this.derive(); } catch { card = null; }
+      this.push(card);
       source.releaseCheckInput();
       return;
     }
     if (recordChecked(this.record)) { source.releaseCheckInput(); return; }
     await this.check(generation, source, this.modelKey);
+  }
+
+  /** One read of the host's record; one that does not answer within readTimeoutMs counts as a failed attempt (never a page stuck reading). */
+  private readOnce(): Promise<ModelCapabilityView> {
+    const ms = this.options.readTimeoutMs ?? 10_000;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const late = new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error('model check read timed out')), ms); (timer as { unref?: () => void }).unref?.(); });
+    return Promise.race([this.options.api.getModelCapabilities(), late]).finally(() => clearTimeout(timer));
   }
 
   private async check(generation: number, source: CheckableModelProfile, modelKey: string): Promise<void> {

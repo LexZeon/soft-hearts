@@ -16,6 +16,7 @@ import { fileURLToPath } from 'node:url';
 const PAGES: Array<{ file: string; images: string }> = [
   { file: 'START-HERE.md', images: 'docs/images/' },
   { file: 'docs/release-notes/v0.2.0.md', images: '../images/' },
+  { file: 'docs/release-notes/v0.2.1.md', images: '../images/' },
   { file: 'ACKNOWLEDGEMENTS.md', images: 'docs/images/' },
   { file: 'docs/PORTING.md', images: 'images/' },
   { file: 'docs/FOR-AGENTS.md', images: 'images/' },

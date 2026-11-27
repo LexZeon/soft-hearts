@@ -49,6 +49,7 @@
 - **桌宠里拉她的报告（I-136 5a，预加载 `petTouch`）只认显示着、没最小化的桌宠窗口**，只取拉的固定字段（部位、左右、力度、方向、按了多久、怎么结束），主机加上种类、地点和自己的时间，再过 `parseTouchEvent`：`electron/mood/touch/pet-touch.ts`。测试：`tests/pull-session.test.ts`；变异 `scripts/dev/mutations/mood.json` PULL7–PULL9。
 - **直接互动只收可交互的桌宠窗口**：要看得见、没最小化、没在被拖、有模型；别的窗口送来的一律拒绝。音乐层级也只收桌宠窗口的。测试：`tests/mood-gates.test.ts`。
 - **红晕校准只对正在用的模型读写**：读到一半换了模型，就报错让你重读，不会存到别的模型名下。测试：`tests/mood-gates.test.ts`。
+- **模型身份（`keyForModel`，很多部分共用：体检档案、红晕校准、动作打分、物理调参、贴图……）**：普通文件前后各看一次大小和时间，读的过程中变了就拒绝。打包版里软件自己的 `app.asar` 里面的预装模型（Mumi、One）例外：asar 视图每次都报"现在"的时间，所以改用这个包在真实磁盘上的签名（启动后不能变）加上包内路径和大小（`own-app-archive.ts`）；"是不是自己的包"按 `app.getAppPath()` 定，不看路径里的字。审过的 Gene 仍走它自己的固定大小和哈希。测试 `tests/asar-model-identity.test.ts`，变异 `ASAR-*`。
 - **心情参数先核开发者模式和是哪个角色，再存**：先存卡，再给心情宿主，再通知窗口。测试：`tests/mood-gates.test.ts`。
 - **她藏起来时不判断**：反应和心情调整员在她看不见时不调模型；她在回复时，常驻的 haiku 不重建。测试：`tests/mood-gates.test.ts`。
 - **困倦**：退出时活动关上；只有处理函数都注册完，才算"准备好"；回复用的困倦只读那句话自己的范围和角色。测试：`tests/mood-gates.test.ts`、`tests/sleep-entry-ready.test.ts`。

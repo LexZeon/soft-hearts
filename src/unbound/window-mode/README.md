@@ -14,12 +14,12 @@
 |---|---|
 | `index.ts` | 对外只经这里：`createWindowStage`（桌宠窗口给引擎的口子，控制窗口给预览的口子和授权；个人感强度从页面存储读）、`followWindowStyle`（强度一变就地用上）、`UnboundWindowStage` |
 | `window-style.ts` | "个人感"强度（0..1），存在这个配置的页面存储里（`localStorage` 键 `soft-hearts.window-style.v1`）；读不到就是 0。已删的开关存在 `soft-hearts.window-engine.v1`（`{on, style}`），新键没值时读它的 `style` 一次，其余忽略；`watchWindowStyle`（别的页面改了就地用上）、`announceWindowStyle`（写的那一页自己听不到 `storage` 事件，写完告诉这一页） |
-| `preview-port.ts` | **安全线（第 7 批）**：控制窗口的预览能问主机的：引擎的口子（旧舞台在控制窗口本来就调的几个读；她的动作的回报留在这里不出去，自动身体动作的计划拒绝）和预览授权（个性化眉眼 / 表情 / 姿势的回执和授权、动作库的预览文件、模型档案和动作适配分数）。没有感知，没有 Unbound |
-| `host-ports.ts` | **安全线**：引擎能问主机的只有这里挑出来的方法：是不是审过的 Gene；第 5 批加了旧舞台在同一个窗口本来就调的几个：聊天手势、她的动作、行为表情、自动身体动作的资源和计划（读），以及她的动作的回报（`reportHerAction`，唯一一个写，告诉主机做了没有）；第 6 批加了她自己的生活里托腮、趴着的授权（`resolveHerLifeMotion`，读）。音乐不经这里：样本只在你开着「和她一起听」时由接线送来 |
+| `preview-port.ts` | **安全线（第 7 批）**：控制窗口的预览能问主机的：引擎的口子（旧舞台在控制窗口本来就调的几个读；她的动作的回报留在这里不出去，自动身体动作的计划拒绝）和预览授权（个性化眉眼 / 表情 / 姿势的回执和授权、动作库的预览文件、动作适配分数的保存）。模型体检档案的读和存在引擎的口子里（2026-11-27）。没有感知，没有 Unbound |
+| `host-ports.ts` | **安全线**：引擎能问主机的只有这里挑出来的方法：是不是审过的 Gene；第 5 批加了旧舞台在同一个窗口本来就调的几个：聊天手势、她的动作、行为表情、自动身体动作的资源和计划（读），以及她的动作的回报（`reportHerAction`，唯一一个写，告诉主机做了没有）；第 6 批加了她自己的生活里托腮、趴着的授权（`resolveHerLifeMotion`，读）；2026-11-27 加了模型体检档案的读和存（`getModelProfile`、`saveModelProfile`：旧舞台每次载入模型都调；主机只收当前模型内容身份下的档案，档案里只有部位名字和量出的数，没有路径）。音乐不经这里：样本只在你开着「和她一起听」时由接线送来 |
 | `window-stage.ts` | 舞台接口（`src/stage/stage-surface.ts`）的 Unbound 实现：画布、载入模型、每一帧、点击穿透的像素探针；只做接线。载入、换模型时淡入淡出的时长读 `shared/stage/presence-times.ts`（入 420 ms、出 320 ms，旧舞台同一对数，I-176 prep） |
 | `window-readouts.ts` | **I-176**：画布上的诊断读数。老舞台往画布 `dataset` 里写约 40 个字段，给开发者模式、预试用和真应用冒烟脚本读；窗口只写了两个，删老舞台时补上脚本读的那些（旧名字、旧键）：`presence` 一直写，其余只在开发者模式写——`frameClock`、`poseContinuity`（可见骨头的跳变监视，窗口没有显示守卫，数的是守卫本会接住的）、`moodFeedback`、`cheekPinch`、`chatGesture`、`behaviorMotion`、`bodyMotion`、`motionTransition`（交还的桥）、`modelPhysics`、`crying`、`music`（2026-11-26：听没听到、是不是音乐、她选的档、舞让给了谁、身上显示了多少、写了几帧，`window-music.ts` 的 `readout()`）。只写画布，不读不写别的 |
 | `window-view.ts` | （头的区域用共用的 `../her/head-region.ts`）桌宠自己的相机和取景（跟着 Unbound 的地面抬高）、眼睛在窗口上的位置、脸的位置（气泡）、头的区域（摸头、喂食的嘴、捏脸的脸颊） |
-| `window-model.ts` | 模型一载入（她还没动）就量的：包围盒、动作换算（和它的合身检查）、画像、程序红晕；第 5 批起载入模型本身（`loadWindowModel`）和"是不是审过的默认站姿"的检查也在这里 |
+| `window-model.ts` | 模型一载入（她还没动）就量的：包围盒、动作换算（和它的合身检查）、画像、程序红晕；第 5 批起载入模型本身（`loadWindowModel`）和"是不是审过的默认站姿"的检查也在这里。2026-11-27：载入时读主机存的体检档案（对得上就用它，haiku 认出的部位一起带上；存好的动作打分照旧只给控制窗口的合身检查），没有就在载入后（不挡第一帧）存一次（`src/stage/model-profile-save.ts`，失败写日志、下次载入再存）；测试 `tests/model-checkup-saved.test.ts`，变异 `checkup-*` |
 | `window-pose-layers.ts` | 2026-11-21：设置里的动作层变成引擎播放的片段；没选姿势层时放默认站姿（主机的 `getRestStand`，规则在 `shared/actions/rest-stand.ts`，和全屏一样），它载不进来就不放（记录） |
 | `window-liveliness.ts` | 第 3 批：一帧里程序生命 → 脸 → 睡姿和睡着的身体 → 看谁 → 身体，合在一处；舞台和 Gene 测试跑的都是它 |
 | `window-pinch.ts` | 捏脸（第 3 批）：旧舞台的 `CheekPinchMotion`，输出变成头、脖子、上身、髋的目标 |

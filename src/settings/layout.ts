@@ -46,7 +46,7 @@ export function renderControls(app: HTMLElement): void {
     <div class="brand"><div class="brand-mark">${icon("spark")}</div><div><span class="brand-name">soft hearts</span><small>3D DESKTOP COMPANION</small></div></div>
     <div class="sidebar-label">你的桌面伙伴</div>
     ${renderControlNavigation()}
-    <div class="sidebar-bottom"><div class="local-badge"><span class="dot"></span>本地桌面应用</div><small>为长久的陪伴，留一点空间。</small><span class="version"><b>v0.2.0</b></span></div>
+    <div class="sidebar-bottom"><div class="local-badge"><span class="dot"></span>本地桌面应用</div><small>为长久的陪伴，留一点空间。</small><span class="version"><b>v0.2.1</b></span></div>
   </aside>
   <div class="shell">
     <header class="topbar pet-recovery-topbar"><div><span class="eyebrow">YOUR LITTLE CORNER</span><h1 id="page-title">陪伴对话</h1></div><div class="top-status pet-recovery-status"><button id="show-pet" class="pet-recovery-button" type="button" title="显示桌宠，保留位置和镜头">${icon("eye")}<span>显示桌宠</span></button><button id="recover-pet" class="primary pet-recovery-button" type="button" title="居中显示，恢复默认大小与镜头；保留模型和连接">${icon("refresh")}<span>一键恢复桌宠</span></button><button id="user-profile-toggle" type="button" aria-controls="user-profile-panel" aria-expanded="false">用户画像</button><button id="notice-details" class="notice-details-button" type="button" hidden>查看问题详情</button><span id="privacy-indicator" class="privacy-pill">${icon("shield")} 输入与共享已关闭</span><span id="provider-badge" class="connection-pill">未连接</span></div></header>

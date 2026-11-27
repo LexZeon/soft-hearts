@@ -979,8 +979,8 @@
   "id": "S21-handbook-bundled",
   "part": "safety",
   "file": "package.json",
-  "find": "\"release-notes/v0.2.0.md\"] }",
-  "replace": "\"release-notes/v0.2.0.md\"] },\n      { \"from\": \"handbook\", \"to\": \"assistant-docs/handbook\", \"filter\": [\"*.md\"] }",
+  "find": "\"release-notes/v0.2.1.md\"] }",
+  "replace": "\"release-notes/v0.2.1.md\"] },\n      { \"from\": \"handbook\", \"to\": \"assistant-docs/handbook\", \"filter\": [\"*.md\"] }",
   "what": "软件包又把整个开发手册（含想法页里的用户原话）打进 assistant-docs",
   "tests": [
    "tests/user-manuals.test.ts",

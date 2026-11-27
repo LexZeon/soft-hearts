@@ -13,7 +13,7 @@ import { UnboundFigure, loadModel as loadFigureModel } from '../figure';
 import { createBundledIdle, type BundledIdle } from '../motion/bundled-idle';
 import { WindowBody } from './window-body';
 import type { WindowStageHost } from './host-ports';
-import { isReviewedDefaultPose, StageModelProfile } from '../../stage';
+import { isReviewedDefaultPose, requestModelProfileCache, saveBuiltProfile, StageModelProfile, type ProfileSaveOutcome } from '../../stage';
 import { motionFitStorage, StageMotionRetarget, type MotionFitView } from '../../actions';
 import type { VmdDataTransform } from '../../foundation/vmd';
 import { figureBone } from '../model/figure-bones';
@@ -49,7 +49,18 @@ export interface WindowModelMeasure {
  */
 export interface WindowMotionFits { cached: { modelKey: string; motionFits?: unknown } | null; save(modelKey: string, record: unknown): Promise<boolean>; changed(view: MotionFitView): void }
 
-export function measureWindowModel(mesh: SkinnedMesh, standard: StandardBody | null, reviewed: boolean, fits: WindowMotionFits | null = null): WindowModelMeasure {
+/**
+ * The host's cache read for this model (getModelProfile through requestModelProfileCache): its content key, the check-up it stored (null on
+ * a model it has never seen) and the stored motion fits. 2026-11-27: read in both windows again, as the old stage did.
+ */
+export interface WindowProfileCache { modelKey: string; profile: unknown; motionFits?: unknown }
+
+/**
+ * `cache` (2026-11-27, docs/claude/2026-11-27-model-checkup-not-saved.md): the host's stored check-up is taken when it matches this mesh
+ * (StageModelProfile accepts it, with haiku's checked matches riding along); the stored motion fits still reach only the control window's check.
+ */
+export function measureWindowModel(mesh: SkinnedMesh, standard: StandardBody | null, reviewed: boolean, fits: WindowMotionFits | null = null,
+  cache: WindowProfileCache | null = null): WindowModelMeasure {
   mesh.updateMatrixWorld(true);
   const rest = mesh.skeleton.bones.map(bone => ({ bone, quaternion: bone.quaternion.clone() }));
   const box = new Box3().setFromObject(mesh);
@@ -58,11 +69,13 @@ export function measureWindowModel(mesh: SkinnedMesh, standard: StandardBody | n
   // Batch 2: one profile per MMD model (the companion's: her face's slots and calibration, the capability card's source, and the
   // motion retarget of a model that is not the reviewed Gene).
   let profile: StageModelProfile | null = null;
-  if (!standard) { try { profile = new StageModelProfile(mesh, { reviewed }); } catch { profile = null; } }
+  if (!standard) { try { profile = new StageModelProfile(mesh, { reviewed, cached: cache?.profile }); } catch { profile = null; } }
   let retarget: StageMotionRetarget | null = null;
   if (!reviewed && !standard) {
     try { retarget = new StageMotionRetarget(mesh, profile?.profile ?? new StageModelProfile(mesh, { reviewed: false }).profile, { reviewed: false,
-      ...(fits ? { ...motionFitStorage(fits.cached, { saveMotionFits: (key, record) => fits.save(key, record) }), onChange: fits.changed } : {}) }); transform = retarget.transform; }
+      // Hotfix 0.2.1: the stored scores reach the control window's fit check only, as in 0.2.0 (main also gives them to the companion).
+      ...(fits ? { ...motionFitStorage(fits.cached ?? cache, { saveMotionFits: (key, record) => fits.save(key, record) }), onChange: fits.changed } : {}) });
+      transform = retarget.transform; }
     catch { transform = undefined; retarget = null; /* motions as authored, as the stage does without a plan */ }
   }
   // The painted blush measures her cheeks on her rest pose: remembered now, before her body ever moves (window-blush.ts).
@@ -96,6 +109,11 @@ export interface WindowLoadedModel extends WindowModelMeasure {
   standard: StandardBody | null;
   /** The host said this is the reviewed Gene (never for a VRM). */
   reviewed: boolean;
+  /**
+   * 2026-11-27: the check-up's save, scheduled off the load's path (src/stage/model-profile-save.ts): saved once for a model the host has no
+   * check-up for, kept when it had one, logged when it fails (the next load tries again). Nobody needs to await it; tests may.
+   */
+  profileSaved: Promise<ProfileSaveOutcome>;
   figure: UnboundFigure;
   body: WindowBody;
 }
@@ -106,20 +124,31 @@ export interface WindowLoadedModel extends WindowModelMeasure {
  * and null comes back. Throws when the model cannot be loaded.
  */
 export async function loadWindowModel(url: string, input: { host: WindowStageHost; current(): boolean; idle: Promise<BundledIdle | null>;
-  /** Batch 7 (the control window's preview): the fit check's cache and view. */
-  fits?: { cache(): Promise<WindowMotionFits['cached']>; save: WindowMotionFits['save']; changed: WindowMotionFits['changed'] } | null;
-  random: () => number; breath: number }): Promise<WindowLoadedModel | null> {
+  /** Batch 7 (the control window's preview): the fit check's save and view (its stored scores come with the profile cache read below). */
+  fits?: { save: WindowMotionFits['save']; changed: WindowMotionFits['changed'] } | null;
+  /** Where a failed check-up save is written (default: the developer log, console.warn). */
+  log?: (line: string) => void;
+  /** When the check-up save runs (default: the next macrotask, after the load returned: never on the first frame's path). */
+  defer?: (run: () => void) => void;
+  random: () => number; breath: number;
+  /** Tests: the MMD loader (default: the page's own, with textures). */
+  loadMmd?: Parameters<typeof loadFigureBody>[1] }): Promise<WindowLoadedModel | null> {
   // I-152 step 2: a VRM, as it is, on the engine's standard skeleton (src/unbound/model/); an MMD model as before.
-  const loaded = await loadFigureBody(url, loadFigureModel), { mesh, textures, standard } = loaded;
+  const loaded = await loadFigureBody(url, input.loadMmd ?? loadFigureModel), { mesh, textures, standard } = loaded;
   if (!input.current()) { dropFigureBody(loaded); return null; }
-  const cache = input.fits && !standard ? input.fits.cache().catch(() => null) : Promise.resolve(null);
+  // The host's stored check-up for this model (both windows, as the old stage read it), in parallel with the Gene check. A VRM has none yet.
+  const cache: Promise<WindowProfileCache | null> = standard ? Promise.resolve(null) : requestModelProfileCache(input.host, url);
   const reviewed = standard ? false : await input.host.isBehaviorModelSupported().then(value => value === true, () => false);
   const cached = await cache;
   if (!input.current()) { dropFigureBody(loaded); return null; }
   // Measured before her body ever moves: bounds, the motion transform, the profile, the painted blush.
-  const measure = measureWindowModel(mesh, standard, reviewed, input.fits ? { cached, save: input.fits.save, changed: input.fits.changed } : null);
+  const measure = measureWindowModel(mesh, standard, reviewed, input.fits ? { cached, save: input.fits.save, changed: input.fits.changed } : null, cached);
+  // 2026-11-27: the check-up the host lost with the old stage (575216516): saved once the model is measured, off the load's path.
+  const profileSaved = new Promise<void>(resolve => (input.defer ?? (run => { setTimeout(run, 0); }))(resolve))
+    .then(() => saveBuiltProfile({ saveModelProfile: (key, profile) => input.host.saveModelProfile?.(key, profile) ?? Promise.resolve(false) }, cached, measure.profile,
+      { current: input.current, log: input.log ?? (line => console.warn(line)) }));
   const figure = new UnboundFigure(mesh, { xM: 0, depthM: 0 }); // window mode: her place is the origin, always
   figure.setBreath(input.breath);
   const body = new WindowBody(figure, async heightM => createBundledIdle(heightM, await input.idle, 1 + Math.floor(input.random() * 1e6)), input.random, standard);
-  return { ...measure, mesh, textures, standard, reviewed, figure, body };
+  return { ...measure, mesh, textures, standard, reviewed, figure, body, profileSaved };
 }

@@ -1102,5 +1102,38 @@
   "tests": [
    "tests/rules-removed.test.ts"
   ]
+ },
+ {
+  "id": "ASAR-archive-branch",
+  "part": "mood",
+  "file": "electron/mood/blush-calibration.ts",
+  "find": "    if (own && entry !== null) return { signature:",
+  "replace": "    if (false && own && entry !== null) return { signature:",
+  "what": "打包版里 app.asar 里面的预装模型（Mumi、One）又拿不到模型身份：体检档案、红晕校准、动作打分都对它们关着",
+  "tests": [
+   "tests/asar-model-identity.test.ts"
+  ]
+ },
+ {
+  "id": "ASAR-own-only",
+  "part": "mood",
+  "file": "electron/mood/own-app-archive.ts",
+  "find": "    const relative = path.relative(archive, path.resolve(file));",
+  "replace": "    const relative = path.relative(path.resolve(file).replace(/(app\\.asar)[\\\\/].*$/i, '$1'), path.resolve(file));",
+  "what": "只看路径里有没有 app.asar 这几个字，不看是不是软件自己的那个包：用户放在叫 app.asar 的文件夹里的模型也不再按严格规则核对",
+  "tests": [
+   "tests/asar-model-identity.test.ts"
+  ]
+ },
+ {
+  "id": "ASAR-strict-ordinary",
+  "part": "mood",
+  "file": "electron/mood/blush-calibration.ts",
+  "find": "    if ((await this.snapshot(canonical)).signature !== expected.signature || bytes !== expected.size) throw new ModelChanged();",
+  "replace": "    if (bytes !== expected.size) throw new ModelChanged();",
+  "what": "普通模型文件在读的过程中被改了也照样算出身份（不再前后核对一次）",
+  "tests": [
+   "tests/asar-model-identity.test.ts"
+  ]
  }
 ]

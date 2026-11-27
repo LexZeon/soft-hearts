@@ -722,6 +722,7 @@
    "visualAuthoring = new PersonalizeVisualAuthoring(visualBehaviors, {…})",
    "bodyAuthoring = new PersonalizeBodyAuthoring(bodyBehaviors, {…})",
    "const packedBlushModel = app.isPackaged && path.extname(app.getAppPath()).toLowerCase() === '.asar' ? await createTrustedPackedModel(app.getAppPath(), …, bundledAssetManifest.model, {…}) : undefined",
+   "const appArchive = app.isPackaged && path.extname(app.getAppPath()).toLowerCase() === '.asar' ? await createOwnAppArchive(app.getAppPath(), {…}).catch(fn) : undefined",
    "blushCalibrations = new BlushCalibrationStore(store.directory, {…})",
    "await blushCalibrations.load()",
    "modelProfiles = new ModelProfileStore(store.directory)",

@@ -91,6 +91,7 @@ function fakePetPreload() {
     resolveChatGesture: async () => null, resolveHerAction: async () => null, reportHerAction: async () => {}, getBehaviorBodyPlan: async () => null,
     resolveBehaviorBody: async () => null, resolveBehaviorMotion: async () => null,
     resolveHerLifeMotion: async () => null, // batch 6: her own life's held pose (a read)
+    getModelProfile: async () => null, saveModelProfile: async () => true, // 2026-11-27: the check-up cache read and its save (no sense)
     setRuntimeState: async () => { turnOn(); }, setPerception: async () => { turnOn(); }, setVoiceInput: async () => { senses.microphone = true; },
     startScreenShare: async () => { senses.screen = true; }, setSystemAudio: async () => { senses.listen = true; }, setFaceCheck: async () => { senses.face = true; },
     setPoseSensing: async () => { senses.camera = true; }, toggleUnbound: async () => { turnOn(); return 'entering'; }, setUnbound: async () => { turnOn(); return {}; },
@@ -122,8 +123,8 @@ test('safety: the port is a new frozen object with the allowed methods only, eac
   assert.deepEqual(Object.keys(host), [...WINDOW_STAGE_HOST_METHODS]);
   assert.equal(await host.isBehaviorModelSupported(), true);
   // Batch 5: what was added is the companion stage's own reads of her motions' grants and her answer to a test command; no sense, no Unbound.
-  assert.deepEqual([...WINDOW_STAGE_HOST_METHODS].sort(), ['getBehaviorBodyPlan', 'getRestStand', 'isBehaviorModelSupported', 'reportHerAction', 'resolveBehaviorBody',
-    'resolveBehaviorMotion', 'resolveChatGesture', 'resolveHerAction', 'resolveHerLifeMotion']); // batch 6: the held pose's grant; 2026-11-21: her default stand (a read)
+  assert.deepEqual([...WINDOW_STAGE_HOST_METHODS].sort(), ['getBehaviorBodyPlan', 'getModelProfile', 'getRestStand', 'isBehaviorModelSupported', 'reportHerAction', 'resolveBehaviorBody',
+    'resolveBehaviorMotion', 'resolveChatGesture', 'resolveHerAction', 'resolveHerLifeMotion', 'saveModelProfile']); // batch 6: the held pose's grant; 2026-11-21: her default stand (a read); 2026-11-27: the check-up cache read and its save
   for (const name of WINDOW_STAGE_HOST_METHODS) assert.ok(!/perception|screen|voice|audio|face|pose|unbound|runtime/i.test(name.replace('BehaviorModel', '')), `${name} is not a sense or a way out`);
 });
 

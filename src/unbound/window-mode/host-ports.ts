@@ -14,9 +14,12 @@
  *  - batch 6 (2026-11-20, 她自己的生活): the host's pinned grant for one of her own life's held poses (thinking, sleepy), a read;
  *  - 2026-11-21 (docs/claude/2026-11-21-window-idle-pose.md): her default stand when no pose is picked (the bundled stand's asset), a read
  *    the old stage in this window makes too (src/stage/rest-stand.ts) and full-screen Unbound's host has made since 2026-11-15.
+ *  - 2026-11-27 (docs/claude/2026-11-27-model-checkup-not-saved.md): the model check-up cache, the read and its one save (getModelProfile,
+ *    saveModelProfile), which the old stage in this window made on every model load. The host keys both by the CURRENT model's content
+ *    hash and refuses a save for any other key; the profile holds part names and measured numbers, never a path.
  * Music (batch 6) needs nothing here: its samples come from the wiring, and only while the user's own 和她一起听 switch is on.
  */
-import type { HerLifeMotionResource } from '../../../shared/stage';
+import type { HerLifeMotionResource, ModelProfileCacheView } from '../../../shared/stage';
 import type { AssetRef } from '../../../shared/foundation/settings';
 import type { BehaviorMotionResource, BodyMotionPlan, BodyMotionResource, BodyStageObservation, ChatGestureResource, HerActionOutcome,
   HerActionResource } from '../../../shared/actions';
@@ -37,10 +40,18 @@ export interface WindowStageHost {
   resolveHerLifeMotion(motionId: string, token: string): Promise<HerLifeMotionResource>;
   /** Her default stand (the bundled stand pose's asset) when no pose is picked; null without it. Optional: a port without it gives none. */
   getRestStand?(): Promise<AssetRef | null>;
+  /**
+   * 2026-11-27: the current model's stored check-up, its content key and stored motion fits (null profile: a model the host has never seen).
+   * Both window ports have it (windowStageHost, windowPreviewStageHost); optional only for the test stand-ins of the other layers.
+   */
+  getModelProfile?(): Promise<ModelProfileCacheView>;
+  /** 2026-11-27: hands the host the check-up built on load, once per model (src/stage/model-profile-save.ts); false: refused. */
+  saveModelProfile?(modelKey: string, profile: unknown): Promise<boolean>;
 }
 /** Every method the engine may call, by name. */
 export const WINDOW_STAGE_HOST_METHODS: readonly (keyof WindowStageHost)[] = Object.freeze(['isBehaviorModelSupported', 'resolveChatGesture',
-  'resolveHerAction', 'reportHerAction', 'getBehaviorBodyPlan', 'resolveBehaviorBody', 'resolveBehaviorMotion', 'resolveHerLifeMotion', 'getRestStand']);
+  'resolveHerAction', 'reportHerAction', 'getBehaviorBodyPlan', 'resolveBehaviorBody', 'resolveBehaviorMotion', 'resolveHerLifeMotion', 'getRestStand',
+  'getModelProfile', 'saveModelProfile']);
 
 /** Picks the engine's port out of the companion window's preload: a new object with the allowed methods only, each bound. */
 export function windowStageHost(desktop: WindowStageHost): WindowStageHost {
@@ -54,5 +65,7 @@ export function windowStageHost(desktop: WindowStageHost): WindowStageHost {
     resolveBehaviorMotion: (cueId: string, token: string) => desktop.resolveBehaviorMotion(cueId, token),
     resolveHerLifeMotion: (motionId: string, token: string) => desktop.resolveHerLifeMotion(motionId, token),
     getRestStand: async () => (await desktop.getRestStand?.()) ?? null,
+    getModelProfile: () => desktop.getModelProfile!(),
+    saveModelProfile: (modelKey: string, profile: unknown) => desktop.saveModelProfile!(modelKey, profile),
   });
 }

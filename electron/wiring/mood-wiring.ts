@@ -24,7 +24,7 @@ import path from 'node:path';
 import { DEFAULT_MOOD_PARAMETERS, validateMoodParameters } from '../../shared/foundation/mood';
 import type { FatiguePhase, MoodView } from '../../shared/mood';
 import type { AppSettings } from '../../shared/contracts';
-import { acceptPetTouch, reportTouch, BlushCalibrationStore, type StageStateHost, createTouchBrain, createTrustedPackedModel, FatigueActivityBridge, setTouchSink, startRealerExpiryWatcher, verifiedFatigueBackground } from '../mood';
+import { acceptPetTouch, reportTouch, BlushCalibrationStore, type StageStateHost, createTouchBrain, createTrustedPackedModel, createOwnAppArchive, FatigueActivityBridge, setTouchSink, startRealerExpiryWatcher, verifiedFatigueBackground } from '../mood';
 import { createMoodJudge } from '../mood/mood-judge/wiring';
 import { createReactions } from '../mood/reactions/wiring';
 import { chatAvailability, type CompanionService } from '../brain';
@@ -153,7 +153,13 @@ export async function startBlush(store: SettingsStore, bundledAssetManifest: { r
         lstat: file => originalFs.promises.lstat(file, { bigint: true }),
       })
     : undefined;
-  blushCalibrations = new BlushCalibrationStore(store.directory, { packedModel: packedBlushModel });
+  // 2026-11-27: the other preinstalled models in the same archive (Mumi, One) get the archive's identity (electron/mood/own-app-archive.ts);
+  // "own" is this app's real archive path, never a name. Without it they had no content key in a packaged build.
+  const appArchive = app.isPackaged && path.extname(app.getAppPath()).toLowerCase() === '.asar'
+    ? await createOwnAppArchive(app.getAppPath(), { realpath: file => originalFs.promises.realpath(file), lstat: file => originalFs.promises.lstat(file, { bigint: true }) })
+      .catch(error => { console.warn('own app archive not usable for model identity:', error instanceof Error ? error.message : error); return undefined; })
+    : undefined;
+  blushCalibrations = new BlushCalibrationStore(store.directory, { packedModel: packedBlushModel, appArchive });
   await blushCalibrations.load();
   });
 }

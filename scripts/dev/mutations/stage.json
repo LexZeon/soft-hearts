@@ -1865,5 +1865,49 @@
   "tests": [
    "tests/click-through-tight.test.ts"
   ]
+ },
+ {
+  "id": "checkup-kept-not-rewritten",
+  "part": "stage",
+  "file": "src/stage/model-profile-save.ts",
+  "find": "  if (built.source === 'cache') return { status: 'kept' };\n",
+  "replace": "",
+  "what": "主机已经存着同一个模型的体检档案，每次载入还重写一遍",
+  "tests": [
+   "tests/model-checkup-saved.test.ts"
+  ]
+ },
+ {
+  "id": "checkup-failure-logged",
+  "part": "stage",
+  "file": "src/stage/model-profile-save.ts",
+  "find": "    try { options.log(`model check-up not saved",
+  "replace": "    try { if (Math.random() > 2) options.log(`model check-up not saved",
+  "what": "体检档案没存上时一声不吭（没有日志，没人知道）",
+  "tests": [
+   "tests/model-checkup-saved.test.ts"
+  ]
+ },
+ {
+  "id": "checkup-stale-dropped",
+  "part": "stage",
+  "file": "src/stage/model-profile-save.ts",
+  "find": "  if (!options.current()) return { status: 'skipped', reason: 'stale' };\n",
+  "replace": "",
+  "what": "已经换了模型，旧模型的体检档案还照样去存",
+  "tests": [
+   "tests/model-checkup-saved.test.ts"
+  ]
+ },
+ {
+  "id": "capability-page-reading-ends",
+  "part": "stage",
+  "file": "src/stage/ModelCapabilityPanel.ts",
+  "find": "(state.settled ? uiText('没读到这个模型的体检，开关先不能用；重新载入这个模型后会再读一次。') : uiText('正在读取这个模型的体检……'))",
+  "replace": "uiText('正在读取这个模型的体检……')",
+  "what": "角色页「这个模型能做什么」读不到体检时一直显示\"正在读取\"，不说为什么",
+  "tests": [
+   "tests/i024-capability-ui.test.ts"
+  ]
  }
 ]

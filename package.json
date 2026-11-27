@@ -1,6 +1,6 @@
 {
   "name": "soft-hearts-next",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "A small, modular MMD desktop companion",
   "license": "MIT",
@@ -75,7 +75,7 @@
       { "from": "scripts/soft-hearts-assistant-mcp.mjs", "to": "agent-channel/soft-hearts-assistant-mcp.mjs" },
       { "from": "scripts/agent-channel-wire.mjs", "to": "agent-channel/agent-channel-wire.mjs" },
       { "from": "shared/safety/agent-channel-catalog.json", "to": "agent-channel/agent-channel-catalog.json" },
-      { "from": "docs", "to": "assistant-docs/docs", "filter": ["character-card-guide.md", "character-cards.md", "data-map.md", "knobs.md", "touching-her.md", "voice-design-guide.md", "release-notes/v0.1.0.md", "release-notes/v0.2.0.md"] }
+      { "from": "docs", "to": "assistant-docs/docs", "filter": ["character-card-guide.md", "character-cards.md", "data-map.md", "knobs.md", "touching-her.md", "voice-design-guide.md", "release-notes/v0.1.0.md", "release-notes/v0.2.0.md", "release-notes/v0.2.1.md"] }
     ],
     "win": {
       "target": "portable"

@@ -51,7 +51,9 @@ export { CONTEXT_RECOVERY, StageContextRecovery, type ContextRecoveryPorts, type
 export { probeHeadContact, projectHeadContact } from './head-contact';
 export { addStageLights } from './model-loading';
 import { createModelLoadingManager } from './model-loading';
-export { StageModelProfile, cheekAnchorsFrom } from './model-profile';
+export { StageModelProfile, cheekAnchorsFrom, requestModelProfileCache } from './model-profile';
+// 2026-11-27 (docs/claude/2026-11-27-model-checkup-not-saved.md): the check-up's one save after a model loads (the window engine's load step).
+export { saveBuiltProfile, type ProfileSaveOutcome, type ProfileSavePort } from './model-profile-save';
 // I-152 step 2 (docs/claude/2026-11-19-vrm-motion-step2.md): a VRM for Unbound's engine, as it is (its arms not lowered: the engine's
 // standard body does that), in its own chunk like the old stage's (the glTF loader and MToon load only for a VRM).
 export type { LoadedModel, MorphBind } from './model-adapter/types';

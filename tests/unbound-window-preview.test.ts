@@ -49,7 +49,7 @@ function fakeControlPreload() {
     isBehaviorModelSupported: async () => true, resolveChatGesture: async () => null, resolveHerAction: async () => null, resolveBehaviorMotion: async () => null,
     resolveHerLifeMotion: async () => null, reportHerAction: async () => {}, getBehaviorBodyPlan: async () => null, resolveBehaviorBody: async () => null,
     visualPreviewReceipt: async () => {}, resolveVisualPreview: async () => null, resolveExpressionPreview: async () => null, bodyPreviewReceipt: async () => {},
-    resolveBodyPreview: async () => null, previewMotion: async () => null, getModelProfile: async () => null, saveMotionFits: async () => true,
+    resolveBodyPreview: async () => null, previewMotion: async () => null, getModelProfile: async () => null, saveModelProfile: async () => true, saveMotionFits: async () => true,
     setRuntimeState: async () => { turnOn(); }, setPerception: async () => { turnOn(); }, setVoiceInput: async () => { senses.microphone = true; },
     startScreenShare: async () => { senses.screen = true; }, setSystemAudio: async () => { senses.listen = true; }, setFaceCheck: async () => { senses.face = true; },
     setPoseSensing: async () => { senses.camera = true; }, toggleUnbound: async () => { turnOn(); return 'entering'; }, setUnbound: async () => { turnOn(); return {}; },
@@ -243,7 +243,7 @@ function recordingGrants(binding: unknown, expression?: unknown) {
     resolveExpressionPreview: async () => expression as never,
     bodyPreviewReceipt: async (r: { phase: string }) => { receipts.push(`body ${r.phase}`); },
     resolveBodyPreview: async () => binding as never,
-    previewMotion: async () => { throw new Error('not here'); }, getModelProfile: async () => null as never, saveMotionFits: async () => true,
+    previewMotion: async () => { throw new Error('not here'); }, saveMotionFits: async () => true,
   } };
 }
 

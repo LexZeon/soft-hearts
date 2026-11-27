@@ -23,7 +23,7 @@ const handbook = (docs: HandbookDocs = handbookDocsReader(root)) => {
 test('the manuals are the pages on the user-manuals list: development pages, records and replaced process pages stay out', async () => {
   const docs = handbookDocsReader(root);
   const ids = (await docs.list()).map(doc => doc.id);
-  for (const id of ['character-card-guide', 'character-cards', 'knobs', 'voice-design-guide', 'touching-her', 'data-map', 'release-notes/v0.1.0', 'release-notes/v0.2.0'])
+  for (const id of ['character-card-guide', 'character-cards', 'knobs', 'voice-design-guide', 'touching-her', 'data-map', 'release-notes/v0.1.0', 'release-notes/v0.2.0', 'release-notes/v0.2.1'])
     assert.ok(ids.includes(id), id);
   assert.equal(ids.length, USER_MANUALS.size, 'every page on the list is there, and nothing else');
   for (const id of ['requested-work', 'chat-handoff', 'public-claude', 'crying-implementation', 'mood/implementation-log', 'architecture', 'brainstorm-context',

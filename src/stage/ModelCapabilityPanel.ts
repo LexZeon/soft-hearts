@@ -149,8 +149,10 @@ export class ModelCapabilityPanel {
     const base = !state?.loaded && format === 'vrm' ? uiText('这是 VRM 模型：现在先原样显示、站着。这个格式的动作和表情还在做，做好后这里会列出她能做什么。')
       : !state?.loaded ? uiText('载入模型后，这里会列出这个模型能做什么。')
       : state.checking ? uiText('正在体检这个模型……（只把部位名字交给 haiku 对照）')
-        : !card ? uiText('正在读取这个模型的体检……')
-          : checked ? uiTemplate`体检于 ${timeText(checked)}` : uiText('已按名字认出；体检完成后会写上时间。');
+        // 2026-11-27: the reading ends, in the switches or in a plain sentence (it said 正在读取 for good on a fresh profile).
+        : !card ? (state.settled ? uiText('没读到这个模型的体检，开关先不能用；重新载入这个模型后会再读一次。') : uiText('正在读取这个模型的体检……'))
+          : state.settled && !state.modelKey ? uiText('这个模型的体检档案还没存进软件，她聊天时还不会挑小动作；重新载入这个模型后会再存一次。')
+            : checked ? uiTemplate`体检于 ${timeText(checked)}` : uiText('已按名字认出；体检完成后会写上时间。');
     const waiting = state?.waitingForReload ? uiText('haiku 认出的部位，下次载入这个模型时开始用。') : '';
     this.status.textContent = [this.notice, base, waiting].filter(Boolean).join('\n');
     const lines = state?.loaded ? adaptationLines(state.adaptation) : [];

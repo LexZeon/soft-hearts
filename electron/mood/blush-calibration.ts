@@ -3,6 +3,7 @@ import { createReadStream, type BigIntStats } from 'node:fs';
 import { mkdir, readFile, realpath, rename, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { isModelFileExtension } from '../../shared/foundation/model-format';
+import { AppArchiveChanged, type OwnAppArchive } from './own-app-archive';
 import {
   DEFAULT_BLUSH_CALIBRATION, validateBlushCalibration,
   type BlushCalibration, type BlushCalibrationView,
@@ -14,9 +15,6 @@ interface StoredProfile { modelKey: string; calibration: BlushCalibration }
 interface StoredCalibrations { version: 1; revision?: number; profiles: StoredProfile[] }
 interface CachedIdentity { signature: string; modelKey: string }
 class ModelChanged extends Error {}
-class AppArchiveChanged extends Error {
-  constructor() { super('应用资源已变化，请重启 soft hearts 后重新读取红晕校准。'); }
-}
 const isObject = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
 function modelKey(value: unknown): string {
   if (typeof value !== 'string' || !/^[a-f0-9]{64}$/.test(value)) throw new Error('脸红校准需要当前模型的内容身份，不能提交路径或网址。');
@@ -49,6 +47,8 @@ interface StoreOptions {
   packedModel?: TrustedPackedModel;
   /** Narrow filesystem seam for pure tests; production uses the ordinary Node APIs. */
   modelFiles?: ModelFiles;
+  /** 2026-11-27: the app's own packaged archive (own-app-archive.ts): its other preinstalled models (Mumi, One) get the archive's identity. */
+  appArchive?: OwnAppArchive;
 }
 
 /**
@@ -249,6 +249,10 @@ export class BlushCalibrationStore {
       if (info.size !== trusted.bytes) throw new Error('Bundled model size mismatch');
       return { signature: `packed:${archive}:file:${info.size}`, size: info.size, expectedKey: trusted.expectedKey };
     }
+    // 2026-11-27: another preinstalled model inside the app's own archive (Mumi, One): the asar view reports "now" as its times, so its
+    // identity is the archive's own (on the real disk, unchanged since the app started) plus its path and size inside it (own-app-archive.ts).
+    const own = this.options.appArchive, entry = own ? await own.entryOf(canonical) : null;
+    if (own && entry !== null) return { signature: `archive:${await own.archiveSignature()}:entry:${entry}:${info.size}`, size: BigInt(info.size) };
     return { signature: `file:${signature(info)}`, size: info.size };
   }
   private async hashModel(canonical: string, expected: ModelSnapshot): Promise<string> {

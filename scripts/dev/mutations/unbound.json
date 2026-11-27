@@ -5632,5 +5632,49 @@
   "tests": [
    "tests/window-dance-default-stand.test.ts"
   ]
+ },
+ {
+  "id": "checkup-save-after-load",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-model.ts",
+  "find": "saveBuiltProfile({ saveModelProfile: (key, profile) => input.host.saveModelProfile?.(key, profile) ?? Promise.resolve(false) }",
+  "replace": "saveBuiltProfile({ saveModelProfile: async () => false }",
+  "what": "载入模型后没人把体检档案交给主机（575216516 删掉老舞台后就是这样）：新模型没有体检档案，她聊天时一个小动作都不会挑，内部通道说\"还没有这个模型的体检档案\"，角色页开关是灰的",
+  "tests": [
+   "tests/model-checkup-saved.test.ts"
+  ]
+ },
+ {
+  "id": "checkup-cache-read",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/window-model.ts",
+  "find": "profile = new StageModelProfile(mesh, { reviewed, cached: cache?.profile });",
+  "replace": "profile = new StageModelProfile(mesh, { reviewed });",
+  "what": "载入模型时不读主机存的体检档案：每次都重算、重写，haiku 认出的部位也不再带上",
+  "tests": [
+   "tests/model-checkup-saved.test.ts"
+  ]
+ },
+ {
+  "id": "window-engine-port-checkup",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/host-ports.ts",
+  "find": "  'getModelProfile', 'saveModelProfile']);",
+  "replace": "  'getModelProfile']);",
+  "what": "桌宠窗口引擎的口子里少了存体检档案这一项（引擎拿不到就存不了）",
+  "tests": [
+   "tests/unbound-window-engine.test.ts"
+  ]
+ },
+ {
+  "id": "window-preview-port-checkup",
+  "part": "unbound",
+  "file": "src/unbound/window-mode/preview-port.ts",
+  "find": "  'resolveHerAction', 'resolveBehaviorMotion', 'resolveHerLifeMotion', 'getRestStand', 'getModelProfile', 'saveModelProfile']);",
+  "replace": "  'resolveHerAction', 'resolveBehaviorMotion', 'resolveHerLifeMotion', 'getRestStand', 'saveModelProfile']);",
+  "what": "控制窗口预览的引擎口子里少了读体检档案这一项（预览就读不到存好的档案和动作打分）",
+  "tests": [
+   "tests/unbound-window-preview.test.ts"
+  ]
  }
 ]

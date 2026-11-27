@@ -386,6 +386,8 @@ export const ENGLISH_CHARACTER_UI_COPY: Readonly<Record<string, string>> = {
   '这是 VRM 模型：现在先原样显示、站着。这个格式的动作和表情还在做，做好后这里会列出她能做什么。': 'This is a VRM model: for now it is shown as it is, standing. Motions and expressions for this format are still being built; this list will show what she can do once they are.',
   '正在体检这个模型……（只把部位名字交给 haiku 对照）': 'Checking this model… (only part names go to haiku)',
   '正在读取这个模型的体检……': "Reading this model's check…", '体检于 {0}': 'Checked {0}',
+  '没读到这个模型的体检，开关先不能用；重新载入这个模型后会再读一次。': "Couldn't read this model's check, so the switches are off for now; it is read again the next time this model loads.",
+  '这个模型的体检档案还没存进软件，她聊天时还不会挑小动作；重新载入这个模型后会再存一次。': "This model's check isn't stored yet, so she won't pick small actions in chat; it is stored again the next time this model loads.",
   '已按名字认出；体检完成后会写上时间。': 'Recognised by name; the time shows once the check is done.',
   'haiku 认出的部位，下次载入这个模型时开始用。': 'Parts haiku found are used from the next time this model loads.',
   '已打开「{0}」': 'Turned on: {0}', '已关闭「{0}」': 'Turned off: {0}', '开关没有保存，请再试一次。': 'The switch was not saved. Please try again.',

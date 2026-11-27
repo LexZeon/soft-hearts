@@ -390,3 +390,32 @@ test('the channel cannot turn on what the model lacks', async () => {
     assert.deepEqual(w.store.get(KEY)!.choices, {});
   } finally { await w.cleanup(); }
 });
+
+// 2026-11-27 (docs/claude/2026-11-27-model-checkup-not-saved.md): on a fresh profile the page said 「正在读取这个模型的体检……」 for good.
+test('the page stops saying it is reading: a read that never answers times out, and a model the host has no check-up for says why in plain words', async () => {
+  const mesh = toThreeMesh(oddModel());
+  const never = () => new Promise<never>(() => {});
+  const sync = new ModelCapabilitySync({ api: { getModelCapabilities: never, askModelCapabilityNames: never, saveModelCapabilityCheck: never },
+    apply: () => {}, retryDelaysMs: [1], wait: async () => {}, readTimeoutMs: 5 });
+  try {
+    sync.profileBuilt(new StageModelProfile(mesh, { reviewed: false }));
+    assert.equal(sync.state.settled, false, 'reading');
+    await sync.settled();
+    const state = sync.state;
+    assert.equal(state.settled, true, 'the read ended although the host never answered');
+    assert.ok(state.card, 'the names\' card still reaches the page');
+    assert.equal(state.modelKey, null);
+    const p = panel(state.card);
+    try {
+      p.view.update({ ...state, card: null, settled: false });
+      assert.match(p.status(), /正在读取这个模型的体检/u, 'while it reads');
+      p.view.update({ ...state, card: null, settled: true });
+      assert.match(p.status(), /没读到这个模型的体检/u, 'nothing could be read: a plain sentence, not "reading" for good');
+      p.view.update(state);
+      assert.match(p.status(), /体检档案还没存进软件，她聊天时还不会挑小动作/u, 'not matched: why her actions are not offered');
+      assert.doesNotMatch(p.status(), /正在读取/u);
+      p.view.update({ ...state, modelKey: KEY, targetKey: KEY });
+      assert.doesNotMatch(p.status(), /还没存进软件|正在读取/u, 'matched: the usual line');
+    } finally { p.restore(); }
+  } finally { sync.dispose(); mesh.geometry.dispose(); }
+});

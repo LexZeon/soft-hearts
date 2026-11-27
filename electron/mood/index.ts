@@ -23,6 +23,7 @@ export type { HerNeedsHostOptions } from './her-needs/host';
 export { createHerState, hearingSource, StageStateHost } from './her-state-host';
 // Blush calibration (the per-model red).
 export { BlushCalibrationStore, createTrustedPackedModel } from './blush-calibration';
+export { createOwnAppArchive } from './own-app-archive'; // 2026-11-27: Mumi and One inside the packaged app's archive get a stable identity
 // Reactions: to the user's pose, the reaction table (I-037), realer emotions and their expiry.
 export { PoseReactionHost } from './pose-reactions/host';
 export type { PoseReactionHostOptions, PoseSimulation, PoseSimulationResult } from './pose-reactions/host';

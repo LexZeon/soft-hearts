@@ -238,8 +238,7 @@ export class UnboundWindowStage extends WindowStageEnv implements StageSurface {
       // Loaded, measured at rest and made into her figure and body (window-model.ts loadWindowModel); null: dropped as stale.
       const current = () => !this.disposed && generation === this.modelGeneration;
       const grants = this.tools.preview?.grants; // batch 7: the control window's preview runs the fit check with the host's stored scores
-      const fits = grants ? { save: grants.saveMotionFits, changed: (view: Parameters<NonNullable<StageOptions['onMotionFit']>>[0]) => { if (current()) this.options.onMotionFit?.(view); },
-        cache: () => grants.getModelProfile().then(v => v && typeof v.modelKey === 'string' && v.modelUrl === url ? { modelKey: v.modelKey, motionFits: v.motionFits ?? null } : null) } : null;
+      const fits = grants ? { save: grants.saveMotionFits, changed: (view: Parameters<NonNullable<StageOptions['onMotionFit']>>[0]) => { if (current()) this.options.onMotionFit?.(view); } } : null;
       const model = await loadWindowModel(url, { host: this.host, current, idle: this.idle, random: this.random, breath: this.settings?.pet.breath ?? 0.5, fits });
       if (!model) return;
       const { mesh, textures, standard, reviewed, bounds, transform, retarget, profile, painter, figure, body, rest } = model;

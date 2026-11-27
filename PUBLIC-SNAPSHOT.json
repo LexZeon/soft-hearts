@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "335d2983ea8306ea4cc331f02a16460c1b1cda87",
+  "sourceCommit": "7757a694b29c9b342780ed462a6f8f189c70cac9",
   "publicClaudeMd": true,
   "publicUrl": "https://github.com/LexZeon/soft-hearts",
   "urlRewrittenFiles": 8,
@@ -14,7 +14,7 @@
     "lines": 0,
     "files": 0
   },
-  "fileCount": 3993,
+  "fileCount": 3998,
   "excluded": [
     "docs/claude/",
     "handbook/",
@@ -96,6 +96,7 @@
     "docs/voice-design-guide.md",
     "docs/release-notes/v0.1.0.md",
     "docs/release-notes/v0.2.0.md",
+    "docs/release-notes/v0.2.1.md",
     "docs/architecture.md",
     "docs/developing.md",
     "docs/motion-library.md",
